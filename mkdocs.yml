@@ -1,0 +1,128 @@
+site_name: Kubernaut
+site_url: https://docs.kubernaut.ai
+site_description: AIOps Platform for Intelligent Kubernetes Remediation
+site_author: Kubernaut Contributors
+repo_url: https://github.com/jordigilh/kubernaut
+repo_name: jordigilh/kubernaut
+edit_uri: ""
+
+copyright: Copyright &copy; 2026 Kubernaut Contributors
+
+theme:
+  name: material
+  custom_dir: overrides
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: deep purple
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Inter
+    code: JetBrains Mono
+  icon:
+    repo: fontawesome/brands/github
+    logo: material/kubernetes
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.indexes
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+extra:
+  version:
+    provider: mike
+    default: latest
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/jordigilh/kubernaut
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.mark
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+plugins:
+  - search
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - Quickstart: getting-started/quickstart.md
+      - Architecture Overview: getting-started/architecture-overview.md
+  - User Guide:
+      - user-guide/index.md
+      - Core Concepts: user-guide/concepts.md
+      - Signals & Alert Routing: user-guide/signals.md
+      - Remediation Workflows: user-guide/workflows.md
+      - Human Approval: user-guide/approval.md
+      - Effectiveness Monitoring: user-guide/effectiveness.md
+      - Audit & Observability: user-guide/audit-and-observability.md
+      - Data Lifecycle: user-guide/data-lifecycle.md
+      - Configuration Reference: user-guide/configuration.md
+  - Architecture:
+      - architecture/index.md
+      - System Overview: architecture/overview.md
+      - Signal Processing: architecture/signal-processing.md
+      - AI Analysis: architecture/ai-analysis.md
+      - Remediation Routing: architecture/remediation-routing.md
+      - Workflow Selection: architecture/workflow-selection.md
+      - Workflow Execution: architecture/workflow-execution.md
+      - Effectiveness Assessment: architecture/effectiveness.md
+      - Async Propagation: architecture/async-propagation.md
+      - Audit Pipeline: architecture/audit-pipeline.md
+      - Data Persistence: architecture/data-persistence.md
+  - Design Decisions:
+      - design-decisions/index.md
+  - API Reference:
+      - api-reference/index.md
+      - Custom Resources: api-reference/crds.md
+      - DataStorage API: api-reference/datastorage-api.md
+      - HolmesGPT API: api-reference/holmesgpt-api.md
+  - Operations:
+      - operations/index.md
+      - Monitoring: operations/monitoring.md
+      - Event Exporter: operations/event-exporter.md
+      - Troubleshooting: operations/troubleshooting.md
+  - Contributing: contributing.md

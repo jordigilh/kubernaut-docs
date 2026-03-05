@@ -1,0 +1,4 @@
+mkdocs-material>=9.6
+mkdocs>=1.6,<2.0
+mike>=2.1
+pymdown-extensions>=10.14

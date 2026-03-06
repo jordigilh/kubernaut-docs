@@ -79,24 +79,24 @@ These services watch Kubernetes Custom Resources and reconcile state:
 
 | Service | Watches | Creates | Role |
 |---|---|---|---|
-| **Remediation Orchestrator** | RemediationRequest + all child CRDs | SignalProcessing, AIAnalysis, WorkflowExecution, NotificationRequest, EffectivenessAssessment, RemediationApprovalRequest | Coordinates the full remediation lifecycle |
-| **Signal Processing** | SignalProcessing | — | Enriches signals with K8s context, classifies severity and signal mode |
-| **AI Analysis** | AIAnalysis | — | Calls HolmesGPT for RCA, evaluates approval via Rego policy |
-| **Workflow Execution** | WorkflowExecution | Tekton PipelineRun or Job | Runs remediation workflows via Tekton or K8s Jobs |
-| **Notification** | NotificationRequest | — | Delivers notifications via Slack, console, file, or log channels |
-| **Effectiveness Monitor** | EffectivenessAssessment | — | Assesses whether the remediation fixed the problem |
+| **Remediation Orchestrator** | RemediationRequest + all child CRDs | SignalProcessing, AIAnalysis, WorkflowExecution, NotificationRequest, EffectivenessAssessment, RemediationApprovalRequest | Coordinates the full remediation lifecycle with routing engine (blocking conditions, exponential backoff, resource locks) |
+| **Signal Processing** | SignalProcessing | — | Enriches signals with K8s context (owner chain, namespace, workload), environment classification, priority assignment, business classification, severity normalization, and signal mode |
+| **AI Analysis** | AIAnalysis | — | Submits session-based async investigations to HolmesGPT API for RCA, evaluates approval via Rego policy |
+| **Workflow Execution** | WorkflowExecution | Tekton PipelineRun or Job | Validates dependencies (Secrets, ConfigMaps), runs remediation workflows via Tekton or K8s Jobs |
+| **Notification** | NotificationRequest | — | Delivers notifications via Slack, console, file, or log channels with retry backoff |
+| **Effectiveness Monitor** | EffectivenessAssessment | — | Four-dimensional assessment: health checks (K8s), alert resolution (AlertManager), metric comparison (Prometheus), and spec hash drift detection |
 
 ### Stateless Services
 
 | Service | Role |
 |---|---|
-| **Gateway** | HTTP entry point for AlertManager webhooks and K8s events; creates RemediationRequest CRDs |
-| **DataStorage** | PostgreSQL-backed REST API for audit events, workflow catalog, and action history |
-| **HolmesGPT API** | Python FastAPI service that wraps LLM calls for root cause analysis with live `kubectl` access |
+| **Gateway** | HTTP entry point for AlertManager webhooks and K8s events; validates resource scope, resolves owner chains, performs fingerprint-based deduplication, and creates RemediationRequest CRDs |
+| **DataStorage** | PostgreSQL-backed REST API for audit events, workflow catalog, remediation history, and effectiveness data (Redis for DLQ) |
+| **HolmesGPT API** | Python FastAPI service that orchestrates LLM-driven root cause analysis using Kubernetes inspection tools and configurable observability toolsets (Prometheus, Grafana Loki/Tempo); detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB) that influence workflow selection and catalog search; fetches remediation history so the LLM avoids repeating failed remediations |
 
 ## Communication Pattern
 
-All inter-service communication uses **Kubernetes CRDs**. There are no service-to-service HTTP calls in the remediation pipeline (except to DataStorage for audit and to HolmesGPT for LLM calls).
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls HolmesGPT API for AI investigation, and EM queries AlertManager and Prometheus for effectiveness assessment.
 
 This architecture provides:
 
@@ -127,29 +127,34 @@ A `RemediationRequest` progresses through these phases:
 stateDiagram-v2
     [*] --> Pending
     Pending --> Processing: RO creates SignalProcessing
+    Pending --> Blocked: Routing condition blocks progress
     Processing --> Analyzing: SP completes enrichment
     Analyzing --> AwaitingApproval: Low confidence / policy requires approval
     Analyzing --> Executing: High confidence, auto-approved
+    Analyzing --> Blocked: Routing condition blocks progress
+    Analyzing --> Skipped: Resource busy / recently remediated
     AwaitingApproval --> Executing: Human approves
     AwaitingApproval --> Failed: Human rejects
     Executing --> Verifying: WE succeeded → Create EA
     Executing --> Failed: Workflow fails
+    Blocked --> Pending: Cooldown expires, re-evaluated
     Verifying --> Completed: EA completed
     Verifying --> Failed: Verification timed out
     Completed --> [*]
     Failed --> [*]
+    TimedOut --> [*]
+    Skipped --> [*]
+    Cancelled --> [*]
 ```
 
-After reaching a terminal phase (Completed, Failed, or TimedOut), the Orchestrator creates:
+After reaching a terminal phase (Completed, Failed, TimedOut, Skipped, or Cancelled), the Orchestrator creates:
 
 - A **NotificationRequest** to inform the team
 - An **EffectivenessAssessment** to evaluate whether the fix worked
 
 ## Data Flow
 
-CRDs are **ephemeral** — they have a 24-hour TTL after completion. The long-term record of every remediation lives in **PostgreSQL** via the audit pipeline.
-
-Every service emits audit events to DataStorage as it processes its CRD. These events capture the full context: what happened, when, why, and who was involved. A complete `RemediationRequest` can be [reconstructed from audit data](../user-guide/data-lifecycle.md) at any time, even after the CRD has expired.
+Every service emits audit events to DataStorage as it processes its CRD. These events capture the full context: what happened, when, why, and who was involved. The long-term record of every remediation lives in **PostgreSQL** via the audit pipeline, so even if CRDs are removed from the cluster, the complete data is preserved. A `RemediationRequest` can be [reconstructed from audit data](../user-guide/data-lifecycle.md) at any time.
 
 ## Next Steps
 

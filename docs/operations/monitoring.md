@@ -4,12 +4,14 @@ All Kubernaut services expose Prometheus-compatible metrics and standard health 
 
 ## Health Checks
 
-Every service exposes:
+Every service exposes health endpoints. Most services use `/health` and `/ready`; DataStorage uses a nested structure:
 
-| Endpoint | Purpose | Use |
+| Endpoint | Purpose | Notes |
 |---|---|---|
-| `GET /health` | Liveness probe | Kubernetes `livenessProbe` |
-| `GET /ready` | Readiness probe | Kubernetes `readinessProbe` |
+| `GET /health` | General health | All services |
+| `GET /health/live` | Liveness probe | DataStorage |
+| `GET /health/ready` | Readiness probe | DataStorage |
+| `GET /ready` | Readiness probe | Other services |
 
 ## Prometheus Metrics
 

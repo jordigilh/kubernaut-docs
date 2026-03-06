@@ -44,8 +44,8 @@ All 7 Go services plus the auth webhook emit audit events:
 | **Remediation Orchestrator** | `orchestrator.*` | Lifecycle created, phase transitions, child CRD creation |
 | **Workflow Execution** | `workflowexecution.*` | Workflow selected, execution started, execution completed |
 | **Notification** | `notification.*` | Delivery attempted, delivery result |
-| **Effectiveness Monitor** | `effectivenessmonitor.*` | Assessment started, assessment result |
-| **Auth Webhook** | `webhook.*` | Approval decided, block cleared, timeout modified, notification cancelled |
+| **Effectiveness Monitor** | `effectiveness.*` | Component assessments (health, hash, alerts, metrics), scheduling, completion |
+| **Auth Webhook** | `webhook.*`, `workflowexecution.block.cleared` | Approval decided, block cleared, timeout modified, notification cancelled |
 
 ## Operator Attribution
 
@@ -53,8 +53,8 @@ The **admission webhook** captures human identity for all operator-driven action
 
 | Action | Event Type | What's Recorded |
 |---|---|---|
-| Approve/reject remediation | `webhook.approval_decided` | Actor identity, decision, reason |
-| Clear execution block | `webhook.block_cleared` | Actor identity, execution ref |
+| Approve/reject remediation | `webhook.remediationapprovalrequest.decided` | Actor identity, decision, reason |
+| Clear execution block | `workflowexecution.block.cleared` | Actor identity, execution ref |
 | Modify timeout | `webhook.remediationrequest.timeout_modified` | Actor identity, old/new values |
 | Cancel notification | `webhook.notification.cancelled` | Actor identity, notification ref |
 

@@ -71,7 +71,7 @@ kubectl get remediationapprovalrequests -n kubernaut-system
 
 # Approve
 kubectl patch remediationapprovalrequest <name> -n kubernaut-system \
-  --type merge -p '{"status":{"decision":"Approved","reason":"Reviewed and approved"}}'
+  --type merge -p '{"status":{"decision":"Approved","decisionMessage":"Reviewed and approved"}}'
 ```
 
 ## No Workflows Found
@@ -82,7 +82,7 @@ AI Analysis completes but no workflow is selected.
 
 ```bash
 # List available workflows
-curl http://datastorage.kubernaut-system.svc:8080/api/v1/workflows
+curl http://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
 
 # Check workflow labels match the signal
 kubectl get aianalysis <name> -n kubernaut-system -o yaml | grep -A 20 analysisResult
@@ -113,7 +113,7 @@ kubectl logs -n kubernaut-system -l app=notification --tail=100
 kubectl get pods -n kubernaut-system -l app=postgresql
 
 # Is DataStorage healthy?
-kubectl exec -n kubernaut-system deploy/datastorage -- curl -s http://localhost:8080/ready
+kubectl exec -n kubernaut-system deploy/datastorage -- curl -s http://localhost:8080/health/ready
 
 # Check DataStorage logs
 kubectl logs -n kubernaut-system -l app=datastorage --tail=100

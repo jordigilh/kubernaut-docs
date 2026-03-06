@@ -37,12 +37,12 @@ Every stage of the remediation lifecycle emits audit events:
 |---|---|---|
 | **Gateway** | Signal received, scope validated | `gateway.signal.received` |
 | **Signal Processing** | Enrichment completed, classification results | `signalprocessing.enrichment.completed` |
-| **AI Analysis** | Investigation submitted, analysis completed, Rego evaluation, approval decision | `aianalysis.analysis.completed`, `aianalysis.rego.evaluated` |
-| **Orchestrator** | Lifecycle transitions, child CRD creation | `orchestrator.lifecycle.created`, `orchestrator.phase.transition` |
+| **AI Analysis** | Investigation submitted, analysis completed/failed, Rego evaluation, approval decision | `aianalysis.analysis.completed`, `aianalysis.rego.evaluation`, `aianalysis.approval.decision` |
+| **Orchestrator** | Lifecycle transitions, child CRD creation, routing blocks | `orchestrator.lifecycle.created`, `orchestrator.lifecycle.transitioned`, `orchestrator.routing.blocked` |
 | **Workflow Execution** | Workflow selected, execution started/completed | `workflowexecution.selection.completed`, `workflowexecution.execution.started` |
-| **Notification** | Delivery attempted, delivery result | `notification.delivery.attempted` |
-| **Effectiveness Monitor** | Assessment started, assessment result | `effectivenessmonitor.assessment.completed` |
-| **Auth Webhook** | Operator approval, block clearance, timeout modification | `webhook.approval_decided`, `webhook.block_cleared` |
+| **Notification** | Message sent, delivery failure, acknowledgement, escalation | `notification.message.sent`, `notification.message.failed`, `notification.message.acknowledged`, `notification.message.escalated` |
+| **Effectiveness Monitor** | Component assessments (health, hash, alerts, metrics), scheduling, completion | `effectiveness.health.assessed`, `effectiveness.hash.computed`, `effectiveness.alert.assessed`, `effectiveness.metrics.assessed`, `effectiveness.assessment.scheduled`, `effectiveness.assessment.completed` |
+| **Auth Webhook** | Operator approval decisions, notification actions, timeout modifications | `webhook.remediationapprovalrequest.decided`, `webhook.notification.cancelled`, `webhook.notification.acknowledged`, `webhook.remediationrequest.timeout_modified` |
 
 ## Audit Event Structure
 

@@ -51,7 +51,7 @@ sequenceDiagram
         Note over RO: Phase: Executing
     else Rejected
         RAR->>RO: Decision: Rejected
-        Note over RO: Phase: Rejected
+        Note over RO: Phase: Failed
     end
 ```
 
@@ -65,11 +65,11 @@ kubectl get remediationapprovalrequests -n kubernaut-system
 
 # Approve
 kubectl patch remediationapprovalrequest <name> -n kubernaut-system \
-  --type merge -p '{"status":{"decision":"Approved","reason":"RCA looks correct"}}'
+  --type merge -p '{"status":{"decision":"Approved","decisionMessage":"RCA looks correct"}}'
 
 # Reject
 kubectl patch remediationapprovalrequest <name> -n kubernaut-system \
-  --type merge -p '{"status":{"decision":"Rejected","reason":"Wrong root cause identified"}}'
+  --type merge -p '{"status":{"decision":"Rejected","decisionMessage":"Wrong root cause identified"}}'
 ```
 
 ## Approval Context

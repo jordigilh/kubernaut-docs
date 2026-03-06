@@ -8,7 +8,7 @@ The DataStorage service provides a REST API for audit events, workflow catalog m
 ## Base URL
 
 ```
-http://datastorage.kubernaut-system.svc:8080
+http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 ```
 
 ## Endpoints
@@ -31,23 +31,21 @@ http://datastorage.kubernaut-system.svc:8080
 | Method | Path | Description |
 |---|---|---|
 | `POST` | `/api/v1/workflows` | Register a workflow from OCI schema image (`{"schemaImage": "<oci-ref>"}`) |
-| `GET` | `/api/v1/workflows` | List workflow schemas |
-| `GET` | `/api/v1/workflows/{name}` | Get a specific workflow |
-| `GET` | `/api/v1/workflows/search` | Search workflows by labels |
-
-### Action History
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v1/action-histories` | Store action history record |
-| `GET` | `/api/v1/action-histories` | Query action histories |
+| `GET` | `/api/v1/workflows` | List workflows (filter by `status`, `environment`, `priority`, `component`, `workflow_name`) |
+| `GET` | `/api/v1/workflows/{workflow_id}` | Get a specific workflow |
+| `GET` | `/api/v1/workflows/actions` | List available action types |
+| `GET` | `/api/v1/workflows/actions/{action_type}` | Get workflows by action type |
+| `POST` | `/api/v1/workflows/{workflow_id}/disable` | Disable a workflow |
+| `POST` | `/api/v1/workflows/{workflow_id}/enable` | Enable a workflow |
+| `POST` | `/api/v1/workflows/{workflow_id}/deprecate` | Deprecate a workflow |
 
 ### Health
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Liveness probe |
-| `GET` | `/ready` | Readiness probe |
+| `GET` | `/health` | General health check |
+| `GET` | `/health/live` | Liveness probe |
+| `GET` | `/health/ready` | Readiness probe |
 | `GET` | `/metrics` | Prometheus metrics |
 
 ## Authentication

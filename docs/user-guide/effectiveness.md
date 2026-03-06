@@ -82,14 +82,68 @@ remediationorchestrator:
 
 ## Effectiveness Scoring
 
-The assessment produces an effectiveness score that captures:
+The assessment produces a weighted effectiveness score:
 
-- Whether the spec changed as expected
-- Whether the resource is healthy
-- Whether triggering metrics recovered
-- How long the fix took to stabilize
+| Component | Weight | Score Range |
+|---|---|---|
+| **Health** | 40% | 0.0--1.0 (decision tree based on pod conditions) |
+| **Alert** | 35% | 0.0 or 1.0 (binary: alert resolved or not) |
+| **Metrics** | 25% | 0.0--1.0 (average improvement across metrics) |
 
-This data is stored in DataStorage and provided to HolmesGPT as part of the remediation history context, enabling the LLM to consider past effectiveness when selecting workflows for similar incidents.
+When a component is unavailable (e.g., no Prometheus configured), its weight is redistributed to the remaining components.
+
+The hash comparison does not contribute a numeric score -- it provides **drift detection** (did the spec change as expected?).
+
+## Feedback Loop: How Effectiveness Data Influences Future Decisions
+
+The effectiveness assessment is not just a report -- it creates a continuous feedback loop that makes Kubernaut's workflow selection smarter over time.
+
+```mermaid
+flowchart LR
+    RO["RO<br/><small>Captures pre-hash</small>"] --> WFE["WFE<br/><small>Executes workflow</small>"]
+    WFE --> EM["EM<br/><small>Evaluates effectiveness</small>"]
+    EM --> DS["DS<br/><small>Stores audit events</small>"]
+    DS --> HAPI["HAPI<br/><small>Fetches history</small>"]
+    HAPI --> LLM["LLM<br/><small>Avoids past failures</small>"]
+    LLM --> RO
+```
+
+### How EA Data Becomes Remediation History
+
+The Effectiveness Monitor emits typed audit events to DataStorage:
+
+- `effectiveness.health.assessed` -- Pod health status, restart delta, crash loops, OOM
+- `effectiveness.alert.assessed` -- Whether the triggering alert resolved
+- `effectiveness.metrics.assessed` -- CPU/memory before/after, latency, error rate
+- `effectiveness.hash.computed` -- Pre-remediation and post-remediation spec hashes, whether they match
+- `effectiveness.assessment.completed` -- Final assessment reason and duration
+
+The Remediation Orchestrator also emits `remediation.workflow_created` with the pre-remediation spec hash. These events are stored in the `audit_events` table and indexed by `target_resource` and `pre_remediation_spec_hash`.
+
+### How History Is Queried
+
+When the next incident hits the same resource, HAPI calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
+
+### How the Spec Hash Creates a Configuration Fingerprint
+
+- **Pre-remediation hash** (captured by RO before execution) and **post-remediation hash** (captured by EM after stabilization) create a before/after pair
+- When a future incident occurs, HAPI computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
+    - `"preRemediation"` -- Current config matches a previously-remediated state (**regression**)
+    - `"postRemediation"` -- Config unchanged since last remediation
+    - `"none"` -- Config has changed (fresh start)
+
+This allows the LLM to distinguish between "this exact configuration was tried before and it failed" versus "the configuration changed, so previous results may not apply."
+
+### Why This Matters for Operators
+
+The richer the effectiveness data, the better the LLM's future decisions:
+
+- **With AlertManager and Prometheus configured** -- History includes alert resolution status, CPU/memory deltas, error rate changes, and latency improvements. The LLM can see that "RestartPod resolved the alert but CPU usage remained high" and choose a different approach next time.
+- **Without AlertManager/Prometheus** -- History is limited to health checks and hash comparison. The LLM can still detect regressions and track which workflows succeeded or failed, but with less nuance.
+
+Operators should ensure the Effectiveness Monitor has access to AlertManager and Prometheus for the richest possible history data.
+
+For a detailed technical breakdown of how history influences the LLM's workflow selection, see [Investigation Pipeline: How Remediation History Influences the LLM](../architecture/hapi-investigation.md#how-remediation-history-influences-the-llm).
 
 ## Next Steps
 

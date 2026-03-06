@@ -34,7 +34,7 @@ logFormat: json
 maxEventAgeSeconds: 300
 kubeQPS: 50
 kubeBurst: 100
-namespace: "demo-workloads"
+namespace: "{{ .Release.Namespace }}"
 route:
   routes:
     - match:
@@ -58,7 +58,7 @@ receivers:
 
 | Setting | Description |
 |---|---|
-| `namespace` | Kubernetes namespace to watch for events (scope filter) |
+| `namespace` | Kubernetes namespace to watch for events (defaults to the Helm release namespace) |
 | `maxEventAgeSeconds` | Ignore events older than this (prevents replay on restart) |
 | `route.routes[].drop` | Filter rules: drops `Normal` events and Kubernaut's own CRD events to prevent feedback loops |
 | `receivers[].webhook.endpoint` | Gateway endpoint for Kubernetes event signals |

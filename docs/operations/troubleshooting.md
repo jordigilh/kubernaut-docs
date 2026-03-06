@@ -12,10 +12,10 @@ The Orchestrator hasn't picked up the request.
 
 ```bash
 # Is the Orchestrator running?
-kubectl get pods -n kubernaut-system -l app=remediationorchestrator
+kubectl get pods -n kubernaut-system -l app=remediationorchestrator-controller
 
 # Check Orchestrator logs
-kubectl logs -n kubernaut-system -l app=remediationorchestrator --tail=100
+kubectl logs -n kubernaut-system -l app=remediationorchestrator-controller --tail=100
 
 # Is the RR in the correct namespace?
 kubectl get remediationrequests -A
@@ -34,7 +34,7 @@ Signal Processing hasn't completed enrichment.
 kubectl get signalprocessing -n kubernaut-system
 
 # Check SP controller logs
-kubectl logs -n kubernaut-system -l app=signalprocessing --tail=100
+kubectl logs -n kubernaut-system -l app=signalprocessing-controller --tail=100
 ```
 
 **Common causes**: Target resource not found, namespace not labeled with `kubernaut.ai/managed=true`.
@@ -50,7 +50,7 @@ AI Analysis is waiting for HolmesGPT.
 kubectl get aianalysis -n kubernaut-system -o yaml
 
 # Check session status
-kubectl logs -n kubernaut-system -l app=aianalysis --tail=100 | grep session
+kubectl logs -n kubernaut-system -l app=aianalysis-controller --tail=100 | grep session
 
 # Is HolmesGPT healthy?
 kubectl get pods -n kubernaut-system -l app=holmesgpt-api
@@ -99,7 +99,7 @@ kubectl get aianalysis <name> -n kubernaut-system -o yaml | grep -A 20 analysisR
 kubectl get notificationrequests -n kubernaut-system -o yaml
 
 # Check Notification controller logs
-kubectl logs -n kubernaut-system -l app=notification --tail=100
+kubectl logs -n kubernaut-system -l app=notification-controller --tail=100
 ```
 
 **Common causes**: Slack webhook secret not configured, `notification.slack.enabled` is `false`, credential volume mount missing.

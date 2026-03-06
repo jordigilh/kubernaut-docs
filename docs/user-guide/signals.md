@@ -44,12 +44,14 @@ This captures events like `BackOff`, `OOMKilled`, `FailedScheduling`, and `Unhea
 
 ## Signal Types
 
-After ingestion, the Gateway normalizes signal types:
+After ingestion, the Gateway normalizes all signals to a single type:
 
 | Source | Signal Type | Example |
 |---|---|---|
 | AlertManager | `alert` | `KubePodCrashLooping`, `KubePodOOMKilled` |
-| Kubernetes Event | `event` | `BackOff`, `OOMKilled`, `FailedScheduling` |
+| Kubernetes Event | `alert` | `BackOff`, `OOMKilled`, `FailedScheduling` |
+
+Both sources produce signals of type `alert`. Kubernetes events are treated as alerts after normalization.
 
 ## Resource Scope Management
 
@@ -123,7 +125,7 @@ Rego policies evaluate the enriched signal to determine:
 | **Reactive** | Active incident requiring remediation | `KubePodCrashLooping`, `KubePodOOMKilled` |
 | **Proactive** | Predicted issue before user impact | `PredictDiskFull`, `PredictMemoryExhaustion` (via `predict_linear()`) |
 
-Signal mode affects workflow selection and urgency evaluation during AI analysis.
+Signal mode determines which prompt variant HolmesGPT uses during investigation, affecting the framing of the analysis (incident response vs. preventive assessment).
 
 ## Next Steps
 

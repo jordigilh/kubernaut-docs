@@ -1,18 +1,19 @@
 # Data Lifecycle
 
-Kubernaut has a two-tier data model: **ephemeral CRDs** in Kubernetes for active remediations, and **persistent audit data** in PostgreSQL for long-term compliance and analysis.
+Kubernaut has a two-tier data model: **CRDs** in Kubernetes for active remediations, and **persistent audit data** in PostgreSQL for long-term compliance and analysis.
 
 ## CRD Retention
 
-Custom Resources (CRDs) represent the active state of a remediation. Once a `RemediationRequest` reaches a terminal phase (Completed, Failed, TimedOut, Skipped, or Cancelled), the CRD is retained for **24 hours** and then automatically cleaned up.
+Custom Resources (CRDs) represent the active state of a remediation. The CRD type definition includes a `retentionExpiryTime` field intended for automatic cleanup after terminal phases, but **CRD TTL enforcement is not yet implemented** — terminal CRDs remain in Kubernetes indefinitely until manually deleted.
+
+!!! note "Planned Feature"
+    Automatic CRD cleanup (24h TTL after terminal phase) is planned but depends on full CRD reconstruction support being implemented first, ensuring no data loss.
 
 This means:
 
 - **Active remediations** are always visible via `kubectl get remediationrequests`
-- **Completed remediations** remain visible for 24 hours for debugging
-- **After 24 hours**, the CRD is deleted — but nothing is lost
-
-The 24-hour window is controlled by the `retentionExpiryTime` field on the RemediationRequest status, which is set to `now + 24h` when the remediation reaches a terminal phase.
+- **Completed remediations** persist until manually deleted
+- **No data is lost** because every stage is persisted as audit events in PostgreSQL
 
 ## PostgreSQL as the System of Record
 
@@ -20,8 +21,8 @@ While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every serv
 
 | Storage | Lifetime | Purpose |
 |---|---|---|
-| Kubernetes CRDs | 24 hours after completion | Active state, `kubectl` visibility, controller reconciliation |
-| PostgreSQL `audit_events` | 7 years (default) | Compliance, reconstruction, analytics, post-mortems |
+| Kubernetes CRDs | Indefinite (TTL cleanup planned) | Active state, `kubectl` visibility, controller reconciliation |
+| PostgreSQL `audit_events` | 7 years (configured, deletion deferred to v1.1) | Compliance, reconstruction, analytics, post-mortems |
 
 ## RemediationRequest Reconstruction
 
@@ -90,7 +91,7 @@ graph TB
     end
 
     Active -->|audit events| AE
-    Active -->|24h TTL| DEL[Deleted]
+    Active -->|manual cleanup| DEL[Deleted]
     AE -->|reconstruction| REBUILD[Rebuilt CRD]
 ```
 

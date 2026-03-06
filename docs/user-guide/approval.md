@@ -76,11 +76,12 @@ kubectl patch remediationapprovalrequest <name> -n kubernaut-system \
 
 When a `RemediationApprovalRequest` is created, it includes rich context to help the operator decide:
 
-- **Root cause analysis** — The LLM's investigation results
-- **Selected workflow** — Which remediation was proposed
-- **Confidence score** — How confident the system is
-- **Target resource** — What will be modified
-- **Risk assessment** — Potential impact of the remediation
+- **Investigation summary** — The LLM's root cause analysis results
+- **Recommended workflow** — Which remediation was proposed and why
+- **Confidence score and level** — How confident the system is
+- **Why approval is required** — The policy reason for requiring human review
+- **Evidence collected** — Supporting data from the investigation
+- **Alternatives considered** — Other workflows the system evaluated
 
 ## Audit Trail
 

@@ -119,11 +119,13 @@ The Workflow Execution controller validates these before starting the Job/Pipeli
 
 ### Workflow Selection
 
-During AI Analysis, the LLM queries the workflow catalog via DataStorage and selects a workflow based on:
+During AI Analysis, HolmesGPT uses a **3-step LLM-driven discovery protocol** to select a workflow:
 
-1. **Label overlap** — How many labels match the enriched signal
-2. **Confidence score** — The LLM's confidence that this workflow addresses the root cause
-3. **Version preference** — Newer versions are preferred when multiple versions match
+1. **Action discovery** — The LLM queries DataStorage for available action types relevant to the root cause
+2. **Candidate retrieval** — DataStorage returns matching workflows ordered by label overlap score (only the latest version of each workflow is considered)
+3. **LLM selection** — The LLM makes the final selection based on workflow descriptions, the enriched signal context, and remediation history
+
+DataStorage scores candidates by label and infrastructure label overlap, but these scores are internal ordering — the LLM sees the descriptions and context, and makes the final decision.
 
 ## Execution Engines
 

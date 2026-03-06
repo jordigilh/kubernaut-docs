@@ -26,14 +26,18 @@ sequenceDiagram
     EM->>DS: Store audit event
 ```
 
-## Assessment Dimensions
+## Assessment Components
 
-| Dimension | Method | What It Checks |
+The Effectiveness Monitor evaluates four components:
+
+| Component | Method | What It Checks |
 |---|---|---|
-| **Spec Hash** | Compare pre/post resource spec | Did the resource spec change as expected? |
-| **Health Status** | Kubernetes conditions | Are all pods ready, deployment available? |
-| **Metric Recovery** | Prometheus / AlertManager (optional) | Did the triggering metric recover? |
-| **Validity Window** | Time-based check | Is the assessment still within the validity window? |
+| **Health** | Kubernetes conditions (Pod Ready, Deployment Available) | Is the target resource healthy? |
+| **Alert** | AlertManager query (if configured) | Has the triggering alert resolved? |
+| **Metrics** | Prometheus query (if configured) | Have the relevant metrics recovered? |
+| **Hash** | Compare pre/post resource spec hash | Did the resource spec change as expected? |
+
+A **validity window** constrains when the assessment is meaningful — the monitor waits for the stabilization period before evaluating, ensuring transient states don't produce false results.
 
 ### Spec Hash Comparison
 
@@ -85,7 +89,7 @@ The assessment produces an effectiveness score that captures:
 - Whether triggering metrics recovered
 - How long the fix took to stabilize
 
-This data feeds into **continuous learning** — over time, Kubernaut tracks which workflows are most effective for which incident types, enabling better workflow selection.
+This data is stored in DataStorage and provided to HolmesGPT as part of the remediation history context, enabling the LLM to consider past effectiveness when selecting workflows for similar incidents.
 
 ## Next Steps
 

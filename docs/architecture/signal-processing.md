@@ -63,7 +63,7 @@ Rego policies evaluate the enriched signal to produce structured labels:
 | Policy | Output | Description |
 |---|---|---|
 | `environment` | `production`, `staging`, `development` | Based on namespace labels |
-| `severity` | `critical`, `warning`, `info` | Based on alert labels and resource state |
+| `severity` | `critical`, `high`, `medium`, `low`, `unknown` | Normalized from external severity via Rego (DD-SEVERITY-001 v1.1) |
 | `priority` | `high`, `medium`, `low` | Business impact based on environment + severity |
 | `business` | Custom labels | Organization-specific classification |
 | `customlabels` | Custom labels | Extension point for additional classification |
@@ -84,7 +84,7 @@ Signal mode is determined by a **YAML-based configuration** (`proactive-signal-m
 
 Deduplication is handled at two levels:
 
-1. **Gateway level** — CRD-based check before creating a RemediationRequest
+1. **Gateway level** — The Gateway computes an **owner-chain-based fingerprint** (`SHA256(namespace:Kind:name)`) for the top-level owning resource (e.g., Deployment, not Pod). It then performs a CRD-based check: if an active RemediationRequest with the same fingerprint exists, the signal is dropped. The owner chain is resolved via a metadata informer cache with direct API (`apiReader`) fallbacks: on cache miss (#282) the resolver fetches the resource directly; on stale cache entries missing ownerReferences (#284) the resolver re-verifies via the direct API before deciding whether the resource is a genuine standalone Pod or a stale entry. If the resource is confirmed deleted, the signal is dropped.
 2. **Signal Processing level** — Additional dedup based on enriched context (same root cause, different symptoms)
 
 ## Data Flow

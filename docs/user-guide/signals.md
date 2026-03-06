@@ -80,9 +80,20 @@ metadata:
     kubernaut.ai/managed: "true"
 ```
 
+## Fingerprinting
+
+Before creating a RemediationRequest, the Gateway computes a **signal fingerprint** — a SHA256 hash based on the top-level owning resource (e.g., `Deployment`), not the individual Pod. This ensures that alerts from different Pods in the same Deployment produce the same fingerprint, enabling accurate deduplication.
+
+The Gateway resolves the owner chain using a metadata-only informer cache. Two direct API fallback mechanisms handle race conditions during rollout restarts:
+
+1. **Cache miss** (#282) — When a newly created pod isn't in the cache yet, the resolver falls back to a direct API read (`apiReader`) to fetch the resource and continue the owner chain walk.
+2. **Stale cache** (#284) — When the cache returns a resource without controller ownerReferences (e.g., a terminating pod whose cached metadata lost its ownerRef), the resolver **re-fetches via the direct API** to verify. If the fresh metadata includes ownerReferences, the chain continues normally. If the resource genuinely has no owner (standalone Pod), the pod-level fingerprint is accepted. If the resource no longer exists, the signal is dropped.
+
+This trust-but-verify approach prevents duplicate RemediationRequests caused by stale pod-level fingerprints while still supporting legitimate standalone Pods.
+
 ## Deduplication
 
-The Gateway prevents duplicate remediations for the same issue using **CRD-based deduplication**. Before creating a new RemediationRequest, it checks whether an active (non-terminal) RemediationRequest already exists for the same target resource and alert name.
+The Gateway prevents duplicate remediations for the same issue using **CRD-based deduplication**. Before creating a new RemediationRequest, it checks whether an active (non-terminal) RemediationRequest already exists with the same signal fingerprint.
 
 If a duplicate is detected, the new signal is dropped and logged.
 
@@ -100,7 +111,7 @@ After the Gateway creates a `RemediationRequest`, the Orchestrator creates a `Si
 
 Rego policies evaluate the enriched signal to determine:
 
-- **Severity** — Critical, warning, or informational
+- **Severity** — `critical`, `high`, `medium`, `low`, or `unknown`
 - **Priority** — Business impact and urgency
 - **Environment** — Production, staging, development
 - **Signal mode** — Reactive or proactive

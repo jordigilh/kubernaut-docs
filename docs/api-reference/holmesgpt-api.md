@@ -8,8 +8,10 @@ HolmesGPT is a **Python FastAPI** service that wraps LLM calls with live Kuberne
 ## Base URL
 
 ```
-http://holmesgpt-api.kubernaut-system.svc:8080
+http://holmesgpt-api.kubernaut-system.svc.cluster.local:8080
 ```
+
+Internal services use the short form `http://holmesgpt-api:8080` when communicating within the same namespace.
 
 ## Session-Based Async Pattern
 

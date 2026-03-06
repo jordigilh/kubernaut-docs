@@ -151,7 +151,7 @@ Enriches, classifies, and categorizes the incoming signal using Rego policies an
 | `completionTime` | `*Time` | When processing completed |
 | `kubernetesContext` | `*KubernetesContext` | Enrichment results (owner chain, namespace context, resource state) |
 | `environmentClassification` | `*EnvironmentClassification` | Environment tier (production, staging, development) |
-| `priorityAssignment` | `*PriorityAssignment` | Business priority (high, medium, low) |
+| `priorityAssignment` | `*PriorityAssignment` | Business priority (P0, P1, P2, P3) based on Rego policy or severity-based fallback |
 | `businessClassification` | `*BusinessClassification` | Organization-specific classification |
 | `severity` | `string` | Normalized severity from Rego policy. Enum: `critical`, `high`, `medium`, `low`, `unknown` |
 | `signalMode` | `string` | Signal mode. Enum: `reactive`, `proactive` |
@@ -306,11 +306,11 @@ Channel selection is driven entirely by config-based routing rules (Alertmanager
 !!! warning "Planned removal"
     The `recipients` field ([#276](https://github.com/jordigilh/kubernaut/issues/276)) is present in the CRD but is not used for routing or delivery in v1.0. It will be removed in a future release. Channel selection is determined solely by routing rules in the `notification-routing-config` ConfigMap.
 
-### Supported Channels
+### Channel Types
 
-`email`, `slack`, `teams`, `sms`, `webhook`, `console`, `file`, `log`
+The CRD schema accepts: `email`, `slack`, `teams`, `sms`, `webhook`, `console`, `file`, `log`
 
-PagerDuty is delivered via the `webhook` channel type.
+**Implemented in v1.0**: `console`, `file`, `log`, `slack`. The remaining channel types (`email`, `teams`, `sms`, `webhook`) are defined in the schema but do not have delivery implementations yet. PagerDuty delivery is planned via the `webhook` channel type.
 
 ### Status
 

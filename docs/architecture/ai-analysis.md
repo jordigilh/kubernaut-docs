@@ -75,13 +75,14 @@ If either timeout expires, the AIAnalysis transitions to `Failed`.
 
 ## HolmesGPT Investigation
 
-HolmesGPT is a Python FastAPI service that wraps LLM calls with live Kubernetes access. During investigation, it:
+HolmesGPT is a Python FastAPI service that orchestrates LLM-driven investigation with live Kubernetes access and configurable observability toolsets. During investigation, it:
 
 1. **Reads the enriched signal** — Alert details, target resource, namespace context
-2. **Runs kubectl commands** — Inspects pod logs, events, resource limits, and conditions
+2. **Investigates using K8s tools** — Inspects pod logs, events, resource state, and live metrics via `kubectl`; optionally queries Prometheus, Grafana Loki/Tempo, and other configured toolsets
 3. **Produces a root cause analysis** — Structured explanation of what went wrong
-4. **Discovers workflows via DataStorage** — Uses the WorkflowDiscoveryAPI three-step protocol: `list_available_actions` → `list_workflows_by_action_type` → `get_workflow_by_id` (HolmesGPT calls DataStorage directly; the AA controller is not involved in this step)
-5. **Selects a workflow** — Based on label overlap and confidence scoring
+4. **Resolves the target resource** — Calls `get_resource_context` to resolve the owner chain, compute a spec hash, fetch **remediation history** (past outcomes and effectiveness scores from DataStorage), and detect **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
+5. **Discovers workflows via DataStorage** — The LLM uses a three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).
+6. **LLM selects a workflow** — Based on workflow descriptions (`what`, `whenToUse`, `whenNotToUse`), detected infrastructure context, and remediation history
 
 ## Response Processing
 

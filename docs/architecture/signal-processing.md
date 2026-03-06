@@ -17,9 +17,9 @@ graph LR
 | Phase | Description |
 |---|---|
 | `Pending` | CRD created by Orchestrator, awaiting pickup |
-| `Enriching` | Gathering Kubernetes context for the target resource |
-| `Classifying` | Evaluating Rego policies for severity, priority, environment |
-| `Categorizing` | Determining signal mode (reactive vs proactive) |
+| `Enriching` | Gathering Kubernetes context (owner chain, namespace, workload) and custom labels (Rego) |
+| `Classifying` | Evaluating Rego policies for environment, priority, severity, and signal mode |
+| `Categorizing` | Business classification (business unit, criticality, SLA requirement) |
 | `Completed` | Enrichment complete, results stored in status |
 | `Failed` | An error occurred during processing |
 
@@ -44,17 +44,19 @@ This identifies the resource to remediate (e.g., the Deployment, not the individ
 
 Extracts metadata from the target namespace:
 
+- Namespace name
 - Namespace labels (environment, team, tier)
 - Namespace annotations
-- Resource quotas and limits
 
-### Resource State
+### Workload Details
 
-Captures the current state of the target resource:
+Captures metadata about the target workload:
 
-- Pod conditions and container statuses
-- Recent events (Warning events in the last hour)
-- Resource requests and limits
+- Kind and name
+- Labels and annotations
+
+!!! note "Operational details fetched by HAPI"
+    Pod conditions, container statuses, events, and resource requests/limits are **not** captured by Signal Processing. HolmesGPT fetches these on demand via `kubectl` during the AI investigation phase.
 
 ## Classification (Rego Policies)
 
@@ -64,7 +66,7 @@ Rego policies evaluate the enriched signal to produce structured labels:
 |---|---|---|
 | `environment` | `production`, `staging`, `development` | Based on namespace labels |
 | `severity` | `critical`, `high`, `medium`, `low`, `unknown` | Normalized from external severity via Rego (DD-SEVERITY-001 v1.1) |
-| `priority` | `high`, `medium`, `low` | Business impact based on environment + severity |
+| `priority` | `P0`, `P1`, `P2`, `P3` | Business impact based on environment + severity composite score |
 | `business` | Custom labels | Organization-specific classification |
 | `customlabels` | Custom labels | Extension point for additional classification |
 
@@ -82,10 +84,9 @@ Signal mode is determined by a **YAML-based configuration** (`proactive-signal-m
 
 ## Deduplication
 
-Deduplication is handled at two levels:
+Deduplication is handled entirely at the **Gateway level** — Signal Processing does not perform deduplication.
 
-1. **Gateway level** — The Gateway computes an **owner-chain-based fingerprint** (`SHA256(namespace:Kind:name)`) for the top-level owning resource (e.g., Deployment, not Pod). It then performs a CRD-based check: if an active RemediationRequest with the same fingerprint exists, the signal is dropped. The owner chain is resolved via a metadata informer cache with direct API (`apiReader`) fallbacks: on cache miss (#282) the resolver fetches the resource directly; on stale cache entries missing ownerReferences (#284) the resolver re-verifies via the direct API before deciding whether the resource is a genuine standalone Pod or a stale entry. If the resource is confirmed deleted, the signal is dropped.
-2. **Signal Processing level** — Additional dedup based on enriched context (same root cause, different symptoms)
+The Gateway computes an **owner-chain-based fingerprint** (`SHA256(namespace:Kind:name)`) for the top-level owning resource (e.g., Deployment, not Pod). It then performs a CRD-based check: if an active RemediationRequest with the same fingerprint exists in a non-terminal phase, the signal is deduplicated. The owner chain is resolved via a metadata informer cache with direct API (`apiReader`) fallbacks: on cache miss (#282) the resolver fetches the resource directly; on stale cache entries missing ownerReferences (#284) the resolver re-verifies via the direct API before deciding whether the resource is a genuine standalone Pod or a stale entry. If the resource is confirmed deleted, the signal is dropped.
 
 ## Data Flow
 

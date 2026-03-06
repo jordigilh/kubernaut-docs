@@ -53,14 +53,14 @@ All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespa
 
 ## Parameter Injection
 
-Parameters from the workflow schema and RemediationRequest are injected as environment variables into the Job/PipelineRun:
+The executor injects one system variable and passes through all parameters from the workflow selection:
 
 | Variable | Source |
 |---|---|
-| `NAMESPACE` | Target namespace from RemediationRequest |
-| `RESOURCE_NAME` | Target resource name |
-| `ALERT_NAME` | Triggering alert |
-| Custom | Workflow schema parameters |
+| `TARGET_RESOURCE` | Target resource identifier from `wfe.Spec.TargetResource` (system-injected) |
+| Custom parameters | All entries from `wfe.Spec.Parameters` — these come from the LLM's workflow selection (e.g., `TARGET_NAMESPACE`, `TARGET_DEPLOYMENT`, `POD_NAME`) and are defined in the workflow schema |
+
+Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables into the container (for Jobs) or as Tekton params (for PipelineRuns).
 
 ## Phases
 
@@ -69,7 +69,7 @@ Parameters from the workflow schema and RemediationRequest are injected as envir
 | `Pending` | CRD created, awaiting execution |
 | `Running` | Job or PipelineRun is active |
 | `Completed` | Execution succeeded |
-| `Failed` | Execution failed |
+| `Failed` | Execution failed (dependency validation failure, Job/PipelineRun failure, or timeout) |
 
 ## Next Steps
 

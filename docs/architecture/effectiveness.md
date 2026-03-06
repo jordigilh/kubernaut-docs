@@ -32,14 +32,20 @@ gantt
 
 These delays account for **asynchronous propagation** — not all changes take effect immediately.
 
-## Assessment Dimensions
+## Assessment Components
 
-| Dimension | Method | Outcome |
-|---|---|---|
-| **Spec Hash** | Compare pre/post hash of target resource spec | Changed (expected) vs unchanged |
-| **Health Status** | Check Kubernetes conditions | Healthy / degraded / unhealthy |
-| **Metric Recovery** | Query Prometheus/AlertManager (optional) | Alert resolved / still firing |
-| **Validity Window** | Time-based check | Assessment within valid window |
+The EM evaluates four independent components, each with its own scorer:
+
+| Component | Method | Score | Source |
+|---|---|---|---|
+| **Health** | K8s pod readiness, restarts, CrashLoopBackOff, OOMKilled | 0.0–1.0 (decision tree) | Kubernetes API |
+| **Alert** | Check if the triggering alert is resolved | 0.0 or 1.0 (binary) | AlertManager API |
+| **Metrics** | Pre/post metric comparison (improvement ratio) | 0.0–1.0 (average per metric) | Prometheus |
+| **Hash** | Compare pre/post spec hash of target resource | Drift detection (no numeric score) | Kubernetes API + DataStorage |
+
+DataStorage computes a **weighted overall score**: health 40%, alert 35%, metrics 25% (missing components have their weight redistributed).
+
+A **validity window** constrains the assessment timeline — all checks must complete before the `ValidityDeadline` (derived from stabilization and propagation delays). If the deadline passes, the assessment completes with partial results.
 
 ## Data Sources
 

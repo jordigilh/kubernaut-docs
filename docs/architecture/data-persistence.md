@@ -85,7 +85,7 @@ Partitioning provides:
 
 ## RemediationRequest Reconstruction
 
-The DataStorage service can rebuild a complete `RemediationRequest` from audit events — even after the CRD has expired (24h TTL).
+The DataStorage service can rebuild a complete `RemediationRequest` from audit events — even after the CRD has been removed from the cluster.
 
 ### Endpoint
 

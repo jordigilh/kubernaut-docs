@@ -55,16 +55,29 @@ detectedLabels:
 
 These are matched against `DetectedLabels` produced by the HAPI `LabelDetector` during post-RCA analysis (ADR-056). They come from the investigation context, not from Signal Processing.
 
-## Scoring
+## Scoring and Selection
 
-When multiple workflows match, the AI evaluates each candidate and assigns a confidence score based on:
+Workflow selection involves two layers:
 
-1. **Action type alignment** — How well the action type matches the root cause analysis
-2. **Label specificity** — More specific label matches rank higher than wildcards
-3. **Detected label overlap** — Infrastructure-awareness alignment
-4. **Historical effectiveness** — Past success rates for this workflow on similar incidents
+### DataStorage Ordering
 
-The workflow with the highest confidence score is selected.
+DataStorage computes a `final_score` for each candidate to **order** results (DD-WORKFLOW-004 v1.5):
+
+- **Base score**: 5.0 / 10.0
+- **Detected label boost**: Exact matches on infrastructure labels (e.g., `gitOpsManaged` +0.10, `pdbProtected` +0.05)
+- **Custom label boost**: Matches on signal context labels
+- **Penalty**: GitOps mismatch (query expects GitOps but workflow is not GitOps-aware)
+
+Scores are used **only for ordering** — they are stripped from the response and never exposed to the LLM.
+
+### LLM Selection
+
+The LLM makes the final selection decision based on:
+
+1. **Workflow descriptions** — `what`, `whenToUse`, `whenNotToUse`, and preconditions
+2. **Detected infrastructure context** — e.g., prefer git-based workflows when `gitOpsManaged=true`
+3. **Remediation history** — Avoid workflows that recently failed on the same target
+4. **Root cause alignment** — How well the action type and parameters match the RCA
 
 ## Confidence Thresholds
 

@@ -15,8 +15,8 @@ Every inter-service interaction in the remediation pipeline uses Kubernetes CRDs
 
 The only exceptions are:
 
-- **DataStorage** — Called via REST API for audit events and workflow catalog queries
-- **HolmesGPT API** — Called via REST API (session-based async) for LLM interactions
+- **DataStorage** — Called via REST API for audit events, workflow catalog, remediation history, and effectiveness data
+- **HolmesGPT API** — Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
 
 ### Orchestrator Pattern
 
@@ -42,12 +42,12 @@ Each service has a single responsibility:
 |---|---|
 | Gateway | Signal ingestion and scope validation |
 | Signal Processing | Context enrichment and classification |
-| AI Analysis | Root cause investigation and workflow selection |
+| AI Analysis | Root cause investigation via HolmesGPT, Rego approval evaluation |
 | Workflow Execution | Running remediation actions |
 | Notification | Delivering alerts to operators |
 | Effectiveness Monitor | Post-remediation health assessment |
 | DataStorage | Persistent storage (audit, workflows, history) |
-| HolmesGPT API | LLM wrapper with live `kubectl` access |
+| HolmesGPT API | LLM-driven investigation with K8s tools, configurable observability toolsets, infrastructure label detection, remediation history, and workflow discovery |
 | Orchestrator | Lifecycle coordination across all services |
 
 ## Service Topology
@@ -135,9 +135,10 @@ An internal admission webhook validates and audits:
 
 ### Authentication
 
-- **Service-to-service**: SubjectAccessReview middleware authentication
-- **Gateway ingress**: Network-level security (NetworkPolicies + TLS)
-- **DataStorage**: Kubernetes TokenReview authentication
+- **DataStorage**: Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
+- **Gateway**: No authentication middleware ([GitHub #291](https://github.com/jordigilh/kubernaut/issues/291) — security gap; auth middleware exists in code but is not wired in production)
+- **NetworkPolicies**: Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
+- **TLS**: Not configured for internal service-to-service traffic in v1.0
 
 ## Next Steps
 

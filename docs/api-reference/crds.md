@@ -1,9 +1,11 @@
 # Custom Resources (CRDs)
 
-Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. This page provides the spec, status, and phase reference for each.
+Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. All CRD specs are **immutable after creation** (ADR-001).
 
 !!! note "Authoritative Source"
-    The CRD type definitions in the [source code](https://github.com/jordigilh/kubernaut/tree/main/api) are the authoritative reference. This page is derived from those definitions.
+    The Go type definitions in [`api/`](https://github.com/jordigilh/kubernaut/tree/main/api) and the generated CRD manifests in `config/crd/bases/` are the authoritative reference. This page documents the key fields; see the CRD YAML for the complete schema including all nested types and validation constraints.
+
+---
 
 ## RemediationRequest
 
@@ -11,42 +13,76 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Gateway
 **Watched by**: Remediation Orchestrator
 
+The root CRD for every remediation lifecycle. All other CRDs are children of a RemediationRequest.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `targetResource` | `ResourceIdentifier` | The Kubernetes resource that triggered the signal (namespace, name, kind, apiVersion) |
-| `signalName` | `string` | Alert or event name (e.g., `KubePodCrashLooping`) |
-| `signalFingerprint` | `string` | SHA256 fingerprint for deduplication (immutable) |
-| `signalType` | `string` | Signal type (`alert` or `event`) |
-| `signalSource` | `string` | Source adapter (e.g., `prometheus`, `kubernetes-event`) |
-| `severity` | `string` | Signal severity |
+| `targetResource` | `ResourceIdentifier` | Target Kubernetes resource (`kind`, `name`, `namespace`) |
+| `signalName` | `string` | Alert name (e.g., `KubePodCrashLooping`). Max 253 chars |
+| `signalFingerprint` | `string` | SHA256 fingerprint for deduplication. 64-char hex, immutable |
+| `signalType` | `string` | Always `alert` (adapter-specific values are deprecated) |
+| `signalSource` | `string` | Source adapter (e.g., `prometheus-adapter`, `k8s-event-adapter`) |
+| `severity` | `string` | External severity from signal provider (normalized by SP via Rego) |
+| `targetType` | `string` | Target system type. Enum: `kubernetes`, `aws`, `azure`, `gcp`, `datadog` |
 | `firingTime` | `*Time` | When the signal first fired |
-| `signalLabels` | `map[string]string` | Original signal labels |
-| `providerData` | `string` | Raw provider data |
-
-!!! note
-    See `config/crd/bases/kubernaut.ai_remediationrequests.yaml` for the complete field reference including `signalAnnotations`, `originalPayload`, `targetType`, `deduplication`, and storm-related fields.
+| `receivedTime` | `Time` | When the Gateway received the signal |
+| `signalLabels` | `map[string]string` | Signal labels extracted from provider data |
+| `signalAnnotations` | `map[string]string` | Signal annotations extracted from provider data |
+| `providerData` | `string` | Raw provider-specific fields (JSON string) |
+| `originalPayload` | `string` | Complete original webhook payload (for audit/debug) |
+| `deduplication` | `DeduplicationInfo` | Deprecated (DD-GATEWAY-011): moved to `status.deduplication` |
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
-| `overallPhase` | `string` | Current lifecycle phase |
+| `overallPhase` | `RemediationPhase` | Current lifecycle phase (see Phases below) |
+| `message` | `string` | Human-readable status description |
+| `outcome` | `string` | Result when completed. Enum: `Remediated`, `NoActionRequired`, `ManualReviewRequired`, `VerificationTimedOut` |
+| `startTime` | `*Time` | When remediation started |
+| `completedAt` | `*Time` | When the remediation completed |
+| `retentionExpiryTime` | `*Time` | When the CRD should be cleaned up. Not enforced in v1.0 ([#265](https://github.com/jordigilh/kubernaut/issues/265)) |
+| **Child CRD References** | | |
 | `signalProcessingRef` | `*ObjectReference` | Reference to child SignalProcessing CRD |
 | `aiAnalysisRef` | `*ObjectReference` | Reference to child AIAnalysis CRD |
 | `workflowExecutionRef` | `*ObjectReference` | Reference to child WorkflowExecution CRD |
-| `blockReason` | `string` | Why the RR is blocked (if applicable) |
+| `effectivenessAssessmentRef` | `*ObjectReference` | Reference to child EffectivenessAssessment CRD |
+| `notificationRequestRefs` | `[]ObjectReference` | References to all notification CRDs created for this remediation |
+| **Blocked Phase Tracking** | | |
+| `blockReason` | `string` | Why the RR is blocked. Values: `ConsecutiveFailures`, `ResourceBusy`, `RecentlyRemediated`, `ExponentialBackoff`, `DuplicateInProgress`, `UnmanagedResource`, `IneffectiveChain` |
 | `blockMessage` | `string` | Human-readable block description |
-| `blockedUntil` | `*Time` | When the block expires |
+| `blockedUntil` | `*Time` | When time-based block expires (nil for event-based blocks) |
+| `blockingWorkflowExecution` | `string` | WFE causing the block (for `ResourceBusy`, `RecentlyRemediated`, `ExponentialBackoff`) |
+| **Duplicate Tracking** | | |
+| `duplicateOf` | `string` | Parent RR name when this is a duplicate |
+| `duplicateCount` | `int` | Number of duplicate RRs skipped for this RR |
+| `duplicateRefs` | `[]string` | Names of skipped duplicate RRs |
+| **Failure / Timeout Tracking** | | |
+| `failurePhase` | `*string` | Which phase failed (e.g., `ai_analysis`, `workflow_execution`) |
+| `failureReason` | `*string` | Human-readable failure reason |
+| `timeoutPhase` | `*string` | Which phase timed out |
+| `timeoutTime` | `*Time` | When timeout occurred |
+| `requiresManualReview` | `bool` | Requires operator intervention (exhausted retries, execution failure, low confidence) |
+| **Exponential Backoff** | | |
+| `consecutiveFailureCount` | `int32` | How many times this fingerprint has failed consecutively |
+| `nextAllowedExecution` | `*Time` | When retry is allowed after backoff (1m, 2m, 4m, 8m, cap 10m) |
+| **Skip Tracking** | | |
+| `skipReason` | `string` | Why remediation was skipped. Values: `ResourceBusy`, `RecentlyRemediated`, `ExponentialBackoff`, `ExhaustedRetries`, `PreviousExecutionFailed` |
+| `skipMessage` | `string` | Human-readable skip details |
+| **Operational** | | |
+| `deduplication` | `*DeduplicationStatus` | Signal deduplication tracking (owned by Gateway) |
+| `preRemediationSpecHash` | `string` | Spec hash before remediation (immutable once set, used by EM for drift detection) |
+| `notificationStatus` | `string` | Notification lifecycle. Enum: `Pending`, `InProgress`, `Sent`, `Failed`, `Cancelled` |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
-| `completedAt` | `*Time` | When the remediation completed |
-| `retentionExpiryTime` | `*Time` | When the CRD should be cleaned up (24h after completion) |
-| `timeoutConfig` | `TimeoutConfig` | Timeout settings for the remediation |
+
+!!! note
+    See `config/crd/bases/kubernaut.ai_remediationrequests.yaml` for additional fields including per-phase start times (`processingStartTime`, `analyzingStartTime`, `executingStartTime`), timeout configuration, and audit attribution (`lastModifiedBy`, `lastModifiedAt`).
 
 ### Phases
 
-`Pending` → `Processing` → `Analyzing` → `AwaitingApproval` → `Executing` → `Completed` / `Failed` / `Blocked` / `TimedOut` / `Skipped` / `Cancelled`
+`Pending` → `Processing` → `Analyzing` → `AwaitingApproval` → `Executing` → `Verifying` → `Completed` / `Failed` / `Blocked` / `TimedOut` / `Skipped` / `Cancelled`
 
 ---
 
@@ -56,22 +92,37 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: Remediation Orchestrator (RAR audit controller)
 
+Created when AI analysis confidence is below the auto-approve threshold (typically 0.6–0.79) or when Rego policy requires human approval.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
-| `analysisContext` | `AnalysisContext` | RCA results and workflow recommendation |
-| `confidenceScore` | `float64` | AI confidence score |
+| `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest (owner) |
+| `aiAnalysisRef` | `ObjectRef` | Lightweight reference to the AIAnalysis (name only) |
+| `confidence` | `float64` | AI confidence score (0.0–1.0) |
+| `confidenceLevel` | `string` | Derived level. Enum: `low`, `medium`, `high` |
+| `reason` | `string` | Why approval is required |
+| `recommendedWorkflow` | `RecommendedWorkflowSummary` | Workflow ID, version, OCI bundle, rationale |
+| `investigationSummary` | `string` | Investigation summary from HolmesGPT |
+| `evidenceCollected` | `[]string` | Evidence gathered during investigation |
+| `recommendedActions` | `[]ApprovalRecommendedAction` | Recommended actions with rationale |
+| `alternativesConsidered` | `[]ApprovalAlternative` | Alternative approaches with pros/cons |
+| `whyApprovalRequired` | `string` | Detailed explanation |
+| `policyEvaluation` | `*ApprovalPolicyEvaluation` | Rego policy evaluation results (policyName, matchedRules, decision) |
+| `requiredBy` | `Time` | Approval deadline (default: 15m, configurable per hierarchy) |
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
-| `decision` | `string` | `Approved` or `Rejected` |
-| `reason` | `string` | Human-provided reason |
-| `decidedBy` | `string` | Operator identity (from admission webhook) |
+| `decision` | `ApprovalDecision` | `Approved`, `Rejected`, `Expired`, or empty (pending) |
+| `decidedBy` | `string` | Operator identity or `system` (for timeout) |
 | `decidedAt` | `*Time` | When the decision was made |
+| `decisionMessage` | `string` | Optional message from decision maker |
+| `expired` | `bool` | Whether the request has expired |
+| `timeRemaining` | `string` | Human-readable time until expiration |
+| `conditions` | `[]Condition` | Standard Kubernetes conditions (`Approved`, `Rejected`, `Expired`) |
 
 ---
 
@@ -81,20 +132,31 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: Signal Processing
 
+Enriches, classifies, and categorizes the incoming signal using Rego policies and Kubernetes context.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
 | `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
-| `signal` | `Signal` | Signal data to enrich |
-| `enrichmentConfig` | `EnrichmentConfig` | Enrichment settings (includes enrichment timeout and cache TTL) |
+| `signal` | `SignalData` | Signal data copied from RR for self-contained processing (fingerprint, name, severity, type, source, targetType, targetResource, labels, annotations, firingTime, receivedTime, providerData) |
+| `enrichmentConfig` | `EnrichmentConfig` | Enrichment toggles: `enableClusterState`, `enableMetrics`, `enableHistorical`, `timeout` |
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
 | `phase` | `string` | Current processing phase |
-| `enrichedData` | `EnrichedData` | Enrichment results (owner chain, namespace context, classification) |
+| `startTime` | `*Time` | When processing started |
+| `completionTime` | `*Time` | When processing completed |
+| `kubernetesContext` | `*KubernetesContext` | Enrichment results (owner chain, namespace context, resource state) |
+| `environmentClassification` | `*EnvironmentClassification` | Environment tier (production, staging, development) |
+| `priorityAssignment` | `*PriorityAssignment` | Business priority (high, medium, low) |
+| `businessClassification` | `*BusinessClassification` | Organization-specific classification |
+| `severity` | `string` | Normalized severity from Rego policy. Enum: `critical`, `high`, `medium`, `low`, `unknown` |
+| `signalMode` | `string` | Signal mode. Enum: `reactive`, `proactive` |
+| `signalName` | `string` | Normalized signal name for downstream consumers |
+| `policyHash` | `string` | SHA256 of the Rego policy used for severity determination |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
 
 ### Phases
@@ -109,14 +171,16 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: AI Analysis
 
+Manages the async HolmesGPT investigation session, root cause analysis, workflow selection, and approval determination.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
 | `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
-| `remediationID` | `string` | Unique remediation identifier |
-| `analysisRequest` | `AnalysisRequest` | Analysis configuration (signal context, analysis types) |
-| `timeoutConfig` | `*AIAnalysisTimeoutConfig` | Optional timeouts: `investigatingTimeout`, `analyzingTimeout` (passed from RR by RO) |
+| `remediationID` | `string` | Unique remediation identifier (JSON: `remediationId`) |
+| `analysisRequest` | `AnalysisRequest` | Analysis configuration containing `signalContext` (fingerprint, severity, signalName, signalMode, environment, businessPriority, targetResource, enrichmentResults) and `analysisTypes` |
+| `timeoutConfig` | `*AIAnalysisTimeoutConfig` | Optional: `investigatingTimeout` (default 60s), `analyzingTimeout` (default 5s) |
 
 ### Status
 
@@ -127,8 +191,11 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 | `phase` | `string` | Current analysis phase |
 | `message` | `string` | Phase message |
 | `reason` | `string` | Failure category |
+| `subReason` | `string` | Failure sub-category. Enum: `WorkflowNotFound`, `ImageMismatch`, `ParameterValidationFailed`, `NoMatchingWorkflows`, `LowConfidence`, `LLMParsingError`, `ValidationError`, `TransientError`, `PermanentError`, `InvestigationInconclusive`, `ProblemResolved`, `MaxRetriesExceeded`, `SessionRegenerationExceeded` |
 | `startedAt` | `*Time` | When analysis started |
 | `completedAt` | `*Time` | When analysis completed |
+| `totalAnalysisTime` | `int64` | Total duration in seconds |
+| `degradedMode` | `bool` | Analysis ran with degraded capabilities |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
 
 **Analysis Results**:
@@ -136,18 +203,19 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 | Field | Type | Description |
 |---|---|---|
 | `rootCause` | `string` | Identified root cause summary |
-| `rootCauseAnalysis` | `*RootCauseAnalysis` | Detailed RCA with tools used and evidence |
+| `rootCauseAnalysis` | `*RootCauseAnalysis` | Detailed RCA (summary, severity, contributingFactors, affectedResource) |
 | `selectedWorkflow` | `*SelectedWorkflow` | Recommended workflow for remediation |
 | `alternativeWorkflows` | `[]AlternativeWorkflow` | Other candidate workflows considered |
-| `postRCAContext` | `*PostRCAContext` | Post-RCA resource context including detected labels |
+| `postRCAContext` | `*PostRCAContext` | Post-RCA resource context including `detectedLabels` (snake_case keys) |
+| `investigationId` | `string` | HolmesGPT investigation ID |
+| `investigationTime` | `int64` | Investigation duration in seconds |
+| `warnings` | `[]string` | Non-fatal HolmesGPT warnings |
 
 **Session Tracking**:
 
 | Field | Type | Description |
 |---|---|---|
-| `investigationSession` | `InvestigationSession` | HolmesGPT async session state |
-
-`InvestigationSession` fields: `id` (session ID), `generation` (regeneration counter), `pollCount` (poll attempts), `lastPolled`, `createdAt`.
+| `investigationSession` | `InvestigationSession` | HolmesGPT async session state: `id` (session ID), `generation` (regeneration counter), `pollCount` (poll attempts), `lastPolled`, `createdAt` |
 
 **Approval & Human Review**:
 
@@ -155,11 +223,12 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 |---|---|---|
 | `approvalRequired` | `bool` | Whether human approval is needed |
 | `approvalReason` | `string` | Why approval is required |
+| `approvalContext` | `*ApprovalContext` | Rich approval context (reason, confidence, evidence) |
 | `needsHumanReview` | `bool` | Whether the case requires human review |
 | `humanReviewReason` | `string` | Reason for human review escalation |
 
 !!! note
-    See `config/crd/bases/kubernaut.ai_aianalyses.yaml` for the complete field reference including `approvalContext`, `validationAttemptsHistory`, `degradedMode`, and additional metadata fields.
+    See `config/crd/bases/kubernaut.ai_aianalyses.yaml` for the complete schema including `validationAttemptsHistory` (HAPI retry history) and `consecutiveFailures` (backoff counter).
 
 ### Phases
 
@@ -173,23 +242,34 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: Workflow Execution
 
+Creates and monitors a Tekton PipelineRun or Kubernetes Job in the `kubernaut-workflows` namespace.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `workflowRef` | `WorkflowRef` | Reference to the workflow schema |
-| `targetResource` | `ResourceIdentifier` | Kubernetes resource to remediate |
-| `parameters` | `[]Parameter` | Runtime parameters for the workflow |
-| `executionEngine` | `string` | `job` or `tekton` (default: `tekton`) |
+| `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
+| `workflowRef` | `WorkflowRef` | Workflow catalog reference: `workflowId`, `version`, `executionBundle` (OCI), `executionBundleDigest` |
+| `targetResource` | `string` | Target resource string (`namespace/kind/name`) for resource locking |
+| `parameters` | `map[string]string` | Runtime parameters (UPPER_SNAKE_CASE keys). `TARGET_RESOURCE` is always injected as a built-in |
+| `confidence` | `float64` | LLM confidence score (audit trail) |
+| `rationale` | `string` | LLM rationale (audit trail) |
+| `executionEngine` | `string` | `tekton` (default) or `job` |
+| `executionConfig` | `*ExecutionConfig` | Optional: `timeout`, `serviceAccountName` (default: `kubernaut-workflow-runner`) |
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
 | `phase` | `string` | Current execution phase |
-| `executionRef` | `*LocalObjectReference` | Reference to the underlying Job or Tekton PipelineRun |
-| `startedAt` | `*Time` | When execution started |
-| `completedAt` | `*Time` | When execution completed |
+| `executionRef` | `*LocalObjectReference` | Reference to the underlying PipelineRun or Job |
+| `startTime` | `*Time` | When execution started |
+| `completionTime` | `*Time` | When execution completed |
+| `duration` | `string` | Execution duration |
+| `executionStatus` | `*ExecutionStatusSummary` | Key execution resource status fields |
+| `failureReason` | `string` | Deprecated: use `failureDetails` |
+| `failureDetails` | `*FailureDetails` | Structured failure info: `failedTaskName`, `failedStepName`, `reason` (enum: `OOMKilled`, `DeadlineExceeded`, `Forbidden`, `ResourceExhausted`, `ConfigurationError`, `ImagePullBackOff`, `TaskFailed`, `Unknown`), `exitCode`, `naturalLanguageSummary` |
+| `blockClearance` | `*BlockClearanceDetails` | SOC2 audit trail for block clearance: `clearedAt`, `clearedBy`, `clearReason`, `clearMethod` |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
 
 ### Phases
@@ -204,24 +284,51 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: Notification
 
+Channel selection is driven entirely by config-based routing rules (Alertmanager-style, from ConfigMap `notification-routing-config`), matching on spec attributes like `type`, `severity`, `phase`, and `metadata`.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `type` | `string` | Notification type |
-| `priority` | `string` | Notification priority |
-| `recipients` | `[]Recipient` | Target recipients/channels |
-| `subject` | `string` | Notification subject |
+| `remediationRequestRef` | `*ObjectReference` | Reference to parent RR (optional — can be standalone) |
+| `type` | `NotificationType` | Notification type. Enum: `escalation`, `simple`, `status-update`, `approval`, `manual-review`, `completion` |
+| `priority` | `string` | Priority. Enum: `critical`, `high`, `medium` (default), `low` |
+| `subject` | `string` | Notification subject (max 500 chars) |
 | `body` | `string` | Notification body |
-| `metadata` | `map[string]string` | Additional metadata |
+| `severity` | `string` | Severity from originating signal (used as routing attribute) |
+| `phase` | `string` | Phase that triggered this notification (used as routing attribute) |
+| `reviewSource` | `string` | What triggered manual review (used as routing attribute) |
+| `metadata` | `map[string]string` | Context key-value pairs (e.g., `environment`, `namespace`, `skip-reason`, `investigation-outcome`). Used as routing attributes |
+| `actionLinks` | `[]ActionLink` | Links to external services (e.g., Grafana dashboard, GitHub PR) with `service`, `url`, `label` |
+| `retryPolicy` | `*RetryPolicy` | Delivery retry: `maxAttempts` (default 5, max 10), `initialBackoffSeconds`, `maxBackoffSeconds`, `backoffMultiplier` |
+| `retentionDays` | `int` | Retention after completion (default: 7, max: 90) |
+
+!!! warning "Planned removal"
+    The `recipients` field ([#276](https://github.com/jordigilh/kubernaut/issues/276)) is present in the CRD but is not used for routing or delivery in v1.0. It will be removed in a future release. Channel selection is determined solely by routing rules in the `notification-routing-config` ConfigMap.
+
+### Supported Channels
+
+`email`, `slack`, `teams`, `sms`, `webhook`, `console`, `file`, `log`
+
+PagerDuty is delivered via the `webhook` channel type.
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
-| `phase` | `string` | Current delivery phase |
-| `deliveryResults` | `[]DeliveryResult` | Per-channel delivery outcomes |
+| `phase` | `string` | Delivery phase |
+| `deliveryAttempts` | `[]DeliveryAttempt` | All delivery attempts: `channel`, `attempt` (1-based), `timestamp`, `status`, `error`, `durationSeconds` |
+| `totalAttempts` | `int` | Total delivery attempts across all channels |
+| `successfulDeliveries` | `int` | Number of successful deliveries |
+| `failedDeliveries` | `int` | Number of failed deliveries |
+| `queuedAt` | `*Time` | When notification was queued for processing |
+| `processingStartedAt` | `*Time` | When delivery processing started |
+| `completionTime` | `*Time` | When all delivery attempts completed |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
+
+### Phases
+
+`Pending` → `Sending` → `Retrying` → `Sent` / `PartiallySent` / `Failed`
 
 ---
 
@@ -231,22 +338,44 @@ Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. Th
 **Created by**: Remediation Orchestrator
 **Watched by**: Effectiveness Monitor
 
+Assesses whether the remediation was effective by checking health, alert resolution, spec drift, and metrics.
+
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
-| `targetResource` | `TargetResource` | Resource being assessed |
-| `assessmentConfig` | `AssessmentConfig` | Timing and evaluation configuration |
+| `correlationID` | `string` | Parent RemediationRequest name (audit correlation) |
+| `remediationRequestPhase` | `string` | RR phase at EA creation. Enum: `Verifying`, `Completed`, `Failed`, `TimedOut` |
+| `signalTarget` | `TargetResource` | Resource that triggered the alert (`kind`, `name`, `namespace`) |
+| `remediationTarget` | `TargetResource` | Resource the workflow modified (from AIAnalysis RCA) |
+| `config` | `EAConfig` | Assessment config: `stabilizationWindow` (Duration, set by RO), `hashComputeDelay` (*Duration, defers spec hash computation for async targets; EM computes deadline as `creation + hashComputeDelay`), `alertCheckDelay` (*Duration, additional delay for proactive alert resolution checks) |
+| `preRemediationSpecHash` | `string` | Spec hash before remediation (for drift detection) |
+| `signalName` | `string` | Original alert name from RR |
+| `remediationCreatedAt` | `*Time` | RR creation timestamp (for computing resolution time) |
 
 ### Status
 
 | Field | Type | Description |
 |---|---|---|
 | `phase` | `string` | Current assessment phase |
-| `assessmentResult` | `AssessmentResult` | Effectiveness scoring results |
+| `validityDeadline` | `*Time` | When the assessment window expires (computed by EM) |
+| `prometheusCheckAfter` | `*Time` | Earliest time to query Prometheus (computed by EM) |
+| `alertManagerCheckAfter` | `*Time` | Earliest time to check AlertManager (computed by EM) |
+| `components` | `EAComponents` | Per-component results (see below) |
+| `assessmentReason` | `string` | Outcome reason. Enum: `full`, `partial`, `no_execution`, `metrics_timed_out`, `expired`, `spec_drift` |
+| `completedAt` | `*Time` | When the assessment finished |
+| `message` | `string` | Human-readable details about current state |
 | `conditions` | `[]Condition` | Standard Kubernetes conditions |
+
+**EAComponents**:
+
+| Field | Type | Description |
+|---|---|---|
+| `healthAssessed` / `healthScore` | `bool` / `*float64` | Health check (0.0–1.0) |
+| `hashComputed` / `postRemediationSpecHash` / `currentSpecHash` | `bool` / `string` / `string` | Spec hash comparison and drift detection |
+| `alertAssessed` / `alertScore` | `bool` / `*float64` | Alert resolution (0.0 or 1.0) |
+| `metricsAssessed` / `metricsScore` | `bool` / `*float64` | Metric comparison (0.0–1.0) |
 
 ### Phases
 
-`Pending` → `Assessing` → `Completed` / `Failed`
+`Pending` → `WaitingForPropagation` → `Stabilizing` → `Assessing` → `Completed` / `Failed`

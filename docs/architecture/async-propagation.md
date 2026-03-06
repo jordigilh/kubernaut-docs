@@ -36,7 +36,7 @@ The propagation delay is computed from two independent flags (`isGitOps`, `isCRD
 
 The delays are additive — if a target is both GitOps-managed and an operator CR, both delays compound. Setting either delay to `0` disables that stage.
 
-The Orchestrator computes a `HashComputeAfter` timestamp (creation time + propagation delay) and sets it on the `EffectivenessAssessment` CRD. The Effectiveness Monitor then anchors its stabilization window to this timestamp instead of the EA creation time, ensuring the spec hash is computed after the change has fully propagated.
+The Orchestrator computes a `hashComputeDelay` duration (sum of applicable propagation delays) and sets it on the `EffectivenessAssessment` CRD spec. The Effectiveness Monitor then computes the deferral deadline as `EA creation time + hashComputeDelay` and enters a `WaitingForPropagation` phase until this deadline passes, ensuring the spec hash is computed after the change has fully propagated.
 
 ## Tuning
 

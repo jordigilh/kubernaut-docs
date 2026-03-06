@@ -51,10 +51,12 @@ These delays account for **asynchronous propagation** — not all changes take e
 
 | Phase | Description |
 |---|---|
-| `Pending` | CRD created, waiting for stabilization window |
-| `Assessing` | Evaluating effectiveness dimensions |
+| `Pending` | CRD created, EM has not yet reconciled |
+| `WaitingForPropagation` | Waiting for async changes (GitOps sync, operator reconcile) to propagate before computing spec hash. Only entered when `hashComputeDelay` is set. |
+| `Stabilizing` | Waiting for the stabilization window to elapse. Derived timing fields (`ValidityDeadline`, `PrometheusCheckAfter`, `AlertManagerCheckAfter`) are computed and persisted in this phase. |
+| `Assessing` | Actively evaluating effectiveness dimensions (health, hash, alerts, metrics) |
 | `Completed` | Assessment complete, results recorded |
-| `Failed` | Assessment could not be completed |
+| `Failed` | Assessment could not be completed (e.g., target not found) |
 
 ## Next Steps
 

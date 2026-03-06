@@ -111,13 +111,13 @@ Kubernaut defines 7 CRD types:
 
 | CRD | API Group | Created By | Watched By |
 |---|---|---|---|
-| `RemediationRequest` | `remediation.kubernaut.io` | Gateway | Remediation Orchestrator |
-| `RemediationApprovalRequest` | `remediation.kubernaut.io` | Remediation Orchestrator | Remediation Orchestrator (RAR audit) |
-| `SignalProcessing` | `signalprocessing.kubernaut.io` | Remediation Orchestrator | Signal Processing |
-| `AIAnalysis` | `aianalysis.kubernaut.io` | Remediation Orchestrator | AI Analysis |
-| `WorkflowExecution` | `workflowexecution.kubernaut.io` | Remediation Orchestrator | Workflow Execution |
-| `NotificationRequest` | `notification.kubernaut.io` | Remediation Orchestrator | Notification |
-| `EffectivenessAssessment` | `effectivenessassessment.kubernaut.io` | Remediation Orchestrator | Effectiveness Monitor |
+| `RemediationRequest` | `kubernaut.ai` | Gateway | Remediation Orchestrator |
+| `RemediationApprovalRequest` | `kubernaut.ai` | Remediation Orchestrator | Remediation Orchestrator (RAR audit) |
+| `SignalProcessing` | `kubernaut.ai` | Remediation Orchestrator | Signal Processing |
+| `AIAnalysis` | `kubernaut.ai` | Remediation Orchestrator | AI Analysis |
+| `WorkflowExecution` | `kubernaut.ai` | Remediation Orchestrator | Workflow Execution |
+| `NotificationRequest` | `kubernaut.ai` | Remediation Orchestrator | Notification |
+| `EffectivenessAssessment` | `kubernaut.ai` | Remediation Orchestrator | Effectiveness Monitor |
 
 ## Remediation Lifecycle
 
@@ -131,15 +131,16 @@ stateDiagram-v2
     Analyzing --> AwaitingApproval: Low confidence / policy requires approval
     Analyzing --> Executing: High confidence, auto-approved
     AwaitingApproval --> Executing: Human approves
-    AwaitingApproval --> Rejected: Human rejects
-    Executing --> Completed: Workflow finishes
+    AwaitingApproval --> Failed: Human rejects
+    Executing --> Verifying: WE succeeded → Create EA
     Executing --> Failed: Workflow fails
+    Verifying --> Completed: EA completed
+    Verifying --> Failed: Verification timed out
     Completed --> [*]
     Failed --> [*]
-    Rejected --> [*]
 ```
 
-After reaching a terminal phase (Completed, Failed, or Rejected), the Orchestrator creates:
+After reaching a terminal phase (Completed, Failed, or TimedOut), the Orchestrator creates:
 
 - A **NotificationRequest** to inform the team
 - An **EffectivenessAssessment** to evaluate whether the fix worked

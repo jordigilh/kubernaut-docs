@@ -4,7 +4,7 @@ Kubernaut has a two-tier data model: **ephemeral CRDs** in Kubernetes for active
 
 ## CRD Retention
 
-Custom Resources (CRDs) represent the active state of a remediation. Once a `RemediationRequest` reaches a terminal phase (Completed, Failed, or Rejected), the CRD is retained for **24 hours** and then automatically cleaned up.
+Custom Resources (CRDs) represent the active state of a remediation. Once a `RemediationRequest` reaches a terminal phase (Completed, Failed, TimedOut, Skipped, or Cancelled), the CRD is retained for **24 hours** and then automatically cleaned up.
 
 This means:
 

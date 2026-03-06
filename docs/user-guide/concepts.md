@@ -24,7 +24,7 @@ The top-level resource. Created by the Gateway when a signal arrives. Contains:
 
 - **TargetResource** — The Kubernetes resource that triggered the alert (namespace, name, kind)
 - **Signal metadata** — Alert name, signal type, labels, annotations, original payload
-- **OverallPhase** — Current lifecycle phase (Pending → Processing → Analyzing → Executing → Completed/Failed)
+- **OverallPhase** — Current lifecycle phase (Pending → Processing → Analyzing → AwaitingApproval → Executing → Verifying → Completed/Failed/Blocked/TimedOut/Skipped/Cancelled)
 
 The RemediationRequest is the "parent" — all other CRDs are children created by the Orchestrator.
 
@@ -86,9 +86,13 @@ A `RemediationRequest` progresses through these phases:
 | **Analyzing** | AI Analysis is performing RCA and workflow selection |
 | **AwaitingApproval** | Human approval required (low confidence or policy mandate) |
 | **Executing** | Workflow is running the remediation |
+| **Verifying** | Workflow succeeded; effectiveness assessment in progress |
+| **Blocked** | Routing condition prevents progress (requeued with cooldown) |
 | **Completed** | Remediation finished successfully |
-| **Failed** | Remediation failed at any stage |
-| **Rejected** | Human rejected the remediation |
+| **Failed** | Remediation failed at any stage (including human rejection) |
+| **TimedOut** | Phase timeout expired |
+| **Skipped** | Remediation skipped (e.g., resource busy) |
+| **Cancelled** | Remediation cancelled |
 
 ## Signal Modes
 

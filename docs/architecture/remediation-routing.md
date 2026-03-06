@@ -23,16 +23,19 @@ stateDiagram-v2
     AwaitingApproval --> Executing: Approved → Create WE
     AwaitingApproval --> Failed: Human rejected
     AwaitingApproval --> TimedOut: Phase timeout
-    Executing --> Completed: WE succeeded
+    Executing --> Verifying: WE succeeded → Create EA
     Executing --> Failed: WE failed
     Executing --> Skipped: WE skipped (resource busy)
     Executing --> TimedOut: Phase timeout
+    Verifying --> Completed: EA completed
+    Verifying --> Failed: EA failed or verification timed out
     Blocked --> Pending: Event-based block cleared (UnmanagedResource re-scoped)
-    Blocked --> Analyzing: Event-based block cleared (ResourceBusy, DuplicateInProgress)
+    Blocked --> Pending: Event-based block cleared (DuplicateInProgress)
+    Blocked --> Analyzing: Event-based block cleared (ResourceBusy)
     Blocked --> Failed: Time-based block expired
     Failed --> Blocked: Consecutive failure threshold
-    Completed --> [*]: Create NR + EA
-    Failed --> [*]: Create NR + EA
+    Completed --> [*]: Create NR
+    Failed --> [*]: Create NR
     TimedOut --> [*]: Create NR
     Skipped --> [*]
     Cancelled --> [*]
@@ -47,6 +50,7 @@ stateDiagram-v2
 | Analyzing | No | AIAnalysis in progress (RCA, workflow selection) |
 | AwaitingApproval | No | Human approval required (RemediationApprovalRequest created) |
 | Executing | No | WorkflowExecution running |
+| Verifying | No | WorkflowExecution succeeded; EffectivenessAssessment in progress |
 | Blocked | No | Routing condition prevents progress; requeued with cooldown |
 | Completed | Yes | Remediation finished successfully |
 | Failed | Yes | Remediation failed at any stage (including approval rejection) |
@@ -108,11 +112,12 @@ The Gateway treats Blocked RRs as "active," preventing creation of new RRs for t
 | AwaitingApproval | Human approves | Executing | WorkflowExecution |
 | AwaitingApproval | Human rejects | Failed | — |
 | AwaitingApproval | Times out | TimedOut | — |
-| Executing | WorkflowExecution succeeds | Completed | NotificationRequest + EffectivenessAssessment |
+| Executing | WorkflowExecution succeeds | Verifying | EffectivenessAssessment |
 | Executing | WorkflowExecution fails | Failed | NotificationRequest + EffectivenessAssessment |
-| Executing | WorkflowExecution skipped | Skipped | — |
 | Executing | Times out | TimedOut | NotificationRequest |
-| Blocked | Time-based cooldown expires (ConsecutiveFailures, RecentlyRemediated, ExponentialBackoff) | Failed | — |
+| Verifying | EffectivenessAssessment completes | Completed | NotificationRequest |
+| Verifying | Verification timed out | Failed | NotificationRequest |
+| Blocked | Time-based cooldown expires (ConsecutiveFailures) | Failed | — |
 | Blocked | Event-based block cleared — UnmanagedResource re-scoped | Pending | — |
 | Blocked | Event-based block cleared — ResourceBusy resolved | Analyzing | — |
 | Blocked | Event-based block cleared — DuplicateInProgress completes | Pending | — |
@@ -122,8 +127,8 @@ The Gateway treats Blocked RRs as "active," preventing creation of new RRs for t
 
 When a `RemediationRequest` reaches a terminal phase, the Orchestrator creates:
 
-1. **NotificationRequest** — Informs the team about the outcome (Completed, Failed, TimedOut)
-2. **EffectivenessAssessment** — Evaluates whether the fix worked (only for Completed and Failed)
+1. **NotificationRequest** — Informs the team about the outcome (on all terminal phases: Completed, Failed, TimedOut)
+2. **EffectivenessAssessment** — Evaluates whether the fix worked (created when the WE succeeds, triggering the Verifying phase; also for Failed)
 
 If the RR has duplicate RRs (tracked via `DuplicateCount`), a bulk duplicate notification is also created.
 

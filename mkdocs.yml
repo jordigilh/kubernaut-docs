@@ -96,6 +96,8 @@ nav:
       - Core Concepts: user-guide/concepts.md
       - Signals & Alert Routing: user-guide/signals.md
       - Remediation Workflows: user-guide/workflows.md
+      - Rego Policies: user-guide/policies.md
+      - Notification Channels: user-guide/notifications.md
       - Human Approval: user-guide/approval.md
       - Effectiveness Monitoring: user-guide/effectiveness.md
       - Audit & Observability: user-guide/audit-and-observability.md
@@ -106,6 +108,7 @@ nav:
       - System Overview: architecture/overview.md
       - Signal Processing: architecture/signal-processing.md
       - AI Analysis: architecture/ai-analysis.md
+      - Investigation Pipeline: architecture/hapi-investigation.md
       - Remediation Routing: architecture/remediation-routing.md
       - Workflow Selection: architecture/workflow-selection.md
       - Workflow Execution: architecture/workflow-execution.md

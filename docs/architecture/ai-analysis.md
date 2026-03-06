@@ -124,6 +124,7 @@ The Rego policy also receives `input.detected_labels` (a map of **snake_case** k
 
 ## Next Steps
 
+- [Investigation Pipeline](hapi-investigation.md) — Deep-dive into the LLM investigation phases, resource context, remediation history, decision outcomes, and approval gate
 - [Remediation Routing](remediation-routing.md) — How the Orchestrator routes the result
 - [Workflow Selection](workflow-selection.md) — Catalog query and scoring details
 - [Human Approval](../user-guide/approval.md) — The approval flow

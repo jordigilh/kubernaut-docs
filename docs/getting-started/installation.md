@@ -21,26 +21,28 @@ Kubernaut deploys the following infrastructure components alongside its services
 !!! warning "Development Only"
     The Helm chart is currently configured for demo and development environments. Production hardening (HA, resource tuning, TLS, network policies) is in progress.
 
-### Add the Repository
+### Install from Source
+
+Kubernaut is currently installed from the local chart in the repository:
 
 ```bash
-helm repo add kubernaut https://jordigilh.github.io/kubernaut
-helm repo update
+git clone https://github.com/jordigilh/kubernaut.git
+cd kubernaut
 ```
-
-### Install
 
 === "Development (Kind)"
 
     ```bash
-    helm install kubernaut kubernaut/kubernaut \
+    kubectl apply -f charts/kubernaut/crds/
+    helm install kubernaut charts/kubernaut \
       --namespace kubernaut-system \
       --create-namespace \
       --set postgresql.auth.password=devpassword \
       --set redis.password=devpassword \
       --set holmesgptApi.llm.provider=openai \
       --set holmesgptApi.llm.model=gpt-4o \
-      --set holmesgptApi.llm.endpoint=https://api.openai.com/v1
+      --set holmesgptApi.llm.endpoint=https://api.openai.com/v1 \
+      --skip-crds --wait --timeout 10m
     ```
 
 === "With Existing Secrets (Production Path)"
@@ -65,7 +67,8 @@ helm repo update
       --from-literal=redis-secrets.yaml="password: <your-password>"
 
     # 2. Install with existing secrets
-    helm install kubernaut kubernaut/kubernaut \
+    kubectl apply -f charts/kubernaut/crds/
+    helm install kubernaut charts/kubernaut \
       --namespace kubernaut-system \
       --set postgresql.auth.existingSecret=postgresql-secret \
       --set datastorage.dbExistingSecret=datastorage-db-secret \
@@ -73,7 +76,8 @@ helm repo update
       --set holmesgptApi.llm.provider=vertex_ai \
       --set holmesgptApi.llm.model=gemini-2.5-pro \
       --set holmesgptApi.llm.gcpProjectId=my-project \
-      --set holmesgptApi.llm.gcpRegion=us-central1
+      --set holmesgptApi.llm.gcpRegion=us-central1 \
+      --skip-crds --wait --timeout 10m
     ```
 
 ### Verify

@@ -71,15 +71,15 @@ parameters:
 
 ### Labels
 
-Labels control when a workflow matches an incident:
+Mandatory labels control when a workflow matches an incident during three-step discovery:
 
 | Label | Type | Required | Description |
 |---|---|---|---|
-| `signalName` | string | No | Alert or event name (metadata only) |
 | `severity` | string[] | Yes | Severity levels: `critical`, `high`, `medium`, `low` |
-| `environment` | string[] | Yes | Environments: `production`, `staging`, `test`, or `"*"` |
+| `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` |
 | `component` | string | Yes | Resource kind: `pod`, `deployment`, `node`, or `"*"` |
 | `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` |
+| `signalName` | string | No | Optional metadata for workflow authors. Not used for matching — the LLM selects by `actionType` (DD-WORKFLOW-016) |
 
 Labels support:
 
@@ -166,7 +166,7 @@ This ensures workflows are idempotent and safe to retry.
 Workflows are registered by providing their **OCI schema image** to the DataStorage API:
 
 ```bash
-curl -X POST http://datastorage.kubernaut-system.svc:8080/api/v1/workflows \
+curl -X POST http://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows \
   -H "Content-Type: application/json" \
   -d '{"schemaImage":"quay.io/kubernaut-cicd/test-workflows/crashloop-rollback-job-schema:v1.0.0"}'
 ```

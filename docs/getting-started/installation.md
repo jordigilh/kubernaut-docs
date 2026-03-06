@@ -86,7 +86,7 @@ cd kubernaut
 kubectl get pods -n kubernaut-system
 ```
 
-You should see pods for all 10 services plus infrastructure:
+You should see pods for all services plus infrastructure:
 
 ```
 NAME                                        READY   STATUS    RESTARTS
@@ -99,6 +99,7 @@ workflowexecution-<hash>                    1/1     Running   0
 effectivenessmonitor-<hash>                 1/1     Running   0
 notification-<hash>                         1/1     Running   0
 holmesgpt-api-<hash>                        1/1     Running   0
+authwebhook-<hash>                          1/1     Running   0
 event-exporter-<hash>                       1/1     Running   0
 postgresql-0                                1/1     Running   0
 redis-0                                     1/1     Running   0

@@ -1,58 +1,188 @@
 # Remediation Workflows
 
-Kubernaut remediates issues by running **workflows** — containerized actions that fix known problems. Workflows are packaged as **OCI images**, stored in a searchable catalog, and matched to incidents based on labels and AI confidence scoring.
+Kubernaut remediates issues by running **workflows** -- containerized actions that fix known problems. Workflows are packaged as OCI images, stored in a searchable catalog, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.
 
-## Workflow Schema
+This page covers everything you need to author, build, register, and manage workflows.
 
-A workflow is defined by a `workflow-schema.yaml` file at the root of an OCI image. The schema uses **camelCase** field names and follows a structured format:
+## The Two-Image Model
+
+Each workflow consists of two separate OCI images:
+
+```mermaid
+flowchart LR
+    Schema["Schema Image<br/><small>FROM scratch</small><br/><small>/workflow-schema.yaml</small>"] --> DS["DataStorage<br/><small>Catalog</small>"]
+    Bundle["Execution Bundle<br/><small>FROM ubi-minimal</small><br/><small>/scripts/remediate.sh</small>"] --> WFE["WFE<br/><small>Job / Tekton</small>"]
+    DS -.->|"bundle ref<br/>(digest-pinned)"| WFE
+```
+
+| Image | Contents | Purpose |
+|---|---|---|
+| **Schema image** | Only `/workflow-schema.yaml` | Registered in DataStorage catalog for discovery and LLM selection |
+| **Execution bundle** | The container that runs the remediation (scripts, binaries, kubectl) | Referenced by digest in the schema; pulled by WFE at execution time |
+
+This separation allows the catalog to store lightweight schema metadata without pulling large execution images until a workflow is actually selected. The schema image is `FROM scratch` (no base image, no runtime) -- it exists only to transport the YAML file.
+
+## Create Your First Workflow
+
+This tutorial walks through creating a workflow that restarts a deployment.
+
+### Step 1: Write the Schema
+
+Create `workflow-schema.yaml`:
 
 ```yaml
 schemaVersion: "1.0"
 
 metadata:
-  workflowId: crashloop-rollback-v1
-  version: "1.0.1"
+  workflowId: restart-deployment-v1
+  version: "1.0.0"
   description:
-    what: "Rolls back a deployment to its previous revision to recover from CrashLoopBackOff"
-    whenToUse: "When a deployment enters CrashLoopBackOff after a config or image change"
-    whenNotToUse: "When the crash is caused by an external dependency failure"
-    preconditions: "The deployment has at least one previous healthy revision"
+    what: "Performs a rolling restart of a deployment to clear corrupted runtime state"
+    whenToUse: "When pods are in a degraded state but the deployment spec is correct"
+    whenNotToUse: "When the issue is caused by a bad image or config change"
+    preconditions: "The deployment exists and has at least one ready replica"
+  maintainers:
+    - name: "Platform Team"
+      email: "platform@example.com"
 
-actionType: RollbackDeployment
+actionType: RestartDeployment
 
 labels:
-  signalName: KubePodCrashLooping
-  severity: [critical, low]
-  environment: [production, staging, "*"]
-  component: "*"
+  severity: [critical, high, medium]
+  environment: [production, staging, development, "*"]
+  component: deployment
   priority: "*"
+
+detectedLabels:
+  helmManaged: "true"
 
 execution:
   engine: job
-  bundle: quay.io/kubernaut-cicd/test-workflows/crashloop-rollback-job@sha256:64338763a1f7...
+  bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
 
 parameters:
   - name: TARGET_NAMESPACE
     type: string
     required: true
-    description: "Namespace of the affected deployment"
+    description: "Namespace of the deployment to restart"
   - name: TARGET_DEPLOYMENT
     type: string
     required: true
-    description: "Name of the deployment to roll back"
+    description: "Name of the deployment to restart"
+
+dependencies:
+  secrets: []
+  configMaps: []
 ```
+
+### Step 2: Write the Remediation Script
+
+Create `remediate.sh`:
+
+```bash
+#!/bin/bash
+set -euo pipefail
+
+echo "Validating deployment exists..."
+kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" || {
+  echo "ERROR: Deployment not found"
+  exit 1
+}
+
+echo "Performing rolling restart..."
+kubectl rollout restart deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE"
+
+echo "Waiting for rollout to complete..."
+kubectl rollout status deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" --timeout=120s
+
+echo "Verifying deployment health..."
+READY=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" -o jsonpath='{.status.readyReplicas}')
+DESIRED=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" -o jsonpath='{.spec.replicas}')
+
+if [ "$READY" = "$DESIRED" ]; then
+  echo "SUCCESS: All $READY/$DESIRED replicas ready"
+else
+  echo "WARNING: Only $READY/$DESIRED replicas ready"
+  exit 1
+fi
+```
+
+This follows the **Validate-Action-Verify** pattern:
+
+1. **Validate** -- Confirm the deployment exists
+2. **Action** -- Perform the rolling restart
+3. **Verify** -- Check that all replicas are ready
+
+### Step 3: Build the Execution Bundle
+
+Create `Dockerfile.exec`:
+
+```dockerfile
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
+RUN microdnf install -y tar gzip && microdnf clean all
+COPY --from=bitnami/kubectl:latest /opt/bitnami/kubectl/bin/kubectl /usr/local/bin/kubectl
+COPY remediate.sh /scripts/remediate.sh
+RUN chmod +x /scripts/remediate.sh
+USER 1001
+ENTRYPOINT ["/scripts/remediate.sh"]
+```
+
+Build and push:
+
+```bash
+docker build -f Dockerfile.exec -t registry.example.com/workflows/restart-deployment:v1.0.0 .
+docker push registry.example.com/workflows/restart-deployment:v1.0.0
+```
+
+Note the image digest from the push output -- you need it for the schema.
+
+### Step 4: Build the Schema Image
+
+Create `Dockerfile.schema`:
+
+```dockerfile
+FROM scratch
+COPY workflow-schema.yaml /workflow-schema.yaml
+```
+
+Update `workflow-schema.yaml` with the actual execution bundle digest:
+
+```yaml
+execution:
+  engine: job
+  bundle: registry.example.com/workflows/restart-deployment@sha256:64338763a1f7...
+```
+
+Build and push:
+
+```bash
+docker build -f Dockerfile.schema -t registry.example.com/workflows/restart-deployment-schema:v1.0.0 .
+docker push registry.example.com/workflows/restart-deployment-schema:v1.0.0
+```
+
+### Step 5: Register the Workflow
+
+```bash
+curl -X POST http://data-storage-service.kubernaut-system:8080/api/v1/workflows \
+  -H "Content-Type: application/json" \
+  -d '{"schemaImage":"registry.example.com/workflows/restart-deployment-schema:v1.0.0"}'
+```
+
+DataStorage pulls the schema image, extracts `/workflow-schema.yaml`, validates it, verifies the execution bundle exists (via `crane.Head()`), and adds it to the catalog.
+
+## Schema Reference
 
 ### Required Fields
 
 | Field | Type | Description |
 |---|---|---|
 | `schemaVersion` | string | Must be `"1.0"` |
-| `metadata.workflowId` | string | Unique workflow identifier (e.g., `crashloop-rollback-v1`) |
-| `metadata.version` | string | Semantic version |
+| `metadata.workflowId` | string | Unique workflow identifier (max 255 chars) |
+| `metadata.version` | string | Semantic version (max 50 chars) |
 | `metadata.description.what` | string | What the workflow does |
 | `metadata.description.whenToUse` | string | When to apply this workflow |
-| `actionType` | string | Action taxonomy type (e.g., `RestartPod`, `RollbackDeployment`, `IncreaseMemoryLimits`) |
-| `labels` | object | Matching criteria (see below) |
+| `actionType` | string | Action taxonomy type (must exist in `action_type_taxonomy` table) |
+| `labels` | object | Matching criteria (see [Labels](#labels)) |
 | `execution.engine` | string | `job` (Kubernetes Job) or `tekton` (Tekton Pipeline) |
 | `execution.bundle` | string | OCI image reference with `@sha256:` digest |
 | `parameters` | array | At least one parameter definition |
@@ -64,14 +194,14 @@ parameters:
 | `metadata.description.whenNotToUse` | string | When NOT to use this workflow |
 | `metadata.description.preconditions` | string | Prerequisites for the workflow |
 | `metadata.maintainers` | array | Maintainer contacts (`name`, `email`) |
-| `detectedLabels` | object | Infrastructure requirements (HPA, PDB, StatefulSet, GitOps, etc.) |
-| `customLabels` | map | Operator-defined labels |
+| `detectedLabels` | object | Infrastructure requirements (see [Detected Labels](#detected-labels)) |
+| `customLabels` | map | Operator-defined key-value labels |
 | `dependencies` | object | Required Secrets and ConfigMaps |
-| `rollbackParameters` | array | Parameters for rollback |
+| `rollbackParameters` | array | Parameters for rollback operations |
 
 ### Labels
 
-Mandatory labels control when a workflow matches an incident during three-step discovery:
+Mandatory labels control when a workflow is eligible during discovery:
 
 | Label | Type | Required | Description |
 |---|---|---|---|
@@ -79,33 +209,62 @@ Mandatory labels control when a workflow matches an incident during three-step d
 | `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` |
 | `component` | string | Yes | Resource kind: `pod`, `deployment`, `node`, or `"*"` |
 | `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` |
-| `signalName` | string | No | Optional metadata for workflow authors. Not used for matching — the LLM selects by `actionType` (DD-WORKFLOW-016) |
+| `signalName` | string | No | Optional metadata for workflow authors. Not used for matching -- the LLM selects by `actionType` |
 
 Labels support:
 
-- **Exact match** — `component: deployment`
-- **Wildcard** — `component: "*"` (matches any component)
-- **Multi-value** — `severity: [critical, high]` (matches either)
+- **Exact match** -- `component: deployment`
+- **Wildcard** -- `component: "*"` (matches any value)
+- **Multi-value** -- `severity: [critical, high]` (matches either)
+
+!!! warning "Labels determine discoverability"
+    Workflows that don't match the mandatory label filters are excluded entirely -- they never reach the LLM. A misconfigured severity or environment can silently hide a workflow from the candidate set. See [Workflow Search and Scoring](#workflow-search-and-scoring) for details.
 
 ### Detected Labels
 
-Optional infrastructure-awareness labels that help the AI select the right workflow for the environment:
+Optional infrastructure-awareness labels that influence scoring and help the LLM select the right workflow for the target environment:
 
 ```yaml
 detectedLabels:
-  hpaEnabled: "true"
-  pdbProtected: "true"
-  stateful: "true"
-  helmManaged: "true"
-  networkIsolated: "true"
   gitOpsManaged: "true"
-  gitOpsTool: "flux"       # flux | argocd | "*"
-  serviceMesh: "istio"     # istio | linkerd | "*"
+  gitOpsTool: "argocd"      # argocd | flux | "*"
+  helmManaged: "true"
+  pdbProtected: "true"
+  hpaEnabled: "true"
+  stateful: "true"
+  networkIsolated: "true"
+  serviceMesh: "istio"       # istio | linkerd | "*"
 ```
+
+| Label | Type | Valid Values |
+|---|---|---|
+| `gitOpsManaged` | boolean | `"true"` only |
+| `gitOpsTool` | string | `argocd`, `flux`, `"*"` |
+| `pdbProtected` | boolean | `"true"` only |
+| `hpaEnabled` | boolean | `"true"` only |
+| `stateful` | boolean | `"true"` only |
+| `helmManaged` | boolean | `"true"` only |
+| `networkIsolated` | boolean | `"true"` only |
+| `serviceMesh` | string | `istio`, `linkerd`, `"*"` |
+
+Workflows that declare detected labels earn scoring boosts when the target resource matches -- see [Workflow Search and Scoring](#workflow-search-and-scoring).
+
+### Bundle Digest Format
+
+The `execution.bundle` field must use a **digest-pinned** OCI reference:
+
+```
+registry.example.com/repo/image@sha256:<64 hex characters>
+```
+
+- Must contain `@` (tag-only references are rejected)
+- Must use `sha256:` algorithm
+- Digest must be exactly 64 hex characters
+- An optional tag before `@` is allowed: `image:v1.0.0@sha256:abc123...`
 
 ### Dependencies
 
-Workflows can declare required Secrets and ConfigMaps that must exist in the execution namespace:
+Workflows can declare Secrets and ConfigMaps that must exist in the execution namespace:
 
 ```yaml
 dependencies:
@@ -115,90 +274,275 @@ dependencies:
     - name: app-config
 ```
 
-The Workflow Execution controller validates these before starting the Job/PipelineRun.
+The Workflow Execution controller validates these exist before creating the Job or PipelineRun, and mounts them as volumes:
 
-### Workflow Selection
+- Secrets: `/run/kubernaut/secrets/<name>` (read-only)
+- ConfigMaps: `/run/kubernaut/configmaps/<name>` (read-only)
 
-During AI Analysis, HolmesGPT uses a **3-step LLM-driven discovery protocol** to select a workflow:
+### Parameters
 
-1. **Action discovery** — The LLM queries DataStorage for available action types relevant to the root cause
-2. **Candidate retrieval** — DataStorage returns matching workflows ordered by label overlap score (only the latest version of each workflow is considered)
-3. **LLM selection** — The LLM makes the final selection based on workflow descriptions, the enriched signal context, and remediation history
+Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables:
 
-DataStorage scores candidates by label and infrastructure label overlap, but these scores are internal ordering — the LLM sees the descriptions and context, and makes the final decision.
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Parameter name (becomes an env var) |
+| `type` | string | `string`, `integer`, `boolean`, or `array` |
+| `required` | boolean | Whether the parameter must be provided |
+| `description` | string | Shown to the LLM during workflow selection |
+| `default` | any | Default value when not provided |
+| `enum` | string[] | Allowed values |
+| `pattern` | string | Regex validation (string type) |
+| `minimum` / `maximum` | integer | Range validation (integer type) |
+| `dependsOn` | string[] | Parameters that must be set before this one |
+
+The `description` field is shown to the LLM during `get_workflow`, so it should be clear enough for the LLM to populate the parameter from its investigation findings.
+
+`TARGET_RESOURCE` is always injected automatically from the `RemediationRequest` target.
 
 ## Execution Engines
 
 ### Kubernetes Jobs
 
-Single-step remediations run as Kubernetes Jobs:
+Single-step remediations run as Kubernetes Jobs in the `kubernaut-workflows` namespace:
 
 ```yaml
 execution:
   engine: job
-  bundle: quay.io/kubernaut-cicd/test-workflows/crashloop-rollback-job@sha256:64338763...
+  bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
 ```
 
-The Workflow Execution controller creates a Job in the execution namespace, injects parameters as environment variables, and monitors completion.
+The Workflow Execution controller creates a Job with:
+
+- **Environment variables** -- All parameters injected as env vars, plus `TARGET_RESOURCE`
+- **Dependency mounts** -- Secrets at `/run/kubernaut/secrets/<name>`, ConfigMaps at `/run/kubernaut/configmaps/<name>`
+- **ServiceAccount** -- `kubernaut-workflow-runner` (pre-configured RBAC)
 
 ### Tekton Pipelines
 
-Multi-step remediations use Tekton Pipelines for orchestration:
+Multi-step remediations use Tekton Pipelines:
 
 ```yaml
 execution:
   engine: tekton
-  bundle: quay.io/kubernaut-cicd/tekton-bundles/oom-recovery:v1.0.0@sha256:abc123...
+  bundle: registry.example.com/tekton-bundles/oom-recovery:v1.0.0@sha256:abc123...
 ```
+
+The bundle must contain a Tekton Pipeline named `workflow`. The controller creates a PipelineRun with:
+
+- **Tekton bundle resolver** -- The bundle is referenced via `resolver: bundles` with the digest-pinned image
+- **Parameters** -- All parameters injected as Tekton params, plus `TARGET_RESOURCE`
+- **Dependency workspaces** -- Secrets as `secret-<name>` workspace bindings, ConfigMaps as `configmap-<name>` workspace bindings
 
 Tekton provides step ordering, retries, and artifact passing between steps.
 
 ## The Validate-Action-Verify Pattern
 
-Workflows should follow the **Validate-Action-Verify** pattern:
+Workflows should follow the **Validate-Action-Verify** (VAV) pattern:
 
-1. **Validate** — Confirm the issue exists and the fix is applicable
-2. **Action** — Apply the remediation (patch deployment, scale resources, etc.)
-3. **Verify** — Check that the fix was applied correctly
+1. **Validate** -- Confirm the issue exists and the fix is applicable (e.g., check the deployment exists, verify the resource is in the expected state)
+2. **Action** -- Apply the remediation (patch deployment, scale resources, restart pods)
+3. **Verify** -- Check that the fix was applied correctly (e.g., rollout status, health check)
 
-This ensures workflows are idempotent and safe to retry.
+This ensures workflows are **idempotent** and **safe to retry**. If the validate step fails, the workflow exits early without making changes. If the verify step fails, the Effectiveness Monitor will detect the failure.
 
-## Registering Workflows
+## Action Type Taxonomy
 
-Workflows are registered by providing their **OCI schema image** to the DataStorage API:
+Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (`what`, `whenToUse`, `whenNotToUse`, `preconditions`) that the LLM reads during the `list_available_actions` step.
 
-```bash
-curl -X POST http://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows \
-  -H "Content-Type: application/json" \
-  -d '{"schemaImage":"quay.io/kubernaut-cicd/test-workflows/crashloop-rollback-job-schema:v1.0.0"}'
+### Built-in Action Types
+
+Kubernaut seeds 24 action types during installation:
+
+| Action Type | What It Does |
+|---|---|
+| `ScaleReplicas` | Horizontally scale a workload by adjusting the replica count |
+| `RestartPod` | Kill and recreate one or more pods |
+| `IncreaseCPULimits` | Increase CPU resource limits on containers |
+| `IncreaseMemoryLimits` | Increase memory resource limits on containers |
+| `RollbackDeployment` | Revert a deployment to its previous stable revision |
+| `DrainNode` | Drain and cordon a Kubernetes node, evicting all pods |
+| `CordonNode` | Cordon a node to prevent new pod scheduling |
+| `RestartDeployment` | Perform a rolling restart of all pods in a workload |
+| `CleanupNode` | Reclaim disk space on a node by purging temporary files |
+| `DeletePod` | Delete specific pods without waiting for graceful termination |
+| `GitRevertCommit` | Revert a bad commit in a Git repository managed by GitOps |
+| `ProvisionNode` | Request provisioning of a new Kubernetes node |
+| `GracefulRestart` | Perform a graceful rolling restart to reset runtime state |
+| `CleanupPVC` | Remove old or unnecessary files from a PVC |
+| `RemoveTaint` | Remove a taint from a Kubernetes node |
+| `PatchHPA` | Patch an HPA to increase maxReplicas or adjust thresholds |
+| `RelaxPDB` | Temporarily relax a PDB to unblock a pending node drain |
+| `ProactiveRollback` | Proactively roll back based on predictive SLO burn rate analysis |
+| `CordonDrainNode` | Cordon a node, then drain existing pods to other nodes |
+| `FixCertificate` | Recreate a missing or corrupted CA Secret for cert-manager |
+| `HelmRollback` | Roll back a Helm release to its previous healthy revision |
+| `FixAuthorizationPolicy` | Remove or fix a Linkerd AuthorizationPolicy blocking traffic |
+| `FixStatefulSetPVC` | Recreate a missing PVC for a StatefulSet and restart the stuck pod |
+| `FixNetworkPolicy` | Remove a deny-all NetworkPolicy blocking legitimate ingress |
+
+### Registering Custom Action Types
+
+The taxonomy is **user-extensible**. Operators can register custom action types to match their organization's remediation patterns. Currently, registration is via SQL:
+
+```sql
+INSERT INTO action_type_taxonomy (action_type, description)
+VALUES (
+  'RestartSidecar',
+  '{
+    "what": "Restart only the sidecar container without affecting the main application",
+    "whenToUse": "When a service mesh sidecar is in a degraded state but the main container is healthy",
+    "whenNotToUse": "When the main application container is also failing",
+    "preconditions": "The pod has a sidecar container identified by the service mesh annotation"
+  }'
+);
 ```
 
-DataStorage pulls the OCI image, extracts the `workflow-schema.yaml`, validates it, and adds it to the catalog.
+An API endpoint for action type management is planned as a future enhancement.
 
-Workflows can also be seeded automatically during Helm installation via the `seed-workflows` hook job, which registers all built-in workflows.
+!!! warning "Action type descriptions directly affect LLM behavior"
+    The LLM reads `what`, `whenToUse`, `whenNotToUse`, and `preconditions` verbatim during workflow discovery. Poorly written or overlapping descriptions degrade workflow selection quality:
 
-## Parameters
+    - **Write clear, unambiguous descriptions** so the LLM can distinguish between action types
+    - **Avoid semantic collisions** -- action types that overlap in meaning (e.g., `RestartPod` vs `RecyclePod`) will confuse the LLM
+    - **Use PascalCase naming** consistent with built-in types
+    - Action types are intentionally **stable** -- they should not change frequently during a deployment's lifecycle
 
-Parameters use `UPPER_SNAKE_CASE` names and are injected into the workflow container as environment variables:
+## Workflow Lifecycle
 
-| Parameter | Type | Description |
+Workflows have four lifecycle states:
+
+| State | Description | Discoverable |
 |---|---|---|
-| `TARGET_NAMESPACE` | string | Target namespace from RemediationRequest |
-| `TARGET_DEPLOYMENT` | string | Target resource name |
-| `TARGET_RESOURCE` | string | Target resource identifier |
-| Custom parameters | varies | Any additional parameters defined in the schema |
+| `active` | Available for selection | Yes (if `is_latest_version`) |
+| `disabled` | Temporarily unavailable | No |
+| `deprecated` | Marked for removal, still usable | No |
+| `archived` | Permanently removed from catalog | No |
 
-Each parameter supports:
+State transitions are performed via the DataStorage API:
 
-- `type` — `string`, `integer`, `boolean`, or `array`
-- `required` — Whether the parameter must be provided
-- `default` — Default value when not provided
-- `enum` — Allowed values
-- `pattern` — Regex validation (string type)
-- `minimum` / `maximum` — Range validation (integer type)
+```bash
+# Disable a workflow
+curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/disable
+
+# Re-enable a workflow
+curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/enable
+
+# Deprecate a workflow
+curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
+```
+
+### Version Management
+
+When a new version of a workflow is registered (same `workflowId`, different `version`), the previous version's `is_latest_version` flag is set to `false`. Only workflows with `status = 'active'` AND `is_latest_version = true` are discoverable.
+
+This means you can register a new version and the old one is automatically superseded without needing to disable it.
+
+## Workflow Search and Scoring
+
+Understanding how DataStorage filters and scores workflows is critical for authoring effective schemas. Your label and detected label choices directly affect whether the LLM ever sees your workflow.
+
+### Layer 1: Mandatory Label Filtering (WHERE clause)
+
+Before scoring, DataStorage filters candidates using the mandatory labels from the schema. Workflows that fail any filter are **excluded entirely** -- they never reach the LLM.
+
+| Filter | Matching Rule |
+|---|---|
+| **Severity** | JSONB array `?` operator: workflow's `severity` array must contain the query value, or contain `"*"` |
+| **Component** | Case-insensitive comparison: Kubernetes Kind is PascalCase (e.g., `Deployment`), workflow labels store lowercase (e.g., `deployment`) |
+| **Environment** | JSONB array `?` operator with `"*"` wildcard fallback |
+| **Priority** | Handles both scalar (`"P1"`) and array (`["P0","P1"]`) values with `"*"` wildcard |
+
+Additionally, only `active` + `is_latest_version = true` workflows pass.
+
+### Layer 2: Semantic Scoring (ORDER BY)
+
+Surviving candidates are scored by infrastructure label overlap. The formula:
+
+```
+final_score = (5.0 + detected_boost + custom_boost - penalty) / 10.0
+```
+
+The base score is 0.5 (5.0/10.0). Boosts increase it, penalties decrease it. Range: 0.0--1.0.
+
+**Detected label boost weights:**
+
+| Label | Exact Match | Workflow Wildcard (`"*"`) | Query Wildcard |
+|---|---|---|---|
+| `gitOpsManaged` | +0.10 | -- | -- |
+| `gitOpsTool` | +0.10 | +0.05 | +0.05 |
+| `pdbProtected` | +0.05 | -- | -- |
+| `serviceMesh` | +0.05 | +0.025 | +0.025 |
+| `networkIsolated` | +0.03 | -- | -- |
+| `helmManaged` | +0.02 | -- | -- |
+| `stateful` | +0.02 | -- | -- |
+| `hpaEnabled` | +0.02 | -- | -- |
+
+Maximum possible boost: **0.39** (all labels match exactly).
+
+**Penalty rules** (high-impact only):
+
+| Condition | Penalty |
+|---|---|
+| Target IS GitOps-managed but workflow doesn't declare `gitOpsManaged` | -0.10 |
+| Target uses a specific GitOps tool but workflow declares a different one | -0.10 |
+
+Maximum possible penalty: **0.20**.
+
+**Custom labels:** +0.05 per exact match, +0.025 per wildcard match.
+
+### What This Means for Workflow Authors
+
+- **Detected labels have the highest impact on ranking.** A GitOps-aware workflow (`gitOpsManaged: "true"`, `gitOpsTool: "argocd"`) will consistently outrank a generic one when the target is ArgoCD-managed.
+- **Setting `"*"` wildcards earns half credit.** Useful for broadly applicable workflows that work with any GitOps tool or service mesh.
+- **Not declaring a detected label means "no requirement"** -- no boost, no penalty (except for GitOps, which applies a penalty when the target IS GitOps-managed).
+- **Custom labels provide fine-grained differentiation** for organization-specific matching (e.g., `team: payments`).
+
+### Connection to Signal Processing Rego Policies
+
+The SP Rego policies determine the values that feed into discovery:
+
+- `severity.rego` and `priority.rego` produce values for **Layer 1 filtering** -- a misconfigured policy can silently exclude correct workflows
+- `environment.rego` produces the environment value for **Layer 1 filtering**
+- `customlabels.rego` (`kubernaut.ai/label-*`) produces values for **Layer 2 scoring** at +0.05 per match
+- `business.rego` (business_unit, service_owner, criticality, sla_tier) is **NOT used in discovery** -- neither filtering nor scoring. These values enrich the LLM prompt context only
+
+!!! note "Why business classification is not used for discovery"
+    Workflows are reusable across organizational boundaries -- a `RollbackDeployment` works for any team, business unit, or SLA tier. Mandatory labels describe the **technical remediation context** (severity, resource type, environment). Business classification describes **who owns the resource**, which is orthogonal to what fix is needed. Operators who want organizational matching can use custom labels (e.g., `kubernaut.ai/label-team=payments` on the namespace + `customLabels: {team: ["payments"]}` in the schema).
+
+### Scoring Is Internal Ordering, Not Selection
+
+The `final_score` determines the order in which workflows are presented to the LLM, but the **LLM makes the final selection** based on descriptions, remediation history, and context. A workflow ranked #2 by score can still be selected if its description better matches the root cause.
+
+## Built-in Workflows
+
+Kubernaut seeds 18 workflows via a Helm post-install hook:
+
+| Workflow | Action Type |
+|---|---|
+| `crashloop-rollback-job` | RollbackDeployment |
+| `rollback-deployment-job` | RollbackDeployment |
+| `increase-memory-limits-job` | IncreaseMemoryLimits |
+| `graceful-restart-job` | GracefulRestart |
+| `git-revert-job` | GitRevertCommit |
+| `provision-node-job` | ProvisionNode |
+| `proactive-rollback-job` | ProactiveRollback |
+| `patch-hpa-job` | PatchHPA |
+| `relax-pdb-job` | RelaxPDB |
+| `remove-taint-job` | RemoveTaint |
+| `cleanup-pvc-job` | CleanupPVC |
+| `cordon-drain-job` | CordonDrainNode |
+| `fix-certificate-job` | FixCertificate |
+| `fix-certificate-gitops-job` | FixCertificate |
+| `helm-rollback-job` | HelmRollback |
+| `fix-authz-policy-job` | FixAuthorizationPolicy |
+| `fix-statefulset-pvc-job` | FixStatefulSetPVC |
+| `fix-network-policy-job` | FixNetworkPolicy |
+
+These are starting points. Operators supplement them with custom workflows using custom or existing action types.
 
 ## Next Steps
 
-- [Human Approval](approval.md) — When workflows require approval before execution
-- [Effectiveness Monitoring](effectiveness.md) — How outcomes are evaluated
-- [Architecture: Workflow Execution](../architecture/workflow-execution.md) — Deep-dive into the execution engine
+- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the LLM discovers and selects workflows
+- [Human Approval](approval.md) -- When workflows require approval before execution
+- [Effectiveness Monitoring](effectiveness.md) -- How outcomes are evaluated
+- [Architecture: Workflow Execution](../architecture/workflow-execution.md) -- Deep-dive into the execution engine

@@ -32,19 +32,23 @@ The RemediationRequest is the "parent" — all other CRDs are children created b
 
 Created after a RemediationRequest is accepted. The Signal Processing controller enriches the signal with:
 
-- **Kubernetes context** — Owner chain (Deployment → ReplicaSet → Pod), namespace labels
-- **Severity classification** — Based on alert labels and Rego policies
+- **Kubernetes context** — Owner chain (Deployment → ReplicaSet → Pod), namespace labels and annotations, workload details (kind, name, labels), and custom labels
+- **Environment classification** — Inferred from namespace labels or Rego policies (production, staging, development, test)
+- **Priority assignment** — P0–P3 based on Rego policy evaluation or severity-based fallback
+- **Business classification** — Business unit, service owner, criticality level, and SLA requirement (when labels are present)
+- **Severity normalization** — Maps raw alert severity to a standard scale (critical, high, medium, low, unknown) via Rego policies with a configurable fallback matrix
 - **Signal mode** — Reactive (something broke) or proactive (something is predicted to break)
-- **Deduplication** — Prevents duplicate remediations for the same issue
+- **Signal name normalization** — Normalizes the signal name for downstream matching while preserving the original for audit
 
 ### AIAnalysis
 
 Created after signal enrichment completes. The AI Analysis controller:
 
-1. Submits the enriched signal to **HolmesGPT** for live root cause investigation
-2. HolmesGPT uses `kubectl` to inspect pods, logs, events, and resource limits
-3. Produces a **root cause analysis (RCA)** and searches the workflow catalog for a match
-4. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
+1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for live root cause investigation
+2. HolmesGPT investigates using Kubernetes inspection tools (pod logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki/Tempo, and other configured observability toolsets
+3. Resolves the target resource's owner chain, computes a spec hash, fetches **remediation history** (past outcomes and effectiveness scores), and detects **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB) — giving the LLM full context before workflow selection
+4. Searches the **workflow catalog** for a matching remediation based on enriched signal labels, detected infrastructure, and historical outcomes
+5. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
 ### RemediationApprovalRequest
 
@@ -101,7 +105,7 @@ Kubernaut classifies signals into two modes:
 - **Reactive** — Responding to an active incident (e.g., `KubePodCrashLooping`, `KubePodOOMKilled`)
 - **Proactive** — Responding to a predicted issue (e.g., Prometheus `predict_linear()` alerts for disk pressure, memory exhaustion)
 
-Signal mode affects how urgency is evaluated and which workflows are considered.
+Signal mode determines which prompt variant HolmesGPT uses for the investigation. In **reactive** mode, the LLM performs root cause analysis of an incident that has already occurred. In **proactive** mode, the prompt shifts to trend assessment and prevention — the LLM evaluates whether the predicted issue is likely to materialize and recommends preventive action (or concludes no action is needed).
 
 ## Resource Scope
 
@@ -122,7 +126,13 @@ Remediation workflows are packaged as **OCI images** containing a `workflow-sche
 - **Parameters** — Typed inputs injected at runtime as environment variables (`UPPER_SNAKE_CASE`)
 - **Execution config** — Engine (`job` or `tekton`) and OCI bundle reference with digest
 
-AI Analysis queries the catalog using enriched signal labels and selects the best match based on label overlap and confidence scoring. See [Remediation Workflows](workflows.md) for the full schema reference.
+During investigation, the LLM selects a workflow through a three-step discovery protocol:
+
+1. **List action types** — HolmesGPT calls DataStorage to retrieve available action types (e.g., `RestartPod`, `RollbackDeployment`), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)
+2. **List workflows for action type** — The LLM picks an action type and retrieves matching workflows, which DataStorage returns ordered by label-match scoring (though scores are not exposed to the LLM)
+3. **Get workflow details** — The LLM selects a specific workflow and retrieves its full parameter schema to fill in values from the root cause analysis
+
+The LLM makes the final selection decision based on workflow descriptions (`what`, `whenToUse`, `whenNotToUse`), detected infrastructure context (e.g., prefer git-based workflows when `gitOpsManaged=true`), and remediation history (avoid workflows that recently failed on the same target). See [Remediation Workflows](workflows.md) for the full schema reference.
 
 ## Next Steps
 

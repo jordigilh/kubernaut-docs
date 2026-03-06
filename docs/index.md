@@ -73,8 +73,8 @@ graph LR
 ```
 
 1. **Signal Detection** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a `RemediationRequest`.
-2. **Signal Processing** — Enriches the signal with Kubernetes context: owner chain, namespace labels, severity classification, deduplication, and signal mode.
-3. **AI Analysis** — An LLM investigates the incident live — checking pod logs, events, and resource limits via `kubectl` — produces a root cause analysis, and searches a workflow catalog for a matching remediation.
+2. **Signal Processing** — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.
+3. **AI Analysis** — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.
 4. **Workflow Execution** — Runs the selected remediation via Tekton Pipelines or Kubernetes Jobs, with optional human approval gates.
 5. **Close the Loop** — Notifies the team and evaluates whether the fix actually worked via spec hash comparison, health checks, and effectiveness scoring.
 
@@ -84,14 +84,14 @@ graph LR
 
 | Capability | Description |
 |---|---|
-| **Multi-Source Signal Processing** | Prometheus alerts (reactive and proactive), Kubernetes events, deduplication, signal mode classification |
-| **AI-Powered Root Cause Analysis** | HolmesGPT with LLM providers (Vertex AI, OpenAI, LiteLLM) and live `kubectl` access |
+| **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
+| **AI-Powered Root Cause Analysis** | HolmesGPT with LLM providers (Vertex AI, OpenAI, LiteLLM), Kubernetes inspection tools, and configurable observability toolsets (Prometheus, Grafana Loki/Tempo, and more) |
 | **Workflow Catalog** | Searchable OCI-containerized workflows with label-based matching and confidence scoring |
-| **Flexible Execution** | Tekton Pipelines (multi-step) or Kubernetes Jobs (single-step) with the Validate-Action-Verify pattern |
+| **Flexible Execution** | Tekton Pipelines (multi-step) or Kubernetes Jobs (single-step) with optional human approval gates |
 | **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |
 | **Safety-First Design** | Admission webhooks, human approval gates, configurable confidence thresholds, effectiveness tracking |
 | **SOC2 Compliance** | Full audit trails with 7-year retention, CRD reconstruction from audit events, operator attribution |
-| **Continuous Learning** | Multi-dimensional effectiveness tracking to improve remediation success rates over time |
+| **Effectiveness Tracking** | Four-dimensional assessment (health, alert resolution, metrics, spec drift) with weighted scoring; remediation history feeds into HolmesGPT so the LLM avoids repeating failed remediations |
 
 ---
 

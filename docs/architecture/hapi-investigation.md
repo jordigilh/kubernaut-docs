@@ -46,10 +46,9 @@ Before any tools are called, HAPI assembles the initial prompt from the enriched
 - Alert firing time and received time
 - Cluster name and signal source
 
-**Deduplication and storm context:**
+**Deduplication context:**
 
 - Whether the signal is a duplicate, occurrence count, first/last seen
-- Storm detection: is this part of a signal storm? How many signals? What type? Which resources are affected?
 
 **Signal mode** (reactive or proactive) determines the prompt variant -- see [Reactive vs Proactive](#reactive-vs-proactive-mode) below.
 

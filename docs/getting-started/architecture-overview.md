@@ -5,69 +5,52 @@ Kubernaut is a microservices platform with 10 services that communicate through 
 ## System Diagram
 
 ```mermaid
-graph TB
-    subgraph External["External Signal Sources"]
-        AM[Prometheus<br/>AlertManager]
-        KE[Kubernetes<br/>Events]
+flowchart LR
+    subgraph Sources["Signal Sources"]
+        AM["Prometheus\nAlertManager"]
+        KE["Kubernetes\nEvents"]
     end
 
-    subgraph Gateway["Gateway Service"]
-        GW[Gateway<br/><i>Stateless HTTP</i>]
-    end
+    GW["**Gateway**"]
 
     AM -->|webhook| GW
-    KE -->|event-exporter| GW
+    KE -->|event| GW
 
-    GW -->|creates| RR[RemediationRequest<br/>CRD]
+    GW -->|"RemediationRequest\nCRD"| RO
 
-    subgraph Orchestration["Remediation Orchestrator"]
-        RO[Remediation<br/>Orchestrator<br/><i>CRD Controller</i>]
+    RO["**Remediation\nOrchestrator**"]
+
+    subgraph Pipeline["Remediation Pipeline"]
+        direction TB
+        SP["Signal Processing"]
+        AA["AI Analysis"]
+        WE["Workflow Execution"]
+        NF["Notification"]
+        EM["Effectiveness Monitor"]
     end
 
-    RR --> RO
+    RO -->|"CRDs"| Pipeline
 
-    RO -->|creates| SP_CRD[SignalProcessing<br/>CRD]
-    RO -->|creates| AA_CRD[AIAnalysis<br/>CRD]
-    RO -->|creates| RAR_CRD[RemediationApprovalRequest<br/>CRD]
-    RO -->|creates| WE_CRD[WorkflowExecution<br/>CRD]
-    RO -->|creates| NR_CRD[NotificationRequest<br/>CRD]
-    RO -->|creates| EA_CRD[EffectivenessAssessment<br/>CRD]
-
-    subgraph Controllers["CRD Controllers"]
-        SP[Signal<br/>Processing] --> SP_CRD
-        AA[AI<br/>Analysis] --> AA_CRD
-        WE[Workflow<br/>Execution] --> WE_CRD
-        NF[Notification] --> NR_CRD
-        EM[Effectiveness<br/>Monitor] --> EA_CRD
-    end
-
-    AA -.->|session-based async| HAPI[HolmesGPT<br/>API<br/><i>Python / FastAPI</i>]
-    HAPI -.->|LLM call| LLM[LLM Provider<br/><i>Vertex AI / OpenAI</i>]
+    AA -.->|async| HAPI["**HolmesGPT API**\nPython · FastAPI"]
+    HAPI -.-> LLM["LLM Provider"]
 
     subgraph Data["Data Layer"]
-        DS[DataStorage<br/><i>Stateless HTTP</i>]
-        PG[(PostgreSQL)]
-        RD[(Redis)]
+        DS["**DataStorage**"]
+        PG[("PostgreSQL")]
+        RD[("Redis")]
     end
 
     DS --- PG
     DS --- RD
+    HAPI -.->|"workflow\nquery"| DS
 
-    SP -.->|audit| DS
-    AA -.->|audit| DS
-    WE -.->|audit| DS
-    NF -.->|audit| DS
-    EM -.->|audit| DS
-    RO -.->|audit| DS
-    GW -.->|audit| DS
-    HAPI -.->|workflow query| DS
-
-    style External fill:#f5f5f5,stroke:#999
-    style Gateway fill:#e3f2fd,stroke:#1565c0
-    style Orchestration fill:#fff3e0,stroke:#e65100
-    style Controllers fill:#e8f5e9,stroke:#2e7d32
-    style Data fill:#fce4ec,stroke:#c62828
+    style Sources fill:transparent,stroke:#888
+    style Pipeline fill:transparent,stroke:#888
+    style Data fill:transparent,stroke:#888
 ```
+
+!!! note "Audit & Data Connections"
+    All services (Gateway, Orchestrator, and every CRD controller) emit **audit events** to DataStorage over HTTP. These connections are omitted from the diagram for clarity. The Orchestrator also queries DataStorage for remediation history, and HolmesGPT API queries it for the workflow catalog.
 
 ## Services
 
@@ -126,20 +109,22 @@ A `RemediationRequest` progresses through these phases:
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
-    Pending --> Processing: RO creates SignalProcessing
-    Pending --> Blocked: Routing condition blocks progress
-    Processing --> Analyzing: SP completes enrichment
-    Analyzing --> AwaitingApproval: Low confidence / policy requires approval
-    Analyzing --> Executing: High confidence, auto-approved
-    Analyzing --> Blocked: Routing condition blocks progress
-    Analyzing --> Skipped: Resource busy / recently remediated
+    Pending --> Processing: Create SignalProcessing
+    Pending --> Blocked: Routing condition
+    Processing --> Analyzing: Enrichment complete
+    Analyzing --> Completed: No remediation needed
+    Analyzing --> AwaitingApproval: Rego policy requires approval
+    Analyzing --> Executing: Workflow selected, auto-approved
+    Analyzing --> Blocked: Routing condition
+    Analyzing --> Failed: AI investigation failed
     AwaitingApproval --> Executing: Human approves
     AwaitingApproval --> Failed: Human rejects
-    Executing --> Verifying: WE succeeded → Create EA
+    Executing --> Verifying: Workflow succeeded
     Executing --> Failed: Workflow fails
-    Blocked --> Pending: Cooldown expires, re-evaluated
-    Verifying --> Completed: EA completed
-    Verifying --> Failed: Verification timed out
+    Verifying --> Completed: Effectiveness assessed
+    Blocked --> Failed: Cooldown expires
+    Blocked --> Analyzing: Block cleared
+    Blocked --> Pending: Block cleared
     Completed --> [*]
     Failed --> [*]
     TimedOut --> [*]
@@ -147,10 +132,32 @@ stateDiagram-v2
     Cancelled --> [*]
 ```
 
-After reaching a terminal phase (Completed, Failed, TimedOut, Skipped, or Cancelled), the Orchestrator creates:
+### AI Analysis Outcomes
 
-- A **NotificationRequest** to inform the team
-- An **EffectivenessAssessment** to evaluate whether the fix worked
+The **Analyzing** phase represents the LLM investigation via HolmesGPT API. The AI produces one of these outcomes:
+
+| Outcome | RR Transition | Description |
+|---|---|---|
+| **No remediation needed** | Completed (NoActionRequired) | LLM determines the issue does not require remediation — either the problem self-resolved (e.g., pod recovered) or the condition is benign (e.g., dangling PVC that doesn't warrant action) |
+| **Workflow selected** | Executing or AwaitingApproval | LLM identified root cause and selected a workflow; Rego policy determines if approval is required |
+| **Investigation inconclusive** | Failed (ManualReviewRequired) | LLM could not produce a reliable RCA (low confidence, incomplete analysis) |
+| **No matching workflow** | Failed (ManualReviewRequired) | RCA succeeded but no workflow matches the detected labels |
+| **Infrastructure failure** | Failed | API error, timeout, or max retries exceeded communicating with the LLM |
+
+### Blocked Phase
+
+The **Blocked** phase is non-terminal and covers 6 routing scenarios managed by the Orchestrator (not the LLM):
+
+| Block Reason | Exit Condition | Resumes To |
+|---|---|---|
+| ConsecutiveFailures | Cooldown expires | Failed (terminal) |
+| ResourceBusy | Blocking workflow completes | Analyzing |
+| DuplicateInProgress | Original RR completes | Pending |
+| RecentlyRemediated | Cooldown expires | Failed (terminal) |
+| ExponentialBackoff | Backoff window expires | Failed (terminal) |
+| UnmanagedResource | Scope label added | Pending |
+
+After reaching a terminal phase, the Orchestrator creates a **NotificationRequest** to inform the team. On successful completion, it also creates an **EffectivenessAssessment** to evaluate whether the fix worked.
 
 ## Data Flow
 

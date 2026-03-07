@@ -31,7 +31,6 @@ theme:
     code: JetBrains Mono
   icon:
     repo: fontawesome/brands/github
-    logo: material/kubernetes
   features:
     - navigation.tabs
     - navigation.sections

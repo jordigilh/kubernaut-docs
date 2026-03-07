@@ -4,53 +4,11 @@ Kubernaut is a microservices platform with 10 services that communicate through 
 
 ## System Diagram
 
-```mermaid
-flowchart LR
-    subgraph Sources["Signal Sources"]
-        AM["Prometheus\nAlertManager"]
-        KE["Kubernetes\nEvents"]
-    end
+<figure markdown="span">
+  ![Kubernaut Layered Architecture](../assets/diagrams/kubernaut-layered-architecture.svg){ width="100%" }
+</figure>
 
-    GW["**Gateway**"]
-
-    AM -->|webhook| GW
-    KE -->|event| GW
-
-    GW -->|"RemediationRequest\nCRD"| RO
-
-    RO["**Remediation\nOrchestrator**"]
-
-    subgraph Pipeline["Remediation Pipeline"]
-        direction TB
-        SP["Signal Processing"]
-        AA["AI Analysis"]
-        WE["Workflow Execution"]
-        NF["Notification"]
-        EM["Effectiveness Monitor"]
-    end
-
-    RO -->|"CRDs"| Pipeline
-
-    AA -.->|async| HAPI["**HolmesGPT API**\nPython · FastAPI"]
-    HAPI -.-> LLM["LLM Provider"]
-
-    subgraph Data["Data Layer"]
-        DS["**DataStorage**"]
-        PG[("PostgreSQL")]
-        RD[("Redis")]
-    end
-
-    DS --- PG
-    DS --- RD
-    HAPI -.->|"workflow\nquery"| DS
-
-    style Sources fill:transparent,stroke:#888
-    style Pipeline fill:transparent,stroke:#888
-    style Data fill:transparent,stroke:#888
-```
-
-!!! note "Audit & Data Connections"
-    All services (Gateway, Orchestrator, and every CRD controller) emit **audit events** to DataStorage over HTTP. These connections are omitted from the diagram for clarity. The Orchestrator also queries DataStorage for remediation history, and HolmesGPT API queries it for the workflow catalog.
+The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five CRD controllers -- Signal Processing, AI Analysis, Workflow Execution, Notification, Effectiveness Monitor -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Redis for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to HolmesGPT API for LLM-driven investigation, and HolmesGPT API queries DataStorage for the workflow catalog and remediation history.
 
 ## Services
 

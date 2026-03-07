@@ -106,6 +106,7 @@ nav:
   - Architecture:
       - architecture/index.md
       - System Overview: architecture/overview.md
+      - Gateway: architecture/gateway.md
       - Signal Processing: architecture/signal-processing.md
       - AI Analysis: architecture/ai-analysis.md
       - Investigation Pipeline: architecture/hapi-investigation.md
@@ -113,6 +114,7 @@ nav:
       - Workflow Selection: architecture/workflow-selection.md
       - Workflow Execution: architecture/workflow-execution.md
       - Effectiveness Assessment: architecture/effectiveness.md
+      - Notification Pipeline: architecture/notification.md
       - Async Propagation: architecture/async-propagation.md
       - Audit Pipeline: architecture/audit-pipeline.md
       - Data Persistence: architecture/data-persistence.md

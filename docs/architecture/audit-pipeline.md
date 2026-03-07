@@ -1,10 +1,8 @@
 # Audit Pipeline
 
-Kubernaut's audit pipeline provides a complete record of every action taken during remediation — from signal ingestion to effectiveness assessment, including human approval decisions.
+Kubernaut's audit pipeline provides a complete record of every action taken during remediation -- from signal ingestion to effectiveness assessment, including human approval decisions. Every service includes a buffered audit store that batches events and sends them to DataStorage for persistent storage.
 
 ## Architecture
-
-Every service includes a **buffered audit store** that batches events and sends them to DataStorage:
 
 ```mermaid
 graph LR
@@ -14,23 +12,116 @@ graph LR
     end
 
     DS[DataStorage<br/>REST API] --> PG[(PostgreSQL<br/>audit_events)]
+    DS --> RD[(Redis<br/>DLQ)]
 ```
 
 ### Design Principles
 
-- **Fire-and-forget** — Audit failures never block remediation (DD-AUDIT-002)
-- **Buffered batching** — Events are queued in-memory and sent in configurable batches
-- **Graceful shutdown** — Buffers flush on pod termination
-- **Per-service isolation** — Each service has its own audit client with service-specific event types
+- **Fire-and-forget** -- Audit failures never block remediation (DD-AUDIT-002)
+- **Buffered batching** -- Events are queued in-memory and sent in configurable batches
+- **Graceful shutdown** -- Buffers flush on pod termination (DD-007, ADR-032)
+- **Per-service isolation** -- Each service has its own audit client with service-specific event types
+- **Hash chain integrity** -- Events are chained via `SHA256(previous_hash + event_json)` for tamper detection
+
+## Buffered Audit Store
+
+Every Go service instantiates a `BufferedAuditStore` from `pkg/audit/store.go`:
+
+### Interface
+
+| Method | Behavior |
+|---|---|
+| `StoreAudit(ctx, event)` | Non-blocking enqueue. If the buffer is full, the event is **dropped** (not blocking) |
+| `Flush(ctx)` | Blocks until all buffered events are written |
+| `Close()` | Flushes remaining events and stops the background worker |
+
+### Flush Triggers
+
+Events are flushed in three scenarios:
+
+1. **Batch full** -- When the in-memory batch reaches `BatchSize`, it is sent immediately
+2. **Timer** -- Every `FlushInterval`, the current batch is sent regardless of size
+3. **Explicit flush** -- `Flush()` drains the buffer and sends all remaining events
+4. **Shutdown** -- `Close()` performs a final flush before stopping
+
+### Retry Logic
+
+- **Max retries**: 3 per batch
+- **Backoff**: 1s, 4s, 9s (quadratic)
+- **4xx errors**: No retry (permanent failure)
+- **5xx / network errors**: Retry with backoff
+
+### Configuration
+
+| Parameter | Default | Recommendation |
+|---|---|---|
+| `BufferSize` | 10,000 | 10k--50k (DD-AUDIT-004) |
+| `BatchSize` | 1,000 | 1,000 |
+| `FlushInterval` | 1 second | 1s |
+| `MaxRetries` | 3 | 3 |
+
+### Observability
+
+The buffered store exposes Prometheus metrics:
+
+| Metric | Description |
+|---|---|
+| `buffered_count` | Events currently in the buffer |
+| `dropped_count` | Events dropped due to full buffer |
+| `written_count` | Events successfully written |
+| `failed_batch_count` | Batches that failed after all retries |
 
 ## Event Flow
 
 1. A handler or reconciler calls `auditStore.StoreAudit(ctx, event)` with a structured `AuditEvent`
-2. The buffered store enqueues the event (non-blocking)
-3. A background worker batches events based on `BufferSize`, `BatchSize`, and `FlushInterval`
-4. Batches are sent via `POST /api/v1/audit/events/batch` to DataStorage
-5. DataStorage inserts into the `audit_events` PostgreSQL table
+2. The buffered store enqueues the event into an in-memory channel (non-blocking)
+3. A background goroutine batches events and sends them via `POST /api/v1/audit/events/batch` to DataStorage
+4. DataStorage validates, converts, and inserts the batch into the `audit_events` PostgreSQL table within a transaction
+5. On PostgreSQL failure, the batch is enqueued to the Redis DLQ for retry
 6. On shutdown, `auditStore.Close()` flushes remaining events
+
+## Event Structure
+
+Every audit event includes:
+
+| Field | Type | Description |
+|---|---|---|
+| `event_id` | `UUID` | Unique identifier (auto-generated) |
+| `event_version` | `string` | Schema version (default: `1.0`) |
+| `event_timestamp` | `timestamptz` | When the event occurred |
+| `event_type` | `string` | Hierarchical type (e.g., `gateway.signal.received`) |
+| `event_category` | `string` | Category (e.g., `signal`, `remediation`) |
+| `event_action` | `string` | Action (e.g., `received`, `completed`) |
+| `event_outcome` | `string` | `success`, `failure`, `pending` |
+| `actor_type` | `string` | `service` or `human` |
+| `actor_id` | `string` | Service name or operator identity |
+| `resource_type` | `string` | Target resource type |
+| `resource_id` | `string` | Target resource identifier |
+| `correlation_id` | `string` | Links all events for one remediation |
+| `namespace` | `string` | Kubernetes namespace |
+| `event_data` | `JSONB` | Service-specific payload |
+| `event_hash` | `string` | SHA256 hash chain for integrity |
+| `previous_event_hash` | `string` | Previous event's hash |
+| `retention_days` | `int` | Default: 2555 (7 years) |
+| `is_sensitive` | `bool` | PII flag |
+
+### Hash Chain (Tamper Detection)
+
+Events form a hash chain for integrity verification:
+
+```
+event_hash = SHA256(previous_event_hash + canonical_event_json)
+```
+
+Fields excluded from the hash: `event_hash`, `previous_event_hash`, `event_date`, `legal_hold` fields. This enables after-the-fact detection of any audit event modification.
+
+## Correlation
+
+All audit events for a single remediation share a `correlation_id` set to the `RemediationRequest` name (DD-AUDIT-CORRELATION-002). This enables:
+
+- **Timeline reconstruction** -- Query all events for one remediation in chronological order
+- **CRD reconstruction** -- Rebuild the full RemediationRequest from audit data (see [Data Persistence: Reconstruction](data-persistence.md#remediationrequest-reconstruction))
+- **Cross-service tracing** -- Follow a remediation across all services
 
 ## Emitting Services
 
@@ -38,14 +129,14 @@ All 7 Go services plus the auth webhook emit audit events:
 
 | Service | Event Prefix | Key Events |
 |---|---|---|
-| **Gateway** | `gateway.*` | Signal received, scope validated, dedup checked |
-| **Signal Processing** | `signalprocessing.*` | Enrichment completed, classification results |
-| **AI Analysis** | `aianalysis.*` | Investigation submitted, analysis completed, Rego evaluation, approval decision |
-| **Remediation Orchestrator** | `orchestrator.*` | Lifecycle created, phase transitions, child CRD creation |
-| **Workflow Execution** | `workflowexecution.*` | Workflow selected, execution started, execution completed |
-| **Notification** | `notification.*` | Delivery attempted, delivery result |
-| **Effectiveness Monitor** | `effectiveness.*` | Component assessments (health, hash, alerts, metrics), scheduling, completion |
-| **Auth Webhook** | `webhook.*`, `workflowexecution.block.cleared` | Approval decided, block cleared, timeout modified, notification cancelled |
+| **Gateway** | `gateway.*` | `signal.received`, `signal.deduplicated`, `crd.created`, `crd.failed` |
+| **Signal Processing** | `signalprocessing.*` | `enrichment.completed`, `classification.completed`, `phase.transition` |
+| **AI Analysis** | `aianalysis.*` | `investigation.submitted`, `analysis.completed`, `rego.evaluation`, `approval.decision` |
+| **Remediation Orchestrator** | `orchestrator.*` | `lifecycle.created`, `phase.transition`, `child.created`, `timeout` |
+| **Workflow Execution** | `workflowexecution.*` | `selection.completed`, `execution.started`, `execution.completed`, `block.cleared` |
+| **Notification** | `notification.*` | `message.sent`, `message.failed`, `message.acknowledged`, `message.escalated` |
+| **Effectiveness Monitor** | `effectiveness.*` | `health.assessed`, `hash.computed`, `alert.assessed`, `metrics.assessed`, `assessment.completed` |
+| **Auth Webhook** | `webhook.*` | `remediationapprovalrequest.decided`, `remediationrequest.timeout_modified`, `notification.cancelled` |
 
 ## Operator Attribution
 
@@ -58,31 +149,22 @@ The **admission webhook** captures human identity for all operator-driven action
 | Modify timeout | `webhook.remediationrequest.timeout_modified` | Actor identity, old/new values |
 | Cancel notification | `webhook.notification.cancelled` | Actor identity, notification ref |
 
-This ensures every human action has a recorded identity, timestamp, and context — critical for SOC2 Type II compliance.
+This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II compliance.
 
-## Buffering Configuration
+## Dead Letter Queue
 
-Each service's audit store is configured with:
+When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Redis streams for retry:
 
-| Parameter | Description |
+| Stream | Purpose |
 |---|---|
-| `BufferSize` | Maximum events in the in-memory buffer |
-| `BatchSize` | Number of events per batch POST |
-| `FlushInterval` | Maximum time between flushes |
-| `MaxRetries` | Retry attempts for failed batches |
+| `audit:dlq:events` | Generic audit event batches |
+| `audit:dlq:notifications` | Notification-specific audit events |
+| `audit:dead-letter:{type}` | Events that exceeded retry attempts |
 
-## Correlation
-
-All audit events for a single remediation share a `correlation_id` (the RemediationRequest name). This enables:
-
-- **Timeline reconstruction** — Query all events for one remediation in chronological order
-- **CRD reconstruction** — Rebuild the full RemediationRequest from audit data
-- **Cross-service tracing** — Follow a remediation across all 8 services
-
-See [Data Persistence](data-persistence.md) for the PostgreSQL schema and reconstruction pipeline.
+The DLQ uses Redis consumer groups (`XREADGROUP`) for reliable delivery and `XAck` for acknowledgment. Maximum stream length is 10,000 entries.
 
 ## Next Steps
 
-- [Data Persistence](data-persistence.md) — PostgreSQL schema and reconstruction
-- [Audit & Observability](../user-guide/audit-and-observability.md) — User guide for audit features
-- [System Overview](overview.md) — How audit fits into the overall architecture
+- [Data Persistence](data-persistence.md) -- PostgreSQL schema, partitioning, and reconstruction
+- [Audit & Observability](../user-guide/audit-and-observability.md) -- User guide for audit features
+- [System Overview](overview.md) -- How audit fits into the overall architecture

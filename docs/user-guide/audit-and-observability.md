@@ -92,14 +92,17 @@ All audit events for a single remediation share the same `correlation_id` (the R
 
 ## Metrics
 
-All services expose Prometheus metrics on `:9090/metrics`, including:
+All services expose Prometheus metrics on `:9090/metrics`. Kubernaut exposes ~115 custom metrics across all services covering signal ingestion, classification, orchestration, execution, notification, effectiveness, audit, and LLM usage.
 
-- Request counts and latencies per stage
-- Error rates and retry counts
-- Audit event emission rates
-- Queue depths and processing times
+Key metric categories:
 
-See [Monitoring](../operations/monitoring.md) for dashboard configuration.
+- **Throughput** -- Signals received, remediations completed, notifications delivered
+- **Latency** -- Per-phase processing duration, LLM call latency, delivery duration
+- **Errors** -- Failure rates, retry counts, circuit breaker states
+- **Audit health** -- Buffer utilization, DLQ depth, write latency
+- **LLM cost** -- Token consumption by provider and model
+
+See [Monitoring: Prometheus Metrics Reference](../operations/monitoring.md#gateway-metrics) for the complete per-service metrics inventory with metric names, types, labels, and example PromQL queries for Grafana dashboards.
 
 ## Next Steps
 

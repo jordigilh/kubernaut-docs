@@ -12,7 +12,7 @@ The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and crea
 
 ## Services
 
-Kubernaut runs **10 services**: 6 CRD controllers, 3 stateless HTTP services, and 1 Python API service.
+Kubernaut runs **10 services**: 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 1 Python API service.
 
 ### CRD Controllers
 
@@ -33,6 +33,7 @@ These services watch Kubernetes Custom Resources and reconcile state:
 |---|---|
 | **Gateway** | HTTP entry point for AlertManager webhooks and K8s events; validates resource scope, resolves owner chains, performs fingerprint-based deduplication, and creates RemediationRequest CRDs |
 | **DataStorage** | PostgreSQL-backed REST API for audit events, workflow catalog, remediation history, and effectiveness data (Redis for DLQ) |
+| **Auth Webhook** | Kubernetes admission webhook that captures operator identity for SOC2 audit attribution on CRD mutations, and bridges RemediationWorkflow CRD lifecycle with the DataStorage workflow catalog (registers on CREATE, disables on DELETE) |
 | **HolmesGPT API** | Python FastAPI service that orchestrates LLM-driven root cause analysis using Kubernetes inspection tools and configurable observability toolsets (Prometheus, Grafana Loki/Tempo); detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB) that influence workflow selection and catalog search; fetches remediation history so the LLM avoids repeating failed remediations |
 
 ## Communication Pattern
@@ -48,7 +49,7 @@ This architecture provides:
 
 ## Custom Resources
 
-Kubernaut defines 7 CRD types:
+Kubernaut defines 8 CRD types:
 
 | CRD | API Group | Created By | Watched By |
 |---|---|---|---|
@@ -59,6 +60,7 @@ Kubernaut defines 7 CRD types:
 | `WorkflowExecution` | `kubernaut.ai` | Remediation Orchestrator | Workflow Execution |
 | `NotificationRequest` | `kubernaut.ai` | Remediation Orchestrator | Notification |
 | `EffectivenessAssessment` | `kubernaut.ai` | Remediation Orchestrator | Effectiveness Monitor |
+| `RemediationWorkflow` | `kubernaut.ai` | Operator (`kubectl apply`) | Auth Webhook (admission) → DataStorage catalog |
 
 ## Remediation Lifecycle
 

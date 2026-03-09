@@ -39,12 +39,12 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.
 |----------|--------|-------------|-------------|
 | gitops-drift (#125) | `KubePodCrashLooping` | `GitRevertCommit` | Bad ConfigMap commit in Gitea, LLM selects git revert over kubectl rollback |
 | cert-failure-gitops (#134) | `CertManagerCertNotReady` | `GitRevertCommit` / `FixCertificate` | Broken ClusterIssuer via git; LLM may choose git revert or direct fix ([details](multi-path-remediation.md)) |
-| cert-failure (#133) | `CertManagerCertNotReady` | `FixCertificate` | CA Secret deleted, workflow recreates it to restore certificate issuance |
 
 ### Infrastructure
 
 | Scenario | Signal | Remediation | Description |
 |----------|--------|-------------|-------------|
+| cert-failure (#133) | `CertManagerCertNotReady` | `FixCertificate` | CA Secret deleted, workflow recreates it to restore certificate issuance |
 | hpa-maxed (#123) | `HPAMaxedOut` | `ScaleHPA` | HPA at max replicas under sustained load |
 | resource-contention | `KubePodOOMKilled` | `IncreaseMemoryLimits` | Memory contention causes OOM kills across competing workloads |
 | resource-quota-exhaustion | `KubeResourceQuotaExhausted` | `AdjustResourceQuota` | Namespace quota prevents scaling |

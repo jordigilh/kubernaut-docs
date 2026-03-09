@@ -124,6 +124,9 @@ nav:
       - Custom Resources: api-reference/crds.md
       - DataStorage API: api-reference/datastorage-api.md
       - HolmesGPT API: api-reference/holmesgpt-api.md
+  - Use Cases:
+      - use-cases/index.md
+      - Multi-Path Remediation: use-cases/multi-path-remediation.md
   - Operations:
       - operations/index.md
       - Monitoring: operations/monitoring.md

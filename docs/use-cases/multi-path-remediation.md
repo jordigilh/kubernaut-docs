@@ -87,7 +87,8 @@ that can be fixed directly, regardless of how the configuration is managed.
 ### 3. Confidence Calibration
 
 The LLM set confidence to **0.85** -- high enough to act, but below the auto-approve
-threshold. This triggered a human approval request.
+threshold. This triggered a human approval request on both the first and second
+incidents.
 
 The LLM was aware that choosing direct remediation in a GitOps environment is a
 consequential decision. Rather than auto-executing, it deferred to a human operator
@@ -95,13 +96,50 @@ for confirmation. This is situational awareness, not just pattern matching.
 
 ## The Recurrence Test
 
-After the first remediation, the `nonexistent-ca-secret` was deleted to simulate the
-problem recurring. The second alert fired, and the LLM was presented with the same
-problem.
+After the first remediation completed, the Effectiveness Assessment verified success
+(alert score 1/1, health score 1/1, outcome: Remediated). This result was recorded in
+the DataStorage audit trail.
+
+The `nonexistent-ca-secret` was then deleted to simulate the problem recurring. A second
+`CertManagerCertNotReady` alert fired.
+
+### History-Informed Decision Making
+
+When the LLM investigated the second incident, HAPI's `get_resource_context` tool
+automatically queried DataStorage for the resource's remediation history. The HAPI logs
+confirmed:
+
+```
+resource_context_resolved: history_count=5, has_detected_infrastructure=True
+```
+
+The LLM received the full remediation history for `Deployment/demo-app`, formatted as a
+prompt section that included:
+
+- The previous `FixCertificate` workflow outcome (Completed/Remediated)
+- Effectiveness scoring (alert resolved, health checks passed)
+- Reasoning guidance: *"Use the above remediation history to inform your workflow
+  selection. Avoid repeating workflows that previously failed or had poor effectiveness."*
 
 **Result**: The LLM chose `FixCertificate` again with the same confidence (0.85) and
-the same rationale. This demonstrates consistent behavior -- the LLM's reasoning is
-stable and reproducible, not random.
+the same rationale -- reinforced by the evidence that the previous remediation
+succeeded. This is not random consistency; it is evidence-based reasoning informed by
+verified historical outcomes.
+
+### Built-In Escalation Safety
+
+Kubernaut includes a safeguard against repeated but ultimately ineffective remediations.
+If the same workflow completes successfully multiple times but the same signal keeps
+recurring, the remediation history prompt injects a warning:
+
+> **WARNING: REPEATED INEFFECTIVE REMEDIATION** -- Completed N times for signal
+> 'CertManagerCertNotReady' but the issue continues to recur. This suggests the
+> workflow treats the symptom, not the root cause. Recommend selecting
+> `needs_human_review` or an alternative escalation workflow.
+
+This ensures that if `FixCertificate` kept being applied without addressing the
+underlying Git drift, the system would eventually escalate to human review rather
+than continuing an ineffective remediation loop.
 
 ## AIOps vs Rule-Based Systems
 

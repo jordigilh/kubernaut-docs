@@ -581,10 +581,10 @@ Additionally, only `active` + `is_latest_version = true` workflows pass.
 Surviving candidates are scored by infrastructure label overlap. The formula:
 
 ```
-final_score = (5.0 + detected_boost + custom_boost - penalty) / 10.0
+final_score = LEAST((5.0 + detected_boost + custom_boost - penalty) / 10.0, 1.0)
 ```
 
-The base score is 0.5 (5.0/10.0). Boosts increase it, penalties decrease it. Range: 0.0--1.0.
+The base score is 0.5 (5.0/10.0). Boosts increase it, penalties decrease it. The `LEAST` clamp ensures the score never exceeds 1.0 when many labels match.
 
 **Detected label boost weights:**
 

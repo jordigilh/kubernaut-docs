@@ -170,14 +170,15 @@ flowchart LR
 ```yaml
 spec:
   customLabels:
-    risk_tolerance: ["high"]           # exact match only
-    team: ["payments", "checkout"]     # matches either value
-    region: ["*"]                      # wildcard -- matches any value
+    risk_tolerance: "high"       # exact match only
+    team: "payments"             # matches this specific value
+    region: "*"                  # wildcard -- matches any value
 ```
 
-- **Exact match**: The workflow's value must match the incident's value exactly. Boost: **+0.15** per matching key.
+- **Exact match**: The workflow's value must equal the incident's value. Boost: **+0.15** per matching key.
 - **Wildcard** (`"*"`): The workflow matches any non-empty value for that key. Boost: **+0.075** (half of exact).
-- **Multiple values**: The workflow matches if the incident's value is in the array.
+
+CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Internally, DataStorage wraps these into arrays for JSONB storage and scoring.
 
 ### Labeling Namespaces
 
@@ -190,7 +191,9 @@ The default `customlabels.rego` extracts all `kubernaut.ai/label-*` labels autom
 
 ```rego
 package signalprocessing.customlabels
+
 import rego.v1
+
 labels[key] := value if {
   some k, v in input.kubernetes.namespace.labels
   startswith(k, "kubernaut.ai/label-")
@@ -205,6 +208,7 @@ If your labels don't follow the `kubernaut.ai/label-` convention, write a custom
 
 ```rego
 package signalprocessing.customlabels
+
 import rego.v1
 
 labels := result if {
@@ -289,7 +293,7 @@ spec:
     component: deployment
     priority: "*"
   customLabels:
-    risk_tolerance: ["high"]
+    risk_tolerance: "high"
   execution:
     engine: job
     bundle: registry.example.com/workflows/restart-pods@sha256:abc123...
@@ -327,7 +331,7 @@ spec:
     component: deployment
     priority: "*"
   customLabels:
-    risk_tolerance: ["low"]
+    risk_tolerance: "low"
   execution:
     engine: job
     bundle: registry.example.com/workflows/crashloop-rollback@sha256:def456...
@@ -393,7 +397,7 @@ The ranking and the descriptions **reinforce each other**:
 3. **Check customLabels on the SP CRD**: Verify that Signal Processing extracted the expected custom labels:
 
     ```bash
-    kubectl get signalprocessing -n kubernaut-system -o jsonpath='{.items[0].status.customLabels}'
+    kubectl get signalprocessing -n kubernaut-system -o jsonpath='{.items[0].status.kubernetesContext.customLabels}'
     ```
 
 4. **Check namespace labels**: Verify the source namespace has the expected labels:

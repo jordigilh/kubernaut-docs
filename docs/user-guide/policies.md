@@ -137,7 +137,7 @@ labels:
 
 Produces: `{"team": "payments", "tier": "gold"}`
 
-These labels feed into Layer 2 scoring at +0.05 per exact match. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).
+These labels feed into Layer 2 scoring at +0.15 per exact match. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).
 
 **ConfigMap:** `signalprocessing-customlabels-policy`
 

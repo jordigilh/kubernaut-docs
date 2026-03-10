@@ -95,6 +95,7 @@ nav:
       - Core Concepts: user-guide/concepts.md
       - Signals & Alert Routing: user-guide/signals.md
       - Remediation Workflows: user-guide/workflows.md
+      - Authoring Workflows: user-guide/workflow-authoring.md
       - Rego Policies: user-guide/policies.md
       - Notification Channels: user-guide/notifications.md
       - Human Approval: user-guide/approval.md

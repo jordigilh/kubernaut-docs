@@ -610,7 +610,7 @@ Maximum possible boost: **0.39** (all labels match exactly).
 
 Maximum possible penalty: **0.20**.
 
-**Custom labels:** +0.05 per exact match, +0.025 per wildcard match.
+**Custom labels:** +0.15 per exact match, +0.075 per wildcard match.
 
 ### What This Means for Workflow Authors
 
@@ -625,7 +625,7 @@ The SP Rego policies determine the values that feed into discovery:
 
 - `severity.rego` and `priority.rego` produce values for **Layer 1 filtering** -- a misconfigured policy can silently exclude correct workflows
 - `environment.rego` produces the environment value for **Layer 1 filtering**
-- `customlabels.rego` (`kubernaut.ai/label-*`) produces values for **Layer 2 scoring** at +0.05 per match
+- `customlabels.rego` (`kubernaut.ai/label-*`) produces values for **Layer 2 scoring** at +0.15 per match
 - `business.rego` (business_unit, service_owner, criticality, sla_tier) is **NOT used in discovery** -- neither filtering nor scoring. These values enrich the LLM prompt context only
 
 !!! note "Why business classification is not used for discovery"

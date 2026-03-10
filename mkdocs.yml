@@ -134,4 +134,6 @@ nav:
       - Monitoring: operations/monitoring.md
       - Event Exporter: operations/event-exporter.md
       - Troubleshooting: operations/troubleshooting.md
+  - Compliance:
+      - SOC2 Alignment: user-guide/compliance.md
   - Contributing: contributing.md

@@ -13,6 +13,9 @@ from live Kubernetes clusters.
 
 - [Multiple Remediation Paths](multi-path-remediation.md) -- How the LLM chose an alternative
   fix for a GitOps-managed Certificate failure, and why both approaches are valid
+- [Remediation History Feedback](remediation-history-feedback.md) -- How the LLM refused to
+  repeat a failed workflow after remediation history revealed the prior attempt's failure,
+  escalating to human review instead
 
 ## Demo Scenario Catalog
 

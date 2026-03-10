@@ -50,7 +50,7 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.
 | cert-failure (#133) | `CertManagerCertNotReady` | `FixCertificate` | CA Secret deleted, workflow recreates it to restore certificate issuance |
 | hpa-maxed (#123) | `HPAMaxedOut` | `ScaleHPA` | HPA at max replicas under sustained load |
 | resource-contention | `KubePodOOMKilled` | `IncreaseMemoryLimits` | Memory contention causes OOM kills across competing workloads |
-| resource-quota-exhaustion | `KubeResourceQuotaExhausted` | `AdjustResourceQuota` | Namespace quota prevents scaling |
+| resource-quota-exhaustion | `KubeResourceQuotaExhausted` | `AdjustResourceQuota` | Namespace quota prevents scaling ([details](remediation-history-feedback.md)) |
 | network-policy-block (#138) | `NetworkPolicyBlock` | `FixNetworkPolicy` | Restrictive NetworkPolicy blocks legitimate traffic |
 | statefulset-pvc-failure (#137) | `StatefulSetPVCFailure` | `FixStatefulSetPVC` | PVC binding failure prevents StatefulSet pod scheduling |
 

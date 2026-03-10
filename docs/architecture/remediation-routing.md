@@ -227,6 +227,15 @@ Includes all pre-analysis checks plus:
 | `IneffectiveTimeWindow` | 4 hours | Time window for ineffective chain |
 | `RequeueResourceBusy` | 30 seconds | Requeue interval for resource busy |
 | `RequeueGenericError` | 5 seconds | Requeue interval for generic errors |
+| `NoActionRequiredDelayHours` | 24 hours | Suppression window after a `NoActionRequired` outcome (see below) |
+
+## NoActionRequired Suppression
+
+When an RR completes with `Outcome: NoActionRequired` (the LLM determined no remediation was needed), the Orchestrator sets `NextAllowedExecution` to `now + NoActionRequiredDelayHours` on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.
+
+This prevents duplicate RR churn for signals whose underlying condition is unchanged by design (e.g., a `DiskPressure` alert for a PVC that the LLM correctly identified as not requiring automated action). Without this suppression, the same alert would generate a new RR on every AlertManager re-fire interval, each producing the same `NoActionRequired` outcome.
+
+The default delay is **24 hours** (`NoActionRequiredDelayHours: 24`), configurable in the routing config. After the delay expires, a new RR is created if the alert is still firing, allowing the LLM to re-evaluate whether conditions have changed.
 
 ## Timeout System
 

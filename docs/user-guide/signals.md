@@ -82,6 +82,17 @@ metadata:
     kubernaut.ai/managed: "true"
 ```
 
+## Monitoring Infrastructure Filtering
+
+Before extracting the target resource, the Gateway filters labels that refer to monitoring infrastructure rather than application workloads. Prometheus scrape configuration injects `service` and `pod` labels that identify the scraping source (e.g., `kube-state-metrics`, `prometheus-node-exporter`), not the monitored target. Without filtering, Kubernaut could attempt to remediate monitoring pods when an alert fires.
+
+The filter matches known monitoring naming patterns:
+
+- **Service labels**: Names containing `prometheus`, `kube-state-metrics`, `alertmanager`, `grafana`, `thanos`, or `exporter`; names prefixed with `victoria`, `loki`, or `jaeger`; names ending with `-operator`
+- **Pod labels**: Names containing `kube-state-metrics`, `prometheus-node-exporter`, `alertmanager-kube-prometheus`, or `prometheus-kube-prometheus`; names prefixed with `kube-prometheus-stack-*`
+
+Filtered labels are skipped during target resource extraction. The LLM's `affectedResource` field provides a safety net for edge cases where the filter is too aggressive.
+
 ## Fingerprinting
 
 Before creating a RemediationRequest, the Gateway computes a **signal fingerprint** — a SHA256 hash based on the top-level owning resource (e.g., `Deployment`), not the individual Pod. This ensures that alerts from different Pods in the same Deployment produce the same fingerprint, enabling accurate deduplication.

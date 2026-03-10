@@ -95,6 +95,12 @@ Applied in the response processor during the Investigating phase:
 - **Confidence >= 0.7 with no workflow** — Treated as "problem already resolved" (no remediation needed)
 - **Confidence < 0.7 with a selected workflow** — Workflow selection rejected as low-confidence
 
+#### Problem Self-Resolved Bypass (#301)
+
+When HolmesGPT reports `investigation_outcome=resolved`, it appends a "Problem self-resolved" warning to the response. The response processor detects this signal and bypasses the substantive RCA check -- even if the LLM produced a root cause analysis with contributing factors, the RCA is treated as documenting a **transient condition** (e.g., a pod that recovered on its own) rather than an active problem.
+
+Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because `hasSubstantiveRCA` would return `true`, preventing the `WorkflowNotNeeded` completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.
+
 ### Approval Threshold (0.8, configurable)
 
 Applied via Rego policy during the Analyzing phase:

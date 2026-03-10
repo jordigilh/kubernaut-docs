@@ -261,10 +261,58 @@ dependencies:
     - name: app-config
 ```
 
-The Workflow Execution controller validates these exist before creating the Job or PipelineRun, and mounts them as volumes:
+The Workflow Execution controller validates that these resources exist before creating the execution resource. How they are delivered to the workflow depends on the engine:
 
-- Secrets: `/run/kubernaut/secrets/<name>` (read-only)
-- ConfigMaps: `/run/kubernaut/configmaps/<name>` (read-only)
+**Kubernetes Jobs:**
+
+- Secrets mounted at `/run/kubernaut/secrets/<name>` (read-only)
+- ConfigMaps mounted at `/run/kubernaut/configmaps/<name>` (read-only)
+
+**Tekton Pipelines:**
+
+- Secrets bound as `secret-<name>` workspaces
+- ConfigMaps bound as `configmap-<name>` workspaces
+
+**Ansible (AWX/AAP):**
+
+- For each Secret in `dependencies.secrets`, the executor reads the Kubernetes Secret, dynamically creates an AWX credential type with an `env` injector, creates an ephemeral AWX credential, and attaches it to the job launch. AWX injects the values as environment variables into the Execution Environment:
+
+    ```
+    KUBERNAUT_SECRET_{SECRET_NAME}_{KEY}
+    ```
+
+    For example, a Secret named `gitea-repo-creds` with keys `username` and `password` becomes:
+
+    - `KUBERNAUT_SECRET_GITEA_REPO_CREDS_USERNAME`
+    - `KUBERNAUT_SECRET_GITEA_REPO_CREDS_PASSWORD`
+
+    Ephemeral credentials are automatically deleted after the AWX job completes or is cleaned up. The Kubernetes Secret remains the single source of truth -- if it changes, the next execution picks up the new values.
+
+- For each ConfigMap in `dependencies.configMaps`, the executor reads the Kubernetes ConfigMap and merges its data into AWX `extra_vars` with a standardized prefix:
+
+    ```
+    KUBERNAUT_CONFIGMAP_{CONFIGMAP_NAME}_{KEY}
+    ```
+
+    For example, a ConfigMap named `app-settings` with keys `timeout` and `log-level` becomes extra_vars:
+
+    - `KUBERNAUT_CONFIGMAP_APP_SETTINGS_TIMEOUT`
+    - `KUBERNAUT_CONFIGMAP_APP_SETTINGS_LOG_LEVEL`
+
+    ConfigMap data is non-sensitive, so it uses AWX extra_vars (not credentials). The playbook accesses these as standard Ansible variables.
+
+!!! warning "Security: Use `no_log: true` for sensitive Ansible tasks"
+    When writing Ansible playbooks that handle secrets (credentials, tokens, passwords), always set `no_log: true` on tasks that read or use sensitive values. This prevents AWX from recording secret data in job output logs:
+
+    ```yaml
+    - name: Read Git credentials from AWX credential env vars
+      ansible.builtin.set_fact:
+        git_username: "{{ lookup('env', 'KUBERNAUT_SECRET_GITEA_REPO_CREDS_USERNAME') }}"
+        git_password: "{{ lookup('env', 'KUBERNAUT_SECRET_GITEA_REPO_CREDS_PASSWORD') }}"
+      no_log: true
+    ```
+
+    Tasks to protect include: reading credentials from environment variables, building authenticated URLs, cloning repositories with embedded credentials, and any task that passes secrets as arguments.
 
 ### Parameters
 
@@ -285,6 +333,17 @@ Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variable
 The `description` field is shown to the LLM during `get_workflow`, so it should be clear enough for the LLM to populate the parameter from its investigation findings.
 
 `TARGET_RESOURCE` is always injected automatically from the `RemediationRequest` target.
+
+For `ansible` executions, the executor also auto-injects remediation context variables into AWX `extra_vars` (BR-WE-015 TR-6):
+
+| Variable | Source | Purpose |
+|----------|--------|---------|
+| `WFE_NAME` | WorkflowExecution CRD name | Query WFE status, parameters, or execution metadata via the Kubernetes API |
+| `WFE_NAMESPACE` | WorkflowExecution CRD namespace | Namespace of the WFE |
+| `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` | Reference the parent RemediationRequest in commit messages, logs, and audit annotations -- no Kubernetes API lookup needed |
+| `RR_NAMESPACE` | `wfe.Spec.RemediationRequestRef.Namespace` | Namespace of the parent RR |
+
+These variables are injected by the executor and must not be declared as parameters in the workflow schema. `RR_NAME` is the most commonly used -- for example, the GitOps memory limits playbook includes the RR name in its Git commit message to link the code change back to the remediation event.
 
 ## Execution Engines
 
@@ -360,13 +419,18 @@ spec:
 
 The `engineConfig` fields for Ansible:
 
-| Field | Description |
-|---|---|
-| `playbookPath` | Path to the playbook within the Git repository |
-| `jobTemplateName` | AWX/AAP Job Template name to launch |
-| `inventoryName` | AWX/AAP inventory to use (optional) |
+| Field | Required | Description |
+|---|---|---|
+| `playbookPath` | Yes | Path to the playbook within the Git repository |
+| `jobTemplateName` | Yes | AWX/AAP Job Template name to launch |
+| `inventoryName` | No | AWX/AAP inventory to use |
 
 The Workflow Execution controller launches the AWX job template, passes parameters as extra variables, and monitors the job status until completion.
+
+**Dependencies in Ansible workflows:**
+
+- **Secrets** (`dependencies.secrets`): Injected as environment variables via ephemeral AWX credentials (`KUBERNAUT_SECRET_{NAME}_{KEY}`). Use `lookup('env', ...)` in your playbook.
+- **ConfigMaps** (`dependencies.configMaps`): Merged into AWX extra_vars (`KUBERNAUT_CONFIGMAP_{NAME}_{KEY}`). Access as standard Ansible variables.
 
 ## The Validate-Action-Verify Pattern
 

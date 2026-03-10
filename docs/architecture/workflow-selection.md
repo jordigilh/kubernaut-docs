@@ -113,11 +113,11 @@ DataStorage computes a `final_score` for each candidate to **order** results (DD
 ### Scoring Formula
 
 ```
-final_score = (5.0 + detected_label_boost + custom_label_boost - label_penalty) / 10.0
+final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_penalty) / 10.0, 1.0)
 ```
 
 - **Base score**: 5.0 out of 10.0 (normalized to 0.50)
-- **Range**: 0.0 -- 1.0
+- **Range**: 0.0 -- 1.0 (clamped via `LEAST(..., 1.0)`)
 - **Ordering**: `ORDER BY final_score DESC, workflow_id ASC`
 
 ### Detected Label Weights
@@ -144,10 +144,10 @@ final_score = (5.0 + detected_label_boost + custom_label_boost - label_penalty) 
 
 ### Custom Label Boost
 
-Custom labels from Signal Processing's Rego policy output contribute additional scoring:
+Custom labels from Signal Processing's Rego policy output contribute additional scoring (DD-WORKFLOW-004 v2.1):
 
-- **Exact match**: +0.05 per key
-- **Wildcard match**: +0.025 per key
+- **Exact match**: +0.15 per key
+- **Wildcard match**: +0.075 per key
 - SQL: `custom_labels->'key' @> 'value'::jsonb`
 
 ### Score Connection to SP Rego Policies

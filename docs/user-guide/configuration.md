@@ -37,7 +37,7 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 | Label Pattern | Used By | Purpose |
 |---|---|---|
-| `kubernaut.ai/label-*` | SP `customlabels.rego` | Arbitrary key-value pairs fed into workflow scoring (+0.05 per match) |
+| `kubernaut.ai/label-*` | SP `customlabels.rego` | Arbitrary key-value pairs fed into workflow scoring (+0.15 per exact match, +0.075 wildcard) |
 
 The `kubernaut.ai/label-` prefix is stripped by SP before passing to workflow discovery. Example:
 

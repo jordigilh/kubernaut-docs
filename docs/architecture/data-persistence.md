@@ -109,13 +109,15 @@ The workflow catalog table, used for workflow discovery and scoring.
 | `version` | `VARCHAR` | Semantic version |
 | `is_latest_version` | `BOOLEAN` | Partial index for discovery queries |
 | `action_type` | `TEXT` | FK to `action_type_taxonomy` |
-| `status` | `VARCHAR` | `active`, `disabled`, `deprecated`, `archived` |
+| `status` | `VARCHAR` | `active`, `disabled`, `deprecated`, `archived`, `superseded` |
 | `labels` | `JSONB` | Mandatory labels (severity, component, environment, priority) |
 | `custom_labels` | `JSONB` | Custom labels from workflow schema |
 | `detected_labels` | `JSONB` | Infrastructure-awareness labels |
 | `description` | `JSONB` | Workflow description (what, whenToUse, whenNotToUse) |
 | `execution_bundle` | `TEXT` | OCI image reference |
 | `execution_bundle_digest` | `TEXT` | OCI digest |
+| `engine_config` | `JSONB` | Engine-specific config (e.g., AWX `jobTemplateName`, `inventoryName`). NULL for Tekton/Job |
+| `content_hash` | `TEXT` | SHA256 hash of normalized workflow content for deduplication (DD-EM-002) |
 | `schema_data` | `JSONB` | Full workflow schema |
 | `created_at` | `TIMESTAMPTZ` | Creation timestamp |
 | `updated_at` | `TIMESTAMPTZ` | Last update |
@@ -132,12 +134,15 @@ The action type registry for workflow categorization.
 
 | Column | Type | Description |
 |---|---|---|
-| `action_type` | `TEXT` | Primary key |
+| `action_type` | `TEXT` | Primary key (PascalCase identifier) |
 | `description` | `JSONB` | `{what, whenToUse, whenNotToUse, preconditions}` |
+| `status` | `VARCHAR` | `active` or `disabled` |
+| `disabled_at` | `TIMESTAMPTZ` | When the action type was disabled (NULL if active) |
+| `disabled_by` | `VARCHAR` | Operator identity who disabled it (NULL if active) |
 | `created_at` | `TIMESTAMPTZ` | Creation timestamp |
 | `updated_at` | `TIMESTAMPTZ` | Last update |
 
-Seeded with 24 built-in action types. User-extensible via SQL. See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy).
+Seeded with 24 built-in action types. User-extensible via `ActionType` CRDs (synced by Auth Webhook). See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy).
 
 ### Other Tables
 

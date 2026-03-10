@@ -135,9 +135,19 @@ See [Rego Policies](policies.md) for how each label feeds into enrichment, and [
 | `redis.existingSecret` | `""` | Pre-created Redis credentials Secret |
 | `redis.storage.size` | `512Mi` | Redis PVC size |
 
-## Signal Source RBAC
+## Signal Source Authentication
 
-External alert sources (AlertManager, custom webhooks) need RBAC authorization to send signals to the Gateway. Configure via Helm:
+The Gateway authenticates all signal ingestion requests using **Kubernetes TokenReview + SubjectAccessReview (SAR)**. Callers must present a valid Kubernetes ServiceAccount bearer token in the `Authorization` header. The Gateway validates the token via TokenReview and then checks that the authenticated identity has `create` permission on `services/gateway-service` in the platform namespace via SAR.
+
+This means:
+
+1. Every signal source needs a Kubernetes ServiceAccount
+2. That ServiceAccount needs an RBAC binding granting `create` on `services/gateway-service`
+3. The caller must include the ServiceAccount token as a bearer token
+
+### Configuring Signal Sources
+
+External alert sources (AlertManager, custom webhooks) need RBAC authorization. Configure via Helm:
 
 ```yaml
 gateway:
@@ -152,7 +162,7 @@ Each entry creates a `ClusterRoleBinding` granting the ServiceAccount permission
 
 ### AlertManager Integration
 
-Configure AlertManager to send webhooks to the Gateway:
+Configure AlertManager to send webhooks to the Gateway with bearer token authentication:
 
 ```yaml
 # AlertManager receiver configuration
@@ -161,7 +171,10 @@ receivers:
     webhook_configs:
       - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
         send_resolved: true
+        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
 ```
+
+The `bearer_token_file` directive tells AlertManager to read the ServiceAccount token from the pod's projected volume and include it as a bearer token in every webhook request. Without this, the Gateway rejects the request with `401 Unauthorized`.
 
 ## LLM Provider Setup
 

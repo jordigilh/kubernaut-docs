@@ -49,7 +49,7 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/v1/workflows` | Register a workflow from OCI schema image (`{"schemaImage": "<oci-ref>"}`) |
+| `POST` | `/api/v1/workflows` | Register a workflow (called by Auth Webhook on `RemediationWorkflow` CRD admission; also supports direct registration from OCI schema image via `{"schemaImage": "<oci-ref>"}`) |
 | `GET` | `/api/v1/workflows` | List workflows (filter by `status`, `environment`, `priority`, `component`, `workflow_name`) |
 | `GET` | `/api/v1/workflows/{workflow_id}` | Get a specific workflow |
 | `PATCH` | `/api/v1/workflows/{workflow_id}` | Update a workflow |
@@ -58,6 +58,15 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | `PATCH` | `/api/v1/workflows/{workflow_id}/disable` | Disable a workflow |
 | `PATCH` | `/api/v1/workflows/{workflow_id}/enable` | Enable a workflow |
 | `PATCH` | `/api/v1/workflows/{workflow_id}/deprecate` | Deprecate a workflow |
+
+### Action Type Taxonomy
+
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/action-types` | Register an action type |
+| `PATCH` | `/api/v1/action-types/{name}` | Update an action type description |
+| `PATCH` | `/api/v1/action-types/{name}/disable` | Disable an action type |
+| `GET` | `/api/v1/action-types/{name}/workflow-count` | Get the number of active workflows for an action type |
 
 ### Health
 

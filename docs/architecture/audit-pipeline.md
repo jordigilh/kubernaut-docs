@@ -136,7 +136,8 @@ All 7 Go services plus the auth webhook emit audit events:
 | **Workflow Execution** | `workflowexecution.*` | `selection.completed`, `execution.started`, `execution.completed`, `block.cleared` |
 | **Notification** | `notification.*` | `message.sent`, `message.failed`, `message.acknowledged`, `message.escalated` |
 | **Effectiveness Monitor** | `effectiveness.*` | `health.assessed`, `hash.computed`, `alert.assessed`, `metrics.assessed`, `assessment.completed` |
-| **Auth Webhook** | `webhook.*` | `remediationapprovalrequest.decided`, `remediationrequest.timeout_modified`, `notification.cancelled` |
+| **Auth Webhook** | `webhook.*`, `remediationworkflow.*`, `actiontype.*` | `remediationapprovalrequest.decided`, `remediationrequest.timeout_modified`, `notification.cancelled`, `remediationworkflow.admitted.create`, `remediationworkflow.admitted.delete`, `remediationworkflow.admitted.denied`, `actiontype.admitted.create`, `actiontype.admitted.update`, `actiontype.admitted.delete`, `actiontype.denied.create`, `actiontype.denied.update`, `actiontype.denied.delete` |
+| **DataStorage** | `datastorage.*`, `workflow.catalog.*` | `workflow.created`, `workflow.updated`, `actiontype.created`, `actiontype.updated`, `actiontype.disabled`, `actiontype.reenabled`, `actiontype.disable_denied`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
 
 ## Operator Attribution
 
@@ -148,6 +149,11 @@ The **admission webhook** captures human identity for all operator-driven action
 | Clear execution block | `workflowexecution.block.cleared` | Actor identity, execution ref |
 | Modify timeout | `webhook.remediationrequest.timeout_modified` | Actor identity, old/new values |
 | Cancel notification | `webhook.notification.cancelled` | Actor identity, notification ref |
+| Register workflow (CRD CREATE) | `remediationworkflow.admitted.create` | Actor identity, workflow name, version |
+| Delete workflow (CRD DELETE) | `remediationworkflow.admitted.delete` | Actor identity, workflow name |
+| Register action type (CRD CREATE) | `actiontype.admitted.create` | Actor identity, action type name |
+| Update action type (CRD UPDATE) | `actiontype.admitted.update` | Actor identity, action type, changed fields |
+| Delete action type (CRD DELETE) | `actiontype.admitted.delete` | Actor identity, action type name |
 
 This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II compliance.
 

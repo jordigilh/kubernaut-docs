@@ -111,10 +111,8 @@ scrape_configs:
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `datastorage_query_duration_seconds` | Histogram | `operation` | PostgreSQL query latency |
 | `datastorage_write_duration_seconds` | Histogram | `table` | Write latency |
 | `datastorage_audit_lag_seconds` | Histogram | `service` | Lag between event occurrence and write |
-| `datastorage_dlq_depth` | Gauge | `stream` | Current DLQ depth (non-zero = PostgreSQL issues) |
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |
 
@@ -137,7 +135,6 @@ These metrics are shared across all Go services via the buffered audit store:
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `audit_buffer_utilization_ratio` | Gauge | `service` | Buffer utilization (0.0--1.0) -- alert if > 0.8 |
 | `audit_events_dropped_total` | Counter | `service` | Events dropped due to full buffer -- data loss indicator |
 
 ## Controller-Runtime Built-in Metrics
@@ -191,11 +188,11 @@ sum(rate(gateway_signals_deduplicated_total[5m]))
 ### Audit Pipeline Health
 
 ```promql
-# Audit buffer utilization -- alert if > 0.8
-audit_buffer_utilization_ratio > 0.8
+# Events being dropped -- alert if non-zero drop rate
+rate(audit_events_dropped_total[5m]) > 0
 
-# DLQ depth -- alert if non-zero
-datastorage_dlq_depth > 0
+# DLQ at warning capacity -- alert if any stream is at 80%
+datastorage_dlq_warning > 0
 ```
 
 ### Effectiveness Score Distribution

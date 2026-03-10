@@ -17,7 +17,7 @@ The Workflow Execution controller runs remediation workflows via **Kubernetes Jo
 | `Parameters` | `map[string]string` | Parameters from LLM workflow selection |
 | `Confidence` | `float64` | LLM confidence score |
 | `Rationale` | `string` | LLM reasoning for workflow selection |
-| `ExecutionEngine` | `string` | `tekton` or `job` (default: `tekton`) |
+| `ExecutionEngine` | `string` | `tekton`, `job`, or `ansible` (default: `tekton`) |
 | `ExecutionConfig.Timeout` | `*metav1.Duration` | Per-execution timeout |
 | `ExecutionConfig.ServiceAccountName` | `string` | ServiceAccount override |
 

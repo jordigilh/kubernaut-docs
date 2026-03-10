@@ -42,7 +42,8 @@ Every stage of the remediation lifecycle emits audit events:
 | **Workflow Execution** | Workflow selected, execution started/completed | `workflowexecution.selection.completed`, `workflowexecution.execution.started` |
 | **Notification** | Message sent, delivery failure, acknowledgement, escalation | `notification.message.sent`, `notification.message.failed`, `notification.message.acknowledged`, `notification.message.escalated` |
 | **Effectiveness Monitor** | Component assessments (health, hash, alerts, metrics), scheduling, completion | `effectiveness.health.assessed`, `effectiveness.hash.computed`, `effectiveness.alert.assessed`, `effectiveness.metrics.assessed`, `effectiveness.assessment.scheduled`, `effectiveness.assessment.completed` |
-| **Auth Webhook** | Operator approval decisions, notification actions, timeout modifications | `webhook.remediationapprovalrequest.decided`, `webhook.notification.cancelled`, `webhook.notification.acknowledged`, `webhook.remediationrequest.timeout_modified` |
+| **Auth Webhook** | Operator approval decisions, notification actions, timeout modifications, RemediationWorkflow and ActionType CRD lifecycle | `webhook.remediationapprovalrequest.decided`, `webhook.notification.cancelled`, `webhook.remediationrequest.timeout_modified`, `remediationworkflow.admitted.create`, `remediationworkflow.admitted.delete`, `remediationworkflow.admitted.denied`, `actiontype.admitted.create`, `actiontype.admitted.update`, `actiontype.admitted.delete`, `actiontype.denied.*` |
+| **DataStorage** | Workflow catalog operations, action type taxonomy, workflow discovery | `datastorage.workflow.created`, `datastorage.workflow.updated`, `datastorage.actiontype.created`, `datastorage.actiontype.updated`, `datastorage.actiontype.disabled`, `datastorage.actiontype.reenabled`, `datastorage.actiontype.disable_denied`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
 
 ## Audit Event Structure
 
@@ -70,6 +71,8 @@ The **Auth Webhook** captures human actions through Kubernetes admission control
 - **Block clearance** — Who cleared a workflow execution block
 - **Timeout modifications** — Who changed a RemediationRequest's timeout configuration
 - **Notification cancellation** — Who deleted a NotificationRequest
+- **Workflow registration** — Who registered, deleted, or was denied a RemediationWorkflow CRD
+- **Action type management** — Who created, updated, deleted, or was denied an ActionType CRD
 
 This ensures that every human action in the system has a recorded identity, timestamp, and context — critical for SOC2 compliance.
 

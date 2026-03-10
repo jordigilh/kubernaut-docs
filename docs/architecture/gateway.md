@@ -99,7 +99,7 @@ sequenceDiagram
 | 403 | Valid token but insufficient RBAC |
 | 500 | TokenReview or SAR API error |
 
-Signal sources must have a ServiceAccount with the `gateway-signal-source` ClusterRole. See [Configuration Reference](../user-guide/configuration.md#signal-source-rbac) for setup.
+Signal sources must have a ServiceAccount with the `gateway-signal-source` ClusterRole. See [Configuration Reference](../user-guide/configuration.md#signal-source-authentication) for setup.
 
 ## Scope Checking
 
@@ -230,4 +230,4 @@ Gateway creates RR → RO watches RR → RO creates SP CRD → SP enriches signa
 
 - [Signal Processing](signal-processing.md) -- How the enrichment pipeline classifies signals
 - [Remediation Routing](remediation-routing.md) -- The Orchestrator's state machine and routing engine
-- [Configuration: Signal Source RBAC](../user-guide/configuration.md#signal-source-rbac) -- Configuring external signal sources
+- [Configuration: Signal Source Authentication](../user-guide/configuration.md#signal-source-authentication) -- Configuring external signal sources

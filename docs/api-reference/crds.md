@@ -1,6 +1,6 @@
 # Custom Resources (CRDs)
 
-Kubernaut defines 7 Custom Resource types under the `kubernaut.ai` API group. All CRD specs are **immutable after creation** (ADR-001).
+Kubernaut defines 9 Custom Resource types under the `kubernaut.ai` API group. All CRD specs are **immutable after creation** (ADR-001).
 
 !!! note "Authoritative Source"
     The Go type definitions in [`api/`](https://github.com/jordigilh/kubernaut/tree/main/api) and the generated CRD manifests in `config/crd/bases/` are the authoritative reference. This page documents the key fields; see the CRD YAML for the complete schema including all nested types and validation constraints.
@@ -242,19 +242,19 @@ Manages the async HolmesGPT investigation session, root cause analysis, workflow
 **Created by**: Remediation Orchestrator
 **Watched by**: Workflow Execution
 
-Creates and monitors a Tekton PipelineRun or Kubernetes Job in the `kubernaut-workflows` namespace.
+Creates and monitors a Tekton PipelineRun, Kubernetes Job, or Ansible AWX job in the `kubernaut-workflows` namespace.
 
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
 | `remediationRequestRef` | `ObjectReference` | Reference to parent RemediationRequest |
-| `workflowRef` | `WorkflowRef` | Workflow catalog reference: `workflowId`, `version`, `executionBundle` (OCI), `executionBundleDigest` |
+| `workflowRef` | `WorkflowRef` | Workflow catalog reference: `workflowId`, `version`, `executionBundle` (OCI), `executionBundleDigest`, `engineConfig` (engine-specific JSON, e.g. AWX `jobTemplateName`, `inventoryName`) |
 | `targetResource` | `string` | Target resource string (`namespace/kind/name`) for resource locking |
 | `parameters` | `map[string]string` | Runtime parameters (UPPER_SNAKE_CASE keys). `TARGET_RESOURCE` is always injected as a built-in |
 | `confidence` | `float64` | LLM confidence score (audit trail) |
 | `rationale` | `string` | LLM rationale (audit trail) |
-| `executionEngine` | `string` | `tekton` (default) or `job` |
+| `executionEngine` | `string` | `tekton` (default), `job`, or `ansible` |
 | `executionConfig` | `*ExecutionConfig` | Optional: `timeout`, `serviceAccountName` (default: `kubernaut-workflow-runner`) |
 
 ### Status
@@ -379,3 +379,65 @@ Assesses whether the remediation was effective by checking health, alert resolut
 ### Phases
 
 `Pending` → `WaitingForPropagation` → `Stabilizing` → `Assessing` → `Completed` / `Failed`
+
+---
+
+## RemediationWorkflow
+
+**API Group**: `kubernaut.ai/v1alpha1`
+**Created by**: Operator (`kubectl apply`)
+**Watched by**: Auth Webhook (admission) → DataStorage catalog
+
+Kubernetes-native workflow registration. The Auth Webhook intercepts CREATE and DELETE mutations, registers or disables the workflow in the DataStorage catalog, captures operator identity for SOC2 audit, and computes a content hash for deduplication. If a workflow with different content already exists under the same `workflowName` + `version`, the existing workflow is marked `superseded` and the new one is registered.
+
+### Spec
+
+| Field | Type | Description |
+|---|---|---|
+| `metadata` | `RemediationWorkflowMetadata` | Workflow identity: `workflowName`, `version`, `description` (structured: `what`, `whenToUse`, `whenNotToUse`, `preconditions`), `maintainers` (name, email) |
+| `actionType` | `string` | Action type this workflow implements (must match an existing ActionType CRD name) |
+| `labels` | `RemediationWorkflowLabels` | Signal-matching labels: `severity` (list), `environment` (list), `component`, `priority` |
+| `customLabels` | `map[string]string` | Organization-specific labels for additional matching |
+| `detectedLabels` | `JSON` | Infrastructure labels detected by HAPI that influence workflow selection (e.g., `is_gitops`, `has_hpa`) |
+| `execution` | `RemediationWorkflowExecution` | Execution config: `engine` (`tekton`, `job`, or `ansible`), `bundle` (OCI ref), `bundleDigest`, `engineConfig` (engine-specific JSON, e.g. AWX `jobTemplateName`) |
+| `dependencies` | `*RemediationWorkflowDependencies` | Required K8s resources: `secrets` and `configMaps` (validated before execution) |
+| `parameters` | `[]RemediationWorkflowParameter` | Workflow parameters: `name`, `type`, `required`, `description`, `enum`, `pattern`, `minimum`, `maximum`, `default`, `dependsOn` |
+| `rollbackParameters` | `[]RemediationWorkflowParameter` | Parameters for rollback execution |
+
+### Status
+
+| Field | Type | Description |
+|---|---|---|
+| `workflowId` | `string` | Catalog-assigned workflow UUID |
+| `catalogStatus` | `string` | Catalog state: `active`, `disabled`, `superseded` |
+| `registeredBy` | `string` | Operator identity from admission webhook |
+| `registeredAt` | `*Time` | Registration timestamp |
+| `previouslyExisted` | `bool` | Whether a disabled workflow was re-enabled |
+
+---
+
+## ActionType
+
+**API Group**: `kubernaut.ai/v1alpha1`
+**Created by**: Operator (`kubectl apply`)
+**Watched by**: Auth Webhook (admission) → DataStorage taxonomy
+
+Kubernetes-native action type taxonomy definition. Action types categorize what kind of remediation a workflow performs (e.g., `RestartPod`, `ScaleReplicas`, `RollbackDeployment`). The Auth Webhook intercepts CREATE and DELETE mutations, registers or disables the action type in the DataStorage taxonomy, and captures operator identity for SOC2 audit.
+
+### Spec
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | `string` | PascalCase action type identifier (e.g., `RestartPod`, `ScaleReplicas`). Immutable after creation. Max 255 chars |
+| `description` | `ActionTypeDescription` | Structured description: `what`, `whenToUse`, `whenNotToUse` (optional), `preconditions` (optional). These fields are shown to the LLM during workflow discovery |
+
+### Status
+
+| Field | Type | Description |
+|---|---|---|
+| `registered` | `bool` | Whether registered in the DataStorage catalog |
+| `registeredAt` | `*Time` | Registration timestamp |
+| `registeredBy` | `string` | Operator identity from admission webhook |
+| `previouslyExisted` | `bool` | Whether a disabled action type was re-enabled |
+| `activeWorkflowCount` | `int` | Number of active RemediationWorkflows referencing this action type |
+| `catalogStatus` | `string` | Catalog state: `active`, `disabled` |

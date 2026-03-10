@@ -1,26 +1,27 @@
 # Remediation Workflows
 
-Kubernaut remediates issues by running **workflows** -- containerized actions that fix known problems. Workflows are packaged as OCI images, stored in a searchable catalog, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.
+Kubernaut remediates issues by running **workflows** -- containerized actions that fix known problems. Workflows are registered as `RemediationWorkflow` CRDs, synced to a searchable catalog by the Auth Webhook, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.
 
 This page covers everything you need to author, build, register, and manage workflows.
 
-## The Two-Image Model
+## Registration Model
 
-Each workflow consists of two separate OCI images:
+Workflows are registered by applying a `RemediationWorkflow` CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit, and computes a content hash for deduplication.
 
 ```mermaid
 flowchart LR
-    Schema["Schema Image<br/><small>FROM scratch</small><br/><small>/workflow-schema.yaml</small>"] --> DS["DataStorage<br/><small>Catalog</small>"]
-    Bundle["Execution Bundle<br/><small>FROM ubi-minimal</small><br/><small>/scripts/remediate.sh</small>"] --> WFE["WFE<br/><small>Job / Tekton</small>"]
-    DS -.->|"bundle ref<br/>(digest-pinned)"| WFE
+    Op["Operator<br/><small>kubectl apply</small>"] --> AW["Auth Webhook<br/><small>admission</small>"]
+    AW --> DS["DataStorage<br/><small>Catalog</small>"]
+    Bundle["Execution Bundle<br/><small>OCI image / Git repo</small>"] --> WFE["WFE<br/><small>Job / Tekton / Ansible</small>"]
+    DS -.->|"bundle ref"| WFE
 ```
 
-| Image | Contents | Purpose |
+| Component | Contents | Purpose |
 |---|---|---|
-| **Schema image** | Only `/workflow-schema.yaml` | Registered in DataStorage catalog for discovery and LLM selection |
-| **Execution bundle** | The container that runs the remediation (scripts, binaries, kubectl) | Referenced by digest in the schema; pulled by WFE at execution time |
+| **RemediationWorkflow CRD** | Workflow schema (metadata, labels, parameters, execution config) | Registered in DataStorage catalog for discovery and LLM selection |
+| **Execution bundle** | The container or playbook that runs the remediation | Referenced in the CRD; pulled by WFE at execution time |
 
-This separation allows the catalog to store lightweight schema metadata without pulling large execution images until a workflow is actually selected. The schema image is `FROM scratch` (no base image, no runtime) -- it exists only to transport the YAML file.
+The CRD approach replaces the previous OCI schema image model. Workflow schemas are now native Kubernetes resources, enabling `kubectl` management, GitOps workflows, and admission webhook integration for audit attribution.
 
 ## Create Your First Workflow
 
@@ -28,51 +29,54 @@ This tutorial walks through creating a workflow that restarts a deployment.
 
 ### Step 1: Write the Schema
 
-Create `workflow-schema.yaml`:
+Create `restart-deployment.yaml`:
 
 ```yaml
-schemaVersion: "1.0"
-
+apiVersion: kubernaut.ai/v1alpha1
+kind: RemediationWorkflow
 metadata:
-  workflowId: restart-deployment-v1
-  version: "1.0.0"
-  description:
-    what: "Performs a rolling restart of a deployment to clear corrupted runtime state"
-    whenToUse: "When pods are in a degraded state but the deployment spec is correct"
-    whenNotToUse: "When the issue is caused by a bad image or config change"
-    preconditions: "The deployment exists and has at least one ready replica"
-  maintainers:
-    - name: "Platform Team"
-      email: "platform@example.com"
+  name: restart-deployment-v1
+spec:
+  metadata:
+    workflowName: restart-deployment-v1
+    version: "1.0.0"
+    description:
+      what: "Performs a rolling restart of a deployment to clear corrupted runtime state"
+      whenToUse: "When pods are in a degraded state but the deployment spec is correct"
+      whenNotToUse: "When the issue is caused by a bad image or config change"
+      preconditions: "The deployment exists and has at least one ready replica"
+    maintainers:
+      - name: "Platform Team"
+        email: "platform@example.com"
 
-actionType: RestartDeployment
+  actionType: RestartDeployment
 
-labels:
-  severity: [critical, high, medium]
-  environment: [production, staging, development, "*"]
-  component: deployment
-  priority: "*"
+  labels:
+    severity: [critical, high, medium]
+    environment: [production, staging, development, "*"]
+    component: deployment
+    priority: "*"
 
-detectedLabels:
-  helmManaged: "true"
+  detectedLabels:
+    helmManaged: "true"
 
-execution:
-  engine: job
-  bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
+  execution:
+    engine: job
+    bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
 
-parameters:
-  - name: TARGET_NAMESPACE
-    type: string
-    required: true
-    description: "Namespace of the deployment to restart"
-  - name: TARGET_DEPLOYMENT
-    type: string
-    required: true
-    description: "Name of the deployment to restart"
+  parameters:
+    - name: TARGET_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the deployment to restart"
+    - name: TARGET_DEPLOYMENT
+      type: string
+      required: true
+      description: "Name of the deployment to restart"
 
-dependencies:
-  secrets: []
-  configMaps: []
+  dependencies:
+    secrets: []
+    configMaps: []
 ```
 
 ### Step 2: Write the Remediation Script
@@ -134,41 +138,21 @@ docker build -f Dockerfile.exec -t registry.example.com/workflows/restart-deploy
 docker push registry.example.com/workflows/restart-deployment:v1.0.0
 ```
 
-Note the image digest from the push output -- you need it for the schema.
+Note the image digest from the push output -- update the `execution.bundle` field in the CRD with the digest-pinned reference.
 
-### Step 4: Build the Schema Image
-
-Create `Dockerfile.schema`:
-
-```dockerfile
-FROM scratch
-COPY workflow-schema.yaml /workflow-schema.yaml
-```
-
-Update `workflow-schema.yaml` with the actual execution bundle digest:
-
-```yaml
-execution:
-  engine: job
-  bundle: registry.example.com/workflows/restart-deployment@sha256:64338763a1f7...
-```
-
-Build and push:
+### Step 4: Register the Workflow
 
 ```bash
-docker build -f Dockerfile.schema -t registry.example.com/workflows/restart-deployment-schema:v1.0.0 .
-docker push registry.example.com/workflows/restart-deployment-schema:v1.0.0
+kubectl apply -f restart-deployment.yaml
 ```
 
-### Step 5: Register the Workflow
+The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit attribution, and updates the CRD status with the assigned `workflowId` and `catalogStatus`.
+
+Verify registration:
 
 ```bash
-curl -X POST http://data-storage-service.kubernaut-system:8080/api/v1/workflows \
-  -H "Content-Type: application/json" \
-  -d '{"schemaImage":"registry.example.com/workflows/restart-deployment-schema:v1.0.0"}'
+kubectl get remediationworkflow restart-deployment-v1 -o wide
 ```
-
-DataStorage pulls the schema image, extracts `/workflow-schema.yaml`, validates it, verifies the execution bundle exists (via `crane.Head()`), and adds it to the catalog.
 
 ## Schema Reference
 
@@ -176,28 +160,29 @@ DataStorage pulls the schema image, extracts `/workflow-schema.yaml`, validates 
 
 | Field | Type | Description |
 |---|---|---|
-| `schemaVersion` | string | Must be `"1.0"` |
-| `metadata.workflowId` | string | Unique workflow identifier (max 255 chars) |
-| `metadata.version` | string | Semantic version (max 50 chars) |
-| `metadata.description.what` | string | What the workflow does |
-| `metadata.description.whenToUse` | string | When to apply this workflow |
-| `actionType` | string | Action taxonomy type (must exist in `action_type_taxonomy` table) |
-| `labels` | object | Matching criteria (see [Labels](#labels)) |
-| `execution.engine` | string | `job` (Kubernetes Job) or `tekton` (Tekton Pipeline) |
-| `execution.bundle` | string | OCI image reference with `@sha256:` digest |
-| `parameters` | array | At least one parameter definition |
+| `spec.metadata.workflowName` | string | Unique workflow identifier (max 255 chars) |
+| `spec.metadata.version` | string | Semantic version (max 50 chars) |
+| `spec.metadata.description.what` | string | What the workflow does |
+| `spec.metadata.description.whenToUse` | string | When to apply this workflow |
+| `spec.actionType` | string | Action taxonomy type (must match an active `ActionType` CRD) |
+| `spec.labels` | object | Matching criteria (see [Labels](#labels)) |
+| `spec.execution.engine` | string | `job` (Kubernetes Job), `tekton` (Tekton Pipeline), or `ansible` (AWX/AAP) |
+| `spec.execution.bundle` | string | OCI image reference with `@sha256:` digest (for job/tekton) or Git repo URL (for ansible) |
+| `spec.parameters` | array | At least one parameter definition |
 
 ### Optional Fields
 
 | Field | Type | Description |
 |---|---|---|
-| `metadata.description.whenNotToUse` | string | When NOT to use this workflow |
-| `metadata.description.preconditions` | string | Prerequisites for the workflow |
-| `metadata.maintainers` | array | Maintainer contacts (`name`, `email`) |
-| `detectedLabels` | object | Infrastructure requirements (see [Detected Labels](#detected-labels)) |
-| `customLabels` | map | Operator-defined key-value labels |
-| `dependencies` | object | Required Secrets and ConfigMaps |
-| `rollbackParameters` | array | Parameters for rollback operations |
+| `spec.metadata.description.whenNotToUse` | string | When NOT to use this workflow |
+| `spec.metadata.description.preconditions` | string | Prerequisites for the workflow |
+| `spec.metadata.maintainers` | array | Maintainer contacts (`name`, `email`) |
+| `spec.detectedLabels` | object | Infrastructure requirements (see [Detected Labels](#detected-labels)) |
+| `spec.customLabels` | map | Operator-defined key-value labels |
+| `spec.execution.bundleDigest` | string | OCI digest or Git commit SHA |
+| `spec.execution.engineConfig` | JSON | Engine-specific config (see [Ansible](#ansible-awxaap)) |
+| `spec.dependencies` | object | Required Secrets and ConfigMaps |
+| `spec.rollbackParameters` | array | Parameters for rollback operations |
 
 ### Labels
 
@@ -251,7 +236,7 @@ Workflows that declare detected labels earn scoring boosts when the target resou
 
 ### Bundle Digest Format
 
-The `execution.bundle` field must use a **digest-pinned** OCI reference:
+For `job` and `tekton` engines, the `execution.bundle` field must use a **digest-pinned** OCI reference:
 
 ```
 registry.example.com/repo/image@sha256:<64 hex characters>
@@ -261,6 +246,8 @@ registry.example.com/repo/image@sha256:<64 hex characters>
 - Must use `sha256:` algorithm
 - Digest must be exactly 64 hex characters
 - An optional tag before `@` is allowed: `image:v1.0.0@sha256:abc123...`
+
+For the `ansible` engine, the `execution.bundle` field is a Git repository URL, and `execution.bundleDigest` is the Git commit SHA.
 
 ### Dependencies
 
@@ -335,6 +322,52 @@ The bundle must contain a Tekton Pipeline named `workflow`. The controller creat
 
 Tekton provides step ordering, retries, and artifact passing between steps.
 
+### Ansible (AWX/AAP)
+
+Workflows that run Ansible playbooks via AWX or Ansible Automation Platform (AAP) use the `ansible` engine:
+
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: RemediationWorkflow
+metadata:
+  name: ansible-fix-config
+spec:
+  metadata:
+    workflowName: ansible-fix-config
+    version: "1.0.0"
+    description:
+      what: "Fixes application configuration drift using Ansible"
+      whenToUse: "When config drift is detected and the correct state is in a Git repository"
+  actionType: FixConfiguration
+  labels:
+    severity: [high, medium]
+    environment: [production, staging]
+    component: deployment
+    priority: "*"
+  execution:
+    engine: ansible
+    bundle: https://github.com/org/remediation-playbooks.git
+    bundleDigest: b7e6a135be2019f995cb4875dbc0116dfda39d21
+    engineConfig:
+      playbookPath: "playbooks/fix-config.yml"
+      jobTemplateName: "kubernaut-fix-config"
+  parameters:
+    - name: target_kind
+      type: string
+      required: true
+      description: "Kind of the target resource"
+```
+
+The `engineConfig` fields for Ansible:
+
+| Field | Description |
+|---|---|
+| `playbookPath` | Path to the playbook within the Git repository |
+| `jobTemplateName` | AWX/AAP Job Template name to launch |
+| `inventoryName` | AWX/AAP inventory to use (optional) |
+
+The Workflow Execution controller launches the AWX job template, passes parameters as extra variables, and monitors the job status until completion.
+
 ## The Validate-Action-Verify Pattern
 
 Workflows should follow the **Validate-Action-Verify** (VAV) pattern:
@@ -382,22 +415,27 @@ Kubernaut seeds 24 action types during installation:
 
 ### Registering Custom Action Types
 
-The taxonomy is **user-extensible**. Operators can register custom action types to match their organization's remediation patterns. Currently, registration is via SQL:
+The taxonomy is **user-extensible**. Operators register custom action types by applying an `ActionType` CRD:
 
-```sql
-INSERT INTO action_type_taxonomy (action_type, description)
-VALUES (
-  'RestartSidecar',
-  '{
-    "what": "Restart only the sidecar container without affecting the main application",
-    "whenToUse": "When a service mesh sidecar is in a degraded state but the main container is healthy",
-    "whenNotToUse": "When the main application container is also failing",
-    "preconditions": "The pod has a sidecar container identified by the service mesh annotation"
-  }'
-);
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: ActionType
+metadata:
+  name: restart-sidecar
+spec:
+  name: RestartSidecar
+  description:
+    what: "Restart only the sidecar container without affecting the main application"
+    whenToUse: "When a service mesh sidecar is in a degraded state but the main container is healthy"
+    whenNotToUse: "When the main application container is also failing"
+    preconditions: "The pod has a sidecar container identified by the service mesh annotation"
 ```
 
-An API endpoint for action type management is planned as a future enhancement.
+```bash
+kubectl apply -f restart-sidecar-actiontype.yaml
+```
+
+The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for SOC2 audit. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.
 
 !!! warning "Action type descriptions directly affect LLM behavior"
     The LLM reads `what`, `whenToUse`, `whenNotToUse`, and `preconditions` verbatim during workflow discovery. Poorly written or overlapping descriptions degrade workflow selection quality:
@@ -409,33 +447,53 @@ An API endpoint for action type management is planned as a future enhancement.
 
 ## Workflow Lifecycle
 
-Workflows have four lifecycle states:
+Workflows have five lifecycle states:
 
 | State | Description | Discoverable |
 |---|---|---|
 | `active` | Available for selection | Yes (if `is_latest_version`) |
-| `disabled` | Temporarily unavailable | No |
+| `disabled` | Temporarily unavailable (CRD deleted, or manually disabled) | No |
+| `superseded` | Replaced by a new registration with different content for the same `workflowName` + `version` | No |
 | `deprecated` | Marked for removal, still usable | No |
 | `archived` | Permanently removed from catalog | No |
 
-State transitions are performed via the DataStorage API:
+State transitions via `kubectl`:
 
 ```bash
-# Disable a workflow
+# Register (active)
+kubectl apply -f my-workflow.yaml
+
+# Disable (deleting the CRD disables the catalog entry)
+kubectl delete remediationworkflow my-workflow
+
+# Re-enable (re-applying a previously deleted CRD re-enables it)
+kubectl apply -f my-workflow.yaml
+```
+
+State transitions via the DataStorage API (for advanced lifecycle management):
+
+```bash
 curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/disable
-
-# Re-enable a workflow
 curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/enable
-
-# Deprecate a workflow
 curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
 ```
 
+### Content Integrity and Supersede
+
+When a `RemediationWorkflow` CRD is applied with the same `workflowName` + `version` as an existing active workflow, the Auth Webhook computes a content hash of the incoming schema and compares it to the existing entry:
+
+| Existing State | Content Hash | Result |
+|---|---|---|
+| `active` | Same | Idempotent return (no DB writes) |
+| `active` | Different | Old workflow marked `superseded`, new one created as `active` |
+| `disabled` | Same | Re-enabled |
+| `disabled` | Different | New workflow created as `active` |
+
 ### Version Management
 
-When a new version of a workflow is registered (same `workflowId`, different `version`), the previous version's `is_latest_version` flag is set to `false`. Only workflows with `status = 'active'` AND `is_latest_version = true` are discoverable.
+When a new version of a workflow is registered (same `workflowName`, different `version`), the previous version's `is_latest_version` flag is set to `false`. Only workflows with `status = 'active'` AND `is_latest_version = true` are discoverable.
 
-This means you can register a new version and the old one is automatically superseded without needing to disable it.
+This means you can register a new version and the old one is automatically excluded from discovery without needing to disable it.
 
 ## Workflow Search and Scoring
 
@@ -539,6 +597,64 @@ Kubernaut seeds 18 workflows via a Helm post-install hook:
 | `fix-network-policy-job` | FixNetworkPolicy |
 
 These are starting points. Operators supplement them with custom workflows using custom or existing action types.
+
+## CRUD Operations
+
+### RemediationWorkflow
+
+**Create:**
+
+```bash
+kubectl apply -f my-workflow.yaml
+```
+
+**Read:**
+
+```bash
+kubectl get remediationworkflows
+kubectl get remediationworkflow my-workflow -o yaml
+```
+
+**Update** (description only -- spec.metadata, labels, and execution are immutable after creation; apply a new version instead):
+
+Re-apply the CRD with the same `workflowName` + `version` but different content. The old workflow is marked `superseded` and a new one is created.
+
+**Delete** (disables in catalog):
+
+```bash
+kubectl delete remediationworkflow my-workflow
+```
+
+### ActionType
+
+**Create:**
+
+```bash
+kubectl apply -f my-actiontype.yaml
+```
+
+**Read:**
+
+```bash
+kubectl get actiontypes
+kubectl get actiontype my-actiontype -o yaml
+```
+
+**Update** (description field is mutable):
+
+Edit the CRD and re-apply:
+
+```bash
+kubectl apply -f my-actiontype.yaml
+```
+
+**Delete** (disables in taxonomy):
+
+```bash
+kubectl delete actiontype my-actiontype
+```
+
+Re-applying a previously deleted `ActionType` CRD re-enables it with the previous workflow associations intact.
 
 ## Next Steps
 

@@ -36,6 +36,7 @@ SELECT t.action_type, t.description, COUNT(w.workflow_id) AS workflow_count
 FROM action_type_taxonomy t
 INNER JOIN remediation_workflow_catalog w ON w.action_type = t.action_type
 WHERE w.status = 'active' AND w.is_latest_version = true
+  AND t.status = 'active'
   AND [context filters]
 GROUP BY t.action_type, t.description
 ORDER BY t.action_type
@@ -172,7 +173,7 @@ The LLM makes the final selection decision based on information available in the
 
 ## Action Type Taxonomy
 
-Action types provide a stable vocabulary for categorizing remediation actions. They are stored in the `action_type_taxonomy` PostgreSQL table.
+Action types provide a stable vocabulary for categorizing remediation actions. They are provisioned as Kubernetes CRDs (`ActionType`) and synced to the `action_type_taxonomy` PostgreSQL table by the Auth Webhook admission handler.
 
 ### Built-In Types
 
@@ -182,28 +183,38 @@ Kubernaut ships with 24 built-in action types:
 
 ### User-Extensible
 
-Action types are fully configurable. Operators can register custom types via SQL with structured descriptions:
+Action types are fully configurable. Operators register custom types by applying an `ActionType` CRD:
 
-```sql
-INSERT INTO action_type_taxonomy (action_type, description) VALUES (
-  'RotateCertificates',
-  '{"what": "Rotates TLS certificates for services",
-    "whenToUse": "When certificate expiry is approaching or certificates are invalid",
-    "whenNotToUse": "When the issue is DNS resolution, not certificate validity",
-    "preconditions": "cert-manager must be installed and the Certificate resource must exist"}'
-);
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: ActionType
+metadata:
+  name: rotate-certificates
+spec:
+  name: RotateCertificates
+  description:
+    what: "Rotates TLS certificates for services"
+    whenToUse: "When certificate expiry is approaching or certificates are invalid"
+    whenNotToUse: "When the issue is DNS resolution, not certificate validity"
+    preconditions: "cert-manager must be installed and the Certificate resource must exist"
 ```
 
-The description fields are presented to the LLM, so accurate, unambiguous descriptions are essential. Follow these guidelines:
+The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, captures the operator identity for SOC2 audit, and updates the CRD status. Deleting the CRD disables the action type in the catalog (soft delete).
+
+The description fields are presented to the LLM during Step 1 of the discovery protocol, so accurate, unambiguous descriptions are essential. Follow these guidelines:
 
 - **`what`** -- One sentence describing the action
 - **`whenToUse`** -- Specific conditions that warrant this action
 - **`whenNotToUse`** -- Conditions where this action would be wrong (prevents misselection)
 - **`preconditions`** -- What must be true for the action to succeed
 
+### Lifecycle
+
+Action types support `active` and `disabled` states. Disabled action types and their associated workflows are excluded from the discovery protocol (`t.status = 'active'` filter). Re-applying a previously deleted `ActionType` CRD re-enables the existing taxonomy entry.
+
 ### Validation
 
-Workflow creation validates that the declared `action_type` exists in the taxonomy. Unknown action types are rejected.
+Workflow creation validates that the declared `action_type` exists and is active in the taxonomy. Unknown or disabled action types are rejected.
 
 ## Confidence Thresholds
 

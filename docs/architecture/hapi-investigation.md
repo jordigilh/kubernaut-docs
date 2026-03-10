@@ -155,17 +155,19 @@ GET /api/v1/remediation-history/context
   &currentSpecHash=sha256:abc123...
 ```
 
-The response contains two tiers of history:
+The response contains two tiers of history, each using a different query strategy:
 
-| Tier | Window | Query Strategy | Detail Level |
+| Tier | Window | Query Filter | Detail Level |
 |---|---|---|---|
-| **Tier 1** | Last 24 hours | By `target_resource` (all recent history) | Full: effectiveness score, health checks, metric deltas, hash match |
-| **Tier 2** | 24 hours – 90 days | By `pre_remediation_spec_hash` (config-specific) | Summary: effectiveness score, hash match, assessment reason |
+| **Tier 1** | Last 24 hours | By `target_resource` (namespace/kind/name) | Full: effectiveness score, health checks, metric deltas, hash match |
+| **Tier 2** | 24 hours – 90 days | By `pre_remediation_spec_hash` | Summary: effectiveness score, hash match, assessment reason |
 
-The query strategy difference is important: **Tier 1 catches all recent history** regardless of configuration changes, while **Tier 2 only surfaces older history when the same configuration recurs**. This means:
+**Why the query strategies differ:**
 
-- A resource that was remediated yesterday with a different config still appears in Tier 1
-- A resource whose config reverted to a state from 60 days ago will find that old history in Tier 2
+- **Tier 1** queries by target resource to catch **all recent remediation attempts**, regardless of configuration changes. This is critical because a chain of remediations often involves config changes -- the LLM needs to see the full recent chain including transitions between configurations.
+- **Tier 2** queries by spec hash to find **older history only when the same configuration recurs**. If a resource's config reverted to a state last seen 60 days ago, Tier 2 surfaces what happened back then.
+
+**How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 
 ## How Remediation History Influences the LLM
 
@@ -173,7 +175,7 @@ The history returned by `get_resource_context` is the mechanism by which Kuberna
 
 ### Three-Way Hash Comparison
 
-For each history entry, DataStorage compares the `currentSpecHash` (from HAPI) against the stored pre-remediation and post-remediation hashes:
+For each history entry, DataStorage compares the `currentSpecHash` (from HAPI) against both stored hashes:
 
 | Comparison | `hashMatch` Value | Meaning |
 |---|---|---|
@@ -183,24 +185,33 @@ For each history entry, DataStorage compares the `currentSpecHash` (from HAPI) a
 
 When any entry has `hashMatch = "preRemediation"`, the response sets `regressionDetected: true`. This is a strong signal that a previous fix was undone.
 
-### What the LLM Sees
+### Tier 1 Example: Chain of Escalating Remediations
 
-The tool result includes the raw `RemediationHistoryContext` JSON:
+Consider a Deployment `my-app` in production that has been failing repeatedly in the last 24 hours. The current spec hash is `sha256:AAA` (the original broken config). Here's what happened:
+
+1. **First attempt**: Config was at `AAA`, `RestartPod` was tried, scored 0.35 (poor), config stayed at `AAA`
+2. **Second attempt**: Config still at `AAA`, `IncreaseMemory` was tried, scored 0.60 (moderate), config changed to `BBB`
+3. **Third attempt**: Config now at `BBB`, `RollbackDeployment` was tried, scored 0.20 (poor), config changed to `CCC`
+4. **GitOps reverted the rollback**, pushing config back to `AAA` -- triggering this new investigation
+
+Tier 1 returns all three entries because they all target the same resource in the last 24 hours:
 
 ```json
 {
   "targetResource": "production/Deployment/my-app",
-  "currentSpecHash": "sha256:abc123...",
+  "currentSpecHash": "sha256:AAA",
   "regressionDetected": true,
   "tier1": {
     "window": "24h",
     "chain": [
       {
-        "remediationUID": "rr-12345",
-        "completedAt": "2026-03-04T10:30:00Z",
+        "remediationUID": "rr-001",
+        "completedAt": "2026-03-04T08:00:00Z",
         "workflowType": "RestartPod",
         "outcome": "completed",
         "effectivenessScore": 0.35,
+        "preRemediationSpecHash": "sha256:AAA",
+        "postRemediationSpecHash": "sha256:AAA",
         "hashMatch": "preRemediation",
         "signalResolved": false,
         "healthChecks": {
@@ -209,26 +220,78 @@ The tool result includes the raw `RemediationHistoryContext` JSON:
           "restartDelta": 3,
           "crashLoops": true
         }
-      }
-    ]
-  },
-  "tier2": {
-    "window": "2160h",
-    "chain": [
+      },
       {
-        "remediationUID": "rr-00789",
-        "completedAt": "2026-01-15T08:00:00Z",
+        "remediationUID": "rr-002",
+        "completedAt": "2026-03-04T10:00:00Z",
+        "workflowType": "IncreaseMemory",
+        "outcome": "completed",
+        "effectivenessScore": 0.60,
+        "preRemediationSpecHash": "sha256:AAA",
+        "postRemediationSpecHash": "sha256:BBB",
+        "hashMatch": "preRemediation",
+        "signalResolved": false,
+        "healthChecks": {
+          "podRunning": true,
+          "readinessPass": true,
+          "restartDelta": 0,
+          "crashLoops": false
+        }
+      },
+      {
+        "remediationUID": "rr-003",
+        "completedAt": "2026-03-04T14:00:00Z",
         "workflowType": "RollbackDeployment",
         "outcome": "completed",
-        "effectivenessScore": 0.92,
-        "hashMatch": "none"
+        "effectivenessScore": 0.20,
+        "preRemediationSpecHash": "sha256:BBB",
+        "postRemediationSpecHash": "sha256:CCC",
+        "hashMatch": "none",
+        "signalResolved": false
       }
     ]
   }
 }
 ```
 
-From this, the LLM can infer: *"`RestartPod` was tried on the same configuration and scored 0.35 (poor) -- the signal wasn't resolved and crash loops continued. `RollbackDeployment` worked well (0.92) on a different config 2 months ago. Since this is a regression, `RollbackDeployment` may be the better approach."*
+The LLM can trace the full chain:
+
+- `rr-001`: `RestartPod` on config `AAA` -> stayed at `AAA`, scored 0.35, crash loops continued. **hashMatch = preRemediation** (current config matches this entry's pre-hash, confirming regression).
+- `rr-002`: `IncreaseMemory` on config `AAA` -> changed to `BBB`, scored 0.60, readiness passed but signal wasn't resolved. **hashMatch = preRemediation** (same regression -- started from `AAA`).
+- `rr-003`: `RollbackDeployment` on config `BBB` -> changed to `CCC`, scored 0.20, made things worse. **hashMatch = none** (this entry started from `BBB`, not the current config `AAA`).
+
+From this chain, the LLM can reason: *"We're back at config `AAA`. `RestartPod` failed on this config (0.35). `IncreaseMemory` partially helped (0.60) but the signal recurred. The rollback from `BBB` to `CCC` was counterproductive (0.20). The best option is either `IncreaseMemory` again (it was the most effective) or escalating to human review since three attempts have failed."*
+
+### Tier 2 Example: Historical Regression Detection
+
+Now suppose the Deployment was stable for months but a bad release reverted it to a config last seen 45 days ago (spec hash `sha256:XXX`). Tier 1 is empty (no remediations in the last 24 hours), but Tier 2 finds older history by matching `pre_remediation_spec_hash = sha256:XXX`:
+
+```json
+{
+  "targetResource": "production/Deployment/my-app",
+  "currentSpecHash": "sha256:XXX",
+  "regressionDetected": true,
+  "tier1": { "window": "24h", "chain": [] },
+  "tier2": {
+    "window": "2160h",
+    "chain": [
+      {
+        "remediationUID": "rr-old-001",
+        "completedAt": "2026-01-18T09:00:00Z",
+        "workflowType": "RollbackDeployment",
+        "outcome": "completed",
+        "effectivenessScore": 0.92,
+        "hashMatch": "preRemediation",
+        "signalResolved": true
+      }
+    ]
+  }
+}
+```
+
+The LLM sees: *"45 days ago, this exact configuration was remediated with `RollbackDeployment` and it worked well (0.92, signal resolved). This is a regression to a known-bad config. `RollbackDeployment` is a strong candidate."*
+
+Without Tier 2, this historical insight would be invisible -- the LLM would have no context and might try less effective approaches first.
 
 ### Formatted History Warnings
 
@@ -276,14 +339,14 @@ After resource context is gathered, the LLM enters Phase 4 -- workflow selection
 list_available_actions(offset=0, limit=20)
 ```
 
-The LLM sees action types with structured descriptions:
+HAPI sends signal context filters (`severity`, `component`, `environment`, `priority`, `custom_labels`) and `detected_labels` as query parameters to DataStorage. DataStorage uses these to **filter and rank** the action types -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:
 
 - `what` -- What the action does
 - `whenToUse` -- When this action is appropriate
 - `whenNotToUse` -- When to avoid this action
-- `workflow_count` -- How many workflows implement this action
+- `workflow_count` -- How many workflows implement this action (within the filtered context)
 
-When detected labels are available, the response includes a `cluster_context` section (e.g., "Target resource is GitOps-managed with ArgoCD, Helm-managed, PDB-protected"). This helps the LLM choose an action type that fits the infrastructure.
+When detected labels are available, the response also includes a `cluster_context` section (e.g., "Target resource is GitOps-managed with ArgoCD, Helm-managed, PDB-protected"). For GitOps-managed resources, HAPI adds a prescriptive instruction telling the LLM to prefer git-based action types over direct kubectl actions.
 
 ### Step 2: List Workflows for Action Type
 

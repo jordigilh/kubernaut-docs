@@ -60,7 +60,7 @@ Created after approval (auto or human). The Workflow Execution controller:
 
 1. Resolves the workflow from the catalog (via DataStorage)
 2. Validates dependencies (required Secrets, ConfigMaps)
-3. Runs the remediation via **Tekton Pipelines** (multi-step) or **Kubernetes Jobs** (single-step)
+3. Runs the remediation via **Tekton Pipelines** (multi-step), **Kubernetes Jobs** (single-step), or **Ansible (AWX/AAP)** (playbook-based)
 4. Injects parameters (namespace, deployment name, etc.)
 
 ### NotificationRequest

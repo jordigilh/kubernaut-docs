@@ -1,6 +1,6 @@
 # Workflow Execution
 
-The Workflow Execution controller runs remediation workflows via **Kubernetes Jobs** or **Tekton Pipelines**. It manages spec validation, dependency resolution, cooldown enforcement, deterministic locking, and failure reporting.
+The Workflow Execution controller runs remediation workflows via **Kubernetes Jobs**, **Tekton Pipelines**, or **Ansible (AWX/AAP)**. It manages spec validation, dependency resolution, cooldown enforcement, deterministic locking, and failure reporting.
 
 ## CRD Specification
 
@@ -118,10 +118,10 @@ Fetches workflow dependencies from DataStorage and validates them in the executi
 
 ### 4. Execution Creation
 
-Creates a Kubernetes Job or Tekton PipelineRun based on `ExecutionEngine`:
+Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job based on `ExecutionEngine`:
 
-- The executor registry dispatches to the appropriate engine (`tekton` or `job`)
-- **AlreadyExists handling**: If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as `Failed` (race condition).
+- The executor registry dispatches to the appropriate engine (`tekton`, `job`, or `ansible`)
+- **AlreadyExists handling** (Job/Tekton only): If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as `Failed` (race condition).
 
 ### Audit Events
 
@@ -186,6 +186,46 @@ sequenceDiagram
     WE->>WE: Update WFE status
 ```
 
+### Ansible (AWX/AAP)
+
+For remediations that use Ansible playbooks managed via AWX or Ansible Automation Platform (BR-WE-015):
+
+```mermaid
+sequenceDiagram
+    participant WE as WE Controller
+    participant DS as DataStorage
+    participant K8s as Kubernetes API
+    participant AWX as AWX/AAP
+
+    WE->>DS: Query workflow dependencies (Secrets, ConfigMaps)
+    WE->>K8s: Read dependency Secrets and ConfigMaps
+    WE->>AWX: Create ephemeral credentials (from Secrets)
+    WE->>AWX: Launch Job Template (extra_vars + credentials)
+    AWX-->>WE: Job status (pending → running → successful/failed)
+    WE->>AWX: Delete ephemeral credentials (cleanup)
+    WE->>WE: Update WFE status
+```
+
+The Ansible executor:
+
+1. **Resolves the Job Template** by name via the AWX REST API (`engineConfig.jobTemplateName`)
+2. **Builds `extra_vars`** from workflow parameters (with automatic type coercion for integers, booleans, floats, and JSON) plus four auto-injected context variables:
+
+    | Variable | Source | Purpose |
+    |---|---|---|
+    | `WFE_NAME` | `wfe.Name` | WorkflowExecution identity for audit/logging |
+    | `WFE_NAMESPACE` | `wfe.Namespace` | WorkflowExecution namespace |
+    | `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` | Parent RemediationRequest identity |
+    | `RR_NAMESPACE` | `wfe.Spec.RemediationRequestRef.Namespace` | Parent RemediationRequest namespace |
+
+3. **Injects dependency ConfigMaps** as `extra_vars` with a `KUBERNAUT_CONFIGMAP_{NAME}_{KEY}` prefix (non-sensitive data)
+4. **Injects dependency Secrets** as ephemeral AWX credentials with `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables (sensitive data, never in `extra_vars`)
+5. **Launches the AWX Job** with the combined `extra_vars` and credential IDs
+6. **Polls job status** via `GET /api/v2/jobs/{id}/` mapping AWX states (`pending`, `waiting`, `running`, `successful`, `failed`, `error`, `canceled`) to WFE phases
+7. **Cleans up** ephemeral credentials after execution completes (stored in the `kubernaut.ai/awx-ephemeral-credentials` annotation)
+
+The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX `extra_vars` (which are logged). Instead, each Secret gets a dynamic AWX credential type with `env` injectors, and an ephemeral credential is created per execution and deleted on cleanup.
+
 ## Deterministic Locking (DD-WE-003)
 
 To prevent concurrent execution on the same target resource, the controller uses deterministic naming:
@@ -207,12 +247,26 @@ All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespa
 
 The executor injects system variables and passes through all parameters from the workflow selection:
 
+### Kubernetes Jobs and Tekton Pipelines
+
 | Variable | Source |
 |---|---|
 | `TARGET_RESOURCE` | `wfe.Spec.TargetResource` (system-injected) |
 | Custom parameters | All entries from `wfe.Spec.Parameters` (from LLM selection) |
 
 Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables (Jobs) or Tekton params (PipelineRuns).
+
+### Ansible (AWX/AAP)
+
+| Variable | Source |
+|---|---|
+| `WFE_NAME` | `wfe.Name` (auto-injected) |
+| `WFE_NAMESPACE` | `wfe.Namespace` (auto-injected) |
+| `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` (auto-injected) |
+| `RR_NAMESPACE` | `wfe.Spec.RemediationRequestRef.Namespace` (auto-injected) |
+| `KUBERNAUT_CONFIGMAP_{NAME}_{KEY}` | Dependency ConfigMap data (auto-injected) |
+| `KUBERNAUT_SECRET_{NAME}_{KEY}` | Dependency Secret data (via ephemeral AWX credentials) |
+| Custom parameters | All entries from `wfe.Spec.Parameters` (type-coerced into `extra_vars`) |
 
 ## Handoff
 
@@ -222,6 +276,8 @@ The WFE controller reports status back to the Orchestrator through the CRD statu
 WFE Completed → RO creates EffectivenessAssessment → Verifying phase
 WFE Failed    → RO creates EA (for tracking) + NotificationRequest → Failed phase
 ```
+
+For Ansible executions, the handoff is identical -- the AWX job status is mapped to the same WFE phases (`Completed`/`Failed`), so the Orchestrator does not need to distinguish between execution engines.
 
 ## Next Steps
 

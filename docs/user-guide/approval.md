@@ -85,8 +85,8 @@ This section walks through a complete approval lifecycle.
 
 ```bash
 $ kubectl get rar -n kubernaut-system
-NAMESPACE          NAME                                   AIANALYSIS                            CONFIDENCE   DECISION   EXPIRED   REQUIREDBY               AGE
-kubernaut-system   rar-rr-b0c0f4e80a71-49f643a4          ai-rr-b0c0f4e80a71-49f643a4          0.9                               2026-03-10T00:06:48Z     2m
+NAMESPACE          NAME                           AIANALYSIS                    CONFIDENCE   DECISION   EXPIRED   REQUIREDBY             AGE
+kubernaut-system   rar-rr-b4f71c8b83b7-5e9c6266   ai-rr-b4f71c8b83b7-5e9c6266   0.85                              2026-03-10T01:13:44Z   44s
 ```
 
 A blank `DECISION` column indicates a pending RAR awaiting operator action.
@@ -94,95 +94,126 @@ A blank `DECISION` column indicates a pending RAR awaiting operator action.
 ### 2. Inspect the RAR
 
 ```bash
-kubectl get rar rar-rr-b0c0f4e80a71-49f643a4 -n kubernaut-system -o yaml
+kubectl get rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system -o yaml
 ```
 
 ```yaml
 apiVersion: kubernaut.ai/v1alpha1
 kind: RemediationApprovalRequest
 metadata:
-  name: rar-rr-b0c0f4e80a71-49f643a4
+  name: rar-rr-b4f71c8b83b7-5e9c6266
   namespace: kubernaut-system
   ownerReferences:
     - apiVersion: kubernaut.ai/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
       kind: RemediationRequest
-      name: rr-b0c0f4e80a71
-      uid: ...
+      name: rr-b4f71c8b83b7-5e9c6266
+      uid: 0b6599e5-d8fa-4fef-8ae6-e118c6977372
 spec:
   remediationRequestRef:
-    name: rr-b0c0f4e80a71
+    apiVersion: kubernaut.ai/v1alpha1
+    kind: RemediationRequest
+    name: rr-b4f71c8b83b7-5e9c6266
     namespace: kubernaut-system
+    uid: 0b6599e5-d8fa-4fef-8ae6-e118c6977372
   aiAnalysisRef:
-    name: ai-rr-b0c0f4e80a71-49f643a4
-  confidence: 0.9
+    name: ai-rr-b4f71c8b83b7-5e9c6266
+  confidence: 0.85
   confidenceLevel: high
-  reason: "Production environment - requires manual approval"
-  investigationSummary: |
-    Root Cause: The pod nginx-deployment-xyz is in CrashLoopBackOff due to
-    an invalid configuration file mounted from ConfigMap 'app-config'. The
-    container exits with code 1 during startup when parsing /etc/nginx/nginx.conf.
+  reason: "Production environment with sensitive resource kind - requires manual approval"
+  investigationSummary: >-
+    StatefulSet replica mismatch caused by missing StorageClass
+    'broken-storage-class' preventing PVC provisioning for pod kv-store-2
   recommendedWorkflow:
-    workflowId: "crashloop-config-fix-v1"
-    version: "1.0.0"
-    rationale: "ConfigMap-based fix is appropriate because the deployment is healthy
-      except for the configuration error. A rolling restart after fixing the ConfigMap
-      will restore service."
+    workflowId: f2ed351f-ccc5-41d2-bcf5-de999ed55528
+    version: "1.0.2"
+    executionBundle: quay.io/kubernaut-cicd/test-workflows/fix-statefulset-pvc-job@sha256:d5b0c73ab0fb4093e1e291974013660dd2e5d8e0b2016eaf94d78cf9759be500
+    rationale: >-
+      The workflow can recreate the missing PVC with proper StorageClass
+      configuration to resolve the scheduling issue for kv-store-2
   evidenceCollected:
-    - "Pod logs show: nginx: [emerg] unknown directive 'proxy_passs' in /etc/nginx/nginx.conf:42"
-    - "ConfigMap 'app-config' was last modified 15 minutes ago"
-    - "Previous replica was healthy before ConfigMap update"
+    - "StorageClass 'broken-storage-class' does not exist in the cluster"
+    - "PVC kv-store-data-kv-store-2 is Pending with ProvisioningFailed event"
+    - "StatefulSet kv-store has 2/3 ready replicas; pod kv-store-2 unschedulable"
   alternativesConsidered:
-    - workflow: "rollback-deployment-v1"
-      reason: "Rejected: config change is in ConfigMap, not in image"
-  whyApprovalRequired: "Production environment with high-confidence analysis requires
-    human verification before automated remediation"
+    - approach: "Manual PVC creation with existing StorageClass"
+      prosCons: "Pros: Immediate fix. Cons: Diverges from volumeClaimTemplate; future scale-ups repeat the issue"
+  recommendedActions:
+    - action: "Review the recommended workflow and approve if appropriate"
+      rationale: "Production environment with sensitive resource kind - requires manual approval"
+  whyApprovalRequired: >-
+    Production environment with sensitive resource kind - requires manual approval
   policyEvaluation:
     policyName: "aianalysis.approval"
     matchedRules:
-      - "Production environment - requires manual approval"
-    decision: "require_approval"
-  requiredBy: "2026-03-10T00:06:48Z"
+      - "is_production"
+    decision: "manual_review_required"
+  requiredBy: "2026-03-10T01:13:44Z"
 status:
-  timeRemaining: "12m34s"
+  createdAt: "2026-03-10T00:58:44Z"
+  timeRemaining: "14m29s"
   conditions:
-    - type: Pending
+    - type: ApprovalPending
       status: "True"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
       reason: AwaitingDecision
-      message: "Waiting for operator approval or rejection"
+      message: "Awaiting decision, expires 2026-03-10T01:13:44Z"
+    - type: ApprovalDecided
+      status: "False"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
+      reason: PendingDecision
+      message: "No decision yet"
+    - type: ApprovalExpired
+      status: "False"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
+      reason: NotExpired
+      message: "Approval has not expired"
 ```
 
 ### 3. Review the Key Fields
 
 | Field | What to Check |
 |---|---|
-| `spec.investigationSummary` | Does the root cause make sense? |
-| `spec.recommendedWorkflow` | Is the proposed workflow appropriate? |
+| `spec.investigationSummary` | Does the root cause analysis make sense? |
+| `spec.recommendedWorkflow` | Is the proposed workflow appropriate for the problem? |
 | `spec.evidenceCollected` | Does the evidence support the diagnosis? |
-| `spec.alternativesConsidered` | Were alternatives reasonably dismissed? |
-| `spec.confidence` / `confidenceLevel` | How confident is the system? |
-| `spec.policyEvaluation.matchedRules` | Why was approval required? |
-| `spec.requiredBy` | How much time is left before expiration? |
+| `spec.alternativesConsidered` | Were alternative approaches reasonably dismissed? |
+| `spec.confidence` / `confidenceLevel` | How confident is the system? (low < 0.6 < medium < 0.8 < high) |
+| `spec.whyApprovalRequired` | What policy or condition triggered the approval gate? |
+| `spec.policyEvaluation` | Which Rego policy rules matched? |
+| `spec.recommendedActions` | What is the operator expected to do? |
+| `spec.requiredBy` / `status.timeRemaining` | How much time is left before the RAR expires? |
 
 ### 4. Approve or Reject
 
 ```bash
 # Approve with rationale
-kubectl patch rar rar-rr-b0c0f4e80a71-49f643a4 -n kubernaut-system \
+kubectl patch rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system \
   --subresource=status --type=merge \
-  -p '{"status":{"decision":"Approved","decidedBy":"jgil","decisionMessage":"RCA confirmed: ConfigMap typo matches pod logs"}}'
+  -p '{"status":{"decision":"Approved","decidedBy":"jgil","decisionMessage":"RCA confirmed: StorageClass issue matches PVC events"}}'
 
 # Or reject
-kubectl patch rar rar-rr-b0c0f4e80a71-49f643a4 -n kubernaut-system \
+kubectl patch rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system \
   --subresource=status --type=merge \
-  -p '{"status":{"decision":"Rejected","decidedBy":"jgil","decisionMessage":"Root cause is upstream DNS, not config"}}'
+  -p '{"status":{"decision":"Rejected","decidedBy":"jgil","decisionMessage":"Wrong root cause — issue is node affinity, not StorageClass"}}'
 ```
+
+!!! tip "Quick approval of the first pending RAR"
+    To approve the first pending RAR without copy-pasting the name:
+
+    ```bash
+    kubectl patch rar $(kubectl get rar -n kubernaut-system -o name | head -1) \
+      -n kubernaut-system --type=merge --subresource=status \
+      -p '{"status":{"decision":"Approved","decidedBy":"operator","decisionMessage":"Approved after review"}}'
+    ```
 
 ### 5. Verify the Decision
 
 ```bash
 $ kubectl get rar -n kubernaut-system
-NAMESPACE          NAME                                   AIANALYSIS                            CONFIDENCE   DECISION   EXPIRED   REQUIREDBY               AGE
-kubernaut-system   rar-rr-b0c0f4e80a71-49f643a4          ai-rr-b0c0f4e80a71-49f643a4          0.9          Approved             2026-03-10T00:06:48Z     5m
+NAMESPACE          NAME                           AIANALYSIS                    CONFIDENCE   DECISION   EXPIRED   REQUIREDBY             AGE
+kubernaut-system   rar-rr-b4f71c8b83b7-5e9c6266   ai-rr-b4f71c8b83b7-5e9c6266   0.85         Approved             2026-03-10T01:13:44Z   5m
 ```
 
 After approval, the Orchestrator transitions the `RemediationRequest` from `AwaitingApproval` to `Executing` and creates a `WorkflowExecution` CRD.

@@ -67,12 +67,77 @@ Waiting for human approval.
 
 ```bash
 # List pending approvals
-kubectl get remediationapprovalrequests -n kubernaut-system
+kubectl get rar -n kubernaut-system
 
-# Approve
-kubectl patch remediationapprovalrequest <name> -n kubernaut-system \
-  --type merge -p '{"status":{"decision":"Approved","decisionMessage":"Reviewed and approved"}}'
+# Approve (--subresource=status is required because the spec is immutable)
+kubectl patch rar <name> -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{"status":{"decision":"Approved","decidedBy":"operator","decisionMessage":"Reviewed and approved"}}'
 ```
+
+**Common causes**: Operator hasn't reviewed the RAR yet, approval notification not delivered, RAR about to expire. See [Human Approval](../user-guide/approval.md) for the full walkthrough.
+
+### Stuck in `Blocked`
+
+The Orchestrator's routing engine has determined that proceeding is unsafe. The RR will be automatically retried after the cooldown expires -- no manual intervention is needed in most cases.
+
+**Check**:
+
+```bash
+# Inspect the block reason and cooldown
+kubectl get rr <name> -n kubernaut-system -o yaml | grep -A 5 'block\|Blocked'
+
+# Check all RRs and their phases
+kubectl get rr -n kubernaut-system
+```
+
+**Key status fields**:
+
+| Field | Meaning |
+|---|---|
+| `status.blockReason` | Why the RR was blocked (see table below) |
+| `status.blockMessage` | Human-readable explanation with details |
+| `status.blockedUntil` | When the cooldown expires (for time-based blocks) |
+| `status.overallPhase` | `Blocked` while the condition is active |
+
+**Block reasons and resolution**:
+
+| Block Reason | What It Means | What to Do |
+|---|---|---|
+| `ConsecutiveFailures` | 3+ consecutive failures on the same signal fingerprint. Cooldown: 1 hour. | Investigate why the previous remediations failed. Check the failed RRs: `kubectl get rr -n kubernaut-system`. The block clears automatically after the cooldown. |
+| `DuplicateInProgress` | Another active RR is already handling the same signal. Rechecked every 30s. | Wait for the original RR to complete. The duplicate inherits the outcome. |
+| `ResourceBusy` | A WorkflowExecution is already running on the same target. Rechecked every 30s. | Wait for the active workflow to finish. |
+| `RecentlyRemediated` | The same workflow+target was executed recently. Cooldown: 5 minutes. | Normal behavior -- prevents remediation storms. Clears automatically. |
+| `ExponentialBackoff` | Progressive retry delay after a workflow failure (1 min up to 10 min). | Clears automatically. Check `status.blockedUntil` for the exact time. |
+| `UnmanagedResource` | Target namespace or resource lacks the `kubernaut.ai/managed=true` label. | Add the label: `kubectl label namespace <ns> kubernaut.ai/managed=true`. |
+| `IneffectiveChain` | Consecutive remediations completed but were ineffective (resource reverted). | Escalated to manual review. Investigate the root cause -- the automated workflow isn't producing a durable fix. |
+
+**Example**: A blocked RR due to consecutive failures:
+
+```bash
+$ kubectl get rr -n kubernaut-system
+NAME                       PHASE     OUTCOME   AGE
+rr-b157a3a9e42f-1c2b5576   Failed              18m
+rr-b157a3a9e42f-1fad7b25   Failed              20m
+rr-b157a3a9e42f-e40b4d97   Blocked             14m
+rr-b157a3a9e42f-efe8bb6b   Failed              16m
+```
+
+Inspecting the blocked RR:
+
+```yaml
+status:
+  blockMessage: '3 consecutive failures. Cooldown expires: 2026-03-10T03:04:03Z'
+  blockReason: ConsecutiveFailures
+  blockedUntil: "2026-03-10T03:04:03Z"
+  overallPhase: Blocked
+  deduplication:
+    firstSeenAt: "2026-03-10T02:04:02Z"
+    lastSeenAt: "2026-03-10T02:18:08Z"
+    occurrenceCount: 14
+```
+
+The signal (`KubeNodeNotReady`) fired 14 times during the cooldown window. After 3 consecutive failures, the routing engine blocked further attempts for 1 hour to prevent remediation storms. The RR will be automatically retried after `blockedUntil`.
 
 ## No Workflows Found
 

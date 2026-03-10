@@ -91,12 +91,28 @@ A `RemediationRequest` progresses through these phases:
 | **AwaitingApproval** | Human approval required (low confidence or policy mandate) |
 | **Executing** | Workflow is running the remediation |
 | **Verifying** | Workflow succeeded; effectiveness assessment in progress |
-| **Blocked** | Routing condition prevents progress (requeued with cooldown) |
+| **Blocked** | Routing engine prevents progress; automatically retried after cooldown (see below) |
 | **Completed** | Remediation finished successfully |
 | **Failed** | Remediation failed at any stage (including human rejection) |
 | **TimedOut** | Phase timeout expired |
 | **Skipped** | Remediation skipped (e.g., resource busy) |
 | **Cancelled** | Remediation cancelled |
+
+### Blocked Phase
+
+The **Blocked** phase is a transient, non-terminal state. The Orchestrator's routing engine evaluates safety conditions before allowing a remediation to proceed. When a condition is met, the RR enters Blocked with a `blockReason`, a human-readable `blockMessage`, and (for time-based blocks) a `blockedUntil` timestamp. The RR is automatically requeued and will resume once the condition clears.
+
+| Block Reason | Trigger | Default Cooldown |
+|---|---|---|
+| `ConsecutiveFailures` | 3+ consecutive failures on the same signal fingerprint | 1 hour |
+| `DuplicateInProgress` | Another active RR with the same fingerprint is already being remediated | 30 s (recheck) |
+| `ResourceBusy` | A WorkflowExecution is already running on the same target resource | 30 s (recheck) |
+| `RecentlyRemediated` | The same workflow+target was successfully executed recently | 5 minutes |
+| `ExponentialBackoff` | Progressive retry delay after failures (1 min to 10 min) | Adaptive |
+| `UnmanagedResource` | Target namespace or resource lacks `kubernaut.ai/managed=true` | 5 s to 5 min (backoff) |
+| `IneffectiveChain` | Consecutive remediations detected as ineffective via audit history | Escalates to manual review |
+
+See [Troubleshooting](../operations/troubleshooting.md#stuck-in-blocked) for diagnostic steps.
 
 ## Signal Modes
 

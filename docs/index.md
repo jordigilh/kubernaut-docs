@@ -16,6 +16,14 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
 <div class="grid cards" markdown>
 
+-   :material-head-question:{ .lg .middle } **Why Kubernaut?**
+
+    ---
+
+    The problem with manual remediation, how Kubernaut compares to rule-based tools, and when to use it.
+
+    [:octicons-arrow-right-24: Why Kubernaut](getting-started/why-kubernaut.md)
+
 -   :material-rocket-launch:{ .lg .middle } **Getting Started**
 
     ---
@@ -47,6 +55,14 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
     CRD specifications, DataStorage REST API, and HolmesGPT API reference.
 
     [:octicons-arrow-right-24: API Reference](api-reference/index.md)
+
+-   :material-frequently-asked-questions:{ .lg .middle } **FAQ**
+
+    ---
+
+    Common questions about LLM support, safety, cost, air-gapped operation, and execution engines.
+
+    [:octicons-arrow-right-24: FAQ](faq.md)
 
 </div>
 

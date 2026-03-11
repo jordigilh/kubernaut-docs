@@ -87,6 +87,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - getting-started/index.md
+      - Why Kubernaut: getting-started/why-kubernaut.md
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
       - Architecture Overview: getting-started/architecture-overview.md
@@ -137,4 +138,5 @@ nav:
       - Troubleshooting: operations/troubleshooting.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md
+  - FAQ: faq.md
   - Contributing: contributing.md

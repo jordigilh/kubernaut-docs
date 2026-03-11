@@ -226,7 +226,7 @@ All services use **structured JSON logging** with configurable log levels:
   "ts": "2026-03-04T10:30:00.000Z",
   "msg": "Reconciling RemediationRequest",
   "controller": "remediationorchestrator",
-  "name": "rr-abc123",
+  "name": "rr-b157a3a9e42f-1c2b5576",
   "namespace": "kubernaut-system",
   "phase": "Processing"
 }

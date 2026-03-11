@@ -77,6 +77,21 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | `GET` | `/health/ready` | Readiness probe (checks PostgreSQL connectivity + shutdown flag) |
 | `GET` | `/metrics` | Prometheus metrics (`:9090/metrics`) |
 
+## Error Responses
+
+All error responses (4xx, 5xx) use [RFC 7807 Problem Details](index.md#error-responses-rfc-7807) format with `Content-Type: application/problem+json`. See the [error type catalog](index.md#error-type-catalog) for the full list of error types.
+
+**Example** (invalid batch request):
+
+```json
+{
+  "type": "https://kubernaut.ai/problems/validation-error",
+  "title": "Bad Request",
+  "detail": "Batch must contain between 1 and 1000 events",
+  "status": 400
+}
+```
+
 ## Authentication
 
 DataStorage uses **Kubernetes TokenReview** authentication. Clients must present a valid ServiceAccount token in the `Authorization` header.

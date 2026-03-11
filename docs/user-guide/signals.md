@@ -138,6 +138,10 @@ Rego policies evaluate the enriched signal to determine:
 
 Signal mode determines which prompt variant HolmesGPT uses during investigation, affecting the framing of the analysis (incident response vs. preventive assessment).
 
+## Error Responses
+
+The Gateway returns all errors in [RFC 7807 Problem Details](../api-reference/index.md#error-responses-rfc-7807) format (`Content-Type: application/problem+json`). AlertManager webhook integrations can use the `status` and `type` fields to distinguish between validation errors, authentication failures, and transient server issues.
+
 ## Next Steps
 
 - [Core Concepts](concepts.md) — Understanding the full pipeline

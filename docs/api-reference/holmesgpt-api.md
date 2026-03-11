@@ -105,6 +105,21 @@ Returns the analysis result when the session is complete.
 | `GET` | `/config` | Configuration snapshot (dev mode only) |
 | `GET` | `/metrics` | Prometheus metrics |
 
+## Error Responses
+
+All error responses (4xx, 5xx) use [RFC 7807 Problem Details](index.md#error-responses-rfc-7807) format with `Content-Type: application/problem+json`. See the [error type catalog](index.md#error-type-catalog) for the full list of error types.
+
+**Example** (session not ready):
+
+```json
+{
+  "type": "https://kubernaut.ai/problems/conflict",
+  "title": "Conflict",
+  "detail": "Session is still investigating, result not yet available",
+  "status": 409
+}
+```
+
 ## Session Management
 
 - Sessions are stored **in-memory** in the HolmesGPT API pod

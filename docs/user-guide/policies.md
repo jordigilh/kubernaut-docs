@@ -15,6 +15,9 @@ All policies are deployed as ConfigMaps and can be customized by editing the Hel
 | `customlabels.rego` | Signal Processing | Extract custom labels from `kubernaut.ai/label-*` | Yes |
 | `approval.rego` | AI Analysis | Decide if human approval is required for a remediation | Yes |
 
+!!! tip "Complete input field reference"
+    For a full listing of every `input.*` field available in each policy -- including types, descriptions, and usage examples for writing custom policies -- see the [Rego Policy Reference](rego-reference.md).
+
 ## Signal Processing Policies
 
 These five policies run during signal enrichment, before the signal reaches AI Analysis. Their output directly feeds into workflow discovery -- see [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).

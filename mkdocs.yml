@@ -97,6 +97,7 @@ nav:
       - Remediation Workflows: user-guide/workflows.md
       - Authoring Workflows: user-guide/workflow-authoring.md
       - Rego Policies: user-guide/policies.md
+      - Rego Policy Reference: user-guide/rego-reference.md
       - Notification Channels: user-guide/notifications.md
       - Human Approval: user-guide/approval.md
       - Effectiveness Monitoring: user-guide/effectiveness.md

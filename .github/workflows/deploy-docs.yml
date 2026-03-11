@@ -30,9 +30,7 @@ jobs:
       - run: pip install -r requirements.txt
 
       - name: Fetch Helm chart README for snippet inclusion
-        run: ./scripts/fetch-chart-readme.sh main
-        env:
-          GH_TOKEN: ${{ github.token }}
+        run: ./scripts/fetch-chart-readme.sh release/v1.0-cleanup
 
       - run: mkdocs build --strict
 

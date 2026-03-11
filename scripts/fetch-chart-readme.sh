@@ -19,15 +19,7 @@ mkdir -p "${TARGET_DIR}"
 
 echo "Fetching ${SOURCE_PATH} from ${REPO}@${BRANCH}..."
 
-if command -v gh &>/dev/null; then
-    gh api "repos/${REPO}/contents/${SOURCE_PATH}?ref=${BRANCH}" \
-        --jq '.content' | base64 -d > "${TARGET_FILE}"
-elif command -v curl &>/dev/null; then
-    curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/${SOURCE_PATH}" \
-        -o "${TARGET_FILE}"
-else
-    echo "ERROR: Neither gh nor curl found. Install one to fetch the chart README." >&2
-    exit 1
-fi
+curl -fsSL "https://raw.githubusercontent.com/${REPO}/${BRANCH}/${SOURCE_PATH}" \
+    -o "${TARGET_FILE}"
 
 echo "Saved to ${TARGET_FILE} ($(wc -c < "${TARGET_FILE}") bytes)"

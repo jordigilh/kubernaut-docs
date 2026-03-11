@@ -388,13 +388,15 @@ Assesses whether the remediation was effective by checking health, alert resolut
 **Created by**: Operator (`kubectl apply`)
 **Watched by**: Auth Webhook (admission) → DataStorage catalog
 
-Kubernetes-native workflow registration. The Auth Webhook intercepts CREATE and DELETE mutations, registers or disables the workflow in the DataStorage catalog, captures operator identity for SOC2 audit, and computes a content hash for deduplication. If a workflow with different content already exists under the same `workflowName` + `version`, the existing workflow is marked `superseded` and the new one is registered.
+Kubernetes-native workflow registration. The Auth Webhook intercepts CREATE and DELETE mutations, registers or disables the workflow in the DataStorage catalog, captures operator identity for SOC2 audit, and computes a content hash for deduplication. If a workflow with different content already exists under the same `metadata.name` + `version`, the existing workflow is marked `superseded` and the new one is registered.
 
 ### Spec
 
 | Field | Type | Description |
 |---|---|---|
-| `metadata` | `RemediationWorkflowMetadata` | Workflow identity: `workflowName`, `version`, `description` (structured: `what`, `whenToUse`, `whenNotToUse`, `preconditions`), `maintainers` (name, email) |
+| `version` | `string` | Semantic version (max 50 chars). Combined with `metadata.name` for uniqueness |
+| `description` | `RemediationWorkflowDescription` | Structured description: `what`, `whenToUse`, `whenNotToUse` (optional), `preconditions` (optional) |
+| `maintainers` | `[]Maintainer` | Maintainer contacts (`name`, `email`) |
 | `actionType` | `string` | Action type this workflow implements (must match an existing ActionType CRD name) |
 | `labels` | `RemediationWorkflowLabels` | Signal-matching labels: `severity` (list), `environment` (list), `component`, `priority` |
 | `customLabels` | `map[string]string` | Organization-specific labels for additional matching |

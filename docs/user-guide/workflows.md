@@ -18,7 +18,7 @@ flowchart LR
 
 | Component | Contents | Purpose |
 |---|---|---|
-| **RemediationWorkflow CRD** | Workflow schema (metadata, labels, parameters, execution config) | Registered in DataStorage catalog for discovery and LLM selection |
+| **RemediationWorkflow CRD** | Workflow schema (version, description, labels, parameters, execution config) | Registered in DataStorage catalog for discovery and LLM selection |
 | **Execution bundle** | The container or playbook that runs the remediation | Referenced in the CRD; pulled by WFE at execution time |
 
 The CRD approach replaces the previous OCI schema image model. Workflow schemas are now native Kubernetes resources, enabling `kubectl` management, GitOps workflows, and admission webhook integration for audit attribution.
@@ -37,17 +37,15 @@ kind: RemediationWorkflow
 metadata:
   name: restart-deployment-v1
 spec:
-  metadata:
-    workflowName: restart-deployment-v1
-    version: "1.0.0"
-    description:
-      what: "Performs a rolling restart of a deployment to clear corrupted runtime state"
-      whenToUse: "When pods are in a degraded state but the deployment spec is correct"
-      whenNotToUse: "When the issue is caused by a bad image or config change"
-      preconditions: "The deployment exists and has at least one ready replica"
-    maintainers:
-      - name: "Platform Team"
-        email: "platform@example.com"
+  version: "1.0.0"
+  description:
+    what: "Performs a rolling restart of a deployment to clear corrupted runtime state"
+    whenToUse: "When pods are in a degraded state but the deployment spec is correct"
+    whenNotToUse: "When the issue is caused by a bad image or config change"
+    preconditions: "The deployment exists and has at least one ready replica"
+  maintainers:
+    - name: "Platform Team"
+      email: "platform@example.com"
 
   actionType: RestartDeployment
 
@@ -160,10 +158,10 @@ kubectl get remediationworkflow restart-deployment-v1 -o wide
 
 | Field | Type | Description |
 |---|---|---|
-| `spec.metadata.workflowName` | string | Unique workflow identifier (max 255 chars) |
-| `spec.metadata.version` | string | Semantic version (max 50 chars) |
-| `spec.metadata.description.what` | string | What the workflow does |
-| `spec.metadata.description.whenToUse` | string | When to apply this workflow |
+| `metadata.name` | string | Workflow name (Kubernetes resource name, max 253 chars) |
+| `spec.version` | string | Semantic version (max 50 chars) |
+| `spec.description.what` | string | What the workflow does |
+| `spec.description.whenToUse` | string | When to apply this workflow |
 | `spec.actionType` | string | Action taxonomy type (must match an active `ActionType` CRD) |
 | `spec.labels` | object | Matching criteria (see [Labels](#labels)) |
 | `spec.execution.engine` | string | `job` (Kubernetes Job), `tekton` (Tekton Pipeline), or `ansible` (AWX/AAP) |
@@ -174,9 +172,9 @@ kubectl get remediationworkflow restart-deployment-v1 -o wide
 
 | Field | Type | Description |
 |---|---|---|
-| `spec.metadata.description.whenNotToUse` | string | When NOT to use this workflow |
-| `spec.metadata.description.preconditions` | string | Prerequisites for the workflow |
-| `spec.metadata.maintainers` | array | Maintainer contacts (`name`, `email`) |
+| `spec.description.whenNotToUse` | string | When NOT to use this workflow |
+| `spec.description.preconditions` | string | Prerequisites for the workflow |
+| `spec.maintainers` | array | Maintainer contacts (`name`, `email`) |
 | `spec.detectedLabels` | object | Infrastructure requirements (see [Detected Labels](#detected-labels)) |
 | `spec.customLabels` | map | Operator-defined key-value labels |
 | `spec.execution.bundleDigest` | string | OCI digest or Git commit SHA |
@@ -391,12 +389,10 @@ kind: RemediationWorkflow
 metadata:
   name: ansible-fix-config
 spec:
-  metadata:
-    workflowName: ansible-fix-config
-    version: "1.0.0"
-    description:
-      what: "Fixes application configuration drift using Ansible"
-      whenToUse: "When config drift is detected and the correct state is in a Git repository"
+  version: "1.0.0"
+  description:
+    what: "Fixes application configuration drift using Ansible"
+    whenToUse: "When config drift is detected and the correct state is in a Git repository"
   actionType: FixConfiguration
   labels:
     severity: [high, medium]
@@ -517,7 +513,7 @@ Workflows have five lifecycle states:
 |---|---|---|
 | `active` | Available for selection | Yes (if `is_latest_version`) |
 | `disabled` | Temporarily unavailable (CRD deleted, or manually disabled) | No |
-| `superseded` | Replaced by a new registration with different content for the same `workflowName` + `version` | No |
+| `superseded` | Replaced by a new registration with different content for the same `metadata.name` + `version` | No |
 | `deprecated` | Marked for removal, still usable | No |
 | `archived` | Permanently removed from catalog | No |
 
@@ -544,7 +540,7 @@ curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
 
 ### Content Integrity and Supersede
 
-When a `RemediationWorkflow` CRD is applied with the same `workflowName` + `version` as an existing active workflow, the Auth Webhook computes a content hash of the incoming schema and compares it to the existing entry:
+When a `RemediationWorkflow` CRD is applied with the same `metadata.name` + `version` as an existing active workflow, the Auth Webhook computes a content hash of the incoming schema and compares it to the existing entry:
 
 | Existing State | Content Hash | Result |
 |---|---|---|
@@ -555,7 +551,7 @@ When a `RemediationWorkflow` CRD is applied with the same `workflowName` + `vers
 
 ### Version Management
 
-When a new version of a workflow is registered (same `workflowName`, different `version`), the previous version's `is_latest_version` flag is set to `false`. Only workflows with `status = 'active'` AND `is_latest_version = true` are discoverable.
+When a new version of a workflow is registered (same `metadata.name`, different `version`), the previous version's `is_latest_version` flag is set to `false`. Only workflows with `status = 'active'` AND `is_latest_version = true` are discoverable.
 
 This means you can register a new version and the old one is automatically excluded from discovery without needing to disable it.
 
@@ -679,9 +675,9 @@ kubectl get remediationworkflows
 kubectl get remediationworkflow my-workflow -o yaml
 ```
 
-**Update** (description only -- spec.metadata, labels, and execution are immutable after creation; apply a new version instead):
+**Update** (spec fields are immutable after creation; apply a new version instead):
 
-Re-apply the CRD with the same `workflowName` + `version` but different content. The old workflow is marked `superseded` and a new one is created.
+Re-apply the CRD with the same `metadata.name` + `version` but different content. The old workflow is marked `superseded` and a new one is created.
 
 **Delete** (disables in catalog):
 

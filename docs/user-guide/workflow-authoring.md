@@ -116,23 +116,19 @@ Workflow descriptions should reference the **specific conditions** under which t
 **Good -- two workflows under `IncreaseMemoryLimits`:**
 
 ```yaml
-# Workflow 1: Direct patch (default)
+# Workflow 1: Direct patch (metadata.name: increase-memory-limits)
 spec:
-  metadata:
-    workflowName: increase-memory-limits-v1
-    description:
-      what: "Increases memory limits by patching the deployment directly via kubectl"
-      whenToUse: "When containers are being OOMKilled and the deployment is NOT managed by a GitOps tool. Suitable for environments where direct patching is acceptable."
-      whenNotToUse: "When the deployment is managed by ArgoCD or Flux -- direct patching will cause drift"
+  description:
+    what: "Increases memory limits by patching the deployment directly via kubectl"
+    whenToUse: "When containers are being OOMKilled and the deployment is NOT managed by a GitOps tool. Suitable for environments where direct patching is acceptable."
+    whenNotToUse: "When the deployment is managed by ArgoCD or Flux -- direct patching will cause drift"
 
-# Workflow 2: GitOps commit (Ansible)
+# Workflow 2: GitOps commit via Ansible (metadata.name: increase-memory-limits-gitops)
 spec:
-  metadata:
-    workflowName: increase-memory-limits-gitops-v1
-    description:
-      what: "Increases memory limits by updating the deployment YAML in the source Git repository and letting the GitOps controller reconcile"
-      whenToUse: "When containers are being OOMKilled and the deployment is managed by a GitOps tool (ArgoCD or Flux). The new memory value must be higher than the current limit."
-      whenNotToUse: "When the environment is not GitOps-managed. When the OOMKill is caused by a memory leak."
+  description:
+    what: "Increases memory limits by updating the deployment YAML in the source Git repository and letting the GitOps controller reconcile"
+    whenToUse: "When containers are being OOMKilled and the deployment is managed by a GitOps tool (ArgoCD or Flux). The new memory value must be higher than the current limit."
+    whenNotToUse: "When the environment is not GitOps-managed. When the OOMKill is caused by a memory leak."
 ```
 
 The LLM reads both descriptions and, combined with the DataStorage ranking (which boosts the GitOps workflow when `gitOpsManaged: "true"` is detected), reliably picks the right one.
@@ -278,14 +274,12 @@ kind: RemediationWorkflow
 metadata:
   name: restart-pods-v1
 spec:
-  metadata:
-    workflowName: restart-pods-v1
-    version: "1.0.0"
-    description:
-      what: "Restarts all pods in the deployment immediately via kubectl delete"
-      whenToUse: "When fast recovery is preferred over safety. Best for teams with high risk tolerance where minimizing downtime is the priority, even at the cost of brief unavailability during restart."
-      whenNotToUse: "When the team has low risk tolerance or the service handles financial transactions"
-      preconditions: "Deployment exists with at least one pod"
+  version: "1.0.0"
+  description:
+    what: "Restarts all pods in the deployment immediately via kubectl delete"
+    whenToUse: "When fast recovery is preferred over safety. Best for teams with high risk tolerance where minimizing downtime is the priority, even at the cost of brief unavailability during restart."
+    whenNotToUse: "When the team has low risk tolerance or the service handles financial transactions"
+    preconditions: "Deployment exists with at least one pod"
   actionType: GracefulRestart
   labels:
     severity: [critical, high]
@@ -316,14 +310,12 @@ kind: RemediationWorkflow
 metadata:
   name: crashloop-rollback-v1
 spec:
-  metadata:
-    workflowName: crashloop-rollback-v1
-    version: "1.0.0"
-    description:
-      what: "Rolls back the deployment to the previous stable revision"
-      whenToUse: "When safe recovery is preferred. Best for teams with low risk tolerance where ensuring a known-good state is more important than speed."
-      whenNotToUse: "When the team has high risk tolerance and prefers faster restart over rollback"
-      preconditions: "Deployment exists with at least one previous revision"
+  version: "1.0.0"
+  description:
+    what: "Rolls back the deployment to the previous stable revision"
+    whenToUse: "When safe recovery is preferred. Best for teams with low risk tolerance where ensuring a known-good state is more important than speed."
+    whenNotToUse: "When the team has high risk tolerance and prefers faster restart over rollback"
+    preconditions: "Deployment exists with at least one previous revision"
   actionType: GracefulRestart
   labels:
     severity: [critical, high]

@@ -15,6 +15,19 @@ Complete these steps before installing the Kubernaut chart.
 
 --8<-- "chart-readme.md:infrastructure-setup"
 
+!!! warning "AlertManager authentication required"
+    The Gateway authenticates every signal ingestion request using **Kubernetes TokenReview + SubjectAccessReview (SAR)**. AlertManager must include a bearer token in its webhook requests, and the ServiceAccount behind that token must have RBAC permission to submit signals. Add `http_config.bearer_token_file` to your AlertManager receiver:
+
+    ```yaml
+    webhook_configs:
+      - url: "http://gateway.kubernaut-system.svc:9090/api/v1/signals/alertmanager"
+        send_resolved: true
+        http_config:
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    ```
+
+    Without this, AlertManager requests are rejected with `401 Unauthorized`. The `gateway.auth.signalSources` entry creates a `ClusterRoleBinding` granting the specified ServiceAccount permission to submit signals. See [Signal Source Authentication](../user-guide/configuration.md#signal-source-authentication) for the full details.
+
 ## Pre-Installation
 
 --8<-- "chart-readme.md:pre-installation"

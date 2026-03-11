@@ -19,7 +19,8 @@ Kubernaut turns remediation into a declarative, AI-driven, closed-loop process:
 3. **Selects** a remediation workflow from a catalog based on the investigation, not a static rule
 4. **Executes** the fix via Tekton Pipelines, Kubernetes Jobs, or Ansible (AWX/AAP)
 5. **Verifies** the fix worked through health checks, alert resolution, and spec drift detection
-6. **Learns** — effectiveness scores feed back into future investigations so the LLM avoids repeating what failed before
+6. **Notifies** the team (Slack, console, file) with the full remediation outcome and effectiveness assessment
+7. **Learns** — effectiveness scores feed back into future investigations so the LLM avoids repeating what failed before
 
 See [Architecture Overview](architecture-overview.md) for the full pipeline.
 

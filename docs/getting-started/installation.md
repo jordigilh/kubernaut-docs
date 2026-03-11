@@ -10,16 +10,31 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
 | Helm | v3.12+ | |
 | kubectl | Matching cluster version | Must have cluster-admin access |
 | LLM Provider | — | Vertex AI, OpenAI, or any LiteLLM-compatible provider |
+| cert-manager | v1.12+ (production only) | Required when `tls.mode=cert-manager`. Not needed for dev (`tls.mode=hook` is default). |
 
 Kubernaut deploys the following infrastructure components alongside its services:
 
 - **PostgreSQL** — Stores audit events, workflow catalog, and action history
 - **Redis** — Dead-letter queue for DataStorage
 
-## Helm Installation
+## Before You Install
 
-!!! warning "Development Only"
-    The Helm chart is currently configured for demo and development environments. Production hardening (HA, resource tuning, TLS, network policies) is in progress.
+Depending on your environment, you may need to prepare several items before running `helm install`. Use this checklist as a guide -- development installs can skip most items.
+
+| What | Required? | Where to Configure | Documentation |
+|---|---|---|---|
+| **LLM API credentials** | Always | Kubernetes Secret (`llm-credentials`) | [LLM Provider Configuration](#llm-provider-configuration) below |
+| **Database passwords** | Always (dev can use inline `--set`) | Kubernetes Secrets or `--set` flags | [Production tab](#install-from-source) below |
+| **Rego policies** (severity, priority, environment, custom labels, approval) | Optional -- defaults are provided | ConfigMaps via Helm chart templates | [Rego Policies](../user-guide/policies.md) |
+| **Notification credentials** (Slack, etc.) | Optional | Kubernetes Secrets + Helm values | [Notifications](../user-guide/notifications.md) |
+| **Namespace labeling strategy** | Post-install | `kubectl label namespace` | [Signals & Alert Routing](../user-guide/signals.md) |
+| **Workflow catalog** | Post-install | DataStorage API | [Workflows](../user-guide/workflows.md), [Workflow Authoring](../user-guide/workflow-authoring.md) |
+| **cert-manager + Issuer** | Production only (`tls.mode=cert-manager`) | Cluster-level | [Production tab](#install-from-source) below, [TLS Configuration](../user-guide/configuration.md#tls-and-certificate-management) |
+
+!!! tip "Complete Helm values reference"
+    The chart ships with a comprehensive README documenting every configurable parameter, including service resources, timeouts, feature flags, and operational tuning. See [`charts/kubernaut/README.md`](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md) in the repository.
+
+## Helm Installation
 
 ### Install from Source
 
@@ -31,6 +46,8 @@ cd kubernaut
 ```
 
 === "Development (Kind)"
+
+    Self-signed TLS certificates are generated automatically via Helm hooks (`tls.mode=hook`, the default). No cert-manager required.
 
     ```bash
     kubectl apply -f charts/kubernaut/crds/
@@ -45,10 +62,33 @@ cd kubernaut
       --skip-crds --wait --timeout 10m
     ```
 
-=== "With Existing Secrets (Production Path)"
+=== "Production (cert-manager)"
+
+    For production, use `tls.mode=cert-manager` so cert-manager handles certificate issuance, renewal, and CA bundle injection.
+
+    **1. Install cert-manager** (if not already installed):
 
     ```bash
-    # 1. Create secrets ahead of time
+    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+    kubectl wait --for=condition=Available deployment --all -n cert-manager --timeout=120s
+    ```
+
+    **2. Create an Issuer or ClusterIssuer.** For a self-signed issuer (suitable for internal clusters):
+
+    ```yaml
+    apiVersion: cert-manager.io/v1
+    kind: ClusterIssuer
+    metadata:
+      name: selfsigned-issuer
+    spec:
+      selfSigned: {}
+    ```
+
+    For production, use your organization's CA or an ACME issuer.
+
+    **3. Create secrets and install:**
+
+    ```bash
     kubectl create namespace kubernaut-system
 
     kubectl create secret generic postgresql-secret \
@@ -66,10 +106,11 @@ cd kubernaut
       --namespace kubernaut-system \
       --from-literal=redis-secrets.yaml="password: <your-password>"
 
-    # 2. Install with existing secrets
     kubectl apply -f charts/kubernaut/crds/
     helm install kubernaut charts/kubernaut \
       --namespace kubernaut-system \
+      --set tls.mode=cert-manager \
+      --set tls.certManager.issuerRef.name=selfsigned-issuer \
       --set postgresql.auth.existingSecret=postgresql-secret \
       --set datastorage.dbExistingSecret=datastorage-db-secret \
       --set redis.existingSecret=redis-secret \
@@ -79,6 +120,8 @@ cd kubernaut
       --set holmesgptApi.llm.gcpRegion=us-central1 \
       --skip-crds --wait --timeout 10m
     ```
+
+    The chart creates a `Certificate` resource that provisions the `authwebhook-tls` Secret. cert-manager's `cainjector` writes the `caBundle` into webhook configurations automatically via the `cert-manager.io/inject-ca-from` annotation. No TLS hook jobs are created in this mode.
 
 ### Verify
 

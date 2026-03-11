@@ -2,6 +2,9 @@
 
 Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
 
+!!! tip "Complete Helm values reference"
+    This page covers the most important operator-facing settings. For the full list of every Helm parameter (including service resources, replicas, image tags, and feature flags), see the [chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md).
+
 !!! warning "Development Chart"
     Many ConfigMap values are currently hardcoded in Helm templates. To customize them beyond Helm values, edit the templates directly or use Helm post-rendering. Production-grade configurability is in progress.
 
@@ -266,44 +269,74 @@ The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read a
 
 ## TLS and Certificate Management
 
-The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
+The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication. The chart supports two modes, controlled by the `tls.mode` value.
 
-### Development (Helm Hook)
+### Helm Values
 
-The Helm chart generates self-signed certificates via a pre-install hook job:
+| Parameter | Description | Default |
+|---|---|---|
+| `tls.mode` | `hook` (self-signed via Helm hooks) or `cert-manager` (production) | `hook` |
+| `tls.certManager.issuerRef.name` | Issuer or ClusterIssuer name (required when `tls.mode=cert-manager`) | `""` |
+| `tls.certManager.issuerRef.kind` | Issuer kind | `ClusterIssuer` |
+| `tls.certManager.issuerRef.group` | Issuer API group | `cert-manager.io` |
+| `hooks.tlsCerts.image` | kubectl image for TLS cert generation (hook mode only) | `bitnami/kubectl:latest` |
 
-- Uses OpenSSL to generate a CA and TLS certificate
-- Certificate validity: 365 days
-- Creates Secret `authwebhook-tls` and ConfigMap `authwebhook-ca`
-- Patches webhook configurations with the CA bundle
+### Hook Mode (`tls.mode: hook`) -- Default
 
-This is suitable for development and demo environments.
+Self-signed certificates are generated and managed by Helm hooks. No external dependencies required. Suitable for development, testing, and CI environments.
 
-### Production (cert-manager)
+How it works:
 
-For production, **cert-manager** is the recommended approach. The Kustomize deployment path (`deploy/authwebhook/`) includes cert-manager integration:
+1. **Pre-install/pre-upgrade** (`tls-cert-gen`): Generates a self-signed CA and server certificate, stored as the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
+2. **Post-install/post-upgrade** (`tls-cabundle-patch`): Patches the `caBundle` field on the webhook configurations.
+3. **Post-delete** (`tls-cleanup`): Removes the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
 
-```yaml
-# Certificate resource
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: authwebhook-tls
-spec:
-  secretName: authwebhook-tls
-  issuerRef:
-    name: selfsigned-issuer
-    kind: ClusterIssuer
-  dnsNames:
-    - authwebhook.kubernaut-system.svc
-    - authwebhook.kubernaut-system.svc.cluster.local
-  duration: 8760h    # 1 year
-  renewBefore: 720h  # 30 days
+On `helm upgrade`, if the certificate expires within 30 days, it is automatically regenerated.
+
+### cert-manager Mode (`tls.mode: cert-manager`) -- Production
+
+Certificates are managed by [cert-manager](https://cert-manager.io/) (v1.12+). cert-manager handles issuance, renewal, and `caBundle` injection automatically.
+
+```bash
+helm install kubernaut charts/kubernaut \
+  --namespace kubernaut-system \
+  --set tls.mode=cert-manager \
+  --set tls.certManager.issuerRef.name=selfsigned-issuer \
+  -f my-values.yaml
 ```
 
-Webhook configurations use the `cert-manager.io/inject-ca-from` annotation for automatic CA injection and renewal.
+The chart creates a `Certificate` resource (`authwebhook-cert`) that provisions the `authwebhook-tls` Secret with:
 
-cert-manager is a **production prerequisite** -- Kubernaut does not manage certificate lifecycle in production. Operators should install and configure cert-manager independently.
+- **DNS names**: `authwebhook.<namespace>.svc`, `authwebhook.<namespace>.svc.cluster.local`
+- **Duration**: 1 year
+- **Renewal**: 30 days before expiry
+
+Webhook configurations include the `cert-manager.io/inject-ca-from` annotation, so cert-manager's `cainjector` automatically writes the `caBundle`. No TLS hook jobs are created in this mode.
+
+### Migrating from Hook to cert-manager
+
+To switch an existing installation from `tls.mode=hook` to `tls.mode=cert-manager`:
+
+1. Install cert-manager and create an Issuer/ClusterIssuer (see [Installation](../getting-started/installation.md))
+2. Upgrade with the new mode:
+
+    ```bash
+    helm upgrade kubernaut charts/kubernaut \
+      --namespace kubernaut-system \
+      --set tls.mode=cert-manager \
+      --set tls.certManager.issuerRef.name=your-issuer \
+      -f my-values.yaml
+    ```
+
+3. The hook-generated Secret and ConfigMap are replaced by cert-manager-managed resources. The old hook cleanup job removes the previous artifacts.
+4. Verify the webhook is serving the new certificate:
+
+    ```bash
+    kubectl get certificate -n kubernaut-system
+    kubectl get secret authwebhook-tls -n kubernaut-system -o jsonpath='{.metadata.annotations}'
+    ```
+
+See [Troubleshooting](../operations/troubleshooting.md) if webhook calls fail after migration.
 
 ## Hot-Reload and Graceful Shutdown
 
@@ -343,3 +376,4 @@ This means `helm upgrade` and rolling updates do not disrupt in-flight remediati
 - [Notification Channels](notifications.md) -- Setting up Slack and other channels
 - [Remediation Workflows](workflows.md) -- Authoring and registering workflows
 - [Installation](../getting-started/installation.md) -- Using these values during deployment
+- [Chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md) -- Complete Helm parameter reference

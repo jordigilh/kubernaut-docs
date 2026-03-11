@@ -4,14 +4,15 @@ This page explains the key building blocks of Kubernaut: the data model, the ser
 
 ## The Remediation Pipeline
 
-Every remediation in Kubernaut follows the same five-stage pipeline:
+Every remediation in Kubernaut follows the same six-stage pipeline:
 
 ```mermaid
 graph LR
     SD["Signal<br/>Detection"] --> SP["Signal<br/>Processing"]
     SP --> AA["AI<br/>Analysis"]
     AA --> WE["Workflow<br/>Execution"]
-    WE --> CL["Close the<br/>Loop"]
+    WE --> EM["Effectiveness<br/>Monitoring"]
+    EM --> NF["Notification"]
 ```
 
 Each stage is represented by a **Custom Resource (CRD)** in Kubernetes. The **Remediation Orchestrator** coordinates the flow by creating child CRDs and watching their status.
@@ -63,21 +64,22 @@ Created after approval (auto or human). The Workflow Execution controller:
 3. Runs the remediation via **Tekton Pipelines** (multi-step), **Kubernetes Jobs** (single-step), or **Ansible (AWX/AAP)** (playbook-based)
 4. Injects parameters (namespace, deployment name, etc.)
 
-### NotificationRequest
-
-Created after the workflow completes (or on escalation). Delivers a notification via configured channels:
-
-- **Slack** — Rich messages with RCA summary and remediation outcome
-- **Console / Log** — For development and testing
-- **File** — For integration testing
-
 ### EffectivenessAssessment
 
-Created after the workflow completes. The Effectiveness Monitor evaluates whether the fix actually resolved the issue:
+Created after the workflow completes successfully. The Effectiveness Monitor evaluates whether the fix actually resolved the issue:
 
 - **Spec hash comparison** — Did the resource spec change as expected?
 - **Health checks** — Is the workload healthy now?
-- **Metric evaluation** — Did the triggering metric recover? (via Prometheus/AlertManager)
+- **Alert resolution** — Did the triggering alert stop firing? (via AlertManager)
+- **Metric evaluation** — Did the triggering metric recover? (via Prometheus)
+
+### NotificationRequest
+
+Created after the effectiveness assessment completes (or earlier on escalation/manual review). The notification includes the full remediation outcome and effectiveness results. Delivers via configured channels:
+
+- **Slack** — Rich messages with RCA summary, remediation outcome, and effectiveness score
+- **Console / Log** — For development and testing
+- **File** — For integration testing
 
 ## Phases
 
@@ -136,7 +138,7 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 Remediation workflows are packaged as **OCI images** containing a `workflow-schema.yaml` and stored in the **DataStorage** service as a searchable catalog. Each workflow has:
 
-- **Metadata** — Workflow ID, version, structured description (what, whenToUse, whenNotToUse, preconditions)
+- **Identity** — Name (`metadata.name`), version, and structured description (what, whenToUse, whenNotToUse, preconditions) under `spec`
 - **Action type** — Taxonomy type (e.g., `RestartPod`, `RollbackDeployment`, `IncreaseMemoryLimits`)
 - **Labels** — Signal name, severity, environment, component, priority (with wildcard and multi-value support)
 - **Parameters** — Typed inputs injected at runtime as environment variables (`UPPER_SNAKE_CASE`)

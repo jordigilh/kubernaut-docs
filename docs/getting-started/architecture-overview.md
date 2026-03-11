@@ -8,7 +8,7 @@ Kubernaut is a microservices platform with 10 services that communicate through 
   ![Kubernaut Layered Architecture](../assets/diagrams/kubernaut-layered-architecture.svg){ width="100%" }
 </figure>
 
-The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five CRD controllers -- Signal Processing, AI Analysis, Workflow Execution, Notification, Effectiveness Monitor -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Redis for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to HolmesGPT API for LLM-driven investigation, and HolmesGPT API queries DataStorage for the workflow catalog and remediation history.
+The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Six CRD controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Redis for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to HolmesGPT API for LLM-driven investigation, and HolmesGPT API queries DataStorage for the workflow catalog and remediation history.
 
 ## Services
 
@@ -118,7 +118,7 @@ The **Blocked** phase is non-terminal and covers 6 routing scenarios managed by 
 | ExponentialBackoff | Backoff window expires | Failed (terminal) |
 | UnmanagedResource | Scope label added | Pending |
 
-After reaching a terminal phase, the Orchestrator creates a **NotificationRequest** to inform the team. On successful completion, it also creates an **EffectivenessAssessment** to evaluate whether the fix worked.
+On successful workflow execution, the Orchestrator creates an **EffectivenessAssessment** to evaluate whether the fix worked. Once the assessment completes (or times out), it creates a **NotificationRequest** that includes the remediation outcome and effectiveness results. On failure or escalation, a notification is created directly.
 
 ## Data Flow
 

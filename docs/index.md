@@ -54,29 +54,30 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
 ## How It Works
 
-Kubernaut automates the entire incident response lifecycle through a five-stage pipeline:
+Kubernaut automates the entire incident response lifecycle through a six-stage pipeline:
 
 ```mermaid
 graph LR
     A[Signal Detection] --> B[Signal Processing]
     B --> C[AI Analysis]
     C --> D[Workflow Execution]
-    D --> E1[Notification]
-    D --> E2[Effectiveness<br/>Monitoring]
+    D --> E[Effectiveness<br/>Monitoring]
+    E --> F[Notification]
 
     style A fill:#4051b5,color:#fff
     style B fill:#4051b5,color:#fff
     style C fill:#7c4dff,color:#fff
     style D fill:#4051b5,color:#fff
-    style E1 fill:#00897b,color:#fff
-    style E2 fill:#00897b,color:#fff
+    style E fill:#00897b,color:#fff
+    style F fill:#00897b,color:#fff
 ```
 
 1. **Signal Detection** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a `RemediationRequest`.
 2. **Signal Processing** — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.
 3. **AI Analysis** — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.
 4. **Workflow Execution** — Runs the selected remediation via Tekton Pipelines or Kubernetes Jobs, with optional human approval gates.
-5. **Close the Loop** — Notifies the team and evaluates whether the fix actually worked via spec hash comparison, health checks, and effectiveness scoring.
+5. **Effectiveness Monitoring** — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.
+6. **Notification** — Notifies the team with the full remediation outcome, including the effectiveness assessment results.
 
 ---
 

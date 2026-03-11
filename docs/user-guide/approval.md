@@ -4,12 +4,23 @@ Kubernaut supports human-in-the-loop approval gates to ensure that remediations 
 
 ## When Approval Is Required
 
-Approval is determined by a **Rego policy** evaluated during the AI Analysis phase. The policy considers:
+Approval is determined by a **user-replaceable Rego policy** evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the `aianalysis-rego` ConfigMap -- the policy is not hardcoded.
 
-- **Confidence score** — The LLM's confidence in the root cause analysis and workflow selection
-- **Configurable threshold** — Defaults to 0.8 (80%); configurable via Helm values
+### Default Policy Behavior
 
-When confidence is **at or above** the threshold, the remediation is auto-approved. When below, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.
+The shipped `approval.rego` makes decisions based on **environment** and **affected resource presence**:
+
+- **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence
+- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `affected_resource` is present
+- **Missing affected resource** — always requires approval (default-deny safety per ADR-055)
+
+When approval is required, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.
+
+### Custom Policies
+
+The Rego policy receives a rich input context (see [Rego Policy Evaluation](#rego-policy-evaluation) below), including `confidence`, `confidence_threshold`, `environment`, `detected_labels`, `affected_resource`, `custom_labels`, and `business_classification`. Operators can write policies that use any combination of these inputs -- for example, a confidence-gated policy that auto-approves high-confidence analyses in production.
+
+The default policy defines an `is_high_confidence` helper but does not use it in its approval rules. This is a building block for custom policies.
 
 ## Confidence Thresholds
 
@@ -17,19 +28,22 @@ Kubernaut uses two confidence thresholds at different stages:
 
 | Stage | Threshold | Configurable | Purpose |
 |---|---|---|---|
-| **Investigating** (response processor) | 0.7 (70%) | Not yet (V1.1, per BR-HAPI-198; see `pkg/aianalysis/handlers/response_processor.go`) | Rejects workflow selections with very low confidence; detects "problem already resolved" scenarios |
-| **Analyzing** (Rego approval policy) | 0.8 (80%) | Yes, via Helm | Controls whether human approval is required before execution |
+| **Investigating** (response processor) | 0.7 (70%) | Not yet (v1.1, per BR-HAPI-198; see `pkg/aianalysis/handlers/response_processor.go`) | Rejects workflow selections with very low confidence; detects "problem already resolved" scenarios |
+| **Analyzing** (Rego approval policy) | 0.8 (default in Rego) | Yes, via Helm | Passed as `input.confidence_threshold` to the Rego policy |
 
-### Configuring the Approval Threshold
+### Configuring the Confidence Threshold
 
 ```yaml
 # values.yaml
 aianalysis:
   rego:
-    confidenceThreshold: 0.85  # require 85% confidence for auto-approval
+    confidenceThreshold: 0.85
 ```
 
 When `confidenceThreshold` is `null` (default), the Rego policy's built-in default of 0.8 applies.
+
+!!! note "Default policy does not use confidence for approval"
+    The shipped `approval.rego` defines `is_high_confidence` but does not reference it in any approval rule. Setting `confidenceThreshold` has no effect unless you customize the policy to use `is_high_confidence` or `input.confidence` in your approval rules.
 
 ## The Approval Flow
 

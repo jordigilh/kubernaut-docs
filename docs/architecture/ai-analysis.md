@@ -101,32 +101,21 @@ When HolmesGPT reports `investigation_outcome=resolved`, it appends a "Problem s
 
 Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because `hasSubstantiveRCA` would return `true`, preventing the `WorkflowNotNeeded` completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.
 
-### Approval Threshold (0.8, configurable)
+### Approval Gate (Rego policy, user-replaceable)
 
-Applied via Rego policy during the Analyzing phase:
+The Analyzing handler evaluates a **user-replaceable Rego policy** (`approval.rego`) to determine whether the remediation requires human approval. The policy receives the full analysis context as input and returns `require_approval` (boolean) and `reason` (string).
 
-- **Confidence >= threshold** — Auto-approved; Orchestrator proceeds to execution
-- **Confidence < threshold** — Requires human approval; Orchestrator creates `RemediationApprovalRequest`
+The **default shipped policy** gates on environment and affected resource presence:
 
-## Rego Approval Policy
+- **Production** — always requires approval
+- **Non-production** — auto-approved when `affected_resource` is present
+- **Missing `affected_resource`** — always requires approval (default-deny per ADR-055)
 
-The approval decision is made by a Rego policy (`approval.rego`) that evaluates:
+The policy also receives `confidence`, `confidence_threshold`, `detected_labels` (snake_case keys: `"stateful"`, `"pdb_protected"`, `"hpa_enabled"`), `failed_detections`, `custom_labels`, and `business_classification`. Operators can write custom policies that use any combination of these inputs -- for example, confidence-gated approval for production.
 
-```rego
-default confidence_threshold := 0.8
+The confidence threshold is configurable via Helm (`aianalysis.rego.confidenceThreshold`, default 0.8) and passed as `input.confidence_threshold`. The default policy defines `is_high_confidence` but does not use it in approval rules.
 
-confidence_threshold := input.confidence_threshold if {
-    input.confidence_threshold
-}
-
-is_high_confidence if {
-    input.confidence >= confidence_threshold
-}
-```
-
-The threshold is configurable via Helm: `aianalysis.rego.confidenceThreshold`.
-
-The Rego policy also receives `input.detected_labels` (a map of **snake_case** keys, e.g., `"stateful"`, `"pdb_protected"`, `"hpa_enabled"`) and `input.failed_detections` (detection errors). These come from the `DetectedLabels` computed by HolmesGPT post-RCA and resolved by the Analyzing handler.
+See [Human Approval](../user-guide/approval.md) for the full approval flow and policy customization details.
 
 ## Next Steps
 

@@ -2,11 +2,8 @@
 
 Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
 
-!!! tip "Complete Helm values reference"
-    This page covers the most important operator-facing settings. For the full list of every Helm parameter (including service resources, replicas, image tags, and feature flags), see the [chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md).
-
-!!! warning "Development Chart"
-    Many ConfigMap values are currently hardcoded in Helm templates. To customize them beyond Helm values, edit the templates directly or use Helm post-rendering. Production-grade configurability is in progress.
+!!! tip "Source of truth"
+    Helm parameter tables on this page are sourced from the [chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md) and stay in sync automatically.
 
 ## Namespace and Resource Labels
 
@@ -59,84 +56,9 @@ See [Rego Policies](policies.md) for how each label feeds into enrichment, and [
 
 ## Helm Values
 
-### Global Settings
+All values are validated against `values.schema.json`. Run `helm lint` to check your overrides before installing.
 
-| Parameter | Default | Description |
-|---|---|---|
-| `global.image.registry` | `quay.io/kubernaut-ai` | Container image registry |
-| `global.image.tag` | Chart `appVersion` | Image tag (overrides per-service) |
-| `global.image.pullPolicy` | `IfNotPresent` | Image pull policy |
-| `global.nodeSelector` | `{}` | Node selector for all components |
-| `global.tolerations` | `[]` | Tolerations for all components |
-
-### Gateway
-
-| Parameter | Default | Description |
-|---|---|---|
-| `gateway.replicas` | `1` | Replica count |
-| `gateway.resources` | 100m-500m CPU, 256Mi-512Mi mem | Resource requests/limits |
-| `gateway.service.type` | `ClusterIP` | Service type |
-| `gateway.service.nodePort` | -- | NodePort (when service type is NodePort) |
-| `gateway.auth.signalSources` | `[]` | External signal source ServiceAccounts (see below) |
-
-### DataStorage
-
-| Parameter | Default | Description |
-|---|---|---|
-| `datastorage.replicas` | `1` | Replica count |
-| `datastorage.dbExistingSecret` | `""` | Pre-created Secret name for DB credentials |
-| `datastorage.resources` | 250m-500m CPU, 256Mi-512Mi mem | Resource requests/limits |
-
-### AI Analysis
-
-| Parameter | Default | Description |
-|---|---|---|
-| `aianalysis.rego.confidenceThreshold` | `null` (Rego default: 0.8) | Auto-approval confidence threshold |
-| `aianalysis.resources` | 100m-500m CPU, 128Mi-256Mi mem | Resource requests/limits |
-
-### HolmesGPT API
-
-| Parameter | Default | Description |
-|---|---|---|
-| `holmesgptApi.replicas` | `1` | Replica count |
-| `holmesgptApi.llm.provider` | `""` | LLM provider (see [LLM Provider Setup](#llm-provider-setup)) |
-| `holmesgptApi.llm.model` | `""` | Model name |
-| `holmesgptApi.llm.endpoint` | `""` | LLM endpoint URL |
-| `holmesgptApi.llm.gcpProjectId` | `""` | GCP project ID (Vertex AI) |
-| `holmesgptApi.llm.gcpRegion` | `""` | GCP region (Vertex AI) |
-| `holmesgptApi.llm.maxRetries` | `3` | Max retry attempts for LLM calls |
-| `holmesgptApi.llm.timeoutSeconds` | `120` | LLM call timeout |
-| `holmesgptApi.llm.temperature` | `0.7` | Sampling temperature |
-| `holmesgptApi.resources` | 200m-1000m CPU, 256Mi-1Gi mem | Resource requests/limits |
-
-### Remediation Orchestrator
-
-| Parameter | Default | Description |
-|---|---|---|
-| `remediationorchestrator.resources` | 100m-500m CPU, 128Mi-256Mi mem | Resource requests/limits |
-| `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow` | `5m` | Wait time after remediation before assessing |
-| `remediationorchestrator.config.asyncPropagation.gitOpsSyncDelay` | `3m` | Expected GitOps sync time |
-| `remediationorchestrator.config.asyncPropagation.operatorReconcileDelay` | `1m` | Expected operator reconciliation time |
-
-### Notification
-
-| Parameter | Default | Description |
-|---|---|---|
-| `notification.slack.enabled` | `false` | Enable Slack delivery |
-| `notification.slack.channel` | `#kubernaut-alerts` | Default Slack channel |
-| `notification.credentials` | `[]` | Credential Secret projections (see [Notification Channels](notifications.md)) |
-| `notification.resources` | 100m-500m CPU, 128Mi-512Mi mem | Resource requests/limits |
-
-### Infrastructure
-
-| Parameter | Default | Description |
-|---|---|---|
-| `postgresql.auth.existingSecret` | `""` | Pre-created DB credentials Secret |
-| `postgresql.auth.username` | `slm_user` | Database username |
-| `postgresql.auth.database` | `action_history` | Database name |
-| `postgresql.storage.size` | `10Gi` | PostgreSQL PVC size |
-| `redis.existingSecret` | `""` | Pre-created Redis credentials Secret |
-| `redis.storage.size` | `512Mi` | Redis PVC size |
+--8<-- "chart-readme.md:helm-values"
 
 ## Signal Source Authentication
 
@@ -269,49 +191,9 @@ The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read a
 
 ## TLS and Certificate Management
 
-The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication. The chart supports two modes, controlled by the `tls.mode` value.
+The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
 
-### Helm Values
-
-| Parameter | Description | Default |
-|---|---|---|
-| `tls.mode` | `hook` (self-signed via Helm hooks) or `cert-manager` (production) | `hook` |
-| `tls.certManager.issuerRef.name` | Issuer or ClusterIssuer name (required when `tls.mode=cert-manager`) | `""` |
-| `tls.certManager.issuerRef.kind` | Issuer kind | `ClusterIssuer` |
-| `tls.certManager.issuerRef.group` | Issuer API group | `cert-manager.io` |
-| `hooks.tlsCerts.image` | kubectl image for TLS cert generation (hook mode only) | `bitnami/kubectl:latest` |
-
-### Hook Mode (`tls.mode: hook`) -- Default
-
-Self-signed certificates are generated and managed by Helm hooks. No external dependencies required. Suitable for development, testing, and CI environments.
-
-How it works:
-
-1. **Pre-install/pre-upgrade** (`tls-cert-gen`): Generates a self-signed CA and server certificate, stored as the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
-2. **Post-install/post-upgrade** (`tls-cabundle-patch`): Patches the `caBundle` field on the webhook configurations.
-3. **Post-delete** (`tls-cleanup`): Removes the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
-
-On `helm upgrade`, if the certificate expires within 30 days, it is automatically regenerated.
-
-### cert-manager Mode (`tls.mode: cert-manager`) -- Production
-
-Certificates are managed by [cert-manager](https://cert-manager.io/) (v1.12+). cert-manager handles issuance, renewal, and `caBundle` injection automatically.
-
-```bash
-helm install kubernaut charts/kubernaut \
-  --namespace kubernaut-system \
-  --set tls.mode=cert-manager \
-  --set tls.certManager.issuerRef.name=selfsigned-issuer \
-  -f my-values.yaml
-```
-
-The chart creates a `Certificate` resource (`authwebhook-cert`) that provisions the `authwebhook-tls` Secret with:
-
-- **DNS names**: `authwebhook.<namespace>.svc`, `authwebhook.<namespace>.svc.cluster.local`
-- **Duration**: 1 year
-- **Renewal**: 30 days before expiry
-
-Webhook configurations include the `cert-manager.io/inject-ca-from` annotation, so cert-manager's `cainjector` automatically writes the `caBundle`. No TLS hook jobs are created in this mode.
+--8<-- "chart-readme.md:tls-management"
 
 ### Migrating from Hook to cert-manager
 
@@ -376,4 +258,3 @@ This means `helm upgrade` and rolling updates do not disrupt in-flight remediati
 - [Notification Channels](notifications.md) -- Setting up Slack and other channels
 - [Remediation Workflows](workflows.md) -- Authoring and registering workflows
 - [Installation](../getting-started/installation.md) -- Using these values during deployment
-- [Chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md) -- Complete Helm parameter reference

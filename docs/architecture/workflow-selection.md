@@ -69,7 +69,7 @@ HAPI propagates signal context from the investigation session to all DataStorage
 | `detected_labels` | HAPI `LabelDetector` (post-RCA) | Layer 2 scoring boost + penalty |
 | `remediation_id` | Parent RR name | Audit correlation |
 
-Detected labels are only included when the source resource and RCA resource match. Labels with `failedDetections` entries are stripped.
+Detected labels are computed by HAPI for the RCA target resource (ADR-056). Labels with `failedDetections` entries are stripped before propagation to DataStorage.
 
 ## Layer 1: Mandatory Filtering
 

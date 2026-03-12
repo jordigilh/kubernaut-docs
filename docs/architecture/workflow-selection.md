@@ -3,7 +3,7 @@
 Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where HolmesGPT queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
 
 !!! abstract "CRD Reference"
-    For the complete RemediationWorkflow and ActionType CRD specifications, see [API Reference: CRDs](../api-reference/crds.md#remediationworkflow).
+    For the complete CRD specifications, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the API Reference.
 
 ## Three-Step Discovery Protocol
 
@@ -77,7 +77,7 @@ Every workflow declares four mandatory labels. DataStorage applies these as hard
 
 | Label | Type | Values | SQL Pattern |
 |---|---|---|---|
-| `severity` | `string[]` | `critical`, `high`, `medium`, `low` | `labels->'severity' ? $val OR labels->'severity' ? '*'` |
+| `severity` | `string[]` | `critical`, `high`, `medium`, `low`, `"*"` | `labels->'severity' ? $val OR labels->'severity' ? '*'` |
 | `component` | `string` | `pod`, `deployment`, `node`, `"*"` | `LOWER(labels->>'component') = LOWER($val) OR labels->>'component' = '*'` |
 | `environment` | `string[]` | `production`, `staging`, `development`, `test`, `"*"` | `labels->'environment' ? $val OR labels->'environment' ? '*'` |
 | `priority` | `string` | `P0`, `P1`, `P2`, `P3`, `"*"` | JSONB scalar or array containment |

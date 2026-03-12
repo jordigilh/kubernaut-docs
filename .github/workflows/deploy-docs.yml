@@ -3,8 +3,6 @@ name: Deploy Documentation
 on:
   push:
     branches: [main]
-  repository_dispatch:
-    types: [chart-readme-updated]
   workflow_dispatch:
 
 permissions:
@@ -28,9 +26,6 @@ jobs:
           cache: pip
 
       - run: pip install -r requirements.txt
-
-      - name: Fetch Helm chart README for snippet inclusion
-        run: ./scripts/fetch-chart-readme.sh release/v1.0-cleanup
 
       - run: mkdocs build --strict
 

@@ -3,6 +3,8 @@ name: Deploy Documentation
 on:
   push:
     branches: [main]
+  repository_dispatch:
+    types: [crd-docs-updated]
   workflow_dispatch:
 
 permissions:
@@ -26,6 +28,12 @@ jobs:
           cache: pip
 
       - run: pip install -r requirements.txt
+
+      - name: Fetch generated CRD API reference
+        run: |
+          curl -fsSL \
+            https://raw.githubusercontent.com/jordigilh/kubernaut/main/docs/generated/crds.md \
+            -o docs/api-reference/crds.md
 
       - run: mkdocs build --strict
 

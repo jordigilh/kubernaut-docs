@@ -2,6 +2,9 @@
 
 The AI Analysis service performs root cause investigation using an LLM (via HolmesGPT) and decides whether the selected workflow should be auto-approved or require human review.
 
+!!! abstract "CRD Reference"
+    For the complete AIAnalysis CRD specification, see [API Reference: CRDs](../api-reference/crds.md#aianalysis).
+
 ## Architecture
 
 ```mermaid

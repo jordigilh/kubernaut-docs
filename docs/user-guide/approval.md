@@ -2,6 +2,9 @@
 
 Kubernaut supports human-in-the-loop approval gates to ensure that remediations are reviewed before execution when confidence is low or policy requires it.
 
+!!! abstract "CRD Reference"
+    For the complete RemediationApprovalRequest CRD specification, see [API Reference: CRDs](../api-reference/crds.md#remediationapprovalrequest).
+
 ## When Approval Is Required
 
 Approval is determined by a **user-replaceable Rego policy** evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the `aianalysis-rego` ConfigMap -- the policy is not hardcoded.

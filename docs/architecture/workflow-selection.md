@@ -2,6 +2,9 @@
 
 Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where HolmesGPT queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
 
+!!! abstract "CRD Reference"
+    For the complete RemediationWorkflow and ActionType CRD specifications, see [API Reference: CRDs](../api-reference/crds.md#remediationworkflow).
+
 ## Three-Step Discovery Protocol
 
 ```mermaid

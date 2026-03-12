@@ -2,9 +2,6 @@
 
 Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
 
-!!! tip "Source of truth"
-    Helm parameter tables on this page are sourced from the [chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md) and stay in sync automatically.
-
 ## Namespace and Resource Labels
 
 Kubernaut uses `kubernaut.ai/*` labels on namespaces and resources to control scope, enrichment, and classification. These labels are the primary way operators integrate their workloads with Kubernaut.
@@ -58,21 +55,171 @@ See [Rego Policies](policies.md) for how each label feeds into enrichment, and [
 
 All values are validated against `values.schema.json`. Run `helm lint` to check your overrides before installing.
 
---8<-- "chart-readme.md:helm-values"
+### Global Settings
+
+| Parameter | Description | Default |
+|---|---|---|
+| `global.image.registry` | Container image registry | `quay.io/kubernaut-ai` |
+| `global.image.tag` | Image tag override (defaults to `appVersion`) | `""` |
+| `global.image.pullPolicy` | Image pull policy | `IfNotPresent` |
+| `global.nodeSelector` | Global node selector applied to all pods | `{}` |
+| `global.tolerations` | Global tolerations applied to all pods | `[]` |
+
+### Gateway
+
+| Parameter | Description | Default |
+|---|---|---|
+| `gateway.replicas` | Number of gateway replicas | `1` |
+| `gateway.resources` | CPU/memory requests and limits | See `values.yaml` |
+| `gateway.service.type` | Kubernetes Service type | `ClusterIP` |
+| `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
+
+### DataStorage
+
+| Parameter | Description | Default |
+|---|---|---|
+| `datastorage.replicas` | Number of datastorage replicas | `1` |
+| `datastorage.dbExistingSecret` | Pre-created Secret with `db-secrets.yaml` key | `""` |
+| `datastorage.resources` | CPU/memory requests and limits | See `values.yaml` |
+| `datastorage.service.type` | Kubernetes Service type | `ClusterIP` |
+
+### HolmesGPT API (LLM Integration)
+
+| Parameter | Description | Default |
+|---|---|---|
+| `holmesgptApi.replicas` | Number of replicas | `1` |
+| `holmesgptApi.llm.provider` | LLM provider (e.g., `openai`, `azure`, `vertexai`) | `""` |
+| `holmesgptApi.llm.model` | LLM model name | `""` |
+| `holmesgptApi.llm.endpoint` | Custom LLM endpoint URL | `""` |
+| `holmesgptApi.llm.maxRetries` | Maximum LLM call retries | `3` |
+| `holmesgptApi.llm.timeoutSeconds` | LLM call timeout | `120` |
+| `holmesgptApi.llm.temperature` | LLM sampling temperature | `0.7` |
+| `holmesgptApi.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
+
+### Notification Controller
+
+| Parameter | Description | Default |
+|---|---|---|
+| `notification.replicas` | Number of replicas | `1` |
+| `notification.slack.enabled` | Enable Slack delivery channel | `false` |
+| `notification.slack.channel` | Default Slack channel | `#kubernaut-alerts` |
+| `notification.credentials` | Projected volume sources from K8s Secrets | `[]` |
+
+When `slack.enabled` is `true`, add credentials entries pointing to your pre-existing secrets:
+
+```yaml
+notification:
+  slack:
+    enabled: true
+    channel: "#kubernaut-alerts"
+  credentials:
+    - name: slack-webhook
+      secretName: kubernaut-slack-credentials
+      secretKey: webhook-url
+```
+
+### Controllers (Common Parameters)
+
+All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `workflowexecution`, `effectivenessmonitor`, `authwebhook`, `notification`) accept:
+
+| Parameter | Description | Default |
+|---|---|---|
+| `<controller>.replicas` | Number of replicas | `1` |
+| `<controller>.resources` | CPU/memory requests and limits | See `values.yaml` |
+| `<controller>.podSecurityContext` | Pod-level security context override | `runAsNonRoot: true` + `seccompProfile: RuntimeDefault` (Tier 1); `seccompProfile: RuntimeDefault` only (Tier 2: postgresql, redis) |
+| `<controller>.containerSecurityContext` | Container-level security context override | `allowPrivilegeEscalation: false`, `capabilities.drop: [ALL]` |
+| `<controller>.nodeSelector` | Per-component node selector (overrides global) | `{}` |
+| `<controller>.tolerations` | Per-component tolerations (overrides global) | `[]` |
+| `<controller>.affinity` | Pod affinity/anti-affinity rules | `{}` |
+| `<controller>.topologySpreadConstraints` | Topology spread constraints | `[]` |
+| `<controller>.pdb.enabled` | Create a PodDisruptionBudget | `false` |
+| `<controller>.pdb.minAvailable` | PDB minimum available pods | -- |
+| `<controller>.pdb.maxUnavailable` | PDB maximum unavailable pods | -- |
+
+### WorkflowExecution
+
+| Parameter | Description | Default |
+|---|---|---|
+| `workflowexecution.workflowNamespace` | Namespace for Job/PipelineRun execution | `kubernaut-workflows` |
+
+### EffectivenessMonitor
+
+| Parameter | Description | Default |
+|---|---|---|
+| `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
+| `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `true` |
+| `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
+| `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `true` |
+
+### Event Exporter
+
+| Parameter | Description | Default |
+|---|---|---|
+| `eventExporter.replicas` | Number of replicas | `1` |
+| `eventExporter.image` | Container image | `ghcr.io/resmoio/kubernetes-event-exporter:v1.7` |
+| `eventExporter.resources` | CPU/memory requests and limits | See `values.yaml` |
+
+### PostgreSQL
+
+| Parameter | Description | Default |
+|---|---|---|
+| `postgresql.enabled` | Deploy in-chart PostgreSQL | `true` |
+| `postgresql.replicas` | Number of replicas | `1` |
+| `postgresql.image` | PostgreSQL container image | `postgres:16-alpine` |
+| `postgresql.auth.existingSecret` | Pre-created Secret name | `""` |
+| `postgresql.auth.username` | Database username | `slm_user` |
+| `postgresql.auth.password` | Database password (required if no `existingSecret`) | `""` |
+| `postgresql.auth.database` | Database name | `action_history` |
+| `postgresql.storage.size` | PVC size | `10Gi` |
+| `postgresql.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
+
+### External PostgreSQL (BYO)
+
+Set `postgresql.enabled=false` and configure these values to use a pre-existing PostgreSQL instance:
+
+| Parameter | Description | Default |
+|---|---|---|
+| `externalPostgresql.host` | External PostgreSQL hostname (required) | `""` |
+| `externalPostgresql.port` | External PostgreSQL port | `5432` |
+| `externalPostgresql.auth.existingSecret` | Pre-created Secret name | `""` |
+| `externalPostgresql.auth.username` | Database username | `slm_user` |
+| `externalPostgresql.auth.password` | Database password | `""` |
+| `externalPostgresql.auth.database` | Database name | `action_history` |
+
+### Redis
+
+| Parameter | Description | Default |
+|---|---|---|
+| `redis.enabled` | Deploy in-chart Redis | `true` |
+| `redis.replicas` | Number of replicas | `1` |
+| `redis.image` | Redis container image | `quay.io/jordigilh/redis:7-alpine` |
+| `redis.existingSecret` | Pre-created Secret name | `""` |
+| `redis.password` | Redis password | `""` |
+| `redis.storage.size` | PVC size | `512Mi` |
+| `redis.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
+
+### External Redis (BYO)
+
+Set `redis.enabled=false` and configure these values to use a pre-existing Redis instance:
+
+| Parameter | Description | Default |
+|---|---|---|
+| `externalRedis.host` | External Redis hostname (required) | `""` |
+| `externalRedis.port` | External Redis port | `6379` |
+| `externalRedis.existingSecret` | Pre-created Secret name | `""` |
+| `externalRedis.password` | Redis password | `""` |
+
+### Network Policies
+
+| Parameter | Description | Default |
+|---|---|---|
+| `networkPolicies.enabled` | Create NetworkPolicy resources | `false` |
+
+When enabled, NetworkPolicies restrict ingress/egress traffic for gateway, datastorage, and authwebhook. DNS egress (port 53) is always allowed.
 
 ## Signal Source Authentication
 
-The Gateway authenticates all signal ingestion requests using **Kubernetes TokenReview + SubjectAccessReview (SAR)**. Callers must present a valid Kubernetes ServiceAccount bearer token in the `Authorization` header. The Gateway validates the token via TokenReview and then checks that the authenticated identity has `create` permission on `services/gateway-service` in the platform namespace via SAR.
-
-This means:
-
-1. Every signal source needs a Kubernetes ServiceAccount
-2. That ServiceAccount needs an RBAC binding granting `create` on `services/gateway-service`
-3. The caller must include the ServiceAccount token as a bearer token
-
-### Configuring Signal Sources
-
-External alert sources (AlertManager, custom webhooks) need RBAC authorization. Configure via Helm:
+External signal sources need RBAC authorization. Configure via Helm:
 
 ```yaml
 gateway:
@@ -85,21 +232,7 @@ gateway:
 
 Each entry creates a `ClusterRoleBinding` granting the ServiceAccount permission to submit signals. The Kubernetes Event Exporter is automatically configured by the chart.
 
-### AlertManager Integration
-
-Configure AlertManager to send webhooks to the Gateway with bearer token authentication:
-
-```yaml
-# AlertManager receiver configuration
-receivers:
-  - name: kubernaut
-    webhook_configs:
-      - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
-        send_resolved: true
-        bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
-```
-
-The `bearer_token_file` directive tells AlertManager to read the ServiceAccount token from the pod's projected volume and include it as a bearer token in every webhook request. Without this, the Gateway rejects the request with `401 Unauthorized`.
+See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR authentication flow and RBAC details. See [Installation -- Signal Source Authentication](../getting-started/installation.md#signal-source-authentication) for AlertManager and Event Exporter configuration examples.
 
 ## LLM Provider Setup
 
@@ -187,13 +320,74 @@ Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate
 | `execution.serviceAccount` | `kubernaut-workflow-runner` | ServiceAccount for workflow pods |
 | `execution.cooldownPeriod` | 1 minute | Cooldown between executions |
 
-The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read and patch resources across namespaces (limited to the Kubernetes verbs needed for remediation).
+The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read and patch resources across namespaces. See [Security & RBAC -- Workflow Execution](../architecture/security-rbac.md#workflow-execution) for the full permission list.
 
 ## TLS and Certificate Management
 
 The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
 
---8<-- "chart-readme.md:tls-management"
+The chart supports two modes for managing TLS certificates used by the admission webhooks, controlled by `tls.mode`:
+
+### Hook Mode (`tls.mode: hook`) -- Default
+
+Self-signed certificates are generated and managed by Helm hooks. No external dependencies required. Suitable for development, testing, and CI environments.
+
+**How it works:**
+
+1. **Pre-install/pre-upgrade** (`tls-cert-gen`): Generates a self-signed CA and server certificate, stored as the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
+2. **Post-install/post-upgrade** (`tls-cabundle-patch`): Patches the `caBundle` field on the webhook configurations.
+3. **Post-delete** (`tls-cleanup`): Removes the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
+
+**Automatic renewal**: On `helm upgrade`, if the certificate expires within 30 days, it is automatically regenerated.
+
+**Recovery**: If the `authwebhook-ca` ConfigMap is accidentally deleted while `authwebhook-tls` still exists, delete the `authwebhook-tls` Secret and run `helm upgrade` to regenerate both:
+
+```bash
+kubectl delete secret authwebhook-tls -n kubernaut-system
+helm upgrade kubernaut kubernaut/kubernaut -n kubernaut-system -f my-values.yaml
+```
+
+> **Note**: `helm template` output will not show `caBundle` on webhook configurations. This is expected -- the hook injects it at runtime after the webhook resources are created.
+
+### cert-manager Mode (`tls.mode: cert-manager`) -- Production
+
+Certificates are managed by [cert-manager](https://cert-manager.io/). Recommended for production environments. cert-manager handles issuance, renewal, and `caBundle` injection automatically.
+
+**Prerequisites:**
+
+1. Install cert-manager (v1.12+):
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+kubectl wait --for=condition=Available deployment --all -n cert-manager --timeout=120s
+```
+
+2. Create an Issuer or ClusterIssuer. For development with cert-manager, a self-signed issuer works:
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-issuer
+spec:
+  selfSigned: {}
+```
+
+For production, use your organization's CA or an ACME issuer (e.g., Let's Encrypt).
+
+3. Install the chart with cert-manager mode:
+
+```bash
+helm install kubernaut kubernaut/kubernaut \
+  --namespace kubernaut-system \
+  --set tls.mode=cert-manager \
+  --set tls.certManager.issuerRef.name=selfsigned-issuer \
+  -f my-values.yaml
+```
+
+The chart creates a `Certificate` resource (`authwebhook-cert`) that provisions the `authwebhook-tls` Secret. cert-manager's `cainjector` automatically writes the `caBundle` into the webhook configurations via the `cert-manager.io/inject-ca-from` annotation.
+
+**No TLS hook jobs** are created in this mode -- cert-manager handles the full lifecycle including renewal.
 
 ### Migrating from Hook to cert-manager
 

@@ -2,24 +2,80 @@
 
 This guide walks you through installing Kubernaut on a Kubernetes cluster using Helm.
 
-!!! tip "Source of truth"
-    Installation instructions and Helm values are sourced from the [chart README](https://github.com/jordigilh/kubernaut/blob/main/charts/kubernaut/README.md). This page embeds the relevant sections so you have everything in one place.
-
 ## Prerequisites
 
---8<-- "chart-readme.md:prerequisites"
+| Requirement | Version | Notes |
+|---|---|---|
+| Kubernetes | 1.32+ | selectableFields GA required |
+| Helm | 3.12+ | |
+| StorageClass | dynamic provisioning | For PostgreSQL and Redis PVCs |
+| cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
+
+**Workflow execution engine** (at least one):
+
+- Kubernetes Jobs (built-in, no extra dependency)
+- Tekton Pipelines (optional)
+- Ansible Automation Platform (AAP) / AWX (optional)
+
+**External monitoring** (recommended):
+
+- [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) provides:
+  - Alert-based signal ingestion (AlertManager sends alerts to Gateway)
+  - Metrics enrichment for effectiveness assessments (Prometheus queries)
+  - Alert resolution checks (AlertManager API)
+  - Metrics scraping for all Kubernaut services (all pods expose `/metrics`)
+
+If Prometheus and AlertManager are not deployed, set `effectivenessmonitor.external.prometheusEnabled=false` and `effectivenessmonitor.external.alertManagerEnabled=false`.
 
 ## Infrastructure Setup
 
 Complete these steps before installing the Kubernaut chart.
 
---8<-- "chart-readme.md:infrastructure-setup"
+### Storage
+
+PostgreSQL and Redis each require a PersistentVolumeClaim for data persistence:
+
+| Component | PVC Name | Default Size | Values |
+|---|---|---|---|
+| PostgreSQL | `postgresql-data` | `10Gi` | `postgresql.storage.size`, `postgresql.storage.storageClassName` |
+| Redis | `redis-data` | `512Mi` | `redis.storage.size`, `redis.storage.storageClassName` |
+
+Both PVCs are annotated with `helm.sh/resource-policy: keep` so data survives `helm uninstall`.
+
+If the cluster has no default StorageClass, set `storageClassName` explicitly:
+
+```yaml
+postgresql:
+  storage:
+    size: 50Gi
+    storageClassName: gp3-encrypted
+redis:
+  storage:
+    storageClassName: gp3-encrypted
+```
+
+To skip in-chart databases entirely and use external instances, set `postgresql.enabled=false` and/or `redis.enabled=false` and configure `externalPostgresql` / `externalRedis` values in the [Configuration Reference](../user-guide/configuration.md).
+
+### Prometheus and AlertManager
+
+Kubernaut integrates with Prometheus and AlertManager at two levels:
+
+**1. EffectivenessMonitor queries** -- EM queries Prometheus for metric-based assessment enrichment and AlertManager for alert resolution checks. The expected service endpoints (configurable):
+
+| Service | Default URL | Override |
+|---|---|---|
+| Prometheus | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` | `effectivenessmonitor.external.prometheusUrl` |
+| AlertManager | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` | `effectivenessmonitor.external.alertManagerUrl` |
+
+**2. AlertManager sends alerts to Gateway** -- The Gateway authenticates every signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). AlertManager must include a bearer token in its webhook requests. See [Signal Source Authentication](#signal-source-authentication) below for the full configuration.
 
 ### Signal Source Authentication
 
 The Gateway authenticates **every** signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). Both AlertManager and the Event Exporter must present a valid ServiceAccount bearer token, and that ServiceAccount must have RBAC permission to submit signals.
 
 The chart provides a `gateway-signal-source` ClusterRole that grants `create` on the `gateway-service` resource. Each entry in `gateway.auth.signalSources` creates a ClusterRoleBinding binding this role to the specified ServiceAccount. The Event Exporter is bound automatically by the chart.
+
+See [Security & RBAC](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR flow, Gateway RBAC details, and the `gateway-signal-source` ClusterRole definition.
 
 #### Configuring AlertManager
 
@@ -85,25 +141,170 @@ The Event Exporter is deployed **automatically** by the Kubernaut Helm chart. It
 
 The chart creates:
 
-- A `event-exporter` ServiceAccount
-- A `event-exporter` ClusterRole with read access to events, pods, configmaps, namespaces, deployments, and replicasets
+- An `event-exporter` ServiceAccount
+- An `event-exporter` ClusterRole with read access to events, pods, configmaps, namespaces, deployments, and replicasets
 - A ClusterRoleBinding granting the `gateway-signal-source` role to the Event Exporter's ServiceAccount
 
 The Event Exporter's ConfigMap filters out `Normal` events and Kubernaut's own CRD events to prevent feedback loops. See [Event Exporter](../operations/event-exporter.md) for customization options (e.g., watching multiple namespaces).
 
-See [Signal Source Authentication](../user-guide/configuration.md#signal-source-authentication) for the full TokenReview + SAR flow.
-
 ## Pre-Installation
 
---8<-- "chart-readme.md:pre-installation"
+### 1. Install CRDs
+
+Kubernaut uses 9 Custom Resource Definitions. Apply them before installing the chart:
+
+```bash
+kubectl apply --server-side --force-conflicts -f charts/kubernaut/crds/
+```
+
+Helm installs CRDs on first install but does **not** upgrade them on `helm upgrade`. Always apply CRDs manually before upgrading to a new chart version.
+
+### 2. Create the Namespace
+
+```bash
+kubectl create namespace kubernaut-system
+```
+
+### 3. Provision Secrets
+
+Create the required secrets in the namespace before installing. The chart references these by name.
+
+**PostgreSQL credentials** (required):
+
+```bash
+kubectl create secret generic kubernaut-pg-credentials \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD=<password> \
+  --from-literal=POSTGRES_DB=action_history \
+  -n kubernaut-system
+```
+
+| Chart Value | Secret Name | Required Keys |
+|---|---|---|
+| `postgresql.auth.existingSecret` | Your secret name | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+
+**DataStorage DB config** (required):
+
+```bash
+kubectl create secret generic kubernaut-ds-credentials \
+  --from-literal=db-secrets.yaml=$'username: slm_user\npassword: <password>' \
+  -n kubernaut-system
+```
+
+| Chart Value | Secret Name | Required Keys |
+|---|---|---|
+| `datastorage.dbExistingSecret` | Your secret name | `db-secrets.yaml` (YAML with `username` and `password`) |
+
+**Redis credentials** (required):
+
+```bash
+kubectl create secret generic kubernaut-redis-credentials \
+  --from-literal=redis-secrets.yaml=$'password: <password>' \
+  -n kubernaut-system
+```
+
+| Chart Value | Secret Name | Required Keys |
+|---|---|---|
+| `redis.existingSecret` | Your secret name | `redis-secrets.yaml` (YAML with `password`) |
+
+**LLM credentials** (required for AI analysis):
+
+```bash
+kubectl create secret generic kubernaut-llm-credentials \
+  --from-literal=OPENAI_API_KEY=sk-... \
+  -n kubernaut-system
+```
+
+| Chart Value | Secret Name | Required Keys |
+|---|---|---|
+| `holmesgptApi.llm.credentialsSecretName` | Your secret name (default: `llm-credentials`) | Provider-specific (e.g., `OPENAI_API_KEY`, `AZURE_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`) |
+
+HAPI starts without this secret (`optional: true`) but all LLM calls will fail until it is created.
+
+**Notification credentials** (optional, only for Slack delivery):
+
+```bash
+kubectl create secret generic kubernaut-slack-credentials \
+  --from-literal=webhook-url=https://hooks.slack.com/services/T.../B.../... \
+  -n kubernaut-system
+```
+
+| Chart Value | Secret Name | Required Keys |
+|---|---|---|
+| `notification.credentials[].secretName` | Your secret name | `webhook-url` (or custom key via `secretKey`) |
+
+Only required when `notification.slack.enabled=true`. When Slack is disabled (default), no notification secret is needed.
 
 ## Install
 
---8<-- "chart-readme.md:installation"
+### Production
+
+With namespace and secrets already provisioned:
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --namespace kubernaut-system \
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-credentials \
+  --set redis.existingSecret=kubernaut-redis-credentials \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o \
+  --set holmesgptApi.llm.credentialsSecretName=kubernaut-llm-credentials \
+  --set gateway.auth.signalSources[0].name=alertmanager \
+  --set gateway.auth.signalSources[0].serviceAccount=alertmanager-kube-prometheus-stack-alertmanager \
+  --set gateway.auth.signalSources[0].namespace=monitoring
+```
+
+### From OCI Registry
+
+```bash
+helm install kubernaut oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+  --version 1.0.0 \
+  --namespace kubernaut-system \
+  -f my-values.yaml
+```
+
+### Development Quick Start
+
+For local development without external monitoring or pre-created secrets:
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --namespace kubernaut-system --create-namespace \
+  --set postgresql.auth.password=devpass \
+  --set redis.password=redispass \
+  --set effectivenessmonitor.external.prometheusEnabled=false \
+  --set effectivenessmonitor.external.alertManagerEnabled=false
+```
+
+### Post-Install Verification
+
+```bash
+# All 13 pods should be 1/1 Running
+kubectl get pods -n kubernaut-system
+
+# Verify LLM connectivity
+kubectl port-forward -n kubernaut-system svc/holmesgpt-api 8080:8080
+curl -s http://localhost:8080/health | jq '.'
+
+# Verify workflow catalog
+kubectl port-forward -n kubernaut-system svc/data-storage-service 8080:8080
+curl -s http://localhost:8080/api/v1/workflows | jq '.'
+```
 
 ## Post-Installation
 
---8<-- "chart-readme.md:post-installation"
+### Action Types
+
+Kubernaut ships with 24 ActionType definitions in `deploy/action-types/` that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). Load them per your operational workflow:
+
+```bash
+kubectl apply -f deploy/action-types/ -n kubernaut-system
+```
+
+### Remediation Workflows
+
+Create RemediationWorkflow CRs to define end-to-end remediation flows that reference ActionTypes. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines.
 
 ## Resource Scope
 
@@ -117,15 +318,63 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 
 ## Upgrading
 
---8<-- "chart-readme.md:upgrading"
+```bash
+# 1. Update CRDs if schema changed
+kubectl apply --server-side --force-conflicts -f charts/kubernaut/crds/
+
+# 2. Upgrade the release
+helm upgrade kubernaut kubernaut/kubernaut \
+  -n kubernaut-system -f my-values.yaml
+```
+
+Key upgrade behaviors:
+
+- **TLS certificates** (`tls.mode: hook`): Renewed automatically if expiring within 30 days. In `cert-manager` mode, cert-manager handles renewal.
+- **Database migrations** run automatically via the post-upgrade hook.
+- **PVCs** are not modified (immutable for bound claims).
+- **ConfigMaps and Secrets** are updated to reflect new values.
 
 ## Uninstalling
 
---8<-- "chart-readme.md:uninstalling"
+```bash
+helm uninstall kubernaut -n kubernaut-system
+```
+
+### What is retained after uninstall
+
+| Resource | Behavior | Manual cleanup |
+|---|---|---|
+| PostgreSQL PVC (`postgresql-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc postgresql-data -n kubernaut-system` |
+| Redis PVC (`redis-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc redis-data -n kubernaut-system` |
+| CRDs (9 definitions) | **Retained** (standard Helm behavior) | `kubectl delete -f charts/kubernaut/crds/` |
+| CR instances | **Retained** until CRDs are deleted | Deleted when parent CRD is deleted |
+| TLS Secret and CA ConfigMap | **Deleted** by post-delete hook (`hook` mode) or by cert-manager (`cert-manager` mode) | -- |
+| Cluster-scoped RBAC | **Deleted** by Helm | -- |
+| `kubernaut-workflows` namespace | **Deleted** by Helm | May get stuck if it contains active Jobs; see below |
+
+If the `kubernaut-workflows` namespace gets stuck in `Terminating` state:
+
+```bash
+kubectl get all -n kubernaut-workflows
+kubectl delete jobs --all -n kubernaut-workflows
+```
+
+### Full cleanup
+
+To remove everything including persistent data:
+
+```bash
+helm uninstall kubernaut -n kubernaut-system
+kubectl delete pvc postgresql-data redis-data -n kubernaut-system
+kubectl delete -f charts/kubernaut/crds/
+kubectl delete namespace kubernaut-system
+```
 
 ## Known Limitations
 
---8<-- "chart-readme.md:known-limitations"
+- **Single installation per cluster**: Cluster-scoped resources (ClusterRoles, ClusterRoleBindings, WebhookConfigurations) use static names. Installing multiple releases in different namespaces will cause conflicts.
+- **Init container timeouts**: The `wait-for-postgres` init containers in DataStorage and the migration Job have no timeout. If PostgreSQL is unavailable, these containers will block indefinitely.
+- **Event Exporter probes**: The event-exporter container does not expose health endpoints, so no liveness or readiness probes are configured.
 
 ## Next Steps
 

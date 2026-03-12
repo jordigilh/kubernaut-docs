@@ -21,7 +21,7 @@ kubectl logs -n kubernaut-system -l app=remediationorchestrator-controller --tai
 kubectl get remediationrequests -A
 ```
 
-**Common causes**: Orchestrator pod not running, RBAC permissions missing, RR in wrong namespace.
+**Common causes**: Orchestrator pod not running, RBAC permissions missing (see [Security & RBAC](../architecture/security-rbac.md)), RR in wrong namespace.
 
 ### Stuck in `Processing`
 

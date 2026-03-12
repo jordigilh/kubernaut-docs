@@ -1,5 +1,8 @@
 # Data Lifecycle
 
+!!! info "Architecture reference"
+    For the database schema, Redis DLQ, and reconstruction internals, see [Architecture: Data Persistence](../architecture/data-persistence.md).
+
 Kubernaut has a two-tier data model: **CRDs** in Kubernetes for active remediations, and **persistent audit data** in PostgreSQL for long-term compliance and analysis.
 
 ## CRD Retention
@@ -28,43 +31,13 @@ While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every serv
 
 Because audit events capture the full context of every stage, Kubernaut can **reconstruct a complete RemediationRequest** from audit data — even after the CRD has expired.
 
-### How It Works
-
 The DataStorage service provides a reconstruction endpoint:
 
 ```
 POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct
 ```
 
-Reconstruction follows a 5-phase pipeline:
-
-```mermaid
-graph LR
-    Q[Query<br/>audit events] --> P[Parse<br/>event payloads]
-    P --> M[Map<br/>to CRD fields]
-    M --> B[Build<br/>RemediationRequest]
-    B --> V[Validate<br/>completeness]
-```
-
-1. **Query** — Fetch all audit events with the matching `correlation_id`
-2. **Parse** — Extract CRD field data from event payloads
-3. **Map** — Aggregate data into spec and status structures
-4. **Build** — Produce a complete RemediationRequest object
-5. **Validate** — Check for completeness and structural validity
-
-### What Gets Reconstructed
-
-| Field | Source Event |
-|---|---|
-| `spec.signalName`, `signalType`, `signalLabels` | `gateway.signal.received` |
-| `spec.originalPayload` | `gateway.signal.received` |
-| `spec.signalAnnotations` | `gateway.signal.received` |
-| `status.selectedWorkflowRef` | `workflowexecution.selection.completed` |
-| `status.executionRef` | `workflowexecution.execution.started` |
-| `status.timeoutConfig` | `orchestrator.lifecycle.created` |
-
-!!! note "Current Scope"
-    Reconstruction is currently available for **RemediationRequest** CRDs only. Support for other CRD types is planned for future versions.
+See [Architecture: Data Persistence](../architecture/data-persistence.md#remediationrequest-reconstruction) for the full reconstruction pipeline and source event mapping.
 
 ### Use Cases
 

@@ -1,5 +1,8 @@
 # Effectiveness Monitoring
 
+!!! info "Architecture reference"
+    For the CRD specification, phase state machine, and timing model, see [Architecture: Effectiveness Assessment](../architecture/effectiveness.md).
+
 After a remediation workflow completes, Kubernaut evaluates whether the fix actually resolved the issue. This is handled by the **Effectiveness Monitor** — a CRD controller that watches `EffectivenessAssessment` resources.
 
 ## How It Works
@@ -26,37 +29,7 @@ sequenceDiagram
     EM->>DS: Store audit event
 ```
 
-## Assessment Components
-
-The Effectiveness Monitor evaluates four components:
-
-| Component | Method | What It Checks |
-|---|---|---|
-| **Health** | Kubernetes conditions (Pod Ready, Deployment Available) | Is the target resource healthy? |
-| **Alert** | AlertManager query (if configured) | Has the triggering alert resolved? |
-| **Metrics** | Prometheus query (if configured) | Have the relevant metrics recovered? |
-| **Hash** | Compare pre/post resource spec hash | Did the resource spec change as expected? |
-
-A **validity window** constrains when the assessment is meaningful — the monitor waits for the stabilization period before evaluating, ensuring transient states don't produce false results.
-
-### Spec Hash Comparison
-
-Before remediation, the system records a hash of the target resource's spec. After remediation, it compares:
-
-- **Hash changed** → The resource was modified (expected for most remediations)
-- **Hash unchanged** → No spec change detected (may indicate the fix didn't apply)
-
-### Health Checks
-
-The monitor checks Kubernetes-native health signals:
-
-- Pod `Ready` conditions
-- Deployment `Available` condition
-- No `CrashLoopBackOff` or `OOMKilled` events
-
-### Metric Evaluation
-
-When Prometheus and AlertManager are configured, the monitor can check whether the triggering alert has resolved.
+The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
 
 ## Async Propagation Delays
 
@@ -79,20 +52,6 @@ remediationorchestrator:
       gitOpsSyncDelay: "3m"
       operatorReconcileDelay: "1m"
 ```
-
-## Effectiveness Scoring
-
-The assessment produces a weighted effectiveness score:
-
-| Component | Weight | Score Range |
-|---|---|---|
-| **Health** | 40% | 0.0--1.0 (decision tree based on pod conditions) |
-| **Alert** | 35% | 0.0 or 1.0 (binary: alert resolved or not) |
-| **Metrics** | 25% | 0.0--1.0 (average improvement across metrics) |
-
-When a component is unavailable (e.g., no Prometheus configured), its weight is redistributed to the remaining components.
-
-The hash comparison does not contribute a numeric score -- it provides **drift detection** (did the spec change as expected?).
 
 ## Feedback Loop: How Effectiveness Data Influences Future Decisions
 

@@ -144,6 +144,7 @@ The Gateway returns all errors in [RFC 7807 Problem Details](../api-reference/in
 
 ## Next Steps
 
+- [Architecture: Gateway](../architecture/gateway.md) -- Signal adapters, deduplication, and ingestion internals
 - [Core Concepts](concepts.md) — Understanding the full pipeline
 - [Remediation Workflows](workflows.md) — How workflows are matched to signals
 - [Configuration Reference](configuration.md) — Gateway and Signal Processing configuration

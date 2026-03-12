@@ -1,5 +1,8 @@
 # Notification Channels
 
+!!! info "Architecture reference"
+    For the CRD specification, delivery orchestration, and retry internals, see [Architecture: Notification Pipeline](../architecture/notification.md).
+
 Kubernaut sends notifications at key points in the remediation lifecycle: when human approval is required, when a remediation fails, when manual review is needed, and when a remediation completes. Notifications are routed through configurable channels using an AlertManager-style routing configuration.
 
 ## Channel Overview
@@ -229,30 +232,7 @@ Credentials support hot-reload via fsnotify. When a Secret is updated, the kubel
 
 ## Retry Policy
 
-Failed deliveries are retried with exponential backoff.
-
-### Defaults
-
-| Parameter | Default | Range |
-|---|---|---|
-| Max attempts | 5 | 1--10 |
-| Initial backoff | 30 seconds | 1--300 seconds |
-| Backoff multiplier | 2x | 1--10 |
-| Max backoff | 480 seconds (8 minutes) | 60--3600 seconds |
-
-**Formula:** `backoff = initial_backoff * (multiplier ^ (attempt - 1))` with ±10% jitter, capped at `max_backoff`.
-
-**Example sequence:** 30s → 60s → 120s → 240s → 480s (with jitter)
-
-### Error Classification
-
-| Error Type | Retried? | Examples |
-|---|---|---|
-| Server errors (5xx) | Yes | Slack API 500, 502, 503 |
-| Rate limiting (429) | Yes | Slack rate limit |
-| Network errors | Yes | Connection refused, timeout |
-| Client errors (4xx) | No (permanent) | Invalid webhook URL, bad request |
-| TLS errors | No (permanent) | Certificate verification failure |
+The notification controller uses exponential backoff with retry and circuit breaker logic. See [Architecture: Notification Pipeline](../architecture/notification.md#retry-policy) for retry defaults and error classification.
 
 ### Per-Notification Override
 
@@ -312,6 +292,7 @@ Slack notifications will now be sent for any route that uses a `slackConfigs` re
 
 ## Next Steps
 
+- [Architecture: Notification Pipeline](../architecture/notification.md) -- CRD specification, delivery orchestration, and retry internals
 - [Configuration Reference](configuration.md) -- Full operator configuration reference
 - [Human Approval](approval.md) -- The approval notification flow
 - [Rego Policies](policies.md) -- Policies that influence notification triggers

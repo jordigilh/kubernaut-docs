@@ -1,5 +1,8 @@
 # Audit & Observability
 
+!!! info "Architecture reference"
+    For the buffered audit store, flush triggers, and DLQ design, see [Architecture: Audit Pipeline](../architecture/audit-pipeline.md).
+
 Kubernaut provides a comprehensive audit trail that records every action taken during remediation. This supports compliance requirements (SOC2 Type II), incident review, and continuous improvement.
 
 ## Audit Architecture
@@ -47,21 +50,7 @@ Every stage of the remediation lifecycle emits audit events:
 
 ## Audit Event Structure
 
-Each event contains:
-
-| Field | Description |
-|---|---|
-| `event_id` | Unique UUID |
-| `event_timestamp` | When the event occurred |
-| `event_type` | Hierarchical type (e.g., `aianalysis.analysis.completed`) |
-| `event_category` | Category (e.g., `signal`, `remediation`, `audit`) |
-| `event_action` | Action performed (e.g., `received`, `completed`, `failed`) |
-| `event_outcome` | Result: `success`, `failure`, or `pending` |
-| `actor_type` / `actor_id` | Who performed the action (service or human operator) |
-| `resource_type` / `resource_id` | Target resource |
-| `correlation_id` | Groups all events for one RemediationRequest |
-| `namespace` | Kubernetes namespace |
-| `event_data` | JSONB payload with service-specific details |
+Each event contains core fields: `event_id`, `event_timestamp`, `event_type`, `event_category`, `event_action`, `event_outcome`, `actor_type`/`actor_id`, `resource_type`/`resource_id`, `correlation_id`, `namespace`, and `event_data`. See [Architecture: Audit Pipeline](../architecture/audit-pipeline.md#event-structure) for the complete event structure and field definitions.
 
 ## Operator Attribution
 

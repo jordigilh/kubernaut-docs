@@ -1,5 +1,8 @@
 # Audit Pipeline
 
+!!! info "Operator guide"
+    For retention policies, observability metrics, and event correlation, see [Audit & Observability](../user-guide/audit-and-observability.md).
+
 Kubernaut's audit pipeline provides a complete record of every action taken during remediation -- from signal ingestion to effectiveness assessment, including human approval decisions. Every service includes a buffered audit store that batches events and sends them to DataStorage for persistent storage.
 
 ## Architecture

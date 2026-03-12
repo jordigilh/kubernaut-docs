@@ -1,5 +1,11 @@
 # Notification Pipeline
 
+!!! info "Operator guide"
+    For channel setup, Slack configuration, and credential management, see [Notification Channels](../user-guide/notifications.md).
+
+!!! abstract "CRD Reference"
+    For the complete NotificationRequest CRD specification, see [API Reference: CRDs](../api-reference/crds.md#notificationrequest).
+
 The Notification controller delivers outcome notifications through multiple channels. It manages routing resolution, per-channel delivery with retry and circuit breaker logic, credential hot-reload, and audit event emission.
 
 ## CRD Specification

@@ -228,6 +228,7 @@ Gateway creates RR → RO watches RR → RO creates SP CRD → SP enriches signa
 
 ## Next Steps
 
+- [Signals & Alert Routing](../user-guide/signals.md) -- Signal modes, scope management, and alert routing for operators
 - [Signal Processing](signal-processing.md) -- How the enrichment pipeline classifies signals
 - [Remediation Routing](remediation-routing.md) -- The Orchestrator's state machine and routing engine
 - [Configuration: Signal Source Authentication](../user-guide/configuration.md#signal-source-authentication) -- Configuring external signal sources

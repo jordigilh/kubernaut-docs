@@ -16,25 +16,11 @@ Kubernaut runs **10 services**: 6 CRD controllers, 2 stateless HTTP services, 1 
 
 ### CRD Controllers
 
-These services watch Kubernetes Custom Resources and reconcile state:
-
-| Service | Watches | Creates | Role |
-|---|---|---|---|
-| **Remediation Orchestrator** | RemediationRequest + all child CRDs | SignalProcessing, AIAnalysis, WorkflowExecution, NotificationRequest, EffectivenessAssessment, RemediationApprovalRequest | Coordinates the full remediation lifecycle with routing engine (blocking conditions, exponential backoff, resource locks) |
-| **Signal Processing** | SignalProcessing | — | Enriches signals with K8s context (owner chain, namespace, workload), environment classification, priority assignment, business classification, severity normalization, and signal mode |
-| **AI Analysis** | AIAnalysis | — | Submits session-based async investigations to HolmesGPT API for RCA, evaluates approval via Rego policy |
-| **Workflow Execution** | WorkflowExecution | Tekton PipelineRun, Job, or AWX Job | Validates dependencies (Secrets, ConfigMaps), runs remediation workflows via Tekton, K8s Jobs, or Ansible (AWX/AAP) |
-| **Notification** | NotificationRequest | — | Delivers notifications via Slack, console, file, or log channels with retry backoff |
-| **Effectiveness Monitor** | EffectivenessAssessment | — | Four-dimensional assessment: health checks (K8s), alert resolution (AlertManager), metric comparison (Prometheus), and spec hash drift detection |
+Each CRD is owned by a dedicated controller. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
 
 ### Stateless Services
 
-| Service | Role |
-|---|---|
-| **Gateway** | HTTP entry point for AlertManager webhooks and K8s events; authenticates callers via Kubernetes TokenReview + SubjectAccessReview, validates resource scope, resolves owner chains, performs fingerprint-based deduplication, and creates RemediationRequest CRDs |
-| **DataStorage** | PostgreSQL-backed REST API for audit events, workflow catalog, remediation history, and effectiveness data (Redis for DLQ) |
-| **Auth Webhook** | Kubernetes admission webhook that captures operator identity for SOC2 audit attribution on CRD mutations, and bridges RemediationWorkflow and ActionType CRD lifecycle with the DataStorage workflow catalog and action type taxonomy (registers on CREATE, disables on DELETE) |
-| **HolmesGPT API** | Python FastAPI service that orchestrates LLM-driven root cause analysis using Kubernetes inspection tools and configurable observability toolsets (Prometheus, Grafana Loki/Tempo); detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB) that influence workflow selection and catalog search; fetches remediation history so the LLM avoids repeating failed remediations |
+See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and HolmesGPT API.
 
 ## Communication Pattern
 
@@ -49,19 +35,7 @@ This architecture provides:
 
 ## Custom Resources
 
-Kubernaut defines 9 CRD types:
-
-| CRD | API Group | Created By | Watched By |
-|---|---|---|---|
-| `RemediationRequest` | `kubernaut.ai` | Gateway | Remediation Orchestrator |
-| `RemediationApprovalRequest` | `kubernaut.ai` | Remediation Orchestrator | Remediation Orchestrator (RAR audit) |
-| `SignalProcessing` | `kubernaut.ai` | Remediation Orchestrator | Signal Processing |
-| `AIAnalysis` | `kubernaut.ai` | Remediation Orchestrator | AI Analysis |
-| `WorkflowExecution` | `kubernaut.ai` | Remediation Orchestrator | Workflow Execution |
-| `NotificationRequest` | `kubernaut.ai` | Remediation Orchestrator | Notification |
-| `EffectivenessAssessment` | `kubernaut.ai` | Remediation Orchestrator | Effectiveness Monitor |
-| `RemediationWorkflow` | `kubernaut.ai` | Operator (`kubectl apply`) | Auth Webhook (admission) → DataStorage catalog |
-| `ActionType` | `kubernaut.ai` | Operator (`kubectl apply`) | Auth Webhook (admission) → DataStorage taxonomy |
+Kubernaut defines 9 CRD types. Each CRD is owned by a dedicated controller. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
 
 ## Remediation Lifecycle
 
@@ -107,16 +81,7 @@ The **Analyzing** phase represents the LLM investigation via HolmesGPT API. The 
 
 ### Blocked Phase
 
-The **Blocked** phase is non-terminal and covers 6 routing scenarios managed by the Orchestrator (not the LLM):
-
-| Block Reason | Exit Condition | Resumes To |
-|---|---|---|
-| ConsecutiveFailures | Cooldown expires | Failed (terminal) |
-| ResourceBusy | Blocking workflow completes | Analyzing |
-| DuplicateInProgress | Original RR completes | Pending |
-| RecentlyRemediated | Cooldown expires | Failed (terminal) |
-| ExponentialBackoff | Backoff window expires | Failed (terminal) |
-| UnmanagedResource | Scope label added | Pending |
+The **Blocked** phase is non-terminal and covers 6 routing scenarios managed by the Orchestrator (not the LLM). See [Core Concepts](../user-guide/concepts.md#blocked-phase) for all block reasons, cooldowns, and exit conditions.
 
 On successful workflow execution, the Orchestrator creates an **EffectivenessAssessment** to evaluate whether the fix worked. Once the assessment completes (or times out), it creates a **NotificationRequest** that includes the remediation outcome and effectiveness results. On failure or escalation, a notification is created directly.
 

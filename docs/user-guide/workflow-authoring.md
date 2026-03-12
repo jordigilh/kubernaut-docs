@@ -27,16 +27,12 @@ The LLM calls `list_available_actions` and receives every active action type wit
 
 The LLM calls `list_workflows` for the chosen action type. DataStorage returns all active, latest-version workflows under that action type, **ordered by `final_score`**.
 
-The score is computed from label overlap between the incident context and the workflow schema:
-
-```
-final_score = LEAST((5.0 + detected_boost + custom_boost - penalty) / 10.0, 1.0)
-```
+The DataStorage scoring algorithm combines detected label boosts, custom label boosts, and penalties. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for the complete formula and boost values.
 
 **What matters here:**
 
-- DetectedLabels (highest impact: up to +0.39)
-- CustomLabels (+0.15 per exact match, +0.075 per wildcard)
+- DetectedLabels (highest impact on ranking)
+- CustomLabels (operator-intent boost)
 - Mandatory label filters (severity, environment, component, priority) -- workflows that don't match are excluded entirely
 
 ### Step 3: Workflow Selection
@@ -151,7 +147,7 @@ CustomLabels are operator-defined key-value pairs that influence DataStorage sco
 flowchart LR
     NS["Namespace label<br/><small>kubernaut.ai/label-team=payments</small>"] --> Rego["customlabels.rego<br/><small>extracts team=payments</small>"]
     Rego --> SP["SignalProcessing<br/><small>CustomLabels field</small>"]
-    SP --> DS["DataStorage scoring<br/><small>+0.15 per match</small>"]
+    SP --> DS["DataStorage scoring<br/><small>custom label boost</small>"]
     DS --> LLM["LLM sees ranked list"]
 ```
 
@@ -171,8 +167,8 @@ spec:
     region: "*"                  # wildcard -- matches any value
 ```
 
-- **Exact match**: The workflow's value must equal the incident's value. Boost: **+0.15** per matching key.
-- **Wildcard** (`"*"`): The workflow matches any non-empty value for that key. Boost: **+0.075** (half of exact).
+- **Exact match**: The workflow's value must equal the incident's value.
+- **Wildcard** (`"*"`): The workflow matches any non-empty value for that key (half credit).
 
 CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Internally, DataStorage wraps these into arrays for JSONB storage and scoring.
 
@@ -218,11 +214,9 @@ Deploy it via the `signalprocessing-customlabels-policy` ConfigMap. Signal Proce
 
 ### Scoring Impact
 
-Each matching custom label adds +0.15 to the raw score (before normalization to 0-1). With a base score of 5.0/10.0 = 0.50, a single matching custom label produces a final score of approximately 0.515, while a non-matching workflow stays at 0.50.
+Custom label matches add to the raw score (before normalization to 0-1). See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for the exact boost values.
 
 This is a **tiebreaker/ordering influence**, not an override. It won't overcome a strong semantic mismatch in descriptions -- if the LLM strongly prefers a lower-ranked workflow based on its `whenToUse`, it will still pick it.
-
-Multiple matching labels are additive: 3 matching keys produce +0.45 raw boost (+0.045 on the normalized score).
 
 ## Worked Example: Risk-Based CrashLoopBackOff Remediation
 
@@ -439,7 +433,7 @@ This is expected behavior in some cases. The LLM makes the final decision based 
 |---|---|---|
 | Action type `whenToUse` | Step 1 (action type selection) | Determines which action category the LLM picks |
 | Mandatory labels (severity, environment, component, priority) | Step 2 (filtering) | Excludes workflows that don't match -- they never reach the LLM |
-| DetectedLabels | Step 2 (scoring) | Highest-weight infrastructure boost (up to +0.39) |
-| CustomLabels | Step 2 (scoring) | Operator-intent boost (+0.15 per exact match) |
+| DetectedLabels | Step 2 (scoring) | Highest-weight infrastructure boost |
+| CustomLabels | Step 2 (scoring) | Operator-intent boost |
 | Workflow `whenToUse` / `whenNotToUse` | Step 3 (LLM selection) | The LLM's primary decision input -- must reinforce the ranking |
 | Remediation history | Step 3 (LLM context) | The LLM avoids repeating failed approaches |

@@ -1,5 +1,11 @@
 # Effectiveness Assessment
 
+!!! info "Operator guide"
+    For configuration, async propagation setup, and the feedback loop, see [Effectiveness Monitoring](../user-guide/effectiveness.md).
+
+!!! abstract "CRD Reference"
+    For the complete EffectivenessAssessment CRD specification, see [API Reference: CRDs](../api-reference/crds.md#effectivenessassessment).
+
 The Effectiveness Monitor evaluates whether a remediation actually resolved the issue. It operates as a CRD controller watching `EffectivenessAssessment` resources created by the Orchestrator after workflow execution completes (or fails).
 
 ## CRD Specification

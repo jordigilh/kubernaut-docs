@@ -74,10 +74,7 @@ markdown_extensions:
       line_spans: __span
       pygments_lang_class: true
   - pymdownx.inlinehilite
-  - pymdownx.snippets:
-      base_path:
-        - _includes
-        - .
+  - pymdownx.snippets
   - pymdownx.mark
   - pymdownx.emoji:
       emoji_index: !!python/name:material.extensions.emoji.twemoji
@@ -123,6 +120,7 @@ nav:
       - Async Propagation: architecture/async-propagation.md
       - Audit Pipeline: architecture/audit-pipeline.md
       - Data Persistence: architecture/data-persistence.md
+      - Security & RBAC: architecture/security-rbac.md
   - Design Decisions:
       - design-decisions/index.md
   - API Reference:

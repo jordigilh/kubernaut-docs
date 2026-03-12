@@ -241,7 +241,7 @@ The same target resource always produces the same execution resource name. If tw
 
 ## Execution Namespace and RBAC
 
-All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. In v1.0, they share a common ServiceAccount (`kubernaut-workflow-runner`) managed by the controller. Per-workflow scoped RBAC is planned for v1.1.
+All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. In v1.0, they share a common ServiceAccount (`kubernaut-workflow-runner`) managed by the controller. See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to this ServiceAccount. Per-workflow scoped RBAC is planned for v1.1.
 
 ## Parameter Injection
 

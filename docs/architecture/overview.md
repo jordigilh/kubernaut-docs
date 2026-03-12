@@ -134,11 +134,7 @@ See [Configuration Reference](../user-guide/configuration.md) for all configurab
 
 ### RBAC
 
-Each service has a dedicated ServiceAccount with minimal permissions:
-
-- CRD controllers get watch/create/update on their specific CRDs
-- The Orchestrator has the broadest permissions (creates and watches all child CRDs)
-- Workflow execution uses a shared ServiceAccount in the execution namespace (per-workflow scoping in v1.1)
+Each service runs under a dedicated ServiceAccount with least-privilege permissions. See [Security & RBAC](security-rbac.md) for the full reference including controller permissions, workflow execution RBAC, signal source authentication, and internal service communication.
 
 ### Admission Webhooks
 
@@ -152,7 +148,7 @@ An internal admission webhook validates and audits:
 ### Authentication
 
 - **DataStorage** -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
-- **Gateway** -- No authentication middleware ([GitHub #291](https://github.com/jordigilh/kubernaut/issues/291) -- security gap; auth middleware exists in code but is not wired in production)
+- **Gateway** -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see [Security & RBAC](security-rbac.md#signal-ingestion))
 - **NetworkPolicies** -- Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
 - **TLS** -- Not configured for internal service-to-service traffic in v1.0
 

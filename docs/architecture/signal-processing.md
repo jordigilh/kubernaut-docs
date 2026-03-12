@@ -1,5 +1,8 @@
 # Signal Processing
 
+!!! abstract "CRD Reference"
+    For the complete SignalProcessing CRD specification, see [API Reference: CRDs](../api-reference/crds.md#signalprocessing).
+
 The Signal Processing controller transforms raw signals into enriched, classified data ready for AI analysis. It operates as a Kubernetes controller that watches `SignalProcessing` CRDs created by the Remediation Orchestrator.
 
 ## CRD Specification

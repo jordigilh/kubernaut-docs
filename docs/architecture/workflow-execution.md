@@ -1,5 +1,8 @@
 # Workflow Execution
 
+!!! abstract "CRD Reference"
+    For the complete WorkflowExecution CRD specification, see [API Reference: CRDs](../api-reference/crds.md#workflowexecution).
+
 The Workflow Execution controller runs remediation workflows via **Kubernetes Jobs**, **Tekton Pipelines**, or **Ansible (AWX/AAP)**. It manages spec validation, dependency resolution, cooldown enforcement, deterministic locking, and failure reporting.
 
 ## CRD Specification

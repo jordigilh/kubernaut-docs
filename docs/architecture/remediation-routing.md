@@ -1,5 +1,8 @@
 # Remediation Routing
 
+!!! abstract "CRD Reference"
+    For the complete RemediationRequest CRD specification, see [API Reference: CRDs](../api-reference/crds.md#remediationrequest).
+
 The **Remediation Orchestrator** is the central coordinator that drives the remediation lifecycle. It watches `RemediationRequest` CRDs created by the Gateway and routes them through the pipeline by creating child CRDs, monitoring their completion, enforcing timeouts, and evaluating routing conditions at every stage.
 
 ## CRD Specification

@@ -12,20 +12,7 @@ The Notification controller delivers outcome notifications through multiple chan
 
 ### Spec (Immutable)
 
-| Field | Type | Description |
-|---|---|---|
-| `RemediationRequestRef` | `*ObjectReference` | Back-reference to the parent RR |
-| `Type` | `NotificationType` | Notification category (see below) |
-| `Priority` | `NotificationPriority` | Delivery priority: `critical`, `high`, `medium`, `low` |
-| `Subject` | `string` | Notification subject line (1–500 chars) |
-| `Body` | `string` | Notification body content |
-| `Severity` | `string` | Signal severity (for routing) |
-| `Phase` | `string` | RR phase that triggered the notification |
-| `ReviewSource` | `string` | Source of manual review (if applicable) |
-| `Metadata` | `map[string]string` | Context metadata for routing and formatting |
-| `ActionLinks` | `[]ActionLink` | External links (service, URL, label) |
-| `RetryPolicy` | `*RetryPolicy` | Override retry behavior (optional) |
-| `RetentionDays` | `int` | How long to keep the CRD (default: 7, max: 90) |
+For the complete field specification, see [NotificationRequest in the CRD Reference](../api-reference/crds.md#notificationrequest).
 
 ### Notification Types
 
@@ -40,31 +27,11 @@ The Notification controller delivers outcome notifications through multiple chan
 
 ### Status
 
-| Field | Type | Description |
-|---|---|---|
-| `Phase` | `NotificationPhase` | Current phase |
-| `DeliveryAttempts` | `[]DeliveryAttempt` | Per-channel delivery history |
-| `TotalAttempts` | `int` | Total delivery attempts across all channels |
-| `SuccessfulDeliveries` | `int` | Unique channels with successful delivery |
-| `FailedDeliveries` | `int` | Unique channels with all attempts failed |
-| `QueuedAt` | `*metav1.Time` | When the CRD entered Pending |
-| `ProcessingStartedAt` | `*metav1.Time` | When delivery began |
-| `CompletionTime` | `*metav1.Time` | When terminal phase was reached |
-| `ObservedGeneration` | `int64` | For idempotency |
-| `Reason` | `string` | Machine-readable reason |
-| `Message` | `string` | Human-readable status |
-| `Conditions` | `[]metav1.Condition` | Standard conditions |
+For the complete field specification, see [NotificationRequest in the CRD Reference](../api-reference/crds.md#notificationrequest).
 
 ### DeliveryAttempt
 
-| Field | Type | Description |
-|---|---|---|
-| `Channel` | `string` | Channel name (e.g., `slack:receiver-name`) |
-| `Attempt` | `int` | 1-based attempt number |
-| `Timestamp` | `metav1.Time` | When the attempt was made |
-| `Status` | `string` | `success`, `failed`, `timeout`, `invalid` |
-| `Error` | `string` | Error description (prefixed with `permanent failure:` if non-retryable) |
-| `DurationSeconds` | `float64` | Delivery duration |
+For the complete field specification, see [NotificationRequest in the CRD Reference](../api-reference/crds.md#notificationrequest).
 
 ## Phase State Machine
 

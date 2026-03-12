@@ -9,36 +9,11 @@ The Workflow Execution controller runs remediation workflows via **Kubernetes Jo
 
 ### Spec (Immutable)
 
-| Field | Type | Description |
-|---|---|---|
-| `RemediationRequestRef` | `ObjectReference` | Back-reference to the parent RR |
-| `WorkflowRef.WorkflowID` | `string` | Workflow identifier from DataStorage |
-| `WorkflowRef.Version` | `string` | Workflow version |
-| `WorkflowRef.ExecutionBundle` | `string` | OCI image reference for the workflow bundle |
-| `WorkflowRef.ExecutionBundleDigest` | `string` | OCI digest for integrity verification |
-| `TargetResource` | `string` | Target in `namespace/kind/name` or `kind/name` format |
-| `Parameters` | `map[string]string` | Parameters from LLM workflow selection |
-| `Confidence` | `float64` | LLM confidence score |
-| `Rationale` | `string` | LLM reasoning for workflow selection |
-| `ExecutionEngine` | `string` | `tekton`, `job`, or `ansible` (default: `tekton`) |
-| `ExecutionConfig.Timeout` | `*metav1.Duration` | Per-execution timeout |
-| `ExecutionConfig.ServiceAccountName` | `string` | ServiceAccount override |
+For the complete field specification, see [WorkflowExecution in the CRD Reference](../api-reference/crds.md#workflowexecution).
 
 ### Status
 
-| Field | Type | Description |
-|---|---|---|
-| `ObservedGeneration` | `int64` | For idempotency |
-| `Phase` | `WorkflowExecutionPhase` | Current phase |
-| `StartTime` | `*metav1.Time` | When execution started |
-| `CompletionTime` | `*metav1.Time` | When execution completed |
-| `Duration` | `*metav1.Duration` | Total execution time |
-| `ExecutionRef` | `string` | Name of the Job or PipelineRun |
-| `ExecutionStatus` | `string` | Raw status from the executor |
-| `FailureReason` | `string` | Failure category (see below) |
-| `FailureDetails` | `*FailureDetails` | Detailed failure information |
-| `BlockClearance` | `*BlockClearance` | Audit fields for lock release (BR-WE-013) |
-| `Conditions` | `[]metav1.Condition` | Standard conditions |
+For the complete field specification, see [WorkflowExecution in the CRD Reference](../api-reference/crds.md#workflowexecution).
 
 ### Failure Categories
 
@@ -55,18 +30,7 @@ The Workflow Execution controller runs remediation workflows via **Kubernetes Jo
 
 ### FailureDetails
 
-| Field | Type | Description |
-|---|---|---|
-| `FailedTaskIndex` | `int32` | Index of the failed Tekton task |
-| `FailedTaskName` | `string` | Name of the failed task |
-| `FailedStepName` | `string` | Name of the failed step |
-| `Reason` | `string` | Kubernetes reason string |
-| `Message` | `string` | Human-readable message |
-| `ExitCode` | `int32` | Container exit code |
-| `FailedAt` | `*metav1.Time` | When the failure occurred |
-| `ExecutionTimeBeforeFailure` | `*metav1.Duration` | Time elapsed before failure |
-| `NaturalLanguageSummary` | `string` | LLM-friendly failure description |
-| `WasExecutionFailure` | `bool` | `true` if the workflow ran; `false` for pre-execution failures |
+For the complete field specification, see [WorkflowExecution in the CRD Reference](../api-reference/crds.md#workflowexecution).
 
 ## Phase State Machine
 

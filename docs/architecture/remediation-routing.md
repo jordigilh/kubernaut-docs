@@ -9,60 +9,11 @@ The **Remediation Orchestrator** is the central coordinator that drives the reme
 
 ### RemediationRequest Spec
 
-| Field | Type | Description |
-|---|---|---|
-| `SignalFingerprint` | `string` | SHA256 fingerprint from Gateway |
-| `SignalName` | `string` | Alert name or event reason |
-| `Severity` | `string` | Raw severity from source |
-| `SignalType` | `string` | Signal type (e.g., `alert`) |
-| `SignalSource` | `string` | Source identifier |
-| `TargetType` | `string` | Target platform (kubernetes, aws, azure, gcp, datadog) |
-| `TargetResource` | `ResourceIdentifier` | Kind, Name, Namespace |
-| `FiringTime` | `*metav1.Time` | When the alert started firing |
-| `ReceivedTime` | `metav1.Time` | When the Gateway received it |
-| `IsStorm` | `bool` | Whether this is part of an alert storm |
-| `StormType` | `string` | Storm classification |
-| `StormWindow` | `*metav1.Duration` | Storm detection window |
-| `StormAlertCount` | `int32` | Number of alerts in storm |
-| `AffectedResources` | `[]ResourceIdentifier` | Resources affected by storm |
-| `SignalLabels` | `map[string]string` | Merged labels from the signal source |
-| `SignalAnnotations` | `map[string]string` | Merged annotations |
-| `ProviderData` | `string` | Source-specific raw JSON |
-| `OriginalPayload` | `string` | Original payload for audit reconstruction |
+For the complete field specification, see [RemediationRequest in the CRD Reference](../api-reference/crds.md#remediationrequest).
 
 ### RemediationRequest Status
 
-| Field | Type | Description |
-|---|---|---|
-| `OverallPhase` | `RemediationPhase` | Current phase |
-| `Message` | `string` | Human-readable status message |
-| `StartTime` | `*metav1.Time` | When processing began |
-| `CompletedAt` | `*metav1.Time` | When terminal phase was reached |
-| `ProcessingStartTime` | `*metav1.Time` | SP creation time |
-| `AnalyzingStartTime` | `*metav1.Time` | AIAnalysis creation time |
-| `ExecutingStartTime` | `*metav1.Time` | WFE creation time |
-| `VerificationDeadline` | `*metav1.Time` | Deadline for EA completion |
-| `SignalProcessingRef` | `*ObjectReference` | SP child CRD reference |
-| `AIAnalysisRef` | `*ObjectReference` | AIAnalysis child reference |
-| `WorkflowExecutionRef` | `*ObjectReference` | WFE child reference |
-| `EffectivenessAssessmentRef` | `*ObjectReference` | EA child reference |
-| `NotificationRequestRefs` | `[]ObjectReference` | Notification children |
-| `SelectedWorkflowRef` | `*ObjectReference` | Selected workflow reference |
-| `BlockReason` | `BlockReason` | Why the RR is blocked |
-| `BlockMessage` | `string` | Human-readable block description |
-| `BlockedUntil` | `*metav1.Time` | When the block expires |
-| `BlockingWorkflowExecution` | `string` | Name of the blocking WFE |
-| `DuplicateOf` | `string` | Name of the original RR (if duplicate) |
-| `DuplicateCount` | `int32` | Number of duplicates |
-| `NextAllowedExecution` | `*metav1.Time` | Backoff expiry |
-| `ConsecutiveFailureCount` | `int32` | Failures for exponential backoff |
-| `FailurePhase` | `string` | Phase where failure occurred |
-| `FailureReason` | `string` | Why it failed |
-| `RequiresManualReview` | `bool` | Escalated to human |
-| `Outcome` | `string` | Remediated, NoActionRequired, ManualReviewRequired, VerificationTimedOut |
-| `PreRemediationSpecHash` | `string` | Spec hash before remediation (for EA comparison) |
-| `TimeoutConfig` | `TimeoutConfig` | Per-RR timeout overrides |
-| `Conditions` | `[]metav1.Condition` | Standard conditions |
+For the complete field specification, see [RemediationRequest in the CRD Reference](../api-reference/crds.md#remediationrequest).
 
 ## Phase State Machine
 

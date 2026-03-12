@@ -10,48 +10,7 @@ The Effectiveness Monitor evaluates whether a remediation actually resolved the 
 
 ## CRD Specification
 
-### Spec (Immutable)
-
-| Field | Type | Description |
-|---|---|---|
-| `CorrelationID` | `string` | Parent RemediationRequest name; audit correlation key |
-| `RemediationRequestPhase` | `string` | RR phase at EA creation: `Verifying`, `Completed`, `Failed`, `TimedOut` |
-| `SignalTarget` | `TargetResource` | Resource that triggered the alert (from RR spec) |
-| `RemediationTarget` | `TargetResource` | Resource modified by the workflow (from AA RCA) |
-| `Config.StabilizationWindow` | `metav1.Duration` | Wait period before assessment (default: 5m) |
-| `Config.HashComputeDelay` | `*metav1.Duration` | Propagation delay before hash computation (async targets) |
-| `Config.AlertCheckDelay` | `*metav1.Duration` | Extra delay for proactive alert resolution |
-| `RemediationCreatedAt` | `*metav1.Time` | RR creation time (for resolution time calculation) |
-| `SignalName` | `string` | Original alert name |
-| `PreRemediationSpecHash` | `string` | Spec hash captured before workflow execution |
-
-### Status
-
-| Field | Type | Description |
-|---|---|---|
-| `Phase` | `string` | Current phase |
-| `ValidityDeadline` | `*metav1.Time` | Assessment must complete before this time |
-| `PrometheusCheckAfter` | `*metav1.Time` | Earliest time for Prometheus metrics check |
-| `AlertManagerCheckAfter` | `*metav1.Time` | Earliest time for AlertManager check |
-| `Components` | `EAComponents` | Per-component assessment results |
-| `AssessmentReason` | `string` | `full`, `partial`, `no_execution`, `metrics_timed_out`, `expired`, `spec_drift` |
-| `CompletedAt` | `*metav1.Time` | When assessment completed |
-| `Message` | `string` | Human-readable status |
-| `Conditions` | `[]metav1.Condition` | Standard conditions |
-
-### Component Results
-
-| Field | Type | Description |
-|---|---|---|
-| `HealthAssessed` | `bool` | Health check completed |
-| `HealthScore` | `*float64` | 0.0--1.0 (decision tree) |
-| `HashComputed` | `bool` | Hash comparison completed |
-| `PostRemediationSpecHash` | `string` | Hash after remediation |
-| `CurrentSpecHash` | `string` | Latest hash (for drift detection) |
-| `AlertAssessed` | `bool` | Alert check completed |
-| `AlertScore` | `*float64` | 0.0 or 1.0 (binary) |
-| `MetricsAssessed` | `bool` | Metrics check completed |
-| `MetricsScore` | `*float64` | 0.0--1.0 (improvement ratio) |
+For the complete field specification, see [EffectivenessAssessment in the CRD Reference](../api-reference/crds.md#effectivenessassessment).
 
 ## Phase State Machine
 

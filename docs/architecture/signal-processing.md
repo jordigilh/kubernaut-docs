@@ -7,46 +7,7 @@ The Signal Processing controller transforms raw signals into enriched, classifie
 
 ## CRD Specification
 
-### Spec
-
-| Field | Type | Description |
-|---|---|---|
-| `RemediationRequestRef` | `ObjectReference` | Back-reference to the parent RemediationRequest |
-| `Signal.Fingerprint` | `string` | SHA256 fingerprint from Gateway (max 64 chars, hex) |
-| `Signal.Name` | `string` | Signal name (alert name or event reason) |
-| `Signal.Severity` | `string` | Raw severity from the source (not yet normalized) |
-| `Signal.Type` | `string` | Signal type (e.g., `alert`) |
-| `Signal.Source` | `string` | Source system identifier |
-| `Signal.TargetType` | `string` | Target platform: `kubernetes`, `aws`, `azure`, `gcp`, `datadog` |
-| `Signal.TargetResource` | `ResourceIdentifier` | Kind, Name, Namespace of the target |
-| `Signal.Labels` | `map[string]string` | Merged labels from the signal source |
-| `Signal.Annotations` | `map[string]string` | Merged annotations |
-| `Signal.FiringTime` | `*metav1.Time` | When the alert started firing |
-| `Signal.ReceivedTime` | `metav1.Time` | When the Gateway received it |
-| `Signal.ProviderData` | `string` | Raw JSON from the source |
-| `EnrichmentConfig` | `EnrichmentConfig` | Processing configuration (timeouts, feature flags) |
-
-### Status
-
-| Field | Type | Description |
-|---|---|---|
-| `Phase` | `SignalProcessingPhase` | Current phase in the state machine |
-| `ObservedGeneration` | `int64` | Set on completion/failure for idempotency |
-| `StartTime` | `*metav1.Time` | When processing started |
-| `CompletionTime` | `*metav1.Time` | When processing completed |
-| `KubernetesContext` | `*KubernetesContext` | Enrichment results (namespace, workload, owner chain, custom labels) |
-| `EnvironmentClassification` | `*EnvironmentClassification` | Environment + source + timestamp |
-| `PriorityAssignment` | `*PriorityAssignment` | Priority + source + policy name + timestamp |
-| `BusinessClassification` | `*BusinessClassification` | Business unit, owner, criticality, SLA |
-| `Severity` | `string` | Normalized severity: `critical`, `high`, `medium`, `low`, `unknown` |
-| `PolicyHash` | `string` | SHA256 of the Rego policy used for classification |
-| `SignalMode` | `string` | `reactive` or `proactive` |
-| `SignalName` | `string` | Normalized signal name (base name for proactive signals) |
-| `SourceSignalName` | `string` | Original signal name (differs for proactive signals) |
-| `ConsecutiveFailures` | `int32` | Transient failure count for backoff |
-| `LastFailureTime` | `*metav1.Time` | Last transient failure |
-| `Conditions` | `[]metav1.Condition` | Standard conditions (see below) |
-| `Error` | `string` | Error description when Failed |
+For the complete field specification, see [SignalProcessing in the CRD Reference](../api-reference/crds.md#signalprocessing).
 
 ### Condition Types
 

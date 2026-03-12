@@ -154,33 +154,7 @@ kubectl get remediationworkflow restart-deployment-v1 -o wide
 
 ## Schema Reference
 
-### Required Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `metadata.name` | string | Workflow name (Kubernetes resource name, max 253 chars) |
-| `spec.version` | string | Semantic version (max 50 chars) |
-| `spec.description.what` | string | What the workflow does |
-| `spec.description.whenToUse` | string | When to apply this workflow |
-| `spec.actionType` | string | Action taxonomy type (must match an active `ActionType` CRD) |
-| `spec.labels` | object | Matching criteria (see [Labels](#labels)) |
-| `spec.execution.engine` | string | `job` (Kubernetes Job), `tekton` (Tekton Pipeline), or `ansible` (AWX/AAP) |
-| `spec.execution.bundle` | string | OCI image reference with `@sha256:` digest (for job/tekton) or Git repo URL (for ansible) |
-| `spec.parameters` | array | At least one parameter definition |
-
-### Optional Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `spec.description.whenNotToUse` | string | When NOT to use this workflow |
-| `spec.description.preconditions` | string | Prerequisites for the workflow |
-| `spec.maintainers` | array | Maintainer contacts (`name`, `email`) |
-| `spec.detectedLabels` | object | Infrastructure requirements (see [Detected Labels](#detected-labels)) |
-| `spec.customLabels` | map | Operator-defined key-value labels |
-| `spec.execution.bundleDigest` | string | OCI digest or Git commit SHA |
-| `spec.execution.engineConfig` | JSON | Engine-specific config (see [Ansible](#ansible-awxaap)) |
-| `spec.dependencies` | object | Required Secrets and ConfigMaps |
-| `spec.rollbackParameters` | array | Parameters for rollback operations |
+For the complete field specification, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the CRD Reference.
 
 ### Labels
 
@@ -314,19 +288,7 @@ The Workflow Execution controller validates that these resources exist before cr
 
 ### Parameters
 
-Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables:
-
-| Field | Type | Description |
-|---|---|---|
-| `name` | string | Parameter name (becomes an env var) |
-| `type` | string | `string`, `integer`, `boolean`, or `array` |
-| `required` | boolean | Whether the parameter must be provided |
-| `description` | string | Shown to the LLM during workflow selection |
-| `default` | any | Default value when not provided |
-| `enum` | string[] | Allowed values |
-| `pattern` | string | Regex validation (string type) |
-| `minimum` / `maximum` | integer | Range validation (integer type) |
-| `dependsOn` | string[] | Parameters that must be set before this one |
+Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables. For the complete parameter schema, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) in the CRD Reference.
 
 The `description` field is shown to the LLM during `get_workflow`, so it should be clear enough for the LLM to populate the parameter from its investigation findings.
 

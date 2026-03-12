@@ -31,7 +31,7 @@ For the complete field specification, see [NotificationRequest in the CRD Refere
 
 ### DeliveryAttempt
 
-For the complete field specification, see [NotificationRequest in the CRD Reference](../api-reference/crds.md#notificationrequest).
+For the complete field specification, see [DeliveryAttempt in the CRD Reference](../api-reference/crds.md#deliveryattempt).
 
 ## Phase State Machine
 

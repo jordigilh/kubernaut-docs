@@ -260,7 +260,7 @@ helm install kubernaut charts/kubernaut/ \
 ### From OCI Registry
 
 ```bash
-helm install kubernaut oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --version 1.0.0 \
   --namespace kubernaut-system \
   -f my-values.yaml
@@ -333,12 +333,12 @@ Helm does **not** upgrade CRDs on `helm upgrade`. When upgrading to a chart vers
 
 ```bash
 # 1. Pull the new chart version and extract CRDs
-helm pull oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+helm pull oci://quay.io/kubernaut-ai/charts/kubernaut \
   --version <new-version> --untar
 kubectl apply --server-side --force-conflicts -f kubernaut/crds/
 
 # 2. Upgrade the release
-helm upgrade kubernaut oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --version <new-version> \
   -n kubernaut-system -f my-values.yaml
 ```

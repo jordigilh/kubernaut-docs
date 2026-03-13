@@ -6,7 +6,7 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
 
 | Requirement | Version | Notes |
 |---|---|---|
-| Kubernetes | 1.32+ | selectableFields GA required |
+| Kubernetes | 1.31+ | selectableFields (beta in 1.31, GA in 1.32) |
 | Helm | 3.12+ | |
 | StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
 | cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
@@ -229,18 +229,33 @@ Only required when `notification.slack.enabled=true`. When Slack is disabled (de
 
 ## Install
 
-### Production
+### Standard (Kind / vanilla Kubernetes)
 
-With namespace and secrets already provisioned:
+With namespace and secrets already provisioned, use `values-demo.yaml` to reference the pre-created secret names:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-demo.yaml \
   --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o \
-  --set holmesgptApi.llm.credentialsSecretName=kubernaut-llm-credentials
+  --set holmesgptApi.llm.model=gpt-4o
 ```
+
+### OpenShift (OCP)
+
+Layer the `values-ocp.yaml` overlay on top of `values-demo.yaml` to switch to Red Hat catalog images, disable the event exporter, and configure OCP monitoring endpoints:
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --namespace kubernaut-system \
+  -f charts/kubernaut/values-demo.yaml \
+  -f charts/kubernaut/values-ocp.yaml \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
+```
+
+!!! note "OCP Prerequisites"
+    Import PostgreSQL 16 and Valkey 8 ImageStream tags before installing. See the [chart README](https://github.com/jordigilh/kubernaut/tree/main/charts/kubernaut#openshift-ocp-prerequisites) for the `oc import-image` commands.
 
 ### From OCI Registry
 
@@ -283,10 +298,19 @@ curl -s http://localhost:8080/api/v1/workflows | jq '.'
 
 ### Action Types
 
-Kubernaut ships with 24 ActionType definitions in `deploy/action-types/` that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). Load them per your operational workflow:
+Kubernaut ships with 24 ActionType definitions that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). Load them per your operational workflow:
 
 ```bash
+# From a local clone of the kubernaut repository
 kubectl apply -f deploy/action-types/ -n kubernaut-system
+```
+
+If you installed from the OCI registry and don't have a local clone, extract the action types from the chart:
+
+```bash
+helm pull oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+  --version <version> --untar
+kubectl apply -f kubernaut/action-types/ -n kubernaut-system
 ```
 
 ### Remediation Workflows

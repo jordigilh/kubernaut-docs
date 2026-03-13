@@ -62,7 +62,7 @@ Kubernaut has a multi-layered approach to repeated failures:
 2. **History-aware investigation** — When the same resource triggers again, HolmesGPT receives the full remediation history, including what was tried and whether it worked. The LLM avoids repeating failed approaches.
 3. **Alternative selection** — If the first workflow fails, the system can select a different workflow from the catalog on the next attempt.
 4. **Escalation** — After configurable attempts, Kubernaut stops remediating and escalates to a human with the full context: investigation, what was tried, why it failed.
-5. **NoActionRequired** — If no suitable workflow exists, Kubernaut creates a notification so operators are aware without wasting tokens on repeated attempts.
+5. **NoActionRequired** — If the LLM investigation finds no active problem with the resource (e.g., the alert has resolved or the issue was transient), the remediation request is closed as NoActionRequired. This avoids unnecessary workflow execution when the signal is no longer relevant.
 
 See [Remediation History Feedback](use-cases/remediation-history-feedback.md) for a worked example of the feedback loop in action.
 

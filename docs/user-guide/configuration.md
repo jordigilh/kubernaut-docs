@@ -266,7 +266,7 @@ kubectl create secret generic llm-credentials \
 ```yaml
 holmesgptApi:
   llm:
-    provider: "vertex-ai"
+    provider: "vertex_ai"
     model: "gemini-2.5-pro"
     gcpProjectId: "my-project-id"
     gcpRegion: "us-central1"
@@ -274,7 +274,18 @@ holmesgptApi:
     timeoutSeconds: 180
 ```
 
-Authentication uses GCP Workload Identity or a service account key mounted as a Secret.
+Create the credentials Secret from a GCP service account key file:
+
+```bash
+kubectl create secret generic llm-credentials \
+  --namespace kubernaut-system \
+  --from-file=GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+```
+
+The Helm chart mounts this file at `/etc/holmesgpt/credentials/GOOGLE_APPLICATION_CREDENTIALS`
+and sets the `GOOGLE_APPLICATION_CREDENTIALS` environment variable automatically when
+`provider` is `vertex_ai`. GCP Workload Identity is also supported -- in that case the
+secret can be omitted and authentication is handled by the node metadata service.
 
 ### Temperature Tuning
 

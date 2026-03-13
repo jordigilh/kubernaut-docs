@@ -149,23 +149,15 @@ The Event Exporter's ConfigMap filters out `Normal` events and Kubernaut's own C
 
 ## Pre-Installation
 
-### 1. Install CRDs
+Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's `crds/` directory on first install -- no manual step is needed. For upgrades, see [Upgrading](#upgrading).
 
-Kubernaut uses 9 Custom Resource Definitions. Apply them before installing the chart:
-
-```bash
-kubectl apply --server-side --force-conflicts -f charts/kubernaut/crds/
-```
-
-Helm installs CRDs on first install but does **not** upgrade them on `helm upgrade`. Always apply CRDs manually before upgrading to a new chart version.
-
-### 2. Create the Namespace
+### 1. Create the Namespace
 
 ```bash
 kubectl create namespace kubernaut-system
 ```
 
-### 3. Provision Secrets
+### 2. Provision Secrets
 
 Create the required secrets in the namespace before installing. The chart references these by name.
 
@@ -186,7 +178,7 @@ kubectl create secret generic kubernaut-pg-credentials \
 **DataStorage DB config** (required):
 
 ```bash
-kubectl create secret generic kubernaut-ds-credentials \
+kubectl create secret generic kubernaut-ds-db-credentials \
   --from-literal=db-secrets.yaml=$'username: slm_user\npassword: <password>' \
   -n kubernaut-system
 ```
@@ -210,21 +202,21 @@ kubectl create secret generic kubernaut-valkey-credentials \
 **LLM credentials** (required for AI analysis):
 
 ```bash
-kubectl create secret generic kubernaut-llm-credentials \
+kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=sk-... \
   -n kubernaut-system
 ```
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `holmesgptApi.llm.credentialsSecretName` | Your secret name (default: `llm-credentials`) | Provider-specific (e.g., `OPENAI_API_KEY`, `AZURE_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`) |
+| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific (e.g., `OPENAI_API_KEY`, `AZURE_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`) |
 
 HAPI starts without this secret (`optional: true`) but all LLM calls will fail until it is created.
 
 **Notification credentials** (optional, only for Slack delivery):
 
 ```bash
-kubectl create secret generic kubernaut-slack-credentials \
+kubectl create secret generic slack-webhook \
   --from-literal=webhook-url=https://hooks.slack.com/services/T.../B.../... \
   -n kubernaut-system
 ```
@@ -275,7 +267,7 @@ helm install kubernaut charts/kubernaut/ \
 ### Post-Install Verification
 
 ```bash
-# All 13 pods should be 1/1 Running
+# All pods should be 1/1 Running (12 with event exporter disabled, 13 with it enabled)
 kubectl get pods -n kubernaut-system
 
 # Verify LLM connectivity
@@ -313,12 +305,17 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 
 ## Upgrading
 
+Helm does **not** upgrade CRDs on `helm upgrade`. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs first:
+
 ```bash
-# 1. Update CRDs if schema changed
-kubectl apply --server-side --force-conflicts -f charts/kubernaut/crds/
+# 1. Pull the new chart version and extract CRDs
+helm pull oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+  --version <new-version> --untar
+kubectl apply --server-side --force-conflicts -f kubernaut/crds/
 
 # 2. Upgrade the release
-helm upgrade kubernaut kubernaut/kubernaut \
+helm upgrade kubernaut oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
+  --version <new-version> \
   -n kubernaut-system -f my-values.yaml
 ```
 
@@ -341,8 +338,9 @@ helm uninstall kubernaut -n kubernaut-system
 |---|---|---|
 | PostgreSQL PVC (`postgresql-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc postgresql-data -n kubernaut-system` |
 | Valkey PVC (`valkey-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc valkey-data -n kubernaut-system` |
-| CRDs (9 definitions) | **Retained** (standard Helm behavior) | `kubectl delete -f charts/kubernaut/crds/` |
+| CRDs (9 definitions) | **Retained** (standard Helm behavior) | `kubectl delete crd <name>.kubernaut.ai` for each CRD |
 | CR instances | **Retained** until CRDs are deleted | Deleted when parent CRD is deleted |
+| Hook ClusterRole/CRB | **Retained** (hook resources not tracked by Helm) | `kubectl delete clusterrole kubernaut-hook-role --ignore-not-found` and `kubectl delete clusterrolebinding kubernaut-hook-rolebinding --ignore-not-found` |
 | TLS Secret and CA ConfigMap | **Deleted** by post-delete hook (`hook` mode) or by cert-manager (`cert-manager` mode) | -- |
 | Cluster-scoped RBAC | **Deleted** by Helm | -- |
 | `kubernaut-workflows` namespace | **Deleted** by Helm | May get stuck if it contains active Jobs; see below |
@@ -360,8 +358,21 @@ To remove everything including persistent data:
 
 ```bash
 helm uninstall kubernaut -n kubernaut-system
+
+# Remove PVCs retained by resource policy
 kubectl delete pvc postgresql-data valkey-data -n kubernaut-system
-kubectl delete -f charts/kubernaut/crds/
+
+# Remove hook-created cluster resources (not tracked by Helm)
+kubectl delete clusterrole kubernaut-hook-role --ignore-not-found
+kubectl delete clusterrolebinding kubernaut-hook-rolebinding --ignore-not-found
+
+# Remove CRDs and all CR instances
+kubectl delete crd actiontypes.kubernaut.ai aianalyses.kubernaut.ai \
+  effectivenessassessments.kubernaut.ai notificationrequests.kubernaut.ai \
+  remediationapprovalrequests.kubernaut.ai remediationrequests.kubernaut.ai \
+  remediationworkflows.kubernaut.ai signalprocessings.kubernaut.ai \
+  workflowexecutions.kubernaut.ai
+
 kubectl delete namespace kubernaut-system
 ```
 

@@ -20,9 +20,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -33,11 +33,12 @@ jobs:
         run: |
           curl -fsSL \
             https://raw.githubusercontent.com/jordigilh/kubernaut/main/docs/generated/crds.md \
-            -o docs/api-reference/crds.md
+            -o docs/api-reference/crds.md \
+          || echo "WARNING: CRD reference not available on main yet, skipping"
 
       - run: mkdocs build --strict
 
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v4
         with:
           path: site
 
@@ -49,4 +50,4 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

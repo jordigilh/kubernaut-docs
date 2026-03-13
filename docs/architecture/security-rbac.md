@@ -145,7 +145,7 @@ This read-only access allows the LLM to investigate root causes using live clust
 
 ## Infrastructure and Hooks
 
-### PostgreSQL and Redis
+### PostgreSQL and Valkey
 
 Both run with dedicated ServiceAccounts that have `automountServiceAccountToken: false`, preventing unnecessary API token mounting.
 

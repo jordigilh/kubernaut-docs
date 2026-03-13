@@ -15,12 +15,15 @@ graph LR
 
 ## Deployment
 
-The Event Exporter is deployed automatically as part of the Kubernaut Helm chart. It runs as a single-replica Deployment with a ConfigMap-based configuration.
+The Event Exporter is deployed automatically as part of the Kubernaut Helm chart when `eventExporter.enabled=true` (default). It runs as a single-replica Deployment with a ConfigMap-based configuration.
+
+Set `eventExporter.enabled=false` to skip deploying the Event Exporter. This is recommended on OpenShift (OCP) where no Red Hat-supported equivalent image exists. The `values-ocp.yaml` overlay disables it by default. Users should provide their own Kubernetes event forwarding mechanism when the Event Exporter is disabled.
 
 ### Helm Values
 
 | Parameter | Default | Description |
 |---|---|---|
+| `eventExporter.enabled` | `true` | Deploy the Event Exporter |
 | `eventExporter.image` | `ghcr.io/resmoio/kubernetes-event-exporter` | Container image |
 | `eventExporter.resources` | See `values.yaml` | CPU and memory requests/limits |
 

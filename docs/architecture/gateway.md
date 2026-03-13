@@ -123,7 +123,7 @@ Unmanaged resources are **not rejected with an error**. The Gateway returns HTTP
 
 ## Phase-Based Deduplication
 
-The Gateway prevents duplicate remediations using a phase-based deduplication system backed by Kubernetes RR status (no Redis dependency).
+The Gateway prevents duplicate remediations using a phase-based deduplication system backed by Kubernetes RR status (no Valkey dependency).
 
 ### Fingerprint
 

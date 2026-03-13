@@ -8,7 +8,7 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
 |---|---|---|
 | Kubernetes | 1.32+ | selectableFields GA required |
 | Helm | 3.12+ | |
-| StorageClass | dynamic provisioning | For PostgreSQL and Redis PVCs |
+| StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
 | cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
 
 **Workflow execution engine** (at least one):
@@ -33,12 +33,12 @@ Complete these steps before installing the Kubernaut chart.
 
 ### Storage
 
-PostgreSQL and Redis each require a PersistentVolumeClaim for data persistence:
+PostgreSQL and Valkey each require a PersistentVolumeClaim for data persistence:
 
 | Component | PVC Name | Default Size | Values |
 |---|---|---|---|
 | PostgreSQL | `postgresql-data` | `10Gi` | `postgresql.storage.size`, `postgresql.storage.storageClassName` |
-| Redis | `redis-data` | `512Mi` | `redis.storage.size`, `redis.storage.storageClassName` |
+| Valkey | `valkey-data` | `512Mi` | `valkey.storage.size`, `valkey.storage.storageClassName` |
 
 Both PVCs are annotated with `helm.sh/resource-policy: keep` so data survives `helm uninstall`.
 
@@ -49,12 +49,12 @@ postgresql:
   storage:
     size: 50Gi
     storageClassName: gp3-encrypted
-redis:
+valkey:
   storage:
     storageClassName: gp3-encrypted
 ```
 
-To skip in-chart databases entirely and use external instances, set `postgresql.enabled=false` and/or `redis.enabled=false` and configure `externalPostgresql` / `externalRedis` values in the [Configuration Reference](../user-guide/configuration.md).
+To skip in-chart databases entirely and use external instances, set `postgresql.enabled=false` and/or `valkey.enabled=false` and configure `externalPostgresql` / `externalValkey` values in the [Configuration Reference](../user-guide/configuration.md).
 
 ### Prometheus and AlertManager
 
@@ -137,7 +137,7 @@ gateway:
 
 #### Kubernetes Event Exporter
 
-The Event Exporter is deployed **automatically** by the Kubernaut Helm chart. It watches for `Warning`-type Kubernetes events (e.g., `BackOff`, `OOMKilled`, `FailedScheduling`) and forwards them to the Gateway at `/api/v1/signals/kubernetes-event`. No manual configuration is needed.
+The Event Exporter is deployed **automatically** by the Kubernaut Helm chart when `eventExporter.enabled=true` (default). Set `eventExporter.enabled=false` to skip it (e.g., on OpenShift). It watches for `Warning`-type Kubernetes events (e.g., `BackOff`, `OOMKilled`, `FailedScheduling`) and forwards them to the Gateway at `/api/v1/signals/kubernetes-event`. No manual configuration is needed.
 
 The chart creates:
 
@@ -195,17 +195,17 @@ kubectl create secret generic kubernaut-ds-credentials \
 |---|---|---|
 | `datastorage.dbExistingSecret` | Your secret name | `db-secrets.yaml` (YAML with `username` and `password`) |
 
-**Redis credentials** (required):
+**Valkey credentials** (required):
 
 ```bash
-kubectl create secret generic kubernaut-redis-credentials \
-  --from-literal=redis-secrets.yaml=$'password: <password>' \
+kubectl create secret generic kubernaut-valkey-credentials \
+  --from-literal=valkey-secrets.yaml=$'password: <password>' \
   -n kubernaut-system
 ```
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `redis.existingSecret` | Your secret name | `redis-secrets.yaml` (YAML with `password`) |
+| `valkey.existingSecret` | Your secret name | `valkey-secrets.yaml` (YAML with `password`) |
 
 **LLM credentials** (required for AI analysis):
 
@@ -244,15 +244,10 @@ With namespace and secrets already provisioned:
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-credentials \
-  --set redis.existingSecret=kubernaut-redis-credentials \
+  -f charts/kubernaut/values-demo.yaml \
   --set holmesgptApi.llm.provider=openai \
   --set holmesgptApi.llm.model=gpt-4o \
-  --set holmesgptApi.llm.credentialsSecretName=kubernaut-llm-credentials \
-  --set gateway.auth.signalSources[0].name=alertmanager \
-  --set gateway.auth.signalSources[0].serviceAccount=alertmanager-kube-prometheus-stack-alertmanager \
-  --set gateway.auth.signalSources[0].namespace=monitoring
+  --set holmesgptApi.llm.credentialsSecretName=kubernaut-llm-credentials
 ```
 
 ### From OCI Registry
@@ -272,7 +267,7 @@ For local development without external monitoring or pre-created secrets:
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system --create-namespace \
   --set postgresql.auth.password=devpass \
-  --set redis.password=redispass \
+  --set valkey.password=valkeypass \
   --set effectivenessmonitor.external.prometheusEnabled=false \
   --set effectivenessmonitor.external.alertManagerEnabled=false
 ```
@@ -345,7 +340,7 @@ helm uninstall kubernaut -n kubernaut-system
 | Resource | Behavior | Manual cleanup |
 |---|---|---|
 | PostgreSQL PVC (`postgresql-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc postgresql-data -n kubernaut-system` |
-| Redis PVC (`redis-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc redis-data -n kubernaut-system` |
+| Valkey PVC (`valkey-data`) | **Retained** (`resource-policy: keep`) | `kubectl delete pvc valkey-data -n kubernaut-system` |
 | CRDs (9 definitions) | **Retained** (standard Helm behavior) | `kubectl delete -f charts/kubernaut/crds/` |
 | CR instances | **Retained** until CRDs are deleted | Deleted when parent CRD is deleted |
 | TLS Secret and CA ConfigMap | **Deleted** by post-delete hook (`hook` mode) or by cert-manager (`cert-manager` mode) | -- |
@@ -365,7 +360,7 @@ To remove everything including persistent data:
 
 ```bash
 helm uninstall kubernaut -n kubernaut-system
-kubectl delete pvc postgresql-data redis-data -n kubernaut-system
+kubectl delete pvc postgresql-data valkey-data -n kubernaut-system
 kubectl delete -f charts/kubernaut/crds/
 kubectl delete namespace kubernaut-system
 ```

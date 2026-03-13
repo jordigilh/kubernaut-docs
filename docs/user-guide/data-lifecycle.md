@@ -1,7 +1,7 @@
 # Data Lifecycle
 
 !!! info "Architecture reference"
-    For the database schema, Redis DLQ, and reconstruction internals, see [Architecture: Data Persistence](../architecture/data-persistence.md).
+    For the database schema, Valkey DLQ, and reconstruction internals, see [Architecture: Data Persistence](../architecture/data-persistence.md).
 
 Kubernaut has a two-tier data model: **CRDs** in Kubernetes for active remediations, and **persistent audit data** in PostgreSQL for long-term compliance and analysis.
 

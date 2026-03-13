@@ -126,7 +126,7 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 |---|---|---|
 | `<controller>.replicas` | Number of replicas | `1` |
 | `<controller>.resources` | CPU/memory requests and limits | See `values.yaml` |
-| `<controller>.podSecurityContext` | Pod-level security context override | `runAsNonRoot: true` + `seccompProfile: RuntimeDefault` (Tier 1); `seccompProfile: RuntimeDefault` only (Tier 2: postgresql, redis) |
+| `<controller>.podSecurityContext` | Pod-level security context override | `runAsNonRoot: true` + `seccompProfile: RuntimeDefault` (Tier 1); `seccompProfile: RuntimeDefault` only (Tier 2: postgresql, valkey) |
 | `<controller>.containerSecurityContext` | Container-level security context override | `allowPrivilegeEscalation: false`, `capabilities.drop: [ALL]` |
 | `<controller>.nodeSelector` | Per-component node selector (overrides global) | `{}` |
 | `<controller>.tolerations` | Per-component tolerations (overrides global) | `[]` |
@@ -155,9 +155,12 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 
 | Parameter | Description | Default |
 |---|---|---|
+| `eventExporter.enabled` | Deploy the event exporter | `true` |
 | `eventExporter.replicas` | Number of replicas | `1` |
 | `eventExporter.image` | Container image | `ghcr.io/resmoio/kubernetes-event-exporter:v1.7` |
 | `eventExporter.resources` | CPU/memory requests and limits | See `values.yaml` |
+
+Set `eventExporter.enabled=false` to skip deploying the event exporter (e.g., on OpenShift where no Red Hat-supported equivalent image exists). Users should provide their own Kubernetes event forwarding when disabled.
 
 ### PostgreSQL
 
@@ -186,28 +189,28 @@ Set `postgresql.enabled=false` and configure these values to use a pre-existing 
 | `externalPostgresql.auth.password` | Database password | `""` |
 | `externalPostgresql.auth.database` | Database name | `action_history` |
 
-### Redis
+### Valkey
 
 | Parameter | Description | Default |
 |---|---|---|
-| `redis.enabled` | Deploy in-chart Redis | `true` |
-| `redis.replicas` | Number of replicas | `1` |
-| `redis.image` | Redis container image | `quay.io/jordigilh/redis:7-alpine` |
-| `redis.existingSecret` | Pre-created Secret name | `""` |
-| `redis.password` | Redis password | `""` |
-| `redis.storage.size` | PVC size | `512Mi` |
-| `redis.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
+| `valkey.enabled` | Deploy in-chart Valkey | `true` |
+| `valkey.replicas` | Number of replicas | `1` |
+| `valkey.image` | Valkey container image | `valkey/valkey:8-alpine` |
+| `valkey.existingSecret` | Pre-created Secret name | `""` |
+| `valkey.password` | Valkey password | `""` |
+| `valkey.storage.size` | PVC size | `512Mi` |
+| `valkey.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
 
-### External Redis (BYO)
+### External Valkey (BYO)
 
-Set `redis.enabled=false` and configure these values to use a pre-existing Redis instance:
+Set `valkey.enabled=false` and configure these values to use a pre-existing Valkey (or Redis-compatible) instance:
 
 | Parameter | Description | Default |
 |---|---|---|
-| `externalRedis.host` | External Redis hostname (required) | `""` |
-| `externalRedis.port` | External Redis port | `6379` |
-| `externalRedis.existingSecret` | Pre-created Secret name | `""` |
-| `externalRedis.password` | Redis password | `""` |
+| `externalValkey.host` | External Valkey hostname (required) | `""` |
+| `externalValkey.port` | External Valkey port | `6379` |
+| `externalValkey.existingSecret` | Pre-created Secret name | `""` |
+| `externalValkey.password` | Valkey password | `""` |
 
 ### Network Policies
 

@@ -78,7 +78,7 @@ graph TB
 
     subgraph Infra["Infrastructure"]
         PG[(PostgreSQL)]
-        RD[(Redis)]
+        RD[(Valkey)]
     end
 
     GW -->|RemediationRequest| RO

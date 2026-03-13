@@ -80,7 +80,7 @@ The control mapping on this page is derived from the following internal design d
 
 **How Kubernaut addresses this**:
 
-- Audit emission is **fire-and-forget with retry** ([ADR-038]). If DataStorage is temporarily unavailable, events are retried (3 attempts with quadratic backoff). If retries are exhausted, the batch is sent to a **Redis Dead Letter Queue** (DLQ) for later reprocessing.
+- Audit emission is **fire-and-forget with retry** ([ADR-038]). If DataStorage is temporarily unavailable, events are retried (3 attempts with quadratic backoff). If retries are exhausted, the batch is sent to a **Valkey Dead Letter Queue** (DLQ) for later reprocessing.
 - Business logic **never blocks** on audit writes. This means a transient audit failure cannot prevent remediation from proceeding, and the DLQ ensures events are not silently lost.
 - Every service uses the same **shared audit library** (`pkg/audit/`) ([DD-AUDIT-002]), ensuring consistent event structure, batching, and retry behavior across all services.
 - The `correlation_id` links all events for a single remediation, making it possible to detect gaps by querying for a remediation and checking whether all expected event types are present.
@@ -186,7 +186,7 @@ This produces the full remediation record: what signal triggered it, what the LL
 | **CC6.8** Non-Repudiation | Immutable events, SHA256 hash chain, webhook-captured operator identity | [ADR-034], [DD-WEBHOOK-003] |
 | **CC7.2** Monitoring | 9 services, full lifecycle audit, workflow discovery trail, Prometheus metrics | [DD-AUDIT-003], [BR-AUDIT-021-030] |
 | **CC7.3** Immutability/Retention | Append-only table, 7-year retention, hash chain integrity | [ADR-034] |
-| **CC7.4** Completeness | Fire-and-forget with retry, Redis DLQ, shared audit library | [ADR-038], [DD-AUDIT-002] |
+| **CC7.4** Completeness | Fire-and-forget with retry, Valkey DLQ, shared audit library | [ADR-038], [DD-AUDIT-002] |
 | **CC8.1** Attribution | Auth Webhook captures identity for all human actions | [DD-WEBHOOK-003] |
 | **CC4.2** Change Tracking | Phase transitions, catalog changes, block clearance, approval decisions | [DD-AUDIT-001], [BR-WE-013], [BR-AUDIT-006] |
 | **AU-2** Auditable Events | Defined per service (7 mandatory, 2 recommended) | [DD-AUDIT-003] |

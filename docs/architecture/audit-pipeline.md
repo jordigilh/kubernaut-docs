@@ -15,7 +15,7 @@ graph LR
     end
 
     DS[DataStorage<br/>REST API] --> PG[(PostgreSQL<br/>audit_events)]
-    DS --> RD[(Redis<br/>DLQ)]
+    DS --> RD[(Valkey<br/>DLQ)]
 ```
 
 ### Design Principles
@@ -80,7 +80,7 @@ The buffered store exposes Prometheus metrics:
 2. The buffered store enqueues the event into an in-memory channel (non-blocking)
 3. A background goroutine batches events and sends them via `POST /api/v1/audit/events/batch` to DataStorage
 4. DataStorage validates, converts, and inserts the batch into the `audit_events` PostgreSQL table within a transaction
-5. On PostgreSQL failure, the batch is enqueued to the Redis DLQ for retry
+5. On PostgreSQL failure, the batch is enqueued to the Valkey DLQ for retry
 6. On shutdown, `auditStore.Close()` flushes remaining events
 
 ## Event Structure
@@ -162,7 +162,7 @@ This ensures every human action has a recorded identity, timestamp, and context 
 
 ## Dead Letter Queue
 
-When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Redis streams for retry:
+When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Valkey streams for retry:
 
 | Stream | Purpose |
 |---|---|
@@ -170,7 +170,7 @@ When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Redi
 | `audit:dlq:notifications` | Notification-specific audit events |
 | `audit:dead-letter:{type}` | Events that exceeded retry attempts |
 
-The DLQ uses Redis consumer groups (`XREADGROUP`) for reliable delivery and `XAck` for acknowledgment. Maximum stream length is 10,000 entries.
+The DLQ uses Valkey consumer groups (`XREADGROUP`) for reliable delivery and `XAck` for acknowledgment. Maximum stream length is 10,000 entries.
 
 ## Next Steps
 

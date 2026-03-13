@@ -3,7 +3,7 @@
 !!! info "Operator guide"
     For CRD retention, storage lifetime, and use cases, see [Data Lifecycle](../user-guide/data-lifecycle.md).
 
-Kubernaut uses **PostgreSQL** as its persistent data store, accessed exclusively through the **DataStorage** REST API service. Redis provides a dead-letter queue for audit event resilience. This page covers the database schema, partitioning strategy, indexing, and the RemediationRequest reconstruction pipeline.
+Kubernaut uses **PostgreSQL** as its persistent data store, accessed exclusively through the **DataStorage** REST API service. Valkey provides a dead-letter queue for audit event resilience. This page covers the database schema, partitioning strategy, indexing, and the RemediationRequest reconstruction pipeline.
 
 ## Storage Architecture
 
@@ -23,7 +23,7 @@ graph TB
     Services -->|REST API| DS[DataStorage Service]
 
     DS --> PG[(PostgreSQL)]
-    DS --> RD[(Redis<br/><small>DLQ</small>)]
+    DS --> RD[(Valkey<br/><small>DLQ</small>)]
 
     subgraph Tables["PostgreSQL Tables"]
         AE[audit_events<br/><small>partitioned by month</small>]
@@ -218,9 +218,9 @@ Events are ordered by timestamp and mapped into typed payloads (`GatewayAuditPay
 - Reconstruction is available for **RemediationRequest** CRDs only (other CRD types planned)
 - `status.error` and `OverallPhase` are not reconstructed from the current event schema
 
-## Redis (DLQ)
+## Valkey (DLQ)
 
-Redis serves as a dead-letter queue for audit event resilience:
+Valkey serves as a dead-letter queue for audit event resilience:
 
 ### Streams
 
@@ -232,7 +232,7 @@ Redis serves as a dead-letter queue for audit event resilience:
 
 ### Operations
 
-| Operation | Redis Command | Description |
+| Operation | Command | Description |
 |---|---|---|
 | Enqueue | `XADD` | Add failed batch to stream |
 | Read | `XREADGROUP` | Consumer group for reliable delivery |
@@ -259,7 +259,7 @@ graph TD
     S[Service] -->|StoreAudit| BS[Buffered Store]
     BS -->|batch POST| DS[DataStorage]
     DS -->|INSERT| PG[(PostgreSQL)]
-    DS -->|on failure| RD[(Redis DLQ)]
+    DS -->|on failure| RD[(Valkey DLQ)]
     RD -->|retry| DS
 
     DS -->|query| PG

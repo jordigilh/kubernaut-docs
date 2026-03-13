@@ -201,15 +201,29 @@ kubectl create secret generic kubernaut-valkey-credentials \
 
 **LLM credentials** (required for AI analysis):
 
-```bash
-kubectl create secret generic llm-credentials \
-  --from-literal=OPENAI_API_KEY=sk-... \
-  -n kubernaut-system
-```
+=== "OpenAI / Azure"
+
+    ```bash
+    kubectl create secret generic llm-credentials \
+      --from-literal=OPENAI_API_KEY=sk-... \
+      -n kubernaut-system
+    ```
+
+=== "Google Vertex AI"
+
+    ```bash
+    kubectl create secret generic llm-credentials \
+      --from-file=GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json \
+      -n kubernaut-system
+    ```
+
+    The chart mounts this file and sets `GOOGLE_APPLICATION_CREDENTIALS` automatically
+    when `holmesgptApi.llm.provider` is `vertex_ai`. With GCP Workload Identity the
+    secret can be omitted.
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific (e.g., `OPENAI_API_KEY`, `AZURE_API_KEY`, `GOOGLE_APPLICATION_CREDENTIALS`) |
+| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `GOOGLE_APPLICATION_CREDENTIALS` (file) |
 
 HAPI starts without this secret (`optional: true`) but all LLM calls will fail until it is created.
 
@@ -298,18 +312,18 @@ curl -s http://localhost:8080/api/v1/workflows | jq '.'
 
 ### Action Types
 
-Kubernaut ships with 24 ActionType definitions that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). Load them per your operational workflow:
+Kubernaut ships with 25 ActionType definitions that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). These live in the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository:
 
 ```bash
-# From a local clone of the kubernaut repository
+# From a local clone of kubernaut-demo-scenarios
 kubectl apply -f deploy/action-types/ -n kubernaut-system
 ```
 
-If you installed from the OCI registry and don't have a local clone, download the action types from the GitHub repository:
+If you don't have a local clone, download the action types directly:
 
 ```bash
-curl -sL https://github.com/jordigilh/kubernaut/archive/refs/heads/main.tar.gz | \
-  tar xz --strip-components=2 kubernaut-main/deploy/action-types
+curl -sL https://github.com/jordigilh/kubernaut-demo-scenarios/archive/refs/heads/main.tar.gz | \
+  tar xz --strip-components=2 kubernaut-demo-scenarios-main/deploy/action-types
 kubectl apply -f action-types/ -n kubernaut-system
 ```
 

@@ -114,7 +114,7 @@ notification:
     channel: "#kubernaut-alerts"
   credentials:
     - name: slack-webhook
-      secretName: kubernaut-slack-credentials
+      secretName: slack-webhook
       secretKey: webhook-url
 ```
 

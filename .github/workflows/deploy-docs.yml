@@ -33,8 +33,7 @@ jobs:
         run: |
           curl -fsSL \
             https://raw.githubusercontent.com/jordigilh/kubernaut/main/docs/generated/crds.md \
-            -o docs/api-reference/crds.md \
-          || echo "WARNING: CRD reference not available on main yet, skipping"
+            -o docs/api-reference/crds.md
 
       - run: mkdocs build --strict
 

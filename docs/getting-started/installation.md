@@ -305,12 +305,12 @@ Kubernaut ships with 24 ActionType definitions that define the remediation catal
 kubectl apply -f deploy/action-types/ -n kubernaut-system
 ```
 
-If you installed from the OCI registry and don't have a local clone, extract the action types from the chart:
+If you installed from the OCI registry and don't have a local clone, download the action types from the GitHub repository:
 
 ```bash
-helm pull oci://ghcr.io/jordigilh/kubernaut/charts/kubernaut \
-  --version <version> --untar
-kubectl apply -f kubernaut/action-types/ -n kubernaut-system
+curl -sL https://github.com/jordigilh/kubernaut/archive/refs/heads/main.tar.gz | \
+  tar xz --strip-components=2 kubernaut-main/deploy/action-types
+kubectl apply -f action-types/ -n kubernaut-system
 ```
 
 ### Remediation Workflows

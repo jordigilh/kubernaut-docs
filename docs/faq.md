@@ -32,15 +32,15 @@ See [Why Kubernaut — Safety and Trust](getting-started/why-kubernaut.md#safety
 
 ## What about token cost?
 
-LLM tokens are consumed only during the investigation phase (root cause analysis) and when the workflow catalog requires AI-assisted selection. For well-known problems where signal labels match a workflow exactly, the workflow is selected via label scoring without invoking the LLM.
+LLM tokens are consumed only during the investigation phase (root cause analysis via HolmesGPT). Workflow selection from the catalog is entirely label-based — it uses weighted SQL scoring against mandatory and detected labels with no LLM invocation.
 
-Cost depends on the LLM provider and model. A typical investigation with Gemini 1.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models, local LLMs, or configure workflows with direct label matching to bypass LLM selection entirely.
+Cost depends on the LLM provider and model. A typical investigation with Gemini 1.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via LiteLLM.
 
 ## Can I run it air-gapped?
 
 Yes. Point the HolmesGPT API service at a locally hosted LLM endpoint (via LiteLLM or any OpenAI-compatible server). All other components — the CRD controllers, DataStorage, workflow execution — run entirely within the cluster with no external network dependencies.
 
-Container images are available from `quay.io/jordigilh/` and can be mirrored to an internal registry.
+Container images are available from `quay.io/kubernaut-ai/` and can be mirrored to an internal registry.
 
 ## What execution engines are supported?
 

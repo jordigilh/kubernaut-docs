@@ -41,8 +41,8 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 
 | Image | Description |
 |-------|-------------|
-| `registry.redhat.io/rhel9/postgresql-16` | PostgreSQL 16 (Red Hat) |
-| `registry.redhat.io/rhel9/valkey-8` | Valkey 8 (Red Hat) |
+| `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL 16 (Red Hat) |
+| `registry.redhat.io/rhel10/valkey-8` | Valkey 8 (Red Hat) |
 | `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` | OCP CLI for TLS certificate hook Jobs |
 | `quay.io/kubernaut-ai/db-migrate:v1.1.0-pre1` | Database migrations (goose + psql on UBI9) |
 
@@ -88,8 +88,8 @@ mirror:
     - name: quay.io/kubernaut-ai/datastorage:1.0.0
     # ... all 10 Kubernaut services ...
     - name: quay.io/kubernaut-ai/db-migrate:v1.1.0-pre1
-    - name: registry.redhat.io/rhel9/postgresql-16
-    - name: registry.redhat.io/rhel9/valkey-8
+    - name: registry.redhat.io/rhel10/postgresql-16
+    - name: registry.redhat.io/rhel10/valkey-8
     - name: registry.redhat.io/openshift4/ose-cli-rhel9:v4.17
 ```
 
@@ -193,10 +193,10 @@ global:
     registry: <mirror-registry>/kubernaut-ai
 
 postgresql:
-  image: <mirror-registry>/rhel9/postgresql-16
+  image: <mirror-registry>/rhel10/postgresql-16
 
 valkey:
-  image: <mirror-registry>/rhel9/valkey-8
+  image: <mirror-registry>/rhel10/valkey-8
 
 hooks:
   migrations:
@@ -216,7 +216,7 @@ The three value files must be layered in this order:
 | 3 | `values-airgap.yaml` | Overrides all image refs to point at your mirror registry |
 
 !!! important "Layering order"
-    `values-airgap.yaml` **must** come after `values-ocp.yaml`. It overrides the OCP ImageStream references (e.g., `image-registry.openshift-image-registry.svc:5000/openshift/postgresql:16-el9`) with direct mirror registry pulls. The `postgresql.variant: ocp` setting from `values-ocp.yaml` is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.
+    `values-airgap.yaml` **must** come after `values-ocp.yaml`. It overrides the `registry.redhat.io` image references with your mirror registry. The `postgresql.variant: ocp` setting from `values-ocp.yaml` is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
@@ -352,7 +352,7 @@ If the `db-migration` Job logs show `pg_isready` failures or `goose` connection 
 kubectl get pod -l app=postgresql -n kubernaut-system
 ```
 
-If the PostgreSQL pod is in `ImagePullBackOff`, mirror `registry.redhat.io/rhel9/postgresql-16` and delete the failed Job so the next `helm upgrade` recreates it.
+If the PostgreSQL pod is in `ImagePullBackOff`, mirror `registry.redhat.io/rhel10/postgresql-16` and delete the failed Job so the next `helm upgrade` recreates it.
 
 ### Verifying mirror registry contents
 

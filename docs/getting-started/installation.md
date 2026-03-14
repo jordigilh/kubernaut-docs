@@ -268,9 +268,6 @@ helm install kubernaut charts/kubernaut/ \
   --set holmesgptApi.llm.model=gpt-4o
 ```
 
-!!! note "OCP Prerequisites"
-    Import PostgreSQL 16 and Valkey 8 ImageStream tags before installing. See the [chart README](https://github.com/jordigilh/kubernaut/tree/main/charts/kubernaut#openshift-ocp-prerequisites) for the `oc import-image` commands.
-
 !!! tip "Disconnected / air-gapped clusters"
     If your OCP cluster has no internet access, see the [Disconnected Installation Guide](../operations/disconnected-install.md) for mirroring images and configuring the chart for offline use.
 

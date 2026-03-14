@@ -51,7 +51,7 @@ All scenarios are available in the [kubernaut-demo-scenarios](https://github.com
 | [hpa-maxed](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/hpa-maxed) | `HPAMaxedOut` | `ScaleHPA` | HPA at max replicas under sustained load |
 | [resource-contention](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/resource-contention) | `KubePodOOMKilled` | `IncreaseMemoryLimits` | Memory contention causes OOM kills across competing workloads |
 | [resource-quota-exhaustion](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/resource-quota-exhaustion) | `KubeResourceQuotaExhausted` | `AdjustResourceQuota` | Namespace quota prevents scaling ([details](remediation-history-feedback.md)) |
-| [network-policy-block](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/network-policy-block) | `NetworkPolicyBlock` | `FixNetworkPolicy` | Restrictive NetworkPolicy blocks legitimate traffic |
+| [network-policy-block](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/network-policy-block) | `KubeDeploymentReplicasMismatch` | `FixNetworkPolicy` | Deny-all NetworkPolicy blocks traffic; readiness-based signal self-resolves after remediation |
 | [statefulset-pvc-failure](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/statefulset-pvc-failure) | `StatefulSetPVCFailure` | `FixStatefulSetPVC` | PVC binding failure prevents StatefulSet pod scheduling |
 
 ### Multi-Node

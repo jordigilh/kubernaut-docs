@@ -44,7 +44,7 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 | `registry.redhat.io/rhel9/postgresql-16` | PostgreSQL 16 (Red Hat) |
 | `registry.redhat.io/rhel9/valkey-8` | Valkey 8 (Red Hat) |
 | `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` | OCP CLI for TLS certificate hook Jobs |
-| `quay.io/kubernaut-ai/db-migrate:v3.24.1` | Database migrations (goose + psql on UBI9) |
+| `quay.io/kubernaut-ai/db-migrate:v1.1.0-pre1` | Database migrations (goose + psql on UBI9) |
 
 !!! note
     The Kubernetes Event Exporter is disabled on OCP (`eventExporter.enabled=false` in `values-ocp.yaml`) and is excluded from the mirror list.
@@ -87,7 +87,7 @@ mirror:
     - name: quay.io/kubernaut-ai/gateway:1.0.0
     - name: quay.io/kubernaut-ai/datastorage:1.0.0
     # ... all 10 Kubernaut services ...
-    - name: quay.io/kubernaut-ai/db-migrate:v3.24.1
+    - name: quay.io/kubernaut-ai/db-migrate:v1.1.0-pre1
     - name: registry.redhat.io/rhel9/postgresql-16
     - name: registry.redhat.io/rhel9/valkey-8
     - name: registry.redhat.io/openshift4/ose-cli-rhel9:v4.17
@@ -200,7 +200,7 @@ valkey:
 
 hooks:
   migrations:
-    image: <mirror-registry>/kubernaut-ai/db-migrate:v3.24.1
+    image: <mirror-registry>/kubernaut-ai/db-migrate:v1.1.0-pre1
   tlsCerts:
     image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
 ```

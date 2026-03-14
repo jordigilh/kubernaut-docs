@@ -123,6 +123,17 @@ Replace `<mirror-registry>` with your private registry hostname (e.g., `mirror.c
 
     `oc mirror` is preferred because it processes all images in one pass and preserves multi-arch manifests.
 
+!!! warning "OCP internal registry and multi-arch images"
+    The OCP integrated registry does not support multi-arch manifest pushes via `skopeo copy --all` (returns HTTP 500). When mirroring to the OCP internal registry with skopeo, use single-arch copies:
+
+    ```bash
+    skopeo copy --override-arch=amd64 --override-os=linux \
+      docker://quay.io/kubernaut-ai/gateway:1.0.0 \
+      docker://<ocp-registry>/kubernaut-system/kubernaut-ai-gateway:1.0.0
+    ```
+
+    This limitation does not affect `oc mirror`, which handles the OCP registry natively.
+
 ---
 
 ## Step 3: Configure the global pull secret

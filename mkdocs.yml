@@ -137,6 +137,7 @@ nav:
       - Monitoring: operations/monitoring.md
       - Event Exporter: operations/event-exporter.md
       - Troubleshooting: operations/troubleshooting.md
+      - Disconnected Install: operations/disconnected-install.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md
   - FAQ: faq.md

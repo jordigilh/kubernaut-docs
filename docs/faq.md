@@ -40,7 +40,7 @@ Cost depends on the LLM provider and model. A typical investigation with Gemini 
 
 Yes. Point the HolmesGPT API service at a locally hosted LLM endpoint (via LiteLLM or any OpenAI-compatible server). All other components — the CRD controllers, DataStorage, workflow execution — run entirely within the cluster with no external network dependencies.
 
-Container images are available from `quay.io/kubernaut-ai/` and can be mirrored to an internal registry.
+Container images are available from `quay.io/kubernaut-ai/` and can be mirrored to an internal registry. For a complete walkthrough of mirroring images and installing on a disconnected OpenShift cluster, see the [Disconnected Installation Guide](operations/disconnected-install.md).
 
 ## What execution engines are supported?
 

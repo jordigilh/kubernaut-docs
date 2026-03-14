@@ -41,8 +41,8 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 
 | Image | Description |
 |-------|-------------|
-| `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL 16 (Red Hat) |
-| `registry.redhat.io/rhel10/valkey-8` | Valkey 8 (Red Hat) |
+| `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL 16 (Red Hat RHEL10) |
+| `registry.redhat.io/rhel10/valkey-8` | Valkey 8 (Red Hat RHEL10) |
 | `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` | OCP CLI for TLS certificate hook Jobs |
 | `quay.io/kubernaut-ai/db-migrate:v1.1.0-pre1` | Database migrations (goose + psql on UBI9) |
 
@@ -105,12 +105,20 @@ oc mirror --config=imageset-config.yaml \
 Replace `<mirror-registry>` with your private registry hostname (e.g., `mirror.corp.example.com:5000`). Multi-architecture manifests (amd64 + arm64) are handled automatically.
 
 !!! tip "Alternative: skopeo"
-    For individual images:
+    For individual images (nested registry):
 
     ```bash
     skopeo copy \
       docker://quay.io/kubernaut-ai/gateway:1.0.0 \
-      docker://<mirror-registry>/kubernaut-ai/gateway:1.0.0
+      docker://harbor.corp/kubernaut-ai/gateway:1.0.0
+    ```
+
+    For flat registries (quay.io, Docker Hub) use dash-joined names:
+
+    ```bash
+    skopeo copy \
+      docker://quay.io/kubernaut-ai/gateway:1.0.0 \
+      docker://quay.io/myorg/kubernaut-ai-gateway:1.0.0
     ```
 
     `oc mirror` is preferred because it processes all images in one pass and preserves multi-arch manifests.
@@ -190,7 +198,9 @@ The overlay overrides all image references:
 ```yaml
 global:
   image:
-    registry: <mirror-registry>/kubernaut-ai
+    registry: <mirror-registry>
+    namespace: kubernaut-ai
+    separator: "/"   # use "-" for flat registries (quay.io, Docker Hub)
 
 postgresql:
   image: <mirror-registry>/rhel10/postgresql-16
@@ -205,6 +215,13 @@ hooks:
     image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
 ```
 
+The `separator` field controls how the namespace is joined to the service name:
+
+| Separator | Result for gateway | Compatible registries |
+|-----------|-------------------|----------------------|
+| `/` (default) | `<mirror>/kubernaut-ai/gateway:tag` | Harbor, Artifactory, generic Docker v2 |
+| `-` | `<mirror>/kubernaut-ai-gateway:tag` | quay.io, Docker Hub, OCP internal |
+
 ### 4c. Install with layered overlays
 
 The three value files must be layered in this order:
@@ -218,12 +235,30 @@ The three value files must be layered in this order:
 !!! important "Layering order"
     `values-airgap.yaml` **must** come after `values-ocp.yaml`. It overrides the `registry.redhat.io` image references with your mirror registry. The `postgresql.variant: ocp` setting from `values-ocp.yaml` is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.
 
+**Nested registry** (Harbor, Artifactory):
+
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
+  --set global.image.registry=harbor.corp \
+  --set holmesgptApi.llm.provider=litellm \
+  --set holmesgptApi.llm.endpoint=http://litellm.internal.svc:4000 \
+  --set holmesgptApi.llm.model=gpt-4o
+```
+
+**Flat registry** (quay.io, OCP internal):
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --namespace kubernaut-system \
+  -f charts/kubernaut/values-demo.yaml \
+  -f charts/kubernaut/values-ocp.yaml \
+  -f charts/kubernaut/values-airgap.yaml \
+  --set global.image.registry=quay.io/myorg \
+  --set global.image.separator=- \
   --set holmesgptApi.llm.provider=litellm \
   --set holmesgptApi.llm.endpoint=http://litellm.internal.svc:4000 \
   --set holmesgptApi.llm.model=gpt-4o
@@ -303,7 +338,7 @@ spec:
   imageDigestMirrors:
     - source: quay.io/kubernaut-ai
       mirrors:
-        - <mirror-registry>/kubernaut-ai
+        - <mirror-registry>/kubernaut-ai   # nested; or <mirror-registry> for flat naming
     - source: registry.redhat.io
       mirrors:
         - <mirror-registry>
@@ -357,8 +392,13 @@ If the PostgreSQL pod is in `ImagePullBackOff`, mirror `registry.redhat.io/rhel1
 ### Verifying mirror registry contents
 
 ```bash
+# Nested registry (separator="/"):
 skopeo list-tags docker://<mirror-registry>/kubernaut-ai/gateway
 skopeo inspect docker://<mirror-registry>/kubernaut-ai/gateway:1.0.0
+
+# Flat registry (separator="-"):
+skopeo list-tags docker://<mirror-registry>/kubernaut-ai-gateway
+skopeo inspect docker://<mirror-registry>/kubernaut-ai-gateway:1.0.0
 ```
 
 ---

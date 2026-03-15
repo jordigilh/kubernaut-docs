@@ -122,7 +122,7 @@ Each CRD has its own phase state machine. The Orchestrator monitors child CRD st
 
 ## Namespace Model
 
-All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace with a shared ServiceAccount (`kubernaut-workflow-runner`). Per-workflow scoped RBAC is planned for v1.1.
+All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace with a shared ServiceAccount (`kubernaut-workflow-runner`). Per-workflow scoped RBAC is planned for v1.2.
 
 ## Configuration
 

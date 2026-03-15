@@ -1,6 +1,6 @@
 # Design Decisions
 
-This section documents the key architectural decisions made during Kubernaut's development. Only **verified-current, v1.0** decisions are published here.
+This section documents the key architectural decisions made during Kubernaut's development. Decisions marked **(v1.1)** are new in v1.1.0-rc0.
 
 ## Architecture
 
@@ -23,19 +23,21 @@ This section documents the key architectural decisions made during Kubernaut's d
 | **ADR-055** | LLM-driven context enrichment — using LLM for deeper signal understanding |
 | **ADR-056** | Post-RCA label computation — deriving labels from AI analysis results |
 | **ADR-EM-001** | Effectiveness Monitor as CRD controller — watches EffectivenessAssessment CRDs |
+| **DD-EM-003** | Alert decay detection — EA defers alert scoring during firing→resolved decay window **(v1.1)** |
 
 ## Workflows
 
 | Decision | Summary |
 |---|---|
-| **DD-WORKFLOW-016** | Workflow catalog architecture — searchable catalog in DataStorage |
+| **DD-WORKFLOW-016** | Workflow catalog architecture — searchable catalog in DataStorage; API-based seeding via AuthWebhook **(updated v1.1)** |
 | **DD-WORKFLOW-017** | V1.0 workflow registration — seed-workflows Helm hook for initial catalog |
+| **DD-WE-003** | Resource lock persistence — deterministic naming with pre-execution cleanup and ownership-verified deletion **(v1.1)** |
 
 ## Gateway
 
 | Decision | Summary |
 |---|---|
-| **DD-GATEWAY-012** | Redis removal — deduplication via CRD Status instead of Redis |
+| **DD-GATEWAY-012** | Redis removal — deduplication via CRD Status instead of Redis (migrated to Valkey for DLQ) |
 
 ## Notification
 
@@ -53,4 +55,4 @@ This section documents the key architectural decisions made during Kubernaut's d
 ---
 
 !!! info "Internal Decisions"
-    The complete set of 350+ ADRs and Design Decisions is maintained in the [main repository](https://github.com/jordigilh/kubernaut/tree/main/docs/architecture/decisions). This page curates the subset that is most relevant for understanding the current v1.0 architecture.
+    The complete set of 350+ ADRs and Design Decisions is maintained in the [main repository](https://github.com/jordigilh/kubernaut/tree/main/docs/architecture/decisions). This page curates the subset that is most relevant for understanding the current architecture.

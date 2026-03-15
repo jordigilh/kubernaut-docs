@@ -122,13 +122,14 @@ The alert check respects `AlertManagerCheckAfter` -- it is not evaluated before 
 
 #### Alert Decay Detection (DD-EM-003)
 
-When a Prometheus alert transitions from **firing** to **resolved**, there is a decay window during which the alert may still appear active in AlertManager. The EM detects this decay window and keeps the `EventAlert` CR open until the alert is fully resolved:
+When a Prometheus alert transitions from **firing** to **resolved**, there is a decay window during which the alert may still appear active in AlertManager (due to the Prometheus lookback window). The EM detects this situation during reconciliation:
 
 1. The EM queries AlertManager for the alert's current state
-2. If the alert was recently firing but is now resolved, the `AlertDecayStatus` field on the `EventAlert` CRD tracks the decay state (`Firing`, `Decaying`, `Resolved`)
-3. During the decay window, the alert scorer defers its final score until the alert is confirmed resolved
+2. If the target resource is healthy (pod ready, no crash loops) but the alert persists, the EM recognizes this as **alert decay** rather than a genuine ongoing issue
+3. The `alertDecayRetries` field on the `EffectivenessAssessment` status tracks the number of re-checks during decay monitoring
+4. The EM re-queues the assessment and re-checks until the alert clears or the validity deadline expires
 
-This prevents premature effectiveness assessments that would incorrectly report "alert still firing" when the alert is actually in the process of clearing.
+This prevents premature effectiveness assessments that would incorrectly report "alert still firing" when the underlying issue has actually been resolved but the alert hasn't cleared yet.
 
 ### Metrics Scorer
 

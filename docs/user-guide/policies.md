@@ -91,14 +91,14 @@ Classifies the environment from namespace metadata. Used for workflow filtering 
 
 **Output:** `result` -- `{"environment": string, "source": string}`
 
-**Resolution order:**
+**Resolution order** (default policy):
 
 1. `kubernaut.ai/environment` namespace label (if present)
-2. Workload labels on the target resource (for cluster-scoped resources like Nodes where namespace labels are not available)
-3. Namespace name convention: `production`/`prod` → `production`, `staging` → `staging`, `development`/`dev` → `development`
-4. Default: `"unknown"`
+2. Namespace name convention: `production`/`prod` → `production`, `staging` → `staging`, `development`/`dev` → `development`
+3. Default: `"unknown"`
 
-Additionally, the policy requires approval for **sensitive resource kinds** (e.g., Nodes, PersistentVolumes) regardless of environment classification.
+!!! tip "Workload labels for cluster-scoped resources"
+    The Rego input includes `workload_labels` from the target resource. Custom environment policies can use these for cluster-scoped resources (e.g., Nodes) where namespace labels are not available. The default policy does not use workload labels, but operators can extend it to classify environments based on workload metadata.
 
 **ConfigMap:** `signalprocessing-environment-policy`
 

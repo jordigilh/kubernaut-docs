@@ -15,7 +15,7 @@ HAPI uses two ConfigMaps, each mounted at a well-known path:
 
 | ConfigMap | Mount Path | Content |
 |---|---|---|
-| `holmesgpt-config` | `/etc/holmesgpt/config/` | Service config: ports, logging, auth secret references |
+| `holmesgpt-api-config` | `/etc/holmesgpt/` (file: `config.yaml`) | Service config: ports, logging, auth secret references |
 | `holmesgpt-sdk-config` | `/etc/holmesgpt/sdk/` | SDK config: LLM settings, toolsets (Prometheus, etc.), GCP project/region |
 
 The SDK ConfigMap controls which HolmesGPT toolsets are available to the investigation agent. The Kubernetes core toolset is always enabled. Additional toolsets (e.g., `prometheus/metrics`) are configured in the SDK config:

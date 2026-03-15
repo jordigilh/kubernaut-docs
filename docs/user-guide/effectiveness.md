@@ -32,7 +32,7 @@ sequenceDiagram
 The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
 
 !!! note "Alert Decay Detection"
-    When a Prometheus alert transitions from firing to resolved, there is a decay window where the alert may still appear active. The EM tracks this via the `AlertDecayStatus` field on the `EventAlert` CRD (`Firing` → `Decaying` → `Resolved`) and defers the alert score until the alert is confirmed resolved. This prevents premature assessments. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
+    When a Prometheus alert transitions from firing to resolved, the AlertManager lookback window may cause the alert to appear active even though the resource is healthy. The EM detects this by comparing health status with alert state, and re-queues the assessment until the alert clears. The `alertDecayRetries` field on the `EffectivenessAssessment` status tracks the number of decay re-checks. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
 
 ## Async Propagation Delays
 

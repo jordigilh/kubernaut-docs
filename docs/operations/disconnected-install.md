@@ -221,7 +221,7 @@ valkey:
 
 hooks:
   migrations:
-    image: <mirror-registry>/kubernaut-ai/db-migrate:v1.1.0-pre1
+    image: <mirror-registry>/kubernaut-ai/db-migrate:v1.1.0-rc0
   tlsCerts:
     image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
 ```

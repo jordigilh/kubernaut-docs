@@ -276,6 +276,7 @@ The Workflow Execution controller validates that these resources exist before cr
 !!! warning "Security: Use `no_log: true` for sensitive Ansible tasks"
     When writing Ansible playbooks that handle secrets (credentials, tokens, passwords), always set `no_log: true` on tasks that read or use sensitive values. This prevents AWX from recording secret data in job output logs:
 
+    {% raw %}
     ```yaml
     - name: Read Git credentials from AWX credential env vars
       ansible.builtin.set_fact:
@@ -283,6 +284,7 @@ The Workflow Execution controller validates that these resources exist before cr
         git_password: "{{ lookup('env', 'KUBERNAUT_SECRET_GITEA_REPO_CREDS_PASSWORD') }}"
       no_log: true
     ```
+    {% endraw %}
 
     Tasks to protect include: reading credentials from environment variables, building authenticated URLs, cloning repositories with embedded credentials, and any task that passes secrets as arguments.
 

@@ -1,6 +1,6 @@
 # Design Decisions
 
-This section documents the key architectural decisions made during Kubernaut's development. Decisions marked **(v1.1)** are new in v1.1.0-rc0.
+This section documents the key architectural decisions made during Kubernaut's development. Decisions marked **(v1.1)** are new in {{ image_tag }}.
 
 ## Architecture
 

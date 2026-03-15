@@ -44,7 +44,7 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 | `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL 16 (Red Hat RHEL10) |
 | `registry.redhat.io/rhel10/valkey-8` | Valkey 8 (Red Hat RHEL10) |
 | `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` | OCP CLI for TLS certificate hook Jobs |
-| `quay.io/kubernaut-ai/db-migrate:v1.1.0-rc0` | Database migrations (goose + psql on UBI9) |
+| `quay.io/kubernaut-ai/db-migrate:{{ image_tag }}` | Database migrations (goose + psql on UBI9) |
 
 !!! note
     The Kubernetes Event Exporter is disabled on OCP (`eventExporter.enabled=false` in `values-ocp.yaml`) and is excluded from the mirror list.
@@ -55,7 +55,7 @@ Use the included script to extract the exact images from the chart templates:
 
 ```bash
 ./hack/airgap/generate-image-list.sh \
-  --set global.image.tag=v1.1.0-rc0 \
+  --set global.image.tag={{ image_tag }} \
   -f charts/kubernaut/values-ocp.yaml
 ```
 
@@ -71,7 +71,7 @@ Copy the template and replace the version placeholder:
 
 ```bash
 cp hack/airgap/imageset-config.yaml.tmpl imageset-config.yaml
-sed -i 's/<VERSION>/v1.1.0-rc0/g' imageset-config.yaml
+sed -i 's/<VERSION>/{{ image_tag }}/g' imageset-config.yaml
 ```
 
 The resulting file lists every image under `mirror.additionalImages`:
@@ -84,10 +84,10 @@ storageConfig:
     path: ./kubernaut-mirror
 mirror:
   additionalImages:
-    - name: quay.io/kubernaut-ai/gateway:v1.1.0-rc0
-    - name: quay.io/kubernaut-ai/datastorage:v1.1.0-rc0
+    - name: quay.io/kubernaut-ai/gateway:{{ image_tag }}
+    - name: quay.io/kubernaut-ai/datastorage:{{ image_tag }}
     # ... all 10 Kubernaut services ...
-    - name: quay.io/kubernaut-ai/db-migrate:v1.1.0-rc0
+    - name: quay.io/kubernaut-ai/db-migrate:{{ image_tag }}
     - name: registry.redhat.io/rhel10/postgresql-16
     - name: registry.redhat.io/rhel10/valkey-8
     - name: registry.redhat.io/openshift4/ose-cli-rhel9:v4.17
@@ -109,16 +109,16 @@ Replace `<mirror-registry>` with your private registry hostname (e.g., `mirror.c
 
     ```bash
     skopeo copy \
-      docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0 \
-      docker://harbor.corp/kubernaut-ai/gateway:v1.1.0-rc0
+      docker://quay.io/kubernaut-ai/gateway:{{ image_tag }} \
+      docker://harbor.corp/kubernaut-ai/gateway:{{ image_tag }}
     ```
 
     For flat registries (quay.io, Docker Hub) use dash-joined names:
 
     ```bash
     skopeo copy \
-      docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0 \
-      docker://quay.io/myorg/kubernaut-ai-gateway:v1.1.0-rc0
+      docker://quay.io/kubernaut-ai/gateway:{{ image_tag }} \
+      docker://quay.io/myorg/kubernaut-ai-gateway:{{ image_tag }}
     ```
 
     `oc mirror` is preferred because it processes all images in one pass and preserves multi-arch manifests.
@@ -128,8 +128,8 @@ Replace `<mirror-registry>` with your private registry hostname (e.g., `mirror.c
 
     ```bash
     skopeo copy --override-arch=amd64 --override-os=linux \
-      docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0 \
-      docker://<ocp-registry>/kubernaut-system/kubernaut-ai-gateway:v1.1.0-rc0
+      docker://quay.io/kubernaut-ai/gateway:{{ image_tag }} \
+      docker://<ocp-registry>/kubernaut-system/kubernaut-ai-gateway:{{ image_tag }}
     ```
 
     This limitation does not affect `oc mirror`, which handles the OCP registry natively.
@@ -221,7 +221,7 @@ valkey:
 
 hooks:
   migrations:
-    image: <mirror-registry>/kubernaut-ai/db-migrate:v1.1.0-rc0
+    image: <mirror-registry>/kubernaut-ai/db-migrate:{{ image_tag }}
   tlsCerts:
     image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
 ```
@@ -405,11 +405,11 @@ If the PostgreSQL pod is in `ImagePullBackOff`, mirror `registry.redhat.io/rhel1
 ```bash
 # Nested registry (separator="/"):
 skopeo list-tags docker://<mirror-registry>/kubernaut-ai/gateway
-skopeo inspect docker://<mirror-registry>/kubernaut-ai/gateway:v1.1.0-rc0
+skopeo inspect docker://<mirror-registry>/kubernaut-ai/gateway:{{ image_tag }}
 
 # Flat registry (separator="-"):
 skopeo list-tags docker://<mirror-registry>/kubernaut-ai-gateway
-skopeo inspect docker://<mirror-registry>/kubernaut-ai-gateway:v1.1.0-rc0
+skopeo inspect docker://<mirror-registry>/kubernaut-ai-gateway:{{ image_tag }}
 ```
 
 ---

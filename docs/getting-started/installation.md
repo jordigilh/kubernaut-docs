@@ -275,7 +275,7 @@ helm install kubernaut charts/kubernaut/ \
 
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version 1.1.0-rc0 \
+  --version {{ chart_version }} \
   --namespace kubernaut-system \
   -f my-values.yaml
 ```

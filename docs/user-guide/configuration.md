@@ -69,7 +69,7 @@ All values are validated against `values.schema.json`. Run `helm lint` to check 
 | `global.nodeSelector` | Global node selector applied to all pods | `{}` |
 | `global.tolerations` | Global tolerations applied to all pods | `[]` |
 
-Image paths are constructed as `{registry}{separator}{namespace}{separator}{service}:{tag}`. For example, with the defaults: `quay.io/kubernaut-ai/gateway:v1.1.0-rc0`. For flat registries that don't support nested paths, set `separator: "-"` to produce `myregistry.example.com/kubernaut-ai-gateway:v1.1.0-rc0`.
+Image paths are constructed as `{registry}{separator}{namespace}{separator}{service}:{tag}`. For example, with the defaults: `quay.io/kubernaut-ai/gateway:{{ image_tag }}`. For flat registries that don't support nested paths, set `separator: "-"` to produce `myregistry.example.com/kubernaut-ai-gateway:{{ image_tag }}`.
 
 ### Gateway
 

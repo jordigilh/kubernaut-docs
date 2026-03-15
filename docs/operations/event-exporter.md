@@ -31,6 +31,7 @@ Set `eventExporter.enabled=false` to skip deploying the Event Exporter. This is 
 
 The ConfigMap `event-exporter-config` controls which events are forwarded:
 
+{% raw %}
 ```yaml
 logLevel: debug
 logFormat: json
@@ -56,6 +57,7 @@ receivers:
       headers:
         Content-Type: application/json
 ```
+{% endraw %}
 
 ### Key Settings
 

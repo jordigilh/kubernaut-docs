@@ -136,6 +136,7 @@ spec:
 
 And the Prometheus alerting rule detects crash loops:
 
+{% raw %}
 ```yaml
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
@@ -162,6 +163,7 @@ spec:
           Container {{ $labels.container }} in pod {{ $labels.pod }} is in
           CrashLoopBackOff with {{ $value | humanize }} restarts in the last 3 minutes.
 ```
+{% endraw %}
 
 ## Step 2: Verify the Healthy State
 

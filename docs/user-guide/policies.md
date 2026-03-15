@@ -94,8 +94,11 @@ Classifies the environment from namespace metadata. Used for workflow filtering 
 **Resolution order:**
 
 1. `kubernaut.ai/environment` namespace label (if present)
-2. Namespace name convention: `production`/`prod` → `production`, `staging` → `staging`, `development`/`dev` → `development`
-3. Default: `"unknown"`
+2. Workload labels on the target resource (for cluster-scoped resources like Nodes where namespace labels are not available)
+3. Namespace name convention: `production`/`prod` → `production`, `staging` → `staging`, `development`/`dev` → `development`
+4. Default: `"unknown"`
+
+Additionally, the policy requires approval for **sensitive resource kinds** (e.g., Nodes, PersistentVolumes) regardless of environment classification.
 
 **ConfigMap:** `signalprocessing-environment-policy`
 

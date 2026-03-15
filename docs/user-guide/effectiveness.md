@@ -31,6 +31,9 @@ sequenceDiagram
 
 The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
 
+!!! note "Alert Decay Detection"
+    When a Prometheus alert transitions from firing to resolved, there is a decay window where the alert may still appear active. The EM tracks this via the `AlertDecayStatus` field on the `EventAlert` CRD (`Firing` → `Decaying` → `Resolved`) and defers the alert score until the alert is confirmed resolved. This prevents premature assessments. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
+
 ## Async Propagation Delays
 
 Some remediations involve **asynchronous propagation** — for example, a GitOps tool syncing changes or an operator reconciling after a CR update. Kubernaut accounts for this with configurable delays:

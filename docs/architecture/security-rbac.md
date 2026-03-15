@@ -72,6 +72,8 @@ See [Installation](../getting-started/installation.md#signal-source-authenticati
 
 Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).
 
+All four CRD controllers (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
+
 | Controller | ServiceAccount | CRDs Managed | Additional Access | Notes |
 |---|---|---|---|---|
 | RemediationOrchestrator | `remediationorchestrator-controller` | All 7 child CRDs (full CRUD) | Pods, nodes, events, namespaces, services, deployments, statefulsets, daemonsets, jobs, cronjobs (read) | Broadest permissions -- creates and watches all child CRDs |
@@ -80,7 +82,7 @@ Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRo
 | WorkflowExecution | `workflowexecution-controller` | WorkflowExecution | Tekton PipelineRuns (full), TaskRuns (read), Jobs (full), events (create); leases (full) | Creates Jobs and PipelineRuns in the execution namespace |
 | EffectivenessMonitor | `effectivenessmonitor-controller` | EffectivenessAssessment, RemediationRequest (read) | Pods, nodes, services, PVCs, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, jobs, cronjobs (read) | Post-remediation health checks |
 | Notification | `notification-controller` | NotificationRequest | Events (create) | Minimal scope |
-| AuthWebhook | `authwebhook` | All Kubernaut CRDs (read), status subresources (update, patch) | -- | Admission webhook validation and defaulting |
+| AuthWebhook | `authwebhook` | All Kubernaut CRDs (read), status subresources (update, patch) | -- | Admission webhook validation, defaulting, and catalog registration. Intercepts CREATE and UPDATE operations on `RemediationWorkflow` CRDs. Uses retry-on-conflict for `ActionType` status updates. |
 
 ## Workflow Execution
 
@@ -99,12 +101,14 @@ Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in 
 | `networking.k8s.io` | `networkpolicies` | get, list, create, update, patch, delete | Manage network policies |
 | `argoproj.io` | `applications` | get, list | Read ArgoCD application state |
 | `cert-manager.io` | `certificates`, `clusterissuers` | get, list | Read certificate state |
-| `policy.linkerd.io` | `authorizationpolicies`, `servers`, `meshtlsauthentications` | get, list, delete | Manage Linkerd policies |
+| `policy.linkerd.io` | `authorizationpolicies`, `servers`, `meshtlsauthentications` | get, list, delete | Manage Linkerd policies (legacy) |
+| `security.istio.io` | `authorizationpolicies`, `peerauthentications`, `requestauthentications` | get, list, delete | Manage Istio security policies |
+| `networking.istio.io` | `virtualservices`, `destinationrules`, `gateways`, `serviceentries` | get, list, create, update, patch, delete | Manage Istio networking resources |
 
 Additionally, a namespace-scoped `workflowexecution-dep-reader` Role grants `get`, `list`, `watch` on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.
 
 !!! info "Per-workflow scoped RBAC"
-    In v1.0, all workflows share the `kubernaut-workflow-runner` ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.1.
+    All workflows share the `kubernaut-workflow-runner` ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.2.
 
 ## Internal Service Communication
 
@@ -138,7 +142,9 @@ HolmesGPT API itself has a broad **read-only** ClusterRole (`holmesgpt-api-inves
 | `networking.k8s.io` | networkpolicies | get, list, watch | Network policy investigation |
 | `cert-manager.io` | certificates, clusterissuers, certificaterequests | get, list, watch | Certificate investigation |
 | `argoproj.io` | applications | get, list, watch | ArgoCD investigation |
-| `policy.linkerd.io` | servers, authorizationpolicies, meshtlsauthentications | get, list, watch | Service mesh investigation |
+| `policy.linkerd.io` | servers, authorizationpolicies, meshtlsauthentications | get, list, watch | Linkerd mesh investigation (legacy) |
+| `security.istio.io` | authorizationpolicies, peerauthentications, requestauthentications | get, list, watch | Istio security policy investigation |
+| `networking.istio.io` | virtualservices, destinationrules, gateways, serviceentries | get, list, watch | Istio networking investigation |
 | `monitoring.coreos.com` | prometheusrules, servicemonitors, podmonitors, probes | get, list, watch | Monitoring investigation |
 
 This read-only access allows the LLM to investigate root causes using live cluster data without making changes.

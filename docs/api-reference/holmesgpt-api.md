@@ -92,7 +92,19 @@ GET /api/v1/incident/session/{session_id}/result
 
 Returns the analysis result when the session is complete.
 
-**Response**: `200 OK` — `IncidentResponse` with RCA, selected workflow, and confidence score
+**Response**: `200 OK` — `IncidentResponse` with RCA, selected workflow, confidence score, and `actionable` flag
+
+Key response fields:
+
+| Field | Type | Description |
+|---|---|---|
+| `root_cause` | string | Natural language root cause explanation |
+| `confidence` | float | Investigation confidence (0.0--1.0) |
+| `investigation_outcome` | string | Outcome classification (e.g., `resolved`, `workflow_selected`) |
+| `selected_workflow` | object | Workflow recommendation (name, action type, parameters) |
+| `actionable` | boolean | Whether the investigation identified a concrete remediation action |
+| `affected_resource` | object | Target resource (kind, name, namespace) after owner chain resolution |
+| `detected_labels` | object | Infrastructure labels detected during investigation |
 
 **Response**: `409 Conflict` — Session not yet complete
 

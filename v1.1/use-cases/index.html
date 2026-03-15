@@ -2510,6 +2510,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#unvalidated" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unvalidated
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2582,19 +2593,19 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/memory-leak">memory-leak</a></td>
-<td><code>PredictedMemoryExhaustion</code></td>
+<td><code>ContainerMemoryExhaustionPredicted</code></td>
 <td><code>GracefulRestart</code></td>
 <td>Proactive: <code>predict_linear()</code> detects memory growth before OOM</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/memory-escalation">memory-escalation</a></td>
-<td><code>KubePodOOMKilled</code></td>
+<td><code>ContainerMemoryHigh</code></td>
 <td><code>IncreaseMemoryLimits</code></td>
-<td>OOM kills trigger memory limit increase; escalates to human if limits are already high</td>
+<td>Memory usage exceeds threshold; escalates to human if limits are already high</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/slo-burn">slo-burn</a></td>
-<td><code>SLOErrorBudgetBurn</code></td>
+<td><code>ErrorBudgetBurn</code></td>
 <td><code>RollbackDeployment</code></td>
 <td>Error budget burn rate exceeds threshold, proactive rollback</td>
 </tr>
@@ -2623,6 +2634,12 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 <td><code>GitRevertCommit</code> / <code>FixCertificate</code></td>
 <td>Broken ClusterIssuer via git; LLM may choose git revert or direct fix (<a href="multi-path-remediation/">details</a>)</td>
 </tr>
+<tr>
+<td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/disk-pressure-emptydir">disk-pressure-emptydir</a></td>
+<td><code>PredictedDiskPressure</code></td>
+<td><code>AnsiblePVCMigration</code></td>
+<td>PostgreSQL on emptyDir fills disk; Ansible/AWX runs pg_dump, commits PVC migration to Git, ArgoCD syncs, pg_restore completes migration</td>
+</tr>
 </tbody>
 </table>
 <h3 id="infrastructure">Infrastructure<a class="headerlink" href="#infrastructure" title="Permanent link">&para;</a></h3>
@@ -2644,13 +2661,13 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/hpa-maxed">hpa-maxed</a></td>
-<td><code>HPAMaxedOut</code></td>
+<td><code>KubeHpaMaxedOut</code></td>
 <td><code>ScaleHPA</code></td>
 <td>HPA at max replicas under sustained load</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/resource-contention">resource-contention</a></td>
-<td><code>KubePodOOMKilled</code></td>
+<td><code>OOMKilled</code></td>
 <td><code>IncreaseMemoryLimits</code></td>
 <td>Memory contention causes OOM kills across competing workloads</td>
 </tr>
@@ -2662,13 +2679,13 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/network-policy-block">network-policy-block</a></td>
-<td><code>KubeDeploymentReplicasMismatch</code></td>
+<td><code>KubePodCrashLooping</code> / <code>KubeDeploymentReplicasMismatch</code></td>
 <td><code>FixNetworkPolicy</code></td>
 <td>Deny-all NetworkPolicy blocks traffic; readiness-based signal self-resolves after remediation</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/statefulset-pvc-failure">statefulset-pvc-failure</a></td>
-<td><code>StatefulSetPVCFailure</code></td>
+<td><code>KubeStatefulSetReplicasMismatch</code></td>
 <td><code>FixStatefulSetPVC</code></td>
 <td>PVC binding failure prevents StatefulSet pod scheduling</td>
 </tr>
@@ -2687,19 +2704,19 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 <tbody>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/autoscale">autoscale</a></td>
-<td><code>ClusterCapacityExhausted</code></td>
+<td><code>KubePodSchedulingFailed</code></td>
 <td><code>AddNode</code></td>
 <td>Cluster autoscaling via kubeadm join</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/pending-taint">pending-taint</a></td>
-<td><code>KubePodPending</code></td>
+<td><code>KubePodNotScheduled</code></td>
 <td><code>RemoveTaint</code></td>
 <td>Node taint prevents pod scheduling</td>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/pdb-deadlock">pdb-deadlock</a></td>
-<td><code>PDBDeadlock</code></td>
+<td><code>KubePodDisruptionBudgetAtLimit</code></td>
 <td><code>ResolvePDBDeadlock</code></td>
 <td>PodDisruptionBudget prevents necessary evictions</td>
 </tr>
@@ -2736,7 +2753,7 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 </tr>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/orphaned-pvc-no-action">orphaned-pvc-no-action</a></td>
-<td><code>DiskPressure</code></td>
+<td><code>KubePersistentVolumeClaimOrphaned</code></td>
 <td>None (NoActionRequired)</td>
 <td>LLM correctly identifies no remediation is needed</td>
 </tr>
@@ -2755,9 +2772,31 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 <tbody>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/mesh-routing-failure">mesh-routing-failure</a></td>
-<td><code>LinkerdRoutingFailure</code></td>
+<td><code>IstioHighDenyRate</code> / <code>IstioRequestsUnauthorized</code></td>
 <td><code>FixServiceMeshRouting</code></td>
-<td>Linkerd service mesh routing misconfiguration</td>
+<td>Istio service mesh AuthorizationPolicy misconfiguration</td>
+</tr>
+</tbody>
+</table>
+<h3 id="unvalidated">Unvalidated<a class="headerlink" href="#unvalidated" title="Permanent link">&para;</a></h3>
+<p>These scenarios have scaffolding (manifests, run.sh, workflow) but have <strong>not been validated end-to-end</strong> on any platform. Do not rely on them until they are promoted to a category above.</p>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Signal</th>
+<th>Remediation</th>
+<th>Description</th>
+<th>Blocker</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/memory-limits-gitops-ansible">memory-limits-gitops-ansible</a></td>
+<td><code>ContainerOOMKilling</code></td>
+<td><code>AnsibleMemoryLimitsUpdate</code></td>
+<td>OOMKill on GitOps-managed deployment; Ansible/AWX updates limits in Git, ArgoCD syncs</td>
+<td>Requires ArgoCD + AWX; not tested on Kind or OCP</td>
 </tr>
 </tbody>
 </table>

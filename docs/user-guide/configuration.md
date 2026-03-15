@@ -59,11 +59,17 @@ All values are validated against `values.schema.json`. Run `helm lint` to check 
 
 | Parameter | Description | Default |
 |---|---|---|
-| `global.image.registry` | Container image registry | `quay.io/kubernaut-ai` |
+| `global.image.registry` | Container image registry | `quay.io` |
+| `global.image.namespace` | Image namespace/organization | `kubernaut-ai` |
+| `global.image.separator` | Path separator (`/` for nested registries, `-` for flat registries like Docker Hub) | `/` |
 | `global.image.tag` | Image tag override (defaults to `appVersion`) | `""` |
+| `global.image.digest` | Immutable image digest; overrides tag when set (e.g., `sha256:abc...`) | `""` |
 | `global.image.pullPolicy` | Image pull policy | `IfNotPresent` |
+| `global.imagePullSecrets` | Array of image pull secret names for private registries | `[]` |
 | `global.nodeSelector` | Global node selector applied to all pods | `{}` |
 | `global.tolerations` | Global tolerations applied to all pods | `[]` |
+
+Image paths are constructed as `{registry}{separator}{namespace}{separator}{service}:{tag}`. For example, with the defaults: `quay.io/kubernaut-ai/gateway:v1.1.0-rc0`. For flat registries that don't support nested paths, set `separator: "-"` to produce `myregistry.example.com/kubernaut-ai-gateway:v1.1.0-rc0`.
 
 ### Gateway
 
@@ -95,6 +101,18 @@ All values are validated against `values.schema.json`. Run `helm lint` to check 
 | `holmesgptApi.llm.timeoutSeconds` | LLM call timeout | `120` |
 | `holmesgptApi.llm.temperature` | LLM sampling temperature | `0.7` |
 | `holmesgptApi.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
+| `holmesgptApi.llm.gcpProjectId` | GCP project ID (Vertex AI only; rendered into SDK config when set) | `""` |
+| `holmesgptApi.llm.gcpRegion` | GCP region (Vertex AI only; rendered into SDK config when set) | `""` |
+| `holmesgptApi.prometheus.enabled` | Auto-configure the Prometheus toolset in SDK config | `false` |
+| `holmesgptApi.prometheus.url` | Prometheus URL for the toolset | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
+| `holmesgptApi.sdkConfigContent` | SDK config YAML content (via `--set-file`). Overrides auto-generated SDK config. | `""` |
+| `holmesgptApi.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
+
+HAPI uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, Prometheus). The SDK config supports three tiers:
+
+1. **Auto-generated** (default): The chart renders SDK config from the `llm.*` and `prometheus.*` values above.
+2. **Inline override**: Provide full SDK config content via `--set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml`.
+3. **External ConfigMap**: Set `holmesgptApi.existingSdkConfigMap` to reference a pre-existing ConfigMap (highest priority).
 
 ### Notification Controller
 
@@ -164,15 +182,17 @@ Set `eventExporter.enabled=false` to skip deploying the event exporter (e.g., on
 
 ### PostgreSQL
 
+All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-provision-secrets).
+
 | Parameter | Description | Default |
 |---|---|---|
 | `postgresql.enabled` | Deploy in-chart PostgreSQL | `true` |
+| `postgresql.variant` | PostgreSQL distribution variant (`upstream` or `ocp`). `ocp` uses Red Hat RHEL10 image with `POSTGRESQL_*` env vars and non-root UID 26, compatible with `restricted-v2` SCC. | `upstream` |
 | `postgresql.replicas` | Number of replicas | `1` |
 | `postgresql.image` | PostgreSQL container image | `postgres:16-alpine` |
-| `postgresql.auth.existingSecret` | Pre-created Secret name | `""` |
-| `postgresql.auth.username` | Database username | `slm_user` |
-| `postgresql.auth.password` | Database password (required if no `existingSecret`) | `""` |
-| `postgresql.auth.database` | Database name | `action_history` |
+| `postgresql.auth.existingSecret` | Pre-created Secret with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` keys (required) | `""` |
+| `postgresql.auth.username` | Database username (only used when chart creates the DB) | `slm_user` |
+| `postgresql.auth.database` | Database name (only used when chart creates the DB) | `action_history` |
 | `postgresql.storage.size` | PVC size | `10Gi` |
 | `postgresql.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
 
@@ -184,20 +204,20 @@ Set `postgresql.enabled=false` and configure these values to use a pre-existing 
 |---|---|---|
 | `externalPostgresql.host` | External PostgreSQL hostname (required) | `""` |
 | `externalPostgresql.port` | External PostgreSQL port | `5432` |
-| `externalPostgresql.auth.existingSecret` | Pre-created Secret name | `""` |
+| `externalPostgresql.auth.existingSecret` | Pre-created Secret with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` keys (required) | `""` |
 | `externalPostgresql.auth.username` | Database username | `slm_user` |
-| `externalPostgresql.auth.password` | Database password | `""` |
 | `externalPostgresql.auth.database` | Database name | `action_history` |
 
 ### Valkey
+
+All Valkey credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-provision-secrets).
 
 | Parameter | Description | Default |
 |---|---|---|
 | `valkey.enabled` | Deploy in-chart Valkey | `true` |
 | `valkey.replicas` | Number of replicas | `1` |
 | `valkey.image` | Valkey container image | `valkey/valkey:8-alpine` |
-| `valkey.existingSecret` | Pre-created Secret name | `""` |
-| `valkey.password` | Valkey password | `""` |
+| `valkey.existingSecret` | Pre-created Secret with `valkey-secrets.yaml` key containing `password: <pass>` (required) | `""` |
 | `valkey.storage.size` | PVC size | `512Mi` |
 | `valkey.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
 
@@ -209,8 +229,7 @@ Set `valkey.enabled=false` and configure these values to use a pre-existing Valk
 |---|---|---|
 | `externalValkey.host` | External Valkey hostname (required) | `""` |
 | `externalValkey.port` | External Valkey port | `6379` |
-| `externalValkey.existingSecret` | Pre-created Secret name | `""` |
-| `externalValkey.password` | Valkey password | `""` |
+| `externalValkey.existingSecret` | Pre-created Secret with `valkey-secrets.yaml` key (required) | `""` |
 
 ### Network Policies
 
@@ -340,7 +359,7 @@ The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read a
 
 The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
 
-The chart supports two modes for managing TLS certificates used by the admission webhooks, controlled by `tls.mode`:
+The chart supports three modes for managing TLS certificates used by the admission webhooks, controlled by `tls.mode`:
 
 ### Hook Mode (`tls.mode: hook`) -- Default
 
@@ -352,7 +371,7 @@ Self-signed certificates are generated and managed by Helm hooks. No external de
 2. **Post-install/post-upgrade** (`tls-cabundle-patch`): Patches the `caBundle` field on the webhook configurations.
 3. **Post-delete** (`tls-cleanup`): Removes the `authwebhook-tls` Secret and `authwebhook-ca` ConfigMap.
 
-**Automatic renewal**: On `helm upgrade`, if the certificate expires within 30 days, it is automatically regenerated.
+**Automatic renewal**: On `helm upgrade`, if the certificate expires within 30 days, it is automatically regenerated. Additionally, the AuthWebhook init-container patches the `caBundle` on every pod restart, making the TLS configuration self-healing.
 
 **Recovery**: If the `authwebhook-ca` ConfigMap is accidentally deleted while `authwebhook-tls` still exists, delete the `authwebhook-tls` Secret and run `helm upgrade` to regenerate both:
 
@@ -427,6 +446,29 @@ To switch an existing installation from `tls.mode=hook` to `tls.mode=cert-manage
     ```
 
 See [Troubleshooting](../operations/troubleshooting.md) if webhook calls fail after migration.
+
+### Manual Mode (`tls.mode: manual`) -- External PKI
+
+For environments where TLS certificates are managed externally (service mesh, external PKI, CI pipelines). The chart creates no TLS-related hook Jobs, no `Certificate` resources, and no `caBundle` patching.
+
+**Operator responsibilities:**
+
+1. Pre-create the `authwebhook-tls` Secret with `tls.crt` and `tls.key` entries
+2. Pre-create the `authwebhook-ca` ConfigMap with the CA bundle
+3. Ensure the `caBundle` field on `ValidatingWebhookConfiguration` resources matches the CA
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --namespace kubernaut-system \
+  --set tls.mode=manual \
+  -f my-values.yaml
+```
+
+This mode is useful when a service mesh (e.g., Istio) handles mTLS between the API server and webhooks, or when certificates are provisioned by an external PKI and injected via a sidecar or init container.
+
+### CA Bundle Self-Healing
+
+In `hook` mode, the AuthWebhook deployment includes an init-container that patches the `caBundle` field on the `ValidatingWebhookConfiguration` at startup. This makes TLS self-healing across Helm upgrades and interrupted installs -- if the `caBundle` drifts from the actual CA, the next pod restart corrects it automatically.
 
 ## Hot-Reload and Graceful Shutdown
 

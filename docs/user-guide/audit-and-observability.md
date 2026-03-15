@@ -70,7 +70,7 @@ This ensures that every human action in the system has a recorded identity, time
 Audit events are stored with a configured retention of **2,555 days (7 years)**, supporting long-term compliance requirements.
 
 !!! note "Retention Enforcement"
-    The retention period is recorded per event but automatic deletion of expired events is deferred to v1.1. Events currently accumulate indefinitely.
+    The retention period is recorded per event but automatic deletion of expired events is deferred to v1.2. Events currently accumulate indefinitely.
 
 The `audit_events` table is partitioned by month for efficient storage and querying. Individual events can be flagged as `is_sensitive` for PII handling.
 

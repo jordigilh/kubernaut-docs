@@ -31,7 +31,7 @@ Kubernaut uses two confidence thresholds at different stages:
 
 | Stage | Threshold | Configurable | Purpose |
 |---|---|---|---|
-| **Investigating** (response processor) | 0.7 (70%) | Not yet (v1.1, per BR-HAPI-198; see `pkg/aianalysis/handlers/response_processor.go`) | Rejects workflow selections with very low confidence; detects "problem already resolved" scenarios |
+| **Investigating** (response processor) | 0.7 (70%) | Not yet (v1.2, per BR-HAPI-198; see `pkg/aianalysis/handlers/response_processor.go`) | Rejects workflow selections with very low confidence; detects "problem already resolved" scenarios |
 | **Analyzing** (Rego approval policy) | 0.8 (default in Rego) | Yes, via Helm | Passed as `input.confidence_threshold` to the Rego policy |
 
 ### Configuring the Confidence Threshold

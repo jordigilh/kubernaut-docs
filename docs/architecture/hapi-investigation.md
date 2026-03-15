@@ -9,6 +9,31 @@ This page documents the full investigation pipeline from the LLM's perspective -
     - [Workflow Selection](workflow-selection.md) covers the **DataStorage scoring algorithm** (label filtering, semantic scoring)
     - This page covers the **HAPI internals** (prompt construction, LLM investigation, resource context, decision outcomes)
 
+## Service Configuration
+
+HAPI uses two ConfigMaps, each mounted at a well-known path:
+
+| ConfigMap | Mount Path | Content |
+|---|---|---|
+| `holmesgpt-api-config` | `/etc/holmesgpt/` (file: `config.yaml`) | Service config: ports, logging, auth secret references |
+| `holmesgpt-sdk-config` | `/etc/holmesgpt/sdk/` | SDK config: LLM settings, toolsets (Prometheus, etc.), GCP project/region |
+
+The SDK ConfigMap controls which HolmesGPT toolsets are available to the investigation agent. The Kubernetes core toolset is always enabled. Additional toolsets (e.g., `prometheus/metrics`) are configured in the SDK config:
+
+```yaml
+llm:
+  provider: openai
+  model: gpt-4o
+  endpoint: ""
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    config:
+      prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+```
+
+The Helm chart supports three tiers for providing the SDK config -- see [Configuration Reference: HolmesGPT API](../user-guide/configuration.md#holmesgpt-api-llm-integration).
+
 ## Pipeline Overview
 
 The investigation follows a 5-phase pipeline, executed as a single LLM agent session:

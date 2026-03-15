@@ -131,6 +131,8 @@ The workflow catalog table, used for workflow discovery and scoring.
 - Composite index on `(action_type, status, is_latest_version)` for discovery Step 2
 - Partial index on `is_latest_version = true` for active workflow queries
 
+**Workflow supersession**: Only one workflow version per `(workflow_name, action_type)` pair can be `active` at a time. When a new version of a workflow is registered (via `RemediationWorkflow` CRD creation or update), DataStorage marks the previous active entry as `superseded` and activates the new one. This is enforced by the `GetActiveByWorkflowName` repository method during registration. The AuthWebhook intercepts both CREATE and UPDATE operations on `RemediationWorkflow` CRDs and forwards them to DataStorage for catalog registration.
+
 ### action_type_taxonomy
 
 The action type registry for workflow categorization.
@@ -145,7 +147,7 @@ The action type registry for workflow categorization.
 | `created_at` | `TIMESTAMPTZ` | Creation timestamp |
 | `updated_at` | `TIMESTAMPTZ` | Last update |
 
-Seeded with 24 built-in action types. User-extensible via `ActionType` CRDs (synced by Auth Webhook). See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy).
+The database deploys with a clean schema -- no pre-seeded rows. Action types are registered via `kubectl apply -f` on `ActionType` CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API. See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy) and [Installation: Action Types](../getting-started/installation.md#action-types).
 
 ### Other Tables
 

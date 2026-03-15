@@ -187,7 +187,7 @@ The Ansible executor:
 
 3. **Injects dependency ConfigMaps** as `extra_vars` with a `KUBERNAUT_CONFIGMAP_{NAME}_{KEY}` prefix (non-sensitive data)
 4. **Injects dependency Secrets** as ephemeral AWX credentials with `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables (sensitive data, never in `extra_vars`)
-5. **Launches the AWX Job** with the combined `extra_vars` and credential IDs
+5. **Launches the AWX Job** with the combined `extra_vars` and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.
 6. **Polls job status** via `GET /api/v2/jobs/{id}/` mapping AWX states (`pending`, `waiting`, `running`, `successful`, `failed`, `error`, `canceled`) to WFE phases
 7. **Cleans up** ephemeral credentials after execution completes (stored in the `kubernaut.ai/awx-ephemeral-credentials` annotation)
 
@@ -204,11 +204,24 @@ PipelineRun/Job name = wfe-{sha256(targetResource)[:16]}
 The same target resource always produces the same execution resource name. If two WFEs attempt to run on the same target:
 
 - The first one creates the resource successfully
-- The second receives `AlreadyExists` → if the existing resource belongs to another WFE, it fails with a race condition error
+- The second receives `AlreadyExists` → the controller checks:
+    1. **Ownership check**: Does the existing resource have a `kubernaut.ai/workflow-execution` label matching another WFE? If so, it fails with a race condition error (concurrent lock held by another WFE).
+    2. **Completed check**: Is the existing resource in a terminal state (completed or failed)? If so, it is cleaned up and creation is retried (stale lock from a previous execution).
+    3. **Running check**: If the resource is still running and owned by another WFE, the current WFE waits.
+
+This pre-execution cleanup resolves the stale lock problem where a completed Job from a previous WFE would permanently block new executions on the same target.
+
+### Ownership-Verified Cleanup
+
+During cooldown cleanup, both `JobExecutor` and `TektonExecutor` verify the `kubernaut.ai/workflow-execution` label matches the WFE name before deleting execution resources. This prevents WFE1's cooldown cleanup from destroying WFE2's newly created Job or PipelineRun when they share deterministic names.
+
+### Engine Configuration Resolution
+
+When a WFE spec omits `engineConfig`, the controller resolves it from the workflow catalog in DataStorage. This prevents nil-pointer panics when workflow registration did not include engine-specific configuration.
 
 ## Execution Namespace and RBAC
 
-All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. In v1.0, they share a common ServiceAccount (`kubernaut-workflow-runner`) managed by the controller. See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to this ServiceAccount. Per-workflow scoped RBAC is planned for v1.1.
+All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. They share a common ServiceAccount (`kubernaut-workflow-runner`) managed by the controller. See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to this ServiceAccount. Per-workflow scoped RBAC is planned for v1.2.
 
 ## Parameter Injection
 

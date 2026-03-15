@@ -71,6 +71,7 @@ _Appears in:_
 | `approvalContext`| _[ApprovalContext](#approvalcontext)_| Rich context for approval notification|
 | `needsHumanReview`| _boolean_| Set by HAPI when AI cannot produce reliable result<br />True if human review required (HAPI decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br /> Set when workflow selected but affectedResource missing|
 | `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values<br /> Includes "rca_incomplete" for missing affectedResource|
+| `actionability`| _string_| #388: LLM's assessment of whether the alert warrants action.<br />Empty when not yet assessed (pre-investigation or error paths).<br />"Actionable" when the LLM determines the alert warrants action (default for all processed alerts).<br />"NotActionable" when the LLM determines the alert is benign (e.g., orphaned PVCs).|
 | `investigationId`| _string_| HolmesGPT investigation ID for correlation|
 | `investigationTime`| _integer_| Investigation duration in seconds|
 | `warnings`| _string array_| Non-fatal warnings from HolmesGPT-API (e.g., low confidence)|
@@ -400,6 +401,7 @@ _Appears in:_
 | `alertScore`| _float_| AlertScore is the alert resolution score (0.0 or 1.0), nil if not yet assessed.|
 | `metricsAssessed`| _boolean_| MetricsAssessed indicates whether the metric comparison has been completed.|
 | `metricsScore`| _float_| MetricsScore is the metric comparison score (0.0-1.0), nil if not yet assessed.|
+| `alertDecayRetries`| _integer_| AlertDecayRetries tracks the number of times the EM re-checked a firing alert<br />during decay monitoring. Incremented each reconcile where isAlertDecay returns true.<br />A non-zero value means the EM confirmed the resource was healthy but the alert<br />persisted, indicating Prometheus lookback window decay.|
 
 
 ### EAConfig

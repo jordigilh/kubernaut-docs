@@ -6,21 +6,26 @@ on:
   repository_dispatch:
     types: [crd-docs-updated]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version label to deploy (e.g., v1.1)"
+        required: false
+        default: ""
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
   group: pages
   cancel-in-progress: false
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v6
         with:
@@ -35,18 +40,15 @@ jobs:
             https://raw.githubusercontent.com/jordigilh/kubernaut/main/docs/generated/crds.md \
             -o docs/api-reference/crds.md
 
-      - run: mkdocs build --strict
+      - name: Configure git for mike
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: site
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy with mike
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="v1.1"
+          fi
+          mike deploy --push --update-aliases "$VERSION" latest

@@ -275,23 +275,42 @@ helm install kubernaut charts/kubernaut/ \
 
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version 1.0.0 \
+  --version 1.1.0-rc0 \
   --namespace kubernaut-system \
   -f my-values.yaml
 ```
 
 ### Development Quick Start
 
-For local development without external monitoring or pre-created secrets:
+For local development without external monitoring:
 
 ```bash
+# 1. Create namespace and minimal secrets
+kubectl create namespace kubernaut-system
+
+kubectl create secret generic kubernaut-pg-credentials \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD=devpass \
+  --from-literal=POSTGRES_DB=action_history \
+  -n kubernaut-system
+
+kubectl create secret generic kubernaut-ds-db-credentials \
+  --from-literal=db-secrets.yaml=$'username: slm_user\npassword: devpass' \
+  -n kubernaut-system
+
+kubectl create secret generic kubernaut-valkey-credentials \
+  --from-literal=valkey-secrets.yaml=$'password: valkeypass' \
+  -n kubernaut-system
+
+# 2. Install with demo values (references the secret names above)
 helm install kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system --create-namespace \
-  --set postgresql.auth.password=devpass \
-  --set valkey.password=valkeypass \
+  --namespace kubernaut-system \
+  -f charts/kubernaut/values-demo.yaml \
   --set effectivenessmonitor.external.prometheusEnabled=false \
   --set effectivenessmonitor.external.alertManagerEnabled=false
 ```
+
+`values-demo.yaml` sets `postgresql.auth.existingSecret`, `datastorage.dbExistingSecret`, and `valkey.existingSecret` to the secret names created above.
 
 ### Post-Install Verification
 

@@ -187,6 +187,7 @@ All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. 
 | Parameter | Description | Default |
 |---|---|---|
 | `postgresql.enabled` | Deploy in-chart PostgreSQL | `true` |
+| `postgresql.variant` | PostgreSQL distribution variant (`upstream` or `ocp`). `ocp` uses Red Hat RHEL10 image with `POSTGRESQL_*` env vars and non-root UID 26, compatible with `restricted-v2` SCC. | `upstream` |
 | `postgresql.replicas` | Number of replicas | `1` |
 | `postgresql.image` | PostgreSQL container image | `postgres:16-alpine` |
 | `postgresql.auth.existingSecret` | Pre-created Secret with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` keys (required) | `""` |

@@ -108,6 +108,11 @@ nav:
       - Audit & Observability: user-guide/audit-and-observability.md
       - Data Lifecycle: user-guide/data-lifecycle.md
       - Configuration Reference: user-guide/configuration.md
+      - ConfigMap References:
+          - HolmesGPT SDK Config: user-guide/configmap-holmesgpt.md
+          - SignalProcessing Rego Policies: user-guide/configmap-policies.md
+          - AIAnalysis Approval Policy: user-guide/configmap-approval.md
+          - Notification Routing: user-guide/configmap-notification.md
   - Architecture:
       - architecture/index.md
       - System Overview: architecture/overview.md

@@ -78,6 +78,10 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `gateway.replicas` | Number of gateway replicas | `1` |
 | `gateway.resources` | CPU/memory requests and limits | See `values.yaml` |
 | `gateway.service.type` | Kubernetes Service type | `ClusterIP` |
+| `gateway.config.server.maxConcurrentRequests` | Maximum concurrent request processing | `100` |
+| `gateway.config.server.readTimeout` | HTTP read timeout | `30s` |
+| `gateway.config.server.writeTimeout` | HTTP write timeout | `30s` |
+| `gateway.config.deduplication.cooldownPeriod` | Signal deduplication cooldown | `5m` |
 | `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
 
 ### DataStorage
@@ -86,6 +90,10 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 |---|---|---|
 | `datastorage.replicas` | Number of datastorage replicas | `1` |
 | `datastorage.dbExistingSecret` | Pre-created Secret with `db-secrets.yaml` key | `""` |
+| `datastorage.config.database.sslMode` | PostgreSQL SSL mode | `disable` |
+| `datastorage.config.database.maxOpenConns` | Maximum open database connections | `100` |
+| `datastorage.config.database.maxIdleConns` | Maximum idle database connections | `20` |
+| `datastorage.config.database.connMaxLifetime` | Maximum connection lifetime | `1h` |
 | `datastorage.resources` | CPU/memory requests and limits | See `values.yaml` |
 | `datastorage.service.type` | Kubernetes Service type | `ClusterIP` |
 
@@ -94,42 +102,38 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | Parameter | Description | Default |
 |---|---|---|
 | `holmesgptApi.replicas` | Number of replicas | `1` |
-| `holmesgptApi.llm.provider` | LLM provider (e.g., `openai`, `azure`, `vertexai`) | `""` |
-| `holmesgptApi.llm.model` | LLM model name | `""` |
-| `holmesgptApi.llm.endpoint` | Custom LLM endpoint URL | `""` |
-| `holmesgptApi.llm.maxRetries` | Maximum LLM call retries | `3` |
-| `holmesgptApi.llm.timeoutSeconds` | LLM call timeout | `120` |
-| `holmesgptApi.llm.temperature` | LLM sampling temperature | `0.7` |
 | `holmesgptApi.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
-| `holmesgptApi.llm.gcpProjectId` | GCP project ID (Vertex AI only; rendered into SDK config when set) | `""` |
-| `holmesgptApi.llm.gcpRegion` | GCP region (Vertex AI only; rendered into SDK config when set) | `""` |
-| `holmesgptApi.prometheus.enabled` | Auto-configure the Prometheus toolset in SDK config | `false` |
-| `holmesgptApi.prometheus.url` | Prometheus URL for the toolset | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
-| `holmesgptApi.sdkConfigContent` | SDK config YAML content (via `--set-file`). Overrides auto-generated SDK config. | `""` |
+| `holmesgptApi.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `holmesgpt-sdk-config` ConfigMap. | `""` |
 | `holmesgptApi.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
-HAPI uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, Prometheus). The SDK config supports three tiers:
+HAPI uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
 
-1. **Auto-generated** (default): The chart renders SDK config from the `llm.*` and `prometheus.*` values above.
-2. **Inline override**: Provide full SDK config content via `--set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml`.
-3. **External ConfigMap**: Set `holmesgptApi.existingSdkConfigMap` to reference a pre-existing ConfigMap (highest priority).
+1. **Inline content** (recommended): Provide full SDK config content via `--set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `holmesgpt-sdk-config` ConfigMap from this content.
+2. **External ConfigMap**: Set `holmesgptApi.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
+
+One of these two options **must** be provided; the chart will fail at install time if neither is set.
 
 ### Notification Controller
 
 | Parameter | Description | Default |
 |---|---|---|
 | `notification.replicas` | Number of replicas | `1` |
-| `notification.slack.enabled` | Enable Slack delivery channel | `false` |
-| `notification.slack.channel` | Default Slack channel | `#kubernaut-alerts` |
+| `notification.routing.content` | Routing config YAML content (via `--set-file`). Chart creates ConfigMap from this. | `""` |
+| `notification.routing.existingConfigMap` | Pre-existing ConfigMap name for routing config. Takes priority over `routing.content`. | `""` |
 | `notification.credentials` | Projected volume sources from K8s Secrets | `[]` |
 
-When `slack.enabled` is `true`, add credentials entries pointing to your pre-existing secrets:
+When neither `routing.content` nor `routing.existingConfigMap` is set, the chart generates a console-only default routing config. To enable Slack or other channels, provide a routing config:
+
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --set-file notification.routing.content=my-routing.yaml \
+  ...
+```
+
+Add credentials entries to mount the Slack webhook Secret into the notification pod:
 
 ```yaml
 notification:
-  slack:
-    enabled: true
-    channel: "#kubernaut-alerts"
   credentials:
     - name: slack-webhook
       secretName: slack-webhook
@@ -164,21 +168,33 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 
 | Parameter | Description | Default |
 |---|---|---|
+| `effectivenessmonitor.config.assessment.stabilizationWindow` | Wait time after remediation before assessment | `30s` |
+| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `120s` |
 | `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
 | `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `true` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
 | `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `true` |
 
-### Event Exporter
+### AIAnalysis
 
 | Parameter | Description | Default |
 |---|---|---|
-| `eventExporter.enabled` | Deploy the event exporter | `true` |
-| `eventExporter.replicas` | Number of replicas | `1` |
-| `eventExporter.image` | Container image | `ghcr.io/resmoio/kubernetes-event-exporter:v1.7` |
-| `eventExporter.resources` | CPU/memory requests and limits | See `values.yaml` |
+| `aianalysis.replicas` | Number of replicas | `1` |
+| `aianalysis.rego.confidenceThreshold` | Auto-approval confidence threshold (nil = use Rego default 0.8) | `null` |
+| `aianalysis.policies.content` | Approval policy Rego content (via `--set-file`). Chart creates ConfigMap. | `""` |
+| `aianalysis.policies.existingConfigMap` | Pre-existing ConfigMap name for approval policy. Takes priority. | `""` |
 
-Set `eventExporter.enabled=false` to skip deploying the event exporter (e.g., on OpenShift where no Red Hat-supported equivalent image exists). Users should provide their own Kubernetes event forwarding when disabled.
+One of `policies.content` or `policies.existingConfigMap` **must** be provided; the chart fails at install if neither is set. See [AIAnalysis Approval Policy](configmap-approval.md) for the full schema and customization guide.
+
+### SignalProcessing
+
+| Parameter | Description | Default |
+|---|---|---|
+| `signalprocessing.replicas` | Number of replicas | `1` |
+| `signalprocessing.policies.content` | Rego policy YAML bundle (via `--set-file`). Chart creates ConfigMaps. | `""` |
+| `signalprocessing.policies.existingConfigMap` | Pre-existing ConfigMap name for Rego policies. Takes priority. | `""` |
+
+One of `policies.content` or `policies.existingConfigMap` **must** be provided; the chart fails at install if neither is set. The `content` field accepts a YAML bundle containing all Rego files and proactive signal mappings. See [SignalProcessing Rego Policies](configmap-policies.md) for the bundle format and customization guide.
 
 ### PostgreSQL
 
@@ -196,17 +212,12 @@ All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. 
 | `postgresql.storage.size` | PVC size | `10Gi` |
 | `postgresql.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
 
-### External PostgreSQL (BYO)
-
-Set `postgresql.enabled=false` and configure these values to use a pre-existing PostgreSQL instance:
+To use an external PostgreSQL instance, set `postgresql.enabled=false` and provide the connection details:
 
 | Parameter | Description | Default |
 |---|---|---|
-| `externalPostgresql.host` | External PostgreSQL hostname (required) | `""` |
-| `externalPostgresql.port` | External PostgreSQL port | `5432` |
-| `externalPostgresql.auth.existingSecret` | Pre-created Secret with `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` keys (required) | `""` |
-| `externalPostgresql.auth.username` | Database username | `slm_user` |
-| `externalPostgresql.auth.database` | Database name | `action_history` |
+| `postgresql.host` | External PostgreSQL hostname (required when `enabled=false`) | `""` |
+| `postgresql.port` | External PostgreSQL port | `5432` |
 
 ### Valkey
 
@@ -221,23 +232,12 @@ All Valkey credentials must be provided via pre-created Kubernetes Secrets. See 
 | `valkey.storage.size` | PVC size | `512Mi` |
 | `valkey.storage.storageClassName` | StorageClass (empty = cluster default) | `""` |
 
-### External Valkey (BYO)
-
-Set `valkey.enabled=false` and configure these values to use a pre-existing Valkey (or Redis-compatible) instance:
+To use an external Valkey instance, set `valkey.enabled=false` and provide:
 
 | Parameter | Description | Default |
 |---|---|---|
-| `externalValkey.host` | External Valkey hostname (required) | `""` |
-| `externalValkey.port` | External Valkey port | `6379` |
-| `externalValkey.existingSecret` | Pre-created Secret with `valkey-secrets.yaml` key (required) | `""` |
-
-### Network Policies
-
-| Parameter | Description | Default |
-|---|---|---|
-| `networkPolicies.enabled` | Create NetworkPolicy resources | `false` |
-
-When enabled, NetworkPolicies restrict ingress/egress traffic for gateway, datastorage, and authwebhook. DNS egress (port 53) is always allowed.
+| `valkey.host` | External Valkey hostname (required when `enabled=false`) | `""` |
+| `valkey.port` | External Valkey port | `6379` |
 
 ## Signal Source Authentication
 
@@ -252,27 +252,25 @@ gateway:
         namespace: monitoring
 ```
 
-Each entry creates a `ClusterRoleBinding` granting the ServiceAccount permission to submit signals. The Kubernetes Event Exporter is automatically configured by the chart.
+Each entry creates a `ClusterRoleBinding` granting the ServiceAccount permission to submit signals.
 
-See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR authentication flow and RBAC details. See [Installation -- Signal Source Authentication](../getting-started/installation.md#signal-source-authentication) for AlertManager and Event Exporter configuration examples.
+See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR authentication flow and RBAC details. See [Installation -- Signal Source Authentication](../getting-started/installation.md#signal-source-authentication) for AlertManager configuration examples.
 
 ## LLM Provider Setup
 
-HAPI supports any LiteLLM-compatible provider. Common configurations:
+LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [HolmesGPT SDK Config](configmap-holmesgpt.md) for the full schema and provider examples.
 
-### OpenAI
+**Quick setup:**
 
-```yaml
-holmesgptApi:
-  llm:
-    provider: "openai"
-    model: "gpt-4o"
-    endpoint: ""  # Uses default OpenAI endpoint
-    temperature: 0.7
-    timeoutSeconds: 120
+1. Copy the example SDK config from the chart:
+
+```bash
+cp charts/kubernaut/examples/sdk-config.yaml my-sdk-config.yaml
 ```
 
-Create the API key Secret:
+2. Edit `my-sdk-config.yaml` -- set `llm.provider`, `llm.model`, and any provider-specific fields.
+
+3. Create the API key Secret:
 
 ```bash
 kubectl create secret generic llm-credentials \
@@ -280,35 +278,17 @@ kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY="sk-..."
 ```
 
-### Google Vertex AI
-
-```yaml
-holmesgptApi:
-  llm:
-    provider: "vertex_ai"
-    model: "gemini-2.5-pro"
-    gcpProjectId: "my-project-id"
-    gcpRegion: "us-central1"
-    temperature: 0.7
-    timeoutSeconds: 180
-```
-
-Create the credentials Secret from a GCP service account key file:
+4. Pass the SDK config during install:
 
 ```bash
-kubectl create secret generic llm-credentials \
-  --namespace kubernaut-system \
-  --from-file=GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json
+helm install kubernaut charts/kubernaut/ \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  ...
 ```
-
-The Helm chart mounts this file at `/etc/holmesgpt/credentials/GOOGLE_APPLICATION_CREDENTIALS`
-and sets the `GOOGLE_APPLICATION_CREDENTIALS` environment variable automatically when
-`provider` is `vertex_ai`. GCP Workload Identity is also supported -- in that case the
-secret can be omitted and authentication is handled by the node metadata service.
 
 ### Temperature Tuning
 
-The `temperature` parameter (default 0.7) controls the LLM's creativity vs determinism:
+The `temperature` parameter in the SDK config (default 0.7) controls the LLM's creativity vs determinism:
 
 - **Lower (0.3--0.5):** More deterministic workflow selection. Recommended for production environments where consistency is critical.
 - **Default (0.7):** Balanced. Good for most environments.
@@ -316,30 +296,30 @@ The `temperature` parameter (default 0.7) controls the LLM's creativity vs deter
 
 ## Remediation Timeouts and Routing
 
-The RO ConfigMap controls per-phase timeouts and routing behavior. These values are currently hardcoded in the template.
+The RemediationOrchestrator exposes per-phase timeouts and routing thresholds as `values.yaml` parameters under `remediationorchestrator.config`.
 
 ### Phase Timeouts
 
-| Phase | Default | Description |
+| Parameter | Default | Description |
 |---|---|---|
-| `global` | 1 hour | Total remediation timeout |
-| `processing` | 5 minutes | Signal Processing phase |
-| `analyzing` | 10 minutes | AI Analysis (HAPI investigation) |
-| `executing` | 30 minutes | Workflow execution |
-| `verifying` | 30 minutes | Effectiveness assessment |
+| `remediationorchestrator.config.timeouts.global` | `1h` | Total remediation timeout |
+| `remediationorchestrator.config.timeouts.processing` | `5m` | Signal Processing phase |
+| `remediationorchestrator.config.timeouts.analyzing` | `10m` | AI Analysis (HAPI investigation) |
+| `remediationorchestrator.config.timeouts.executing` | `30m` | Workflow execution |
+| `remediationorchestrator.config.timeouts.verifying` | `30m` | Effectiveness assessment |
 
-These are ConfigMap defaults. Individual `RemediationRequest` resources can override timeouts via `spec.timeouts`.
+Individual `RemediationRequest` resources can override timeouts via `spec.timeouts`.
 
 ### Routing Configuration
 
 | Parameter | Default | Description |
 |---|---|---|
-| `consecutiveFailureThreshold` | 3 | Block a resource after N consecutive remediation failures |
-| `consecutiveFailureCooldown` | 1 hour | How long to block after hitting the threshold |
-| `recentlyRemediatedCooldown` | 5 minutes | Minimum interval between successful remediations for the same resource |
-| `ineffectiveChainThreshold` | 3 | Consecutive ineffective remediations before escalation |
-| `recurrenceCountThreshold` | 5 | Safety-net recurrence count |
-| `ineffectiveTimeWindow` | 4 hours | Lookback window for ineffective chain detection |
+| `remediationorchestrator.config.routing.consecutiveFailureThreshold` | `3` | Block a resource after N consecutive remediation failures |
+| `remediationorchestrator.config.routing.consecutiveFailureCooldown` | `1h` | How long to block after hitting the threshold |
+| `remediationorchestrator.config.routing.recentlyRemediatedCooldown` | `5m` | Minimum interval between successful remediations for the same resource |
+| `remediationorchestrator.config.routing.ineffectiveChainThreshold` | `3` | Consecutive ineffective remediations before escalation |
+| `remediationorchestrator.config.routing.recurrenceCountThreshold` | `5` | Safety-net recurrence count |
+| `remediationorchestrator.config.routing.ineffectiveTimeWindow` | `4h` | Lookback window for ineffective chain detection |
 
 These settings prevent remediation storms and avoid repeating failed approaches.
 
@@ -349,9 +329,8 @@ Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate
 
 | Parameter | Default | Description |
 |---|---|---|
-| `execution.namespace` | `kubernaut-workflows` | Namespace for workflow execution |
-| `execution.serviceAccount` | `kubernaut-workflow-runner` | ServiceAccount for workflow pods |
-| `execution.cooldownPeriod` | 1 minute | Cooldown between executions |
+| `workflowexecution.workflowNamespace` | `kubernaut-workflows` | Namespace for workflow execution |
+| `workflowexecution.config.execution.cooldownPeriod` | `1m` | Cooldown between executions |
 
 The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read and patch resources across namespaces. See [Security & RBAC -- Workflow Execution](../architecture/security-rbac.md#workflow-execution) for the full permission list.
 
@@ -504,7 +483,11 @@ This means `helm upgrade` and rolling updates do not disrupt in-flight remediati
 
 ## Next Steps
 
-- [Rego Policies](policies.md) -- Customizing classification and approval policies
+- [HolmesGPT SDK Config](configmap-holmesgpt.md) -- LLM provider, toolsets, and MCP server configuration
+- [SignalProcessing Rego Policies](configmap-policies.md) -- Policy bundle format and customization
+- [AIAnalysis Approval Policy](configmap-approval.md) -- Approval gates and risk factors
+- [Notification Routing](configmap-notification.md) -- Routing schema and Slack setup
+- [Rego Policies](policies.md) -- Rego language reference for classification policies
 - [Notification Channels](notifications.md) -- Setting up Slack and other channels
 - [Remediation Workflows](workflows.md) -- Authoring and registering workflows
 - [Installation](../getting-started/installation.md) -- Using these values during deployment

@@ -167,7 +167,7 @@ kubectl get notificationrequests -n kubernaut-system -o yaml
 kubectl logs -n kubernaut-system -l app=notification-controller --tail=100
 ```
 
-**Common causes**: Slack webhook secret not configured, `notification.slack.enabled` is `false`, credential volume mount missing.
+**Common causes**: Slack webhook secret not configured, no Slack receiver in the notification routing config, credential volume mount missing. See [Notification Channels](../user-guide/notifications.md) for Slack setup.
 
 ## DataStorage Connection Issues
 

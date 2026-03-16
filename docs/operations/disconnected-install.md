@@ -14,7 +14,7 @@ Install Kubernaut on a disconnected OpenShift cluster by mirroring all container
 | **Kubernaut chart source** | A clone of [github.com/jordigilh/kubernaut](https://github.com/jordigilh/kubernaut) on the bastion host. |
 
 !!! info "LLM endpoint"
-    Kubernaut's AI analysis service (HolmesGPT) requires an LLM. In a disconnected environment, deploy a locally hosted LLM accessible from inside the cluster (e.g., [LiteLLM](https://docs.litellm.ai/) or any OpenAI-compatible endpoint). Configure it with `holmesgptApi.llm.endpoint` in your Helm values.
+    Kubernaut's AI analysis service (HolmesGPT) requires an LLM. In a disconnected environment, deploy a locally hosted LLM accessible from inside the cluster (e.g., [LiteLLM](https://docs.litellm.ai/) or any OpenAI-compatible endpoint). Configure the endpoint in your SDK config file (see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md)).
 
 ---
 
@@ -45,9 +45,6 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 | `registry.redhat.io/rhel10/valkey-8` | Valkey 8 (Red Hat RHEL10) |
 | `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` | OCP CLI for TLS certificate hook Jobs |
 | `quay.io/kubernaut-ai/db-migrate:{{ image_tag }}` | Database migrations (goose + psql on UBI9) |
-
-!!! note
-    The Kubernetes Event Exporter is disabled on OCP (`eventExporter.enabled=false` in `values-ocp.yaml`) and is excluded from the mirror list.
 
 ### Automated image list
 
@@ -220,11 +217,11 @@ valkey:
   image: <mirror-registry>/rhel10/valkey-8
 
 hooks:
-  migrations:
-    image: <mirror-registry>/kubernaut-ai/db-migrate:{{ image_tag }}
   tlsCerts:
     image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
 ```
+
+The `db-migrate` image tag is derived from `global.image.*`, so no separate override is needed.
 
 The `separator` field controls how the namespace is joined to the service name:
 
@@ -239,25 +236,36 @@ The three value files must be layered in this order:
 
 | Order | File | Purpose |
 |-------|------|---------|
-| 1 | `values-demo.yaml` | Base configuration with pre-created secret names |
-| 2 | `values-ocp.yaml` | Red Hat images, OCP monitoring endpoints, disables event exporter |
-| 3 | `values-airgap.yaml` | Overrides all image refs to point at your mirror registry |
+| 1 | `values-ocp.yaml` | Red Hat images, OCP monitoring endpoints |
+| 2 | `values-airgap.yaml` | Overrides all image refs to point at your mirror registry |
 
 !!! important "Layering order"
     `values-airgap.yaml` **must** come after `values-ocp.yaml`. It overrides the `registry.redhat.io` image references with your mirror registry. The `postgresql.variant: ocp` setting from `values-ocp.yaml` is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.
+
+Prepare your SDK config file with the local LLM endpoint (see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md)):
+
+```yaml
+# my-sdk-config.yaml
+llm:
+  provider: litellm
+  model: gpt-4o
+  endpoint: http://litellm.internal.svc:4000
+```
 
 **Nested registry** (Harbor, Artifactory):
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=harbor.corp \
-  --set holmesgptApi.llm.provider=litellm \
-  --set holmesgptApi.llm.endpoint=http://litellm.internal.svc:4000 \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
+  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
+  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
 ```
 
 **Flat registry** (quay.io, OCP internal):
@@ -265,17 +273,17 @@ helm install kubernaut charts/kubernaut/ \
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=quay.io/myorg \
   --set global.image.separator=- \
-  --set holmesgptApi.llm.provider=litellm \
-  --set holmesgptApi.llm.endpoint=http://litellm.internal.svc:4000 \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
+  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
+  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
 ```
-
-Adjust the LLM provider, endpoint, and model to match your local deployment.
 
 ---
 
@@ -287,7 +295,7 @@ Adjust the LLM provider, endpoint, and model to match your local deployment.
 kubectl get pods -n kubernaut-system
 ```
 
-All pods should reach `1/1 Running` within a few minutes (~12 pods with event exporter disabled).
+All 12 pods should reach `1/1 Running` within a few minutes.
 
 ### Image pull errors
 
@@ -364,9 +372,11 @@ When using IDMS, install with just `values-ocp.yaml` (no `values-airgap.yaml`). 
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
-  --set global.image.digest=sha256:<digest>
+  --set global.image.digest=sha256:<digest> \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
+  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
 ```
 
 !!! tip "Recommendation"
@@ -385,9 +395,11 @@ Mirror `registry.redhat.io/openshift4/ose-cli-rhel9:v4.17` and retry:
 ```bash
 helm upgrade kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
-  -f charts/kubernaut/values-airgap.yaml
+  -f charts/kubernaut/values-airgap.yaml \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
+  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
 ```
 
 ### Migration Job fails connecting to PostgreSQL
@@ -425,5 +437,5 @@ flowchart LR
 
 1. **Mirror** all images from public registries to your private mirror using `oc mirror`
 2. **Configure** the OCP global pull secret with mirror registry credentials
-3. **Install** the chart layering `values-demo.yaml` + `values-ocp.yaml` + `values-airgap.yaml`
+3. **Install** the chart layering `values-ocp.yaml` + `values-airgap.yaml` with `--set-file` for mandatory configs
 4. **Verify** pods are running and pulling from the correct registry

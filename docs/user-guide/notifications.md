@@ -196,9 +196,8 @@ kubectl create secret generic slack-webhook \
 
 ```yaml
 notification:
-  slack:
-    enabled: true
-    channel: "#kubernaut-alerts"
+  routing:
+    content: ""  # Or provide via --set-file notification.routing.content=routing.yaml
   credentials:
     - name: slack-webhook          # Credential name (used in routing credentialRef)
       secretName: slack-webhook    # Kubernetes Secret name
@@ -259,25 +258,23 @@ spec:
       --from-literal=webhook-url="https://hooks.slack.com/services/T.../B.../xxx"
     ```
 
-3. **Update Helm values:**
-
-    ```yaml
-    notification:
-      slack:
-        enabled: true
-        channel: "#kubernaut-alerts"
-      credentials:
-        - name: slack-webhook
-          secretName: slack-webhook
-          secretKey: webhook-url
-    ```
-
-4. **Upgrade the Helm release:**
+3. **Provide a routing config** (via `--set-file` or in a values file):
 
     ```bash
     helm upgrade kubernaut charts/kubernaut \
       --namespace kubernaut-system \
+      --set-file notification.routing.content=charts/kubernaut/examples/notification-routing.yaml \
       -f values.yaml
+    ```
+
+    Ensure your values file includes the credential mount:
+
+    ```yaml
+    notification:
+      credentials:
+        - name: slack-webhook
+          secretName: slack-webhook
+          secretKey: webhook-url
     ```
 
 5. **Verify** the notification pod has the credential mounted:

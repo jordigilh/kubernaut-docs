@@ -786,17 +786,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#kubernetes-event-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kubernetes Event Exporter
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -892,10 +881,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#development-quick-start" class="md-nav__link">
+  <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Quick Start
+        Quickstart
       
     </span>
   </a>
@@ -1123,6 +1112,8 @@
       
         
           
+        
+      
         
       
         
@@ -1536,6 +1527,190 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMap References
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ConfigMap References
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-holmesgpt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HolmesGPT SDK Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIAnalysis Approval Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -2854,17 +3029,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#kubernetes-event-exporter" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Kubernetes Event Exporter
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2960,10 +3124,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#development-quick-start" class="md-nav__link">
+  <a href="#quickstart" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Development Quick Start
+        Quickstart
       
     </span>
   </a>
@@ -3212,7 +3376,7 @@
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3-encrypted</span>
 </span></code></pre></div>
-<p>To skip in-chart databases entirely and use external instances, set <code>postgresql.enabled=false</code> and/or <code>valkey.enabled=false</code> and configure <code>externalPostgresql</code> / <code>externalValkey</code> values in the <a href="../../user-guide/configuration/">Configuration Reference</a>.</p>
+<p>To skip in-chart databases entirely and use external instances, set <code>postgresql.enabled=false</code> and/or <code>valkey.enabled=false</code> and configure <code>postgresql.host</code>/<code>valkey.host</code> values in the <a href="../../user-guide/configuration/">Configuration Reference</a>.</p>
 <h3 id="prometheus-and-alertmanager">Prometheus and AlertManager<a class="headerlink" href="#prometheus-and-alertmanager" title="Permanent link">&para;</a></h3>
 <p>Kubernaut integrates with Prometheus and AlertManager at two levels:</p>
 <p><strong>1. EffectivenessMonitor queries</strong> -- EM queries Prometheus for metric-based assessment enrichment and AlertManager for alert resolution checks. The expected service endpoints (configurable):</p>
@@ -3239,8 +3403,8 @@
 </table>
 <p><strong>2. AlertManager sends alerts to Gateway</strong> -- The Gateway authenticates every signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). AlertManager must include a bearer token in its webhook requests. See <a href="#signal-source-authentication">Signal Source Authentication</a> below for the full configuration.</p>
 <h3 id="signal-source-authentication">Signal Source Authentication<a class="headerlink" href="#signal-source-authentication" title="Permanent link">&para;</a></h3>
-<p>The Gateway authenticates <strong>every</strong> signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). Both AlertManager and the Event Exporter must present a valid ServiceAccount bearer token, and that ServiceAccount must have RBAC permission to submit signals.</p>
-<p>The chart provides a <code>gateway-signal-source</code> ClusterRole that grants <code>create</code> on the <code>gateway-service</code> resource. Each entry in <code>gateway.auth.signalSources</code> creates a ClusterRoleBinding binding this role to the specified ServiceAccount. The Event Exporter is bound automatically by the chart.</p>
+<p>The Gateway authenticates <strong>every</strong> signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). Signal sources (e.g., AlertManager) must present a valid ServiceAccount bearer token, and that ServiceAccount must have RBAC permission to submit signals.</p>
+<p>The chart provides a <code>gateway-signal-source</code> ClusterRole that grants <code>create</code> on the <code>gateway-service</code> resource. Each entry in <code>gateway.auth.signalSources</code> creates a ClusterRoleBinding binding this role to the specified ServiceAccount.</p>
 <p>See <a href="../../architecture/security-rbac/#signal-ingestion">Security &amp; RBAC</a> for the full TokenReview + SAR flow, Gateway RBAC details, and the <code>gateway-signal-source</code> ClusterRole definition.</p>
 <h4 id="configuring-alertmanager">Configuring AlertManager<a class="headerlink" href="#configuring-alertmanager" title="Permanent link">&para;</a></h4>
 <p>AlertManager must include <code>http_config.bearer_token_file</code> in its webhook receiver so the Gateway can authenticate the request. The Gateway service is <code>gateway-service</code> on port <code>8080</code>, and the AlertManager adapter path is <code>/api/v1/signals/prometheus</code>.</p>
@@ -3291,15 +3455,6 @@
 <p class="admonition-title">Warning</p>
 <p>Without <code>bearer_token_file</code>, AlertManager sends unauthenticated requests and the Gateway rejects them with <code>401 Unauthorized</code>. Without the <code>signalSources</code> entry, the token is valid but SAR denies access with <code>403 Forbidden</code>.</p>
 </div>
-<h4 id="kubernetes-event-exporter">Kubernetes Event Exporter<a class="headerlink" href="#kubernetes-event-exporter" title="Permanent link">&para;</a></h4>
-<p>The Event Exporter is deployed <strong>automatically</strong> by the Kubernaut Helm chart when <code>eventExporter.enabled=true</code> (default). Set <code>eventExporter.enabled=false</code> to skip it (e.g., on OpenShift). It watches for <code>Warning</code>-type Kubernetes events (e.g., <code>BackOff</code>, <code>OOMKilled</code>, <code>FailedScheduling</code>) and forwards them to the Gateway at <code>/api/v1/signals/kubernetes-event</code>. No manual configuration is needed.</p>
-<p>The chart creates:</p>
-<ul>
-<li>An <code>event-exporter</code> ServiceAccount</li>
-<li>An <code>event-exporter</code> ClusterRole with read access to events, pods, configmaps, namespaces, deployments, and replicasets</li>
-<li>A ClusterRoleBinding granting the <code>gateway-signal-source</code> role to the Event Exporter's ServiceAccount</li>
-</ul>
-<p>The Event Exporter's ConfigMap filters out <code>Normal</code> events and Kubernaut's own CRD events to prevent feedback loops. See <a href="../../operations/event-exporter/">Event Exporter</a> for customization options (e.g., watching multiple namespaces).</p>
 <h2 id="pre-installation">Pre-Installation<a class="headerlink" href="#pre-installation" title="Permanent link">&para;</a></h2>
 <p>Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's <code>crds/</code> directory on first install -- no manual step is needed. For upgrades, see <a href="#upgrading">Upgrading</a>.</p>
 <h3 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h3>
@@ -3386,9 +3541,8 @@
 </span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--from-file<span class="o">=</span><span class="nv">GOOGLE_APPLICATION_CREDENTIALS</span><span class="o">=</span>path/to/service-account-key.json<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
-<p>The chart mounts this file and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> automatically
-when <code>holmesgptApi.llm.provider</code> is <code>vertex_ai</code>. With GCP Workload Identity the
-secret can be omitted.</p>
+<p>The chart mounts this file and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> automatically.
+With GCP Workload Identity the secret can be omitted.</p>
 </div>
 </div>
 </div>
@@ -3430,24 +3584,31 @@ secret can be omitted.</p>
 </tr>
 </tbody>
 </table>
-<p>Only required when <code>notification.slack.enabled=true</code>. When Slack is disabled (default), no notification secret is needed.</p>
+<p>Only required when Slack delivery is configured in the notification routing config. When using console-only routing (default), no notification secret is needed.</p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <h3 id="standard-kind-vanilla-kubernetes">Standard (Kind / vanilla Kubernetes)<a class="headerlink" href="#standard-kind-vanilla-kubernetes" title="Permanent link">&para;</a></h3>
-<p>With namespace and secrets already provisioned, use <code>values-demo.yaml</code> to reference the pre-created secret names:</p>
+<p>With namespace and secrets already provisioned, provide the three mandatory content configs via <code>--set-file</code>:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-demo.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>kubernaut-pg-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--set<span class="w"> </span>datastorage.dbExistingSecret<span class="o">=</span>kubernaut-ds-db-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>kubernaut-valkey-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span>--set-file<span class="w"> </span>holmesgptApi.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego
 </span></code></pre></div>
+<p>See <code>charts/kubernaut/examples/</code> for reference configuration files you can copy and customize. For a quickstart, see <a href="#quickstart">Quickstart</a> below.</p>
 <h3 id="openshift-ocp">OpenShift (OCP)<a class="headerlink" href="#openshift-ocp" title="Permanent link">&para;</a></h3>
-<p>Layer the <code>values-ocp.yaml</code> overlay on top of <code>values-demo.yaml</code> to switch to Red Hat catalog images, disable the event exporter, and configure OCP monitoring endpoints:</p>
+<p>Layer the <code>values-ocp.yaml</code> overlay to switch to Red Hat catalog images and configure OCP monitoring endpoints:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-demo.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>kubernaut-pg-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>--set<span class="w"> </span>datastorage.dbExistingSecret<span class="o">=</span>kubernaut-ds-db-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>kubernaut-valkey-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">  </span>--set-file<span class="w"> </span>holmesgptApi.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Disconnected / air-gapped clusters</p>
@@ -3459,8 +3620,8 @@ secret can be omitted.</p>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
 </span></code></pre></div>
-<h3 id="development-quick-start">Development Quick Start<a class="headerlink" href="#development-quick-start" title="Permanent link">&para;</a></h3>
-<p>For local development without external monitoring:</p>
+<h3 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h3>
+<p>For getting started quickly, the chart ships example configuration files in <code>charts/kubernaut/examples/</code>. The only real customization required is the LLM provider credentials.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># 1. Create namespace and minimal secrets</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
@@ -3478,16 +3639,31 @@ secret can be omitted.</p>
 </span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s1">$&#39;password: valkeypass&#39;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a>
-</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="c1"># 2. Install with demo values (references the secret names above)</span>
-</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-demo.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">  </span>--set<span class="w"> </span>effectivenessmonitor.external.prometheusEnabled<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">  </span>--set<span class="w"> </span>effectivenessmonitor.external.alertManagerEnabled<span class="o">=</span><span class="nb">false</span>
+</span><span id="__span-14-18"><a id="__codelineno-14-18" name="__codelineno-14-18" href="#__codelineno-14-18"></a><span class="c1"># 2. Copy and customize the SDK config (fill in your LLM provider + API key)</span>
+</span><span id="__span-14-19"><a id="__codelineno-14-19" name="__codelineno-14-19" href="#__codelineno-14-19"></a>cp<span class="w"> </span>charts/kubernaut/examples/sdk-config.yaml<span class="w"> </span>my-sdk-config.yaml
+</span><span id="__span-14-20"><a id="__codelineno-14-20" name="__codelineno-14-20" href="#__codelineno-14-20"></a><span class="c1"># Edit my-sdk-config.yaml: set llm.provider, llm.model</span>
+</span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a>
+</span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a>
+</span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="c1"># 3. Install using the example configs</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-29"><a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>kubernaut-pg-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-30"><a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a><span class="w">  </span>--set<span class="w"> </span>datastorage.dbExistingSecret<span class="o">=</span>kubernaut-ds-db-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-31"><a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>kubernaut-valkey-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-32"><a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a><span class="w">  </span>--set-file<span class="w"> </span>holmesgptApi.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-33"><a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>charts/kubernaut/examples/approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-34"><a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>charts/kubernaut/examples/signalprocessing-policy.rego
+</span><span id="__span-14-35"><a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a>
+</span><span id="__span-14-36"><a id="__codelineno-14-36" name="__codelineno-14-36" href="#__codelineno-14-36"></a><span class="c1"># 4. Load demo ActionTypes and RemediationWorkflows</span>
+</span><span id="__span-14-37"><a id="__codelineno-14-37" name="__codelineno-14-37" href="#__codelineno-14-37"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/action-types/<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-14-38"><a id="__codelineno-14-38" name="__codelineno-14-38" href="#__codelineno-14-38"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/workflows/<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
-<p><code>values-demo.yaml</code> sets <code>postgresql.auth.existingSecret</code>, <code>datastorage.dbExistingSecret</code>, and <code>valkey.existingSecret</code> to the secret names created above.</p>
+<p>See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository for complete demo scenarios that exercise the full remediation pipeline.</p>
 <h3 id="post-install-verification">Post-Install Verification<a class="headerlink" href="#post-install-verification" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># All pods should be 1/1 Running (12 with event exporter disabled, 13 with it enabled)</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># All 12 pods should be 1/1 Running</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># Verify LLM connectivity</span>
@@ -3618,7 +3794,6 @@ secret can be omitted.</p>
 <ul>
 <li><strong>Single installation per cluster</strong>: Cluster-scoped resources (ClusterRoles, ClusterRoleBindings, WebhookConfigurations) use static names. Installing multiple releases in different namespaces will cause conflicts.</li>
 <li><strong>Init container timeouts</strong>: The <code>wait-for-postgres</code> init containers in DataStorage and the migration Job have no timeout. If PostgreSQL is unavailable, these containers will block indefinitely.</li>
-<li><strong>Event Exporter probes</strong>: The event-exporter container does not expose health endpoints, so no liveness or readiness probes are configured.</li>
 </ul>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>

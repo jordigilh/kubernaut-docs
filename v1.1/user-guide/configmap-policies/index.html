@@ -12,13 +12,13 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/user-guide/notifications/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/user-guide/configmap-policies/">
       
       
-        <link rel="prev" href="../rego-reference/">
+        <link rel="prev" href="../configmap-holmesgpt/">
       
       
-        <link rel="next" href="../approval/">
+        <link rel="next" href="../configmap-approval/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Notification Channels - Kubernaut</title>
+        <title>SignalProcessing Rego Policies - Kubernaut</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#notification-channels" class="md-skip">
+        <a href="#signalprocessing-rego-policies" class="md-skip">
           Skip to content
         </a>
       
@@ -130,7 +130,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Notification Channels
+              SignalProcessing Rego Policies
             
           </span>
         </div>
@@ -1010,37 +1010,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Notification Channels
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../notifications/" class="md-nav__link">
         
   
   
@@ -1056,248 +1029,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#channel-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Channel Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#routing-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routing Configuration
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Routing Configuration">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#match-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Match Fields
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#routing-logic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Routing Logic
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#per-channel-setup" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-Channel Setup
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Per-Channel Setup">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#console" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Console
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#log" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Log
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#slack" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Slack
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#credential-management" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Credential Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Credential Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How It Works
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-by-step-slack-webhook" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step-by-Step: Slack Webhook
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#directory-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Directory Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hot-reload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hot-Reload
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#retry-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Retry Policy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Retry Policy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#per-notification-override" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-Notification Override
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#enabling-slack-end-to-end-walkthrough" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Enabling Slack: End-to-End Walkthrough
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1447,8 +1178,10 @@
                 
   
   
+    
   
   
+  
     
     
       
@@ -1472,13 +1205,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_14" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_14" checked>
         
           
           <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="">
@@ -1499,7 +1230,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_3_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1542,10 +1273,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../configmap-policies/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1561,6 +1319,148 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#provisioning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provisioning
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Provisioning">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#option-a-inject-via-set-file-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option A: Inject via --set-file (recommended)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#option-b-pre-existing-configmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Option B: Pre-existing ConfigMap
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#policy-structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Policy Structure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Policy Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-rule-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-rule References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proactive-signal-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proactive Signal Mappings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hot-reload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hot-Reload
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference File
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2876,10 +2776,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#channel-overview" class="md-nav__link">
+  <a href="#overview" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Channel Overview
+        Overview
       
     </span>
   </a>
@@ -2887,22 +2787,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#routing-configuration" class="md-nav__link">
+  <a href="#provisioning" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Configuration
+        Provisioning
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Routing Configuration">
+    <nav class="md-nav" aria-label="Provisioning">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#match-fields" class="md-nav__link">
+  <a href="#option-a-inject-via-set-file-recommended" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Match Fields
+        Option A: Inject via --set-file (recommended)
       
     </span>
   </a>
@@ -2910,10 +2810,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#routing-logic" class="md-nav__link">
+  <a href="#option-b-pre-existing-configmap" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Routing Logic
+        Option B: Pre-existing ConfigMap
       
     </span>
   </a>
@@ -2926,22 +2826,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#per-channel-setup" class="md-nav__link">
+  <a href="#policy-structure" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Per-Channel Setup
+        Policy Structure
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Per-Channel Setup">
+    <nav class="md-nav" aria-label="Policy Structure">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#console" class="md-nav__link">
+  <a href="#input-schema" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Console
+        Input Schema
       
     </span>
   </a>
@@ -2949,32 +2849,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#file" class="md-nav__link">
+  <a href="#cross-rule-references" class="md-nav__link">
     <span class="md-ellipsis">
       
-        File
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#log" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Log
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#slack" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Slack
+        Cross-rule References
       
     </span>
   </a>
@@ -2987,51 +2865,17 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#credential-management" class="md-nav__link">
+  <a href="#proactive-signal-mappings" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Credential Management
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Credential Management">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How It Works
+        Proactive Signal Mappings
       
     </span>
   </a>
   
 </li>
-        
-          <li class="md-nav__item">
-  <a href="#step-by-step-slack-webhook" class="md-nav__link">
-    <span class="md-ellipsis">
       
-        Step-by-Step: Slack Webhook
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#directory-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Directory Structure
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
+        <li class="md-nav__item">
   <a href="#hot-reload" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3041,56 +2885,12 @@
   </a>
   
 </li>
-        
-      </ul>
-    </nav>
-  
-</li>
       
         <li class="md-nav__item">
-  <a href="#retry-policy" class="md-nav__link">
+  <a href="#reference-file" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Retry Policy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Retry Policy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#per-notification-override" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-Notification Override
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#enabling-slack-end-to-end-walkthrough" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Enabling Slack: End-to-End Walkthrough
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
+        Reference File
       
     </span>
   </a>
@@ -3114,322 +2914,166 @@
 
 
 
-<h1 id="notification-channels">Notification Channels<a class="headerlink" href="#notification-channels" title="Permanent link">&para;</a></h1>
-<div class="admonition info">
-<p class="admonition-title">Architecture reference</p>
-<p>For the CRD specification, delivery orchestration, and retry internals, see <a href="../../architecture/notification/">Architecture: Notification Pipeline</a>.</p>
-</div>
-<p>Kubernaut sends notifications at key points in the remediation lifecycle: when human approval is required, when a remediation fails, when manual review is needed, and when a remediation completes. Notifications are routed through configurable channels using an AlertManager-style routing configuration.</p>
-<h2 id="channel-overview">Channel Overview<a class="headerlink" href="#channel-overview" title="Permanent link">&para;</a></h2>
+<h1 id="signalprocessing-rego-policies">SignalProcessing Rego Policies<a class="headerlink" href="#signalprocessing-rego-policies" title="Permanent link">&para;</a></h1>
+<p>The SignalProcessing controller uses a single Rego policy file (<code>policy.rego</code>) for all signal classification: environment, priority, severity, and custom labels. Proactive signal mappings are separate YAML configuration.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Channel</th>
-<th>Status</th>
+<th>Property</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ConfigMap name</td>
+<td><code>signalprocessing-policy</code> (Rego) + <code>signalprocessing-proactive-signal-mappings</code> (optional, YAML)</td>
+</tr>
+<tr>
+<td>Mount path</td>
+<td><code>/etc/signalprocessing/policy.rego</code> (Rego) + <code>/etc/signalprocessing/proactive-signal-mappings.yaml</code> (mappings)</td>
+</tr>
+<tr>
+<td>Required</td>
+<td>Yes -- chart fails at install if neither <code>signalprocessing.policy</code> nor <code>signalprocessing.existingPolicyConfigMap</code> is set</td>
+</tr>
+</tbody>
+</table>
+<h2 id="provisioning">Provisioning<a class="headerlink" href="#provisioning" title="Permanent link">&para;</a></h2>
+<h3 id="option-a-inject-via-set-file-recommended">Option A: Inject via --set-file (recommended)<a class="headerlink" href="#option-a-inject-via-set-file-recommended" title="Permanent link">&para;</a></h3>
+<p>Provide a single <code>.rego</code> file directly:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>...
+</span></code></pre></div>
+<h3 id="option-b-pre-existing-configmap">Option B: Pre-existing ConfigMap<a class="headerlink" href="#option-b-pre-existing-configmap" title="Permanent link">&para;</a></h3>
+<p>Create the ConfigMap yourself and reference it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--from-file<span class="o">=</span>policy.rego<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--set<span class="w"> </span>signalprocessing.existingPolicyConfigMap<span class="o">=</span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>...
+</span></code></pre></div>
+<h2 id="policy-structure">Policy Structure<a class="headerlink" href="#policy-structure" title="Permanent link">&para;</a></h2>
+<p>The policy file must use <code>package signalprocessing</code> and export 4 named rules:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">signalprocessing</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># ========== Environment ==========</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Returns: {&quot;environment&quot;: string, &quot;source&quot;: string}</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">default</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace-labels&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;env&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># ========== Severity ==========</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Returns: string (critical/high/medium/low/unknown)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">default</span><span class="w"> </span><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># ========== Priority ==========</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="c1"># Returns: {&quot;priority&quot;: string, &quot;policy_name&quot;: string}</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="c1"># Can reference `environment` and `severity` directly</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">default</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P3&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">}</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="c1"># ========== Custom Labels ==========</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="c1"># Returns: map[string][]string</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="k">default</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{}</span>
+</span></code></pre></div>
+<h3 id="input-schema">Input Schema<a class="headerlink" href="#input-schema" title="Permanent link">&para;</a></h3>
+<p>The Go controller sends a typed struct as Rego input:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Type</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Console</strong></td>
-<td>Implemented</td>
-<td>Writes to controller-runtime log output (stdout)</td>
+<td><code>input.namespace.name</code></td>
+<td>string</td>
+<td>Namespace name</td>
 </tr>
 <tr>
-<td><strong>File</strong></td>
-<td>Implemented</td>
-<td>Writes notification JSON/YAML to files (E2E/testing)</td>
+<td><code>input.namespace.labels</code></td>
+<td>map</td>
+<td>Namespace labels</td>
 </tr>
 <tr>
-<td><strong>Log</strong></td>
-<td>Implemented</td>
-<td>Structured JSON Lines to stdout for log aggregation</td>
+<td><code>input.namespace.annotations</code></td>
+<td>map</td>
+<td>Namespace annotations</td>
 </tr>
 <tr>
-<td><strong>Slack</strong></td>
-<td>Implemented</td>
-<td>Sends Block Kit messages via Incoming Webhooks</td>
+<td><code>input.signal.severity</code></td>
+<td>string</td>
+<td>External severity from alert source</td>
 </tr>
 <tr>
-<td>Email</td>
-<td>Schema-defined</td>
-<td>Not yet implemented</td>
+<td><code>input.signal.type</code></td>
+<td>string</td>
+<td>Signal type (e.g., <code>PodCrashLoop</code>)</td>
 </tr>
 <tr>
-<td>Teams</td>
-<td>Schema-defined</td>
-<td>Not yet implemented</td>
+<td><code>input.signal.source</code></td>
+<td>string</td>
+<td>Gateway adapter that ingested signal</td>
 </tr>
 <tr>
-<td>SMS</td>
-<td>Schema-defined</td>
-<td>Not yet implemented</td>
+<td><code>input.signal.labels</code></td>
+<td>map</td>
+<td>Signal labels</td>
 </tr>
 <tr>
-<td>Webhook</td>
-<td>Schema-defined</td>
-<td>Not yet implemented</td>
+<td><code>input.workload.kind</code></td>
+<td>string</td>
+<td>Target resource kind (e.g., <code>Deployment</code>)</td>
+</tr>
+<tr>
+<td><code>input.workload.name</code></td>
+<td>string</td>
+<td>Target resource name</td>
+</tr>
+<tr>
+<td><code>input.workload.labels</code></td>
+<td>map</td>
+<td>Target resource labels</td>
 </tr>
 </tbody>
 </table>
-<h2 id="routing-configuration">Routing Configuration<a class="headerlink" href="#routing-configuration" title="Permanent link">&para;</a></h2>
-<p>Notifications are routed using a ConfigMap with an AlertManager-style <code>route</code> + <code>receivers</code> structure.</p>
-<p><strong>ConfigMap:</strong> <code>notification-routing-config</code></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-console</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">routes</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">escalation</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">approval_required</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">failed</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-console</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="nt">consoleConfigs</span><span class="p">:</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">slackConfigs</span><span class="p">:</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">        </span><span class="nt">credentialRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
+<h3 id="cross-rule-references">Cross-rule References<a class="headerlink" href="#cross-rule-references" title="Permanent link">&para;</a></h3>
+<p>Priority rules can reference <code>environment</code> and <code>severity</code> directly within the policy. Rego resolves these declaratively without requiring explicit Go-level sequencing:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="w">   </span><span class="c1"># references the environment rule</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w">                     </span><span class="c1"># references the severity rule</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<h3 id="match-fields">Match Fields<a class="headerlink" href="#match-fields" title="Permanent link">&para;</a></h3>
-<p>Routes match on notification attributes:</p>
-<table>
-<thead>
-<tr>
-<th>Match Key</th>
-<th>Source</th>
-<th>Example Values</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>type</code></td>
-<td>Notification type</td>
-<td><code>escalation</code>, <code>approval_required</code>, <code>failed</code>, <code>manual-review</code>, <code>completion</code></td>
-</tr>
-<tr>
-<td><code>severity</code></td>
-<td>Signal severity</td>
-<td><code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
-</tr>
-<tr>
-<td><code>priority</code></td>
-<td>Signal priority</td>
-<td><code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
-</tr>
-<tr>
-<td><code>phase</code></td>
-<td>Remediation phase</td>
-<td><code>signal-processing</code>, <code>ai-analysis</code>, <code>executing</code></td>
-</tr>
-<tr>
-<td><code>environment</code></td>
-<td>Namespace environment</td>
-<td><code>production</code>, <code>staging</code>, <code>development</code></td>
-</tr>
-<tr>
-<td><code>review-source</code></td>
-<td>Why review was triggered</td>
-<td><code>WorkflowResolutionFailed</code>, <code>ExhaustedRetries</code></td>
-</tr>
-</tbody>
-</table>
-<h3 id="routing-logic">Routing Logic<a class="headerlink" href="#routing-logic" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>First matching route wins</strong> (depth-first evaluation)</li>
-<li>Child routes are evaluated before the parent</li>
-<li>The <strong>default receiver</strong> is used when no route matches</li>
-<li>Routing configuration supports <strong>hot-reload</strong> -- changes to the ConfigMap take effect without pod restart</li>
-</ul>
-<h2 id="per-channel-setup">Per-Channel Setup<a class="headerlink" href="#per-channel-setup" title="Permanent link">&para;</a></h2>
-<h3 id="console">Console<a class="headerlink" href="#console" title="Permanent link">&para;</a></h3>
-<p>Console delivery writes notifications to the controller log via <code>controller-runtime</code>. Enabled by default for local development.</p>
-<p><strong>Helm configuration:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># In notification-controller-config ConfigMap</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">delivery</span><span class="p">:</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">console</span><span class="p">:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<h2 id="proactive-signal-mappings">Proactive Signal Mappings<a class="headerlink" href="#proactive-signal-mappings" title="Permanent link">&para;</a></h2>
+<p>Proactive signal mappings are YAML (not Rego) and injected separately. They map proactive alert names to their reactive counterparts for deduplication.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.proactiveSignalMappings.content<span class="o">=</span>mappings.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>...
 </span></code></pre></div>
-<p><strong>Routing receiver:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">default-console</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">consoleConfigs</span><span class="p">:</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<p>Example content:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">proactive_signal_mappings</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">PredictedOOMKill</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OOMKilled</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">PredictedCPUThrottling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPUThrottling</span>
 </span></code></pre></div>
-<h3 id="file">File<a class="headerlink" href="#file" title="Permanent link">&para;</a></h3>
-<p>File delivery writes the full <code>NotificationRequest</code> content to files. Primarily useful for E2E testing and debugging.</p>
-<p><strong>Helm configuration:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">delivery</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">file</span><span class="p">:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="nt">outputDir</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/tmp/notifications&quot;</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;json&quot;</span><span class="w">     </span><span class="c1"># json or yaml</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5s&quot;</span>
-</span></code></pre></div>
-<p>Files are written atomically (temp file then rename) with the naming pattern:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>notification-{name}-{timestamp}.{format}
-</span></code></pre></div>
-<h3 id="log">Log<a class="headerlink" href="#log" title="Permanent link">&para;</a></h3>
-<p>Log delivery sends structured notifications to stdout as JSON Lines, suitable for ingestion by Loki, Elasticsearch, or similar log aggregation systems.</p>
-<p><strong>Helm configuration:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">delivery</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">log</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nt">format</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;json&quot;</span><span class="w">    </span><span class="c1"># json or text</span>
-</span></code></pre></div>
-<p><strong>JSON output format:</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T12:34:56Z&quot;</span><span class="p">,</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;notification_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval-required-rr-12345&quot;</span><span class="p">,</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;notification_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kubernaut-system&quot;</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval_required&quot;</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="p">,</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human approval required for OOMKilled remediation&quot;</span><span class="p">,</span>
-</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
-</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">},</span>
-</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ai-analysis&quot;</span>
-</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Text format:</strong> <code>[timestamp] namespace/name subject: body</code></p>
-<h3 id="slack">Slack<a class="headerlink" href="#slack" title="Permanent link">&para;</a></h3>
-<p>Slack delivery sends Block Kit messages via Incoming Webhooks.</p>
-<p><strong>Message format:</strong></p>
-<ol>
-<li><strong>Header block</strong> -- Priority emoji + subject (e.g., <code>:rotating_light: Human approval required for OOMKilled remediation</code>)</li>
-<li><strong>Section block</strong> -- Notification body (Markdown converted to Slack mrkdwn)</li>
-<li><strong>Context block</strong> -- <code>*Priority:* critical | *Type:* approval_required</code></li>
-</ol>
-<p>Priority emojis: Critical = <img alt="🚨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f6a8.svg" title=":rotating_light:" />, High = <img alt="⚠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/26a0.svg" title=":warning:" />, Medium = <img alt="ℹ" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/2139.svg" title=":information_source:" />, Low = <img alt="💬" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f4ac.svg" title=":speech_balloon:" /></p>
-<p><strong>Routing receiver:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">slackConfigs</span><span class="p">:</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="nt">credentialRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span><span class="w">     </span><span class="c1"># References a mounted credential</span>
-</span></code></pre></div>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>channel</code></td>
-<td>Slack channel to post to</td>
-</tr>
-<tr>
-<td><code>credentialRef</code></td>
-<td>Name of the credential file containing the webhook URL</td>
-</tr>
-<tr>
-<td><code>username</code></td>
-<td>Optional bot username override</td>
-</tr>
-<tr>
-<td><code>iconEmoji</code></td>
-<td>Optional icon emoji override</td>
-</tr>
-</tbody>
-</table>
-<h2 id="credential-management">Credential Management<a class="headerlink" href="#credential-management" title="Permanent link">&para;</a></h2>
-<p>Notification credentials (webhook URLs, API tokens) are managed via Kubernetes Secrets mounted as projected volumes.</p>
-<h3 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
-<ol>
-<li>Create a Kubernetes Secret with the credential value</li>
-<li>Configure the Helm chart to project the Secret into the notification pod</li>
-<li>Reference the credential name in the routing configuration</li>
-</ol>
-<h3 id="step-by-step-slack-webhook">Step-by-Step: Slack Webhook<a class="headerlink" href="#step-by-step-slack-webhook" title="Permanent link">&para;</a></h3>
-<p><strong>1. Create the Secret:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span><span class="s2">&quot;https://hooks.slack.com/services/T.../B.../xxx&quot;</span>
-</span></code></pre></div>
-<p><strong>2. Configure Helm values:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">notification</span><span class="p">:</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">routing</span><span class="p">:</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">content</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1"># Or provide via --set-file notification.routing.content=routing.yaml</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">credentials</span><span class="p">:</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span><span class="w">          </span><span class="c1"># Credential name (used in routing credentialRef)</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span><span class="w">    </span><span class="c1"># Kubernetes Secret name</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">      </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook-url</span><span class="w">       </span><span class="c1"># Key within the Secret</span>
-</span></code></pre></div>
-<p><strong>3. Reference in routing:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-alerts</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">slackConfigs</span><span class="p">:</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">        </span><span class="nt">credentialRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span><span class="w">   </span><span class="c1"># Matches credential name above</span>
-</span></code></pre></div>
-<h3 id="directory-structure">Directory Structure<a class="headerlink" href="#directory-structure" title="Permanent link">&para;</a></h3>
-<p>Credentials are mounted at <code>/etc/notification/credentials/</code>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>/etc/notification/credentials/
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>  slack-webhook       # Contains the webhook URL
-</span></code></pre></div>
-<p>Each credential is a single file where the filename is the credential name and the content is the secret value.</p>
-<h3 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h3>
-<p>Credentials support hot-reload via fsnotify. When a Secret is updated, the kubelet syncs the projected volume (~60s), and the file watcher detects the change and reloads the credential cache. No pod restart required.</p>
-<h2 id="retry-policy">Retry Policy<a class="headerlink" href="#retry-policy" title="Permanent link">&para;</a></h2>
-<p>The notification controller uses exponential backoff with retry and circuit breaker logic. See <a href="../../architecture/notification/#retry-policy">Architecture: Notification Pipeline</a> for retry defaults and error classification.</p>
-<h3 id="per-notification-override">Per-Notification Override<a class="headerlink" href="#per-notification-override" title="Permanent link">&para;</a></h3>
-<p>The retry policy can be overridden per <code>NotificationRequest</code> via the <code>spec.retryPolicy</code> field:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">retryPolicy</span><span class="p">:</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">maxAttempts</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">initialBackoffSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">backoffMultiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">maxBackoffSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
-</span></code></pre></div>
-<h2 id="enabling-slack-end-to-end-walkthrough">Enabling Slack: End-to-End Walkthrough<a class="headerlink" href="#enabling-slack-end-to-end-walkthrough" title="Permanent link">&para;</a></h2>
-<ol>
-<li>
-<p><strong>Create a Slack Incoming Webhook</strong> in your workspace (Apps &gt; Incoming Webhooks &gt; Add to Channel)</p>
-</li>
-<li>
-<p><strong>Create the Kubernetes Secret:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span><span class="s2">&quot;https://hooks.slack.com/services/T.../B.../xxx&quot;</span>
-</span></code></pre></div>
-</li>
-<li>
-<p><strong>Provide a routing config</strong> (via <code>--set-file</code> or in a values file):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>--set-file<span class="w"> </span>notification.routing.content<span class="o">=</span>charts/kubernaut/examples/notification-routing.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span>-f<span class="w"> </span>values.yaml
-</span></code></pre></div>
-<p>Ensure your values file includes the credential mount:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">notification</span><span class="p">:</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">credentials</span><span class="p">:</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">      </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook-url</span>
-</span></code></pre></div>
-</li>
-<li>
-<p><strong>Verify</strong> the notification pod has the credential mounted:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deploy/notification-controller<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>ls<span class="w"> </span>/etc/notification/credentials/
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># Should show: slack-webhook</span>
-</span></code></pre></div>
-</li>
-</ol>
-<p>Slack notifications will now be sent for any route that uses a <code>slackConfigs</code> receiver.</p>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="../../architecture/notification/">Architecture: Notification Pipeline</a> -- CRD specification, delivery orchestration, and retry internals</li>
-<li><a href="../configuration/">Configuration Reference</a> -- Full operator configuration reference</li>
-<li><a href="../approval/">Human Approval</a> -- The approval notification flow</li>
-<li><a href="../policies/">Rego Policies</a> -- Policies that influence notification triggers</li>
-</ul>
+<p>If no proactive signals are used, this is optional (omit both fields).</p>
+<h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
+<p>Policy changes are detected via <code>fsnotify</code> (~60s kubelet sync delay for ConfigMap updates). If the new policy has a syntax error, the previous policy is kept active and an error is logged.</p>
+<p>Since all rules share one file, any edit triggers a full reload. Structure your policy with clear section headers to make partial edits manageable.</p>
+<h2 id="reference-file">Reference File<a class="headerlink" href="#reference-file" title="Permanent link">&para;</a></h2>
+<p>A complete example policy is available in the chart: <code>charts/kubernaut/examples/signalprocessing-policy.rego</code></p>
+<p>See also: <a href="../policies/">Rego Policies</a> for the Rego language reference.</p>
 
 
 
@@ -3465,7 +3109,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../rego-reference/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Rego Policy Reference">
+          <a href="../configmap-holmesgpt/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HolmesGPT SDK Config">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3475,20 +3119,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Rego Policy Reference
+                HolmesGPT SDK Config
               </div>
             </div>
           </a>
         
         
           
-          <a href="../approval/" class="md-footer__link md-footer__link--next" aria-label="Next: Human Approval">
+          <a href="../configmap-approval/" class="md-footer__link md-footer__link--next" aria-label="Next: AIAnalysis Approval Policy">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Human Approval
+                AIAnalysis Approval Policy
               </div>
             </div>
             <div class="md-footer__button md-icon">

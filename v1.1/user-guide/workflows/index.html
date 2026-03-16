@@ -779,6 +779,8 @@
       
         
       
+        
+      
     
     
     
@@ -1630,6 +1632,193 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_14" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMap References
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_14">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ConfigMap References
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configmap-holmesgpt/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HolmesGPT SDK Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configmap-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configmap-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIAnalysis Approval Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../configmap-notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -4123,11 +4312,11 @@
 </ul>
 <h3 id="connection-to-signal-processing-rego-policies">Connection to Signal Processing Rego Policies<a class="headerlink" href="#connection-to-signal-processing-rego-policies" title="Permanent link">&para;</a></h3>
 <p>The SP Rego policies determine the values that feed into discovery:</p>
+<p>All classification rules live in a single <code>policy.rego</code> file under <code>package signalprocessing</code>:</p>
 <ul>
-<li><code>severity.rego</code> and <code>priority.rego</code> produce values for <strong>Layer 1 filtering</strong> -- a misconfigured policy can silently exclude correct workflows</li>
-<li><code>environment.rego</code> produces the environment value for <strong>Layer 1 filtering</strong></li>
-<li><code>customlabels.rego</code> (<code>kubernaut.ai/label-*</code>) produces values for <strong>Layer 2 scoring</strong> at +0.15 per match</li>
-<li><code>business.rego</code> (business_unit, service_owner, criticality, sla_tier) is <strong>NOT used in discovery</strong> -- neither filtering nor scoring. These values enrich the LLM prompt context only</li>
+<li>The <code>severity</code> and <code>priority</code> rules produce values for <strong>Layer 1 filtering</strong> -- a misconfigured rule can silently exclude correct workflows</li>
+<li>The <code>environment</code> rules produce the environment value for <strong>Layer 1 filtering</strong></li>
+<li>The <code>labels</code> rules (<code>kubernaut.ai/label-*</code>) produce values for <strong>Layer 2 scoring</strong> at +0.15 per match</li>
 </ul>
 <div class="admonition note">
 <p class="admonition-title">Why business classification is not used for discovery</p>

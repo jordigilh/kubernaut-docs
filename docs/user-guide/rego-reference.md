@@ -9,30 +9,37 @@ All policies are deployed as ConfigMaps and support hot-reload. See [Rego Polici
 
 ---
 
-## Signal Processing Policies
+## Signal Processing Policy
 
-SP policies run during signal enrichment, before the signal reaches AI Analysis. Each classifier passes a specific input schema to its Rego policy.
+All SP classification rules live in a single `policy.rego` file under `package signalprocessing` ([ADR-060](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md)). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.
 
-### Severity Policy
+### Common Input Schema
 
-**Package:** `signalprocessing.severity`
-
-**Rego query:** `data.signalprocessing.severity.determine_severity`
-
-**Expected output:** A string -- one of `critical`, `high`, `medium`, `low`, `unknown`
-
-#### Input Fields
+All SP rules receive the same `PolicyInput` struct:
 
 | Field | Type | Description |
 |---|---|---|
-| `input.signal.severity` | `string` | Raw severity string from the alert source (e.g., `critical`, `P0`, `Sev1`) |
-| `input.signal.type` | `string` | Signal type (e.g., `alert`, `event`) |
-| `input.signal.source` | `string` | Alert source identifier (e.g., `prometheus`, `pagerduty`) |
+| `input.namespace.name` | `string` | Kubernetes namespace name |
+| `input.namespace.labels` | `map[string]string` | All labels on the namespace |
+| `input.namespace.annotations` | `map[string]string` | All annotations on the namespace |
+| `input.signal.severity` | `string` | Raw severity string from the alert source |
+| `input.signal.type` | `string` | Signal type (e.g., `PodCrashLoop`) |
+| `input.signal.source` | `string` | Alert source identifier (e.g., `prometheus`) |
+| `input.signal.labels` | `map[string]string` | Labels attached to the signal |
+| `input.workload.kind` | `string` | Target resource kind (e.g., `Deployment`) |
+| `input.workload.name` | `string` | Target resource name |
+| `input.workload.labels` | `map[string]string` | All labels on the workload |
+
+### Severity Rules
+
+**Rego query:** `data.signalprocessing.severity`
+
+**Expected output:** A string -- one of `critical`, `high`, `medium`, `low`, `unknown`
 
 #### Example: PagerDuty P0--P4 Mapping
 
 ```rego
-package signalprocessing.severity
+package signalprocessing
 
 import rego.v1
 
@@ -44,170 +51,150 @@ severity_map := {
     "p4": "low",
 }
 
-determine_severity := severity_map[lower(input.signal.severity)] if {
+severity := severity_map[lower(input.signal.severity)] if {
     lower(input.signal.severity) in object.keys(severity_map)
 }
 
 # Fallback: unmapped severity escalates to critical (conservative)
-default determine_severity := "critical"
+default severity := "critical"
 ```
 
 #### Example: Source-Aware Severity
 
 ```rego
-package signalprocessing.severity
+package signalprocessing
 
 import rego.v1
 
 # PagerDuty alerts use P0-P4
-determine_severity := "critical" if {
+severity := "critical" if {
     input.signal.source == "pagerduty"
     lower(input.signal.severity) in {"p0", "p1"}
 }
 
 # Prometheus alerts use standard severity labels
-determine_severity := input.signal.severity if {
+severity := input.signal.severity if {
     input.signal.source == "prometheus"
     input.signal.severity in {"critical", "high", "medium", "low"}
 }
 
-default determine_severity := "unknown"
+default severity := "unknown"
 ```
 
 ---
 
-### Environment Policy
+### Environment Rules
 
-**Package:** `signalprocessing.environment`
-
-**Rego query:** `data.signalprocessing.environment.result`
+**Rego query:** `data.signalprocessing.environment`
 
 **Expected output:** `{"environment": string, "source": string}`
-
-#### Input Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `input.namespace.name` | `string` | Kubernetes namespace name |
-| `input.namespace.labels` | `map[string]string` | All labels on the namespace |
-| `input.signal.labels` | `map[string]string` | Labels attached to the incoming signal/alert |
 
 #### Example: Label-Based with Namespace Name Fallback
 
 ```rego
-package signalprocessing.environment
+package signalprocessing
 
 import rego.v1
 
 # Primary: kubernaut.ai/environment namespace label
-result := {"environment": lower(env), "source": "namespace-labels"} if {
+environment := {"environment": lower(env), "source": "namespace-labels"} if {
     env := input.namespace.labels["kubernaut.ai/environment"]
     env != ""
 }
 
 # Fallback: namespace name convention
-result := {"environment": "production", "source": "namespace-name"} if {
+environment := {"environment": "production", "source": "namespace-name"} if {
     not input.namespace.labels["kubernaut.ai/environment"]
     startswith(input.namespace.name, "prod")
 }
 
-result := {"environment": "staging", "source": "namespace-name"} if {
+environment := {"environment": "staging", "source": "namespace-name"} if {
     not input.namespace.labels["kubernaut.ai/environment"]
     startswith(input.namespace.name, "staging")
 }
 
-default result := {"environment": "", "source": "unclassified"}
+default environment := {"environment": "", "source": "unclassified"}
 ```
 
 #### Example: Signal Label Override
 
 ```rego
-package signalprocessing.environment
+package signalprocessing
 
 import rego.v1
 
 # Allow alerts to carry an explicit environment label
-result := {"environment": lower(env), "source": "signal-labels"} if {
+environment := {"environment": lower(env), "source": "signal-labels"} if {
     env := input.signal.labels["environment"]
     env != ""
 }
 
 # Otherwise use namespace label
-result := {"environment": lower(env), "source": "namespace-labels"} if {
+environment := {"environment": lower(env), "source": "namespace-labels"} if {
     not input.signal.labels["environment"]
     env := input.namespace.labels["kubernaut.ai/environment"]
     env != ""
 }
 
-default result := {"environment": "", "source": "unclassified"}
+default environment := {"environment": "", "source": "unclassified"}
 ```
 
 ---
 
-### Priority Policy
+### Priority Rules
 
-**Package:** `signalprocessing.priority`
-
-**Rego query:** `data.signalprocessing.priority.result`
+**Rego query:** `data.signalprocessing.priority`
 
 **Expected output:** `{"priority": "P0"|"P1"|"P2"|"P3", "policy_name": string}`
 
-#### Input Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `input.signal.severity` | `string` | Normalized severity from the severity policy (`critical`, `high`, etc.) |
-| `input.signal.source` | `string` | Alert source identifier |
-| `input.environment` | `string` | Environment classification from the environment policy |
-| `input.namespace_labels` | `map[string]string` | All labels on the namespace (empty `{}` if unavailable) |
-| `input.workload_labels` | `map[string]string` | All labels on the workload (empty `{}` if unavailable) |
+Priority rules can cross-reference `environment` and `severity` rules directly within the same policy file.
 
 #### Example: Score-Based Priority (Default)
 
 ```rego
-package signalprocessing.priority
+package signalprocessing
 
 import rego.v1
 
-# Severity dimension
-severity_score := 3 if { lower(input.signal.severity) == "critical" }
-severity_score := 2 if { lower(input.signal.severity) == "warning" }
-severity_score := 1 if { lower(input.signal.severity) == "info" }
+# Severity dimension (cross-references the severity rule)
+severity_score := 3 if { severity == "critical" }
+severity_score := 2 if { severity == "high" }
+severity_score := 1 if { severity == "medium" }
 default severity_score := 0
 
-# Environment dimension
-env_scores contains 3 if { lower(input.environment) == "production" }
-env_scores contains 2 if { lower(input.environment) == "staging" }
-env_scores contains 1 if { lower(input.environment) == "development" }
+# Environment dimension (cross-references the environment rule)
+env_scores contains 3 if { environment.environment == "production" }
+env_scores contains 2 if { environment.environment == "staging" }
+env_scores contains 1 if { environment.environment == "development" }
 
 # Tier label boost
-env_scores contains 3 if { input.namespace_labels["tier"] == "critical" }
-env_scores contains 2 if { input.namespace_labels["tier"] == "high" }
+env_scores contains 3 if { input.namespace.labels["tier"] == "critical" }
+env_scores contains 2 if { input.namespace.labels["tier"] == "high" }
 
 env_score := max(env_scores) if { count(env_scores) > 0 }
 default env_score := 0
 
 composite_score := severity_score + env_score
 
-result := {"priority": "P0", "policy_name": "score-based"} if { composite_score >= 6 }
-result := {"priority": "P1", "policy_name": "score-based"} if { composite_score == 5 }
-result := {"priority": "P2", "policy_name": "score-based"} if { composite_score == 4 }
-result := {"priority": "P3", "policy_name": "score-based"} if { composite_score < 4; composite_score > 0 }
+priority := {"priority": "P0", "policy_name": "score-based"} if { composite_score >= 6 }
+priority := {"priority": "P1", "policy_name": "score-based"} if { composite_score == 5 }
+priority := {"priority": "P2", "policy_name": "score-based"} if { composite_score == 4 }
+priority := {"priority": "P3", "policy_name": "score-based"} if { composite_score < 4; composite_score > 0 }
 
-default result := {"priority": "P3", "policy_name": "default-catch-all"}
+default priority := {"priority": "P3", "policy_name": "default-catch-all"}
 ```
 
 #### Example: Workload-Label Boost
 
 ```rego
-package signalprocessing.priority
+package signalprocessing
 
 import rego.v1
 
 # Payment services always get P0
-result := {"priority": "P0", "policy_name": "payment-override"} if {
-    input.workload_labels["app"] == "payment-service"
-    lower(input.signal.severity) in {"critical", "high"}
+priority := {"priority": "P0", "policy_name": "payment-override"} if {
+    input.workload.labels["app"] == "payment-service"
+    severity in {"critical", "high"}
 }
 
 # Otherwise fall through to score-based (omitted for brevity)
@@ -215,108 +202,11 @@ result := {"priority": "P0", "policy_name": "payment-override"} if {
 
 ---
 
-### Business Policy
+### Custom Labels Rules
 
-**Package:** `signalprocessing.business`
+**Rego query:** `data.signalprocessing.labels`
 
-**Rego query:** `data.signalprocessing.business.result`
-
-**Expected output:** `{"business_unit": string, "service_owner": string, "criticality": string, "sla": string, "source": string}`
-
-#### Input Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `input.environment` | `string` | Environment classification from the environment policy |
-| `input.namespace.name` | `string` | Kubernetes namespace name |
-| `input.namespace.labels` | `map[string]string` | All labels on the namespace |
-| `input.namespace.annotations` | `map[string]string` | All annotations on the namespace |
-| `input.workload.kind` | `string` | Workload kind (`Deployment`, `StatefulSet`, etc.) |
-| `input.workload.name` | `string` | Workload name |
-| `input.workload.labels` | `map[string]string` | All labels on the workload |
-| `input.workload.annotations` | `map[string]string` | All annotations on the workload |
-
-!!! note "Well-known label keys"
-    The default policy reads `kubernaut.ai/business-unit`, `kubernaut.ai/service-owner`, `kubernaut.ai/criticality`, and `kubernaut.ai/sla-tier` from namespace labels. Custom policies can read any labels or annotations.
-
-#### Example: Label-Based Classification (Default)
-
-```rego
-package signalprocessing.business
-
-import rego.v1
-
-result := {
-    "business_unit": bu,
-    "service_owner": owner,
-    "criticality": crit,
-    "sla": sla,
-    "source": "namespace-labels",
-} if {
-    bu := object.get(input.namespace.labels, "kubernaut.ai/business-unit", "")
-    bu != ""
-    owner := object.get(input.namespace.labels, "kubernaut.ai/service-owner", "")
-    crit := object.get(input.namespace.labels, "kubernaut.ai/criticality", "medium")
-    sla := object.get(input.namespace.labels, "kubernaut.ai/sla-tier", "tier-3")
-}
-
-default result := {
-    "business_unit": "",
-    "service_owner": "",
-    "criticality": "",
-    "sla": "",
-    "source": "unclassified",
-}
-```
-
-#### Example: Workload Annotation Override
-
-```rego
-package signalprocessing.business
-
-import rego.v1
-
-# Workload annotations take precedence over namespace labels
-result := {
-    "business_unit": bu,
-    "service_owner": owner,
-    "criticality": crit,
-    "sla": sla,
-    "source": "workload-annotations",
-} if {
-    bu := input.workload.annotations["team.company.com/business-unit"]
-    bu != ""
-    owner := object.get(input.workload.annotations, "team.company.com/owner", "")
-    crit := object.get(input.workload.annotations, "team.company.com/criticality", "medium")
-    sla := object.get(input.workload.annotations, "team.company.com/sla", "tier-3")
-}
-```
-
----
-
-### Custom Labels Policy
-
-**Package:** `signalprocessing.customlabels`
-
-**Rego query:** `data.signalprocessing.customlabels.labels`
-
-**Expected output:** `map[string]string` -- key-value pairs extracted for workflow scoring
-
-#### Input Fields
-
-| Field | Type | Description |
-|---|---|---|
-| `input.kubernetes.namespace.name` | `string` | Kubernetes namespace name |
-| `input.kubernetes.namespace.labels` | `map[string]string` | All labels on the namespace |
-| `input.kubernetes.namespace.annotations` | `map[string]string` | All annotations on the namespace |
-| `input.kubernetes.workload.kind` | `string` | Workload kind (`Deployment`, `StatefulSet`, etc.) |
-| `input.kubernetes.workload.name` | `string` | Workload name |
-| `input.kubernetes.workload.labels` | `map[string]string` | All labels on the workload |
-| `input.kubernetes.workload.annotations` | `map[string]string` | All annotations on the workload |
-| `input.kubernetes.ownerChain` | `[]object` | Owner reference chain (e.g., Pod → ReplicaSet → Deployment) |
-| `input.signal.type` | `string` | Signal type |
-| `input.signal.severity` | `string` | Raw severity string |
-| `input.signal.source` | `string` | Alert source identifier |
+**Expected output:** `map[string][]string` -- key-value pairs extracted for workflow scoring
 
 !!! info "Validation limits"
     Custom labels are validated against hard limits: max 10 keys, max 5 values per key, max 63 chars per key, max 100 chars per value. Keys starting with `kubernaut.ai/` or `system/` are reserved and will be rejected.
@@ -324,12 +214,12 @@ result := {
 #### Example: Extract `kubernaut.ai/label-*` Namespace Labels (Default)
 
 ```rego
-package signalprocessing.customlabels
+package signalprocessing
 
 import rego.v1
 
-labels[key] := value if {
-    some k, v in input.kubernetes.namespace.labels
+labels[key] := [value] if {
+    some k, v in input.namespace.labels
     startswith(k, "kubernaut.ai/label-")
     key := trim_prefix(k, "kubernaut.ai/label-")
     value := v
@@ -339,21 +229,21 @@ labels[key] := value if {
 #### Example: Combine Namespace and Workload Labels
 
 ```rego
-package signalprocessing.customlabels
+package signalprocessing
 
 import rego.v1
 
 # Extract from namespace labels (kubernaut.ai/label-*)
-labels[key] := value if {
-    some k, v in input.kubernetes.namespace.labels
+labels[key] := [value] if {
+    some k, v in input.namespace.labels
     startswith(k, "kubernaut.ai/label-")
     key := trim_prefix(k, "kubernaut.ai/label-")
     value := v
 }
 
 # Also extract from workload labels (app.kubernetes.io/*)
-labels[key] := value if {
-    some k, v in input.kubernetes.workload.labels
+labels[key] := [value] if {
+    some k, v in input.workload.labels
     startswith(k, "app.kubernetes.io/")
     key := trim_prefix(k, "app.kubernetes.io/")
     value := v
@@ -363,18 +253,18 @@ labels[key] := value if {
 #### Example: Severity-Aware Custom Labels
 
 ```rego
-package signalprocessing.customlabels
+package signalprocessing
 
 import rego.v1
 
-# Tag critical alerts with an escalation label
-labels["escalation"] := "immediate" if {
-    input.signal.severity == "critical"
-    input.kubernetes.namespace.labels["kubernaut.ai/environment"] == "production"
+# Tag critical alerts with an escalation label (cross-references severity and environment rules)
+labels["escalation"] := ["immediate"] if {
+    severity == "critical"
+    environment.environment == "production"
 }
 
-labels["escalation"] := "standard" if {
-    input.signal.severity != "critical"
+labels["escalation"] := ["standard"] if {
+    severity != "critical"
 }
 ```
 

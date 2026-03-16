@@ -54,7 +54,7 @@ valkey:
     storageClassName: gp3-encrypted
 ```
 
-To skip in-chart databases entirely and use external instances, set `postgresql.enabled=false` and/or `valkey.enabled=false` and configure `externalPostgresql` / `externalValkey` values in the [Configuration Reference](../user-guide/configuration.md).
+To skip in-chart databases entirely and use external instances, set `postgresql.enabled=false` and/or `valkey.enabled=false` and configure `postgresql.host`/`valkey.host` values in the [Configuration Reference](../user-guide/configuration.md).
 
 ### Prometheus and AlertManager
 
@@ -71,9 +71,9 @@ Kubernaut integrates with Prometheus and AlertManager at two levels:
 
 ### Signal Source Authentication
 
-The Gateway authenticates **every** signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). Both AlertManager and the Event Exporter must present a valid ServiceAccount bearer token, and that ServiceAccount must have RBAC permission to submit signals.
+The Gateway authenticates **every** signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). Signal sources (e.g., AlertManager) must present a valid ServiceAccount bearer token, and that ServiceAccount must have RBAC permission to submit signals.
 
-The chart provides a `gateway-signal-source` ClusterRole that grants `create` on the `gateway-service` resource. Each entry in `gateway.auth.signalSources` creates a ClusterRoleBinding binding this role to the specified ServiceAccount. The Event Exporter is bound automatically by the chart.
+The chart provides a `gateway-signal-source` ClusterRole that grants `create` on the `gateway-service` resource. Each entry in `gateway.auth.signalSources` creates a ClusterRoleBinding binding this role to the specified ServiceAccount.
 
 See [Security & RBAC](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR flow, Gateway RBAC details, and the `gateway-signal-source` ClusterRole definition.
 
@@ -134,18 +134,6 @@ gateway:
 
 !!! warning
     Without `bearer_token_file`, AlertManager sends unauthenticated requests and the Gateway rejects them with `401 Unauthorized`. Without the `signalSources` entry, the token is valid but SAR denies access with `403 Forbidden`.
-
-#### Kubernetes Event Exporter
-
-The Event Exporter is deployed **automatically** by the Kubernaut Helm chart when `eventExporter.enabled=true` (default). Set `eventExporter.enabled=false` to skip it (e.g., on OpenShift). It watches for `Warning`-type Kubernetes events (e.g., `BackOff`, `OOMKilled`, `FailedScheduling`) and forwards them to the Gateway at `/api/v1/signals/kubernetes-event`. No manual configuration is needed.
-
-The chart creates:
-
-- An `event-exporter` ServiceAccount
-- An `event-exporter` ClusterRole with read access to events, pods, configmaps, namespaces, deployments, and replicasets
-- A ClusterRoleBinding granting the `gateway-signal-source` role to the Event Exporter's ServiceAccount
-
-The Event Exporter's ConfigMap filters out `Normal` events and Kubernaut's own CRD events to prevent feedback loops. See [Event Exporter](../operations/event-exporter.md) for customization options (e.g., watching multiple namespaces).
 
 ## Pre-Installation
 
@@ -217,9 +205,8 @@ kubectl create secret generic kubernaut-valkey-credentials \
       -n kubernaut-system
     ```
 
-    The chart mounts this file and sets `GOOGLE_APPLICATION_CREDENTIALS` automatically
-    when `holmesgptApi.llm.provider` is `vertex_ai`. With GCP Workload Identity the
-    secret can be omitted.
+    The chart mounts this file and sets `GOOGLE_APPLICATION_CREDENTIALS` automatically.
+    With GCP Workload Identity the secret can be omitted.
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
@@ -239,33 +226,41 @@ kubectl create secret generic slack-webhook \
 |---|---|---|
 | `notification.credentials[].secretName` | Your secret name | `webhook-url` (or custom key via `secretKey`) |
 
-Only required when `notification.slack.enabled=true`. When Slack is disabled (default), no notification secret is needed.
+Only required when Slack delivery is configured in the notification routing config. When using console-only routing (default), no notification secret is needed.
 
 ## Install
 
 ### Standard (Kind / vanilla Kubernetes)
 
-With namespace and secrets already provisioned, use `values-demo.yaml` to reference the pre-created secret names:
+With namespace and secrets already provisioned, provide the three mandatory content configs via `--set-file`:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
+  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=my-approval.rego \
+  --set-file signalprocessing.policy=my-policy.rego
 ```
+
+See `charts/kubernaut/examples/` for reference configuration files you can copy and customize. For a quickstart, see [Quickstart](#quickstart) below.
 
 ### OpenShift (OCP)
 
-Layer the `values-ocp.yaml` overlay on top of `values-demo.yaml` to switch to Red Hat catalog images, disable the event exporter, and configure OCP monitoring endpoints:
+Layer the `values-ocp.yaml` overlay to switch to Red Hat catalog images and configure OCP monitoring endpoints:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
   -f charts/kubernaut/values-ocp.yaml \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
+  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=my-approval.rego \
+  --set-file signalprocessing.policy=my-policy.rego
 ```
 
 !!! tip "Disconnected / air-gapped clusters"
@@ -280,9 +275,9 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   -f my-values.yaml
 ```
 
-### Development Quick Start
+### Quickstart
 
-For local development without external monitoring:
+For getting started quickly, the chart ships example configuration files in `charts/kubernaut/examples/`. The only real customization required is the LLM provider credentials.
 
 ```bash
 # 1. Create namespace and minimal secrets
@@ -302,20 +297,35 @@ kubectl create secret generic kubernaut-valkey-credentials \
   --from-literal=valkey-secrets.yaml=$'password: valkeypass' \
   -n kubernaut-system
 
-# 2. Install with demo values (references the secret names above)
+# 2. Copy and customize the SDK config (fill in your LLM provider + API key)
+cp charts/kubernaut/examples/sdk-config.yaml my-sdk-config.yaml
+# Edit my-sdk-config.yaml: set llm.provider, llm.model
+
+kubectl create secret generic llm-credentials \
+  --from-literal=OPENAI_API_KEY=sk-... \
+  -n kubernaut-system
+
+# 3. Install using the example configs
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
-  -f charts/kubernaut/values-demo.yaml \
-  --set effectivenessmonitor.external.prometheusEnabled=false \
-  --set effectivenessmonitor.external.alertManagerEnabled=false
+  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
+  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
+  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
+
+# 4. Load demo ActionTypes and RemediationWorkflows
+kubectl apply -f https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/action-types/ -n kubernaut-system
+kubectl apply -f https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/workflows/ -n kubernaut-system
 ```
 
-`values-demo.yaml` sets `postgresql.auth.existingSecret`, `datastorage.dbExistingSecret`, and `valkey.existingSecret` to the secret names created above.
+See the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository for complete demo scenarios that exercise the full remediation pipeline.
 
 ### Post-Install Verification
 
 ```bash
-# All pods should be 1/1 Running (12 with event exporter disabled, 13 with it enabled)
+# All 12 pods should be 1/1 Running
 kubectl get pods -n kubernaut-system
 
 # Verify LLM connectivity
@@ -437,7 +447,6 @@ kubectl delete namespace kubernaut-system
 
 - **Single installation per cluster**: Cluster-scoped resources (ClusterRoles, ClusterRoleBindings, WebhookConfigurations) use static names. Installing multiple releases in different namespaces will cause conflicts.
 - **Init container timeouts**: The `wait-for-postgres` init containers in DataStorage and the migration Job have no timeout. If PostgreSQL is unavailable, these containers will block indefinitely.
-- **Event Exporter probes**: The event-exporter container does not expose health endpoints, so no liveness or readiness probes are configured.
 
 ## Next Steps
 

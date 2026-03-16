@@ -583,10 +583,11 @@ Maximum possible penalty: **0.20**.
 
 The SP Rego policies determine the values that feed into discovery:
 
-- `severity.rego` and `priority.rego` produce values for **Layer 1 filtering** -- a misconfigured policy can silently exclude correct workflows
-- `environment.rego` produces the environment value for **Layer 1 filtering**
-- `customlabels.rego` (`kubernaut.ai/label-*`) produces values for **Layer 2 scoring** at +0.15 per match
-- `business.rego` (business_unit, service_owner, criticality, sla_tier) is **NOT used in discovery** -- neither filtering nor scoring. These values enrich the LLM prompt context only
+All classification rules live in a single `policy.rego` file under `package signalprocessing`:
+
+- The `severity` and `priority` rules produce values for **Layer 1 filtering** -- a misconfigured rule can silently exclude correct workflows
+- The `environment` rules produce the environment value for **Layer 1 filtering**
+- The `labels` rules (`kubernaut.ai/label-*`) produce values for **Layer 2 scoring** at +0.15 per match
 
 !!! note "Why business classification is not used for discovery"
     Workflows are reusable across organizational boundaries -- a `RollbackDeployment` works for any team, business unit, or SLA tier. Mandatory labels describe the **technical remediation context** (severity, resource type, environment). Business classification describes **who owns the resource**, which is orthogonal to what fix is needed. Operators who want organizational matching can use custom labels (e.g., `kubernaut.ai/label-team=payments` on the namespace + `customLabels: {team: ["payments"]}` in the schema).

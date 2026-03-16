@@ -145,14 +145,14 @@ CustomLabels are operator-defined key-value pairs that influence DataStorage sco
 
 ```mermaid
 flowchart LR
-    NS["Namespace label<br/><small>kubernaut.ai/label-team=payments</small>"] --> Rego["customlabels.rego<br/><small>extracts team=payments</small>"]
+    NS["Namespace label<br/><small>kubernaut.ai/label-team=payments</small>"] --> Rego["policy.rego labels rules<br/><small>extracts team=payments</small>"]
     Rego --> SP["SignalProcessing<br/><small>CustomLabels field</small>"]
     SP --> DS["DataStorage scoring<br/><small>custom label boost</small>"]
     DS --> LLM["LLM sees ranked list"]
 ```
 
 1. **Namespace labels**: The operator labels namespaces with `kubernaut.ai/label-{key}={value}`
-2. **Rego policy**: `customlabels.rego` extracts labels with the `kubernaut.ai/label-` prefix
+2. **Rego policy**: The `labels` rules in `policy.rego` extract labels with the `kubernaut.ai/label-` prefix
 3. **Signal Processing**: Stores them in the `CustomLabels` field on the SP CRD
 4. **DataStorage**: During `list_workflows`, matches SP's custom labels against each workflow's `customLabels` and boosts the score
 5. **LLM**: Sees the ranked list and makes the final selection, guided by descriptions
@@ -179,10 +179,10 @@ kubectl label namespace payments-prod kubernaut.ai/label-team=payments
 kubectl label namespace payments-prod kubernaut.ai/label-risk_tolerance=high
 ```
 
-The default `customlabels.rego` extracts all `kubernaut.ai/label-*` labels automatically:
+The default `labels` rules in `policy.rego` extract all `kubernaut.ai/label-*` labels automatically:
 
 ```rego
-package signalprocessing.customlabels
+package signalprocessing
 
 import rego.v1
 
@@ -196,21 +196,21 @@ labels[key] := value if {
 
 ### Custom Rego for Non-Standard Labels
 
-If your labels don't follow the `kubernaut.ai/label-` convention, write a custom Rego policy:
+If your labels don't follow the `kubernaut.ai/label-` convention, add custom rules to the labels section of your `policy.rego`:
 
 ```rego
-package signalprocessing.customlabels
+package signalprocessing
 
 import rego.v1
 
 labels := result if {
-  rt := input.kubernetes.namespace.labels["company.io/risk-tolerance"]
+  rt := input.namespace.labels["company.io/risk-tolerance"]
   rt != ""
   result := {"risk_tolerance": [rt]}
 }
 ```
 
-Deploy it via the `signalprocessing-customlabels-policy` ConfigMap. Signal Processing hot-reloads Rego policies.
+Add these rules to the custom labels section of your unified `policy.rego` file in the `signalprocessing-policy` ConfigMap. Signal Processing hot-reloads the policy on ConfigMap updates.
 
 ### Scoring Impact
 
@@ -238,7 +238,7 @@ kubectl label namespace beta-prod kubernaut.ai/label-risk_tolerance=low
 
 ### Step 2: Verify the Rego Policy
 
-The default `customlabels.rego` extracts `risk_tolerance` automatically (it has the `kubernaut.ai/label-` prefix). No custom Rego needed.
+The default `labels` rules in `policy.rego` extract `risk_tolerance` automatically (it has the `kubernaut.ai/label-` prefix). No custom Rego needed.
 
 ### Step 3: Create the Action Type
 
@@ -414,7 +414,7 @@ The ranking and the descriptions **reinforce each other**:
 
 **Causes:**
 
-- **Rego policy not extracting labels**: Check that `customlabels.rego` outputs the expected keys. Test with `opa eval` or check the SP CRD's `status.customLabels`.
+- **Rego policy not extracting labels**: Check that the `labels` rules in `policy.rego` output the expected keys. Test with `opa eval` or check the SP CRD's `status.customLabels`.
 - **Namespace missing labels**: The namespace must have `kubernaut.ai/label-{key}={value}` labels for the default Rego policy to extract them.
 - **Workflow not declaring customLabels**: The workflow schema must have a `customLabels` section. Without it, there's nothing to match against.
 - **Key mismatch**: The Rego output key must exactly match the workflow's customLabel key (e.g., `risk_tolerance` in both).

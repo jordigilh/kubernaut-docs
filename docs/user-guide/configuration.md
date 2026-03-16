@@ -24,17 +24,17 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 | Label | Values | Used By | Purpose |
 |---|---|---|---|
-| `kubernaut.ai/environment` | `production`, `staging`, `development`, `qa`, `test` | SP `environment.rego`, AA approval | Environment classification and approval gates |
-| `kubernaut.ai/business-unit` | Any string | SP `business.rego` | Business unit classification (LLM context only) |
-| `kubernaut.ai/service-owner` | Any string | SP `business.rego` | Service owner team |
-| `kubernaut.ai/criticality` | `critical`, `high`, `medium`, `low` | SP `business.rego` | Business criticality |
-| `kubernaut.ai/sla-tier` | `platinum`, `gold`, `silver`, `bronze` | SP `business.rego` | SLA tier |
+| `kubernaut.ai/environment` | `production`, `staging`, `development`, `qa`, `test` | SP `policy.rego` (environment rules), AA approval | Environment classification and approval gates |
+| `kubernaut.ai/business-unit` | Any string | SP `policy.rego` (custom labels rules) | Business unit classification (LLM context only) |
+| `kubernaut.ai/service-owner` | Any string | SP `policy.rego` (custom labels rules) | Service owner team |
+| `kubernaut.ai/criticality` | `critical`, `high`, `medium`, `low` | SP `policy.rego` (custom labels rules) | Business criticality |
+| `kubernaut.ai/sla-tier` | `platinum`, `gold`, `silver`, `bronze` | SP `policy.rego` (custom labels rules) | SLA tier |
 
 ### Custom Labels
 
 | Label Pattern | Used By | Purpose |
 |---|---|---|
-| `kubernaut.ai/label-*` | SP `customlabels.rego` | Arbitrary key-value pairs fed into workflow scoring (+0.15 per exact match, +0.075 wildcard) |
+| `kubernaut.ai/label-*` | SP `policy.rego` (custom labels rules) | Arbitrary key-value pairs fed into workflow scoring (+0.15 per exact match, +0.075 wildcard) |
 
 The `kubernaut.ai/label-` prefix is stripped by SP before passing to workflow discovery. Example:
 
@@ -191,10 +191,12 @@ One of `policies.content` or `policies.existingConfigMap` **must** be provided; 
 | Parameter | Description | Default |
 |---|---|---|
 | `signalprocessing.replicas` | Number of replicas | `1` |
-| `signalprocessing.policies.content` | Rego policy YAML bundle (via `--set-file`). Chart creates ConfigMaps. | `""` |
-| `signalprocessing.policies.existingConfigMap` | Pre-existing ConfigMap name for Rego policies. Takes priority. | `""` |
+| `signalprocessing.policy` | Unified Rego policy content (via `--set-file`). Chart creates `signalprocessing-policy` ConfigMap. | `""` |
+| `signalprocessing.existingPolicyConfigMap` | Pre-existing ConfigMap name for the unified Rego policy. Takes priority over `policy`. | `""` |
+| `signalprocessing.proactiveSignalMappings.content` | Proactive signal mappings YAML (via `--set-file`). Chart creates ConfigMap. | `""` |
+| `signalprocessing.proactiveSignalMappings.existingConfigMap` | Pre-existing ConfigMap name for proactive signal mappings. | `""` |
 
-One of `policies.content` or `policies.existingConfigMap` **must** be provided; the chart fails at install if neither is set. The `content` field accepts a YAML bundle containing all Rego files and proactive signal mappings. See [SignalProcessing Rego Policies](configmap-policies.md) for the bundle format and customization guide.
+One of `policy` or `existingPolicyConfigMap` **must** be provided; the chart fails at install if neither is set. The policy file is a single `.rego` file (not a YAML bundle) containing all classification rules under `package signalprocessing`. Proactive signal mappings are optional and injected separately. See [SignalProcessing Rego Policies](configmap-policies.md) for the policy structure and customization guide.
 
 ### PostgreSQL
 
@@ -457,7 +459,7 @@ Understanding which configuration changes take effect live vs which require a re
 
 | Configuration | Hot-Reload | Mechanism | Latency |
 |---|---|---|---|
-| SP Rego policies (severity, priority, environment, business, custom labels) | Yes | fsnotify file watcher | ~60s (kubelet sync) |
+| SP unified Rego policy (`policy.rego` -- environment, severity, priority, custom labels) | Yes | fsnotify file watcher | ~60s (kubelet sync) |
 | AA approval policy | Yes | fsnotify file watcher | ~60s |
 | Notification credentials | Yes | fsnotify file watcher | ~60s |
 | Notification routing | Yes | fsnotify file watcher | ~60s |

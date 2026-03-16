@@ -242,7 +242,7 @@ helm install kubernaut charts/kubernaut/ \
   --set valkey.existingSecret=kubernaut-valkey-credentials \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=my-approval.rego \
-  --set-file signalprocessing.policies.content=my-sp-policies.yaml
+  --set-file signalprocessing.policy=my-policy.rego
 ```
 
 See `charts/kubernaut/examples/` for reference configuration files you can copy and customize. For a quickstart, see [Quickstart](#quickstart) below.
@@ -260,7 +260,7 @@ helm install kubernaut charts/kubernaut/ \
   --set valkey.existingSecret=kubernaut-valkey-credentials \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=my-approval.rego \
-  --set-file signalprocessing.policies.content=my-sp-policies.yaml
+  --set-file signalprocessing.policy=my-policy.rego
 ```
 
 !!! tip "Disconnected / air-gapped clusters"
@@ -313,7 +313,7 @@ helm install kubernaut charts/kubernaut/ \
   --set valkey.existingSecret=kubernaut-valkey-credentials \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
 
 # 4. Load demo ActionTypes and RemediationWorkflows
 kubectl apply -f https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/action-types/ -n kubernaut-system

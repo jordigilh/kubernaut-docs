@@ -265,7 +265,7 @@ helm install kubernaut charts/kubernaut/ \
   --set valkey.existingSecret=kubernaut-valkey-credentials \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
 ```
 
 **Flat registry** (quay.io, OCP internal):
@@ -282,7 +282,7 @@ helm install kubernaut charts/kubernaut/ \
   --set valkey.existingSecret=kubernaut-valkey-credentials \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
 ```
 
 ---
@@ -376,7 +376,7 @@ helm install kubernaut charts/kubernaut/ \
   --set global.image.digest=sha256:<digest> \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
 ```
 
 !!! tip "Recommendation"
@@ -399,7 +399,7 @@ helm upgrade kubernaut charts/kubernaut/ \
   -f charts/kubernaut/values-airgap.yaml \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policies.content=charts/kubernaut/examples/signalprocessing-policies.yaml
+  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
 ```
 
 ### Migration Job fails connecting to PostgreSQL

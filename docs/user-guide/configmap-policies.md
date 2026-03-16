@@ -1,118 +1,131 @@
 # SignalProcessing Rego Policies
 
-The SignalProcessing controller uses Rego policies for signal classification (environment, priority, severity, business unit, custom labels) and proactive signal mappings. This page documents the bundle format, required filenames, and customization.
+The SignalProcessing controller uses a single Rego policy file (`policy.rego`) for all signal classification: environment, priority, severity, and custom labels. Proactive signal mappings are separate YAML configuration.
 
 ## Overview
 
 | Property | Value |
 |---|---|
-| ConfigMap name | `signalprocessing-policies` (Rego files) + `signalprocessing-proactive-signal-mappings` (mappings) |
-| Mount path | `/etc/signalprocessing/policies` (Rego) + `/etc/signalprocessing/proactive-signal-mappings.yaml` (mappings) |
-| Required | Yes -- chart fails at install if neither `policies.content` nor `policies.existingConfigMap` is set |
+| ConfigMap name | `signalprocessing-policy` (Rego) + `signalprocessing-proactive-signal-mappings` (optional, YAML) |
+| Mount path | `/etc/signalprocessing/policy.rego` (Rego) + `/etc/signalprocessing/proactive-signal-mappings.yaml` (mappings) |
+| Required | Yes -- chart fails at install if neither `signalprocessing.policy` nor `signalprocessing.existingPolicyConfigMap` is set |
 
 ## Provisioning
 
-### Option A: YAML bundle via --set-file (recommended)
+### Option A: Inject via --set-file (recommended)
 
-Provide a single YAML file containing all Rego policies and proactive signal mappings. The chart parses this bundle via `fromYaml` and creates two ConfigMaps.
+Provide a single `.rego` file directly:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set-file signalprocessing.policies.content=my-sp-policies.yaml \
+  --set-file signalprocessing.policy=my-policy.rego \
   ...
 ```
 
 ### Option B: Pre-existing ConfigMap
 
-Create the ConfigMaps yourself and reference them. When using `existingConfigMap`, you are responsible for creating both ConfigMaps (`signalprocessing-policies` for Rego files and `signalprocessing-proactive-signal-mappings` for mappings).
+Create the ConfigMap yourself and reference it:
 
 ```bash
+kubectl create configmap signalprocessing-policy \
+  --from-file=policy.rego=my-policy.rego \
+  -n kubernaut-system
+
 helm install kubernaut charts/kubernaut/ \
-  --set signalprocessing.policies.existingConfigMap=my-sp-configmap \
+  --set signalprocessing.existingPolicyConfigMap=signalprocessing-policy \
   ...
 ```
 
-## Bundle Format
+## Policy Structure
 
-The YAML bundle is a flat map where each key is a filename and the value is the file content:
-
-```yaml
-environment.rego: |
-  package signalprocessing.environment
-  ...
-
-priority.rego: |
-  package signalprocessing.priority
-  ...
-
-business.rego: |
-  package signalprocessing.business
-  ...
-
-severity.rego: |
-  package signalprocessing.severity
-  ...
-
-customlabels.rego: |
-  package signalprocessing.customlabels
-  ...
-
-proactive-signal-mappings.yaml: |
-  proactive_signal_mappings:
-    PredictedOOMKill: OOMKilled
-    ...
-```
-
-### Required Files
-
-The controller expects exactly these filenames:
-
-| Filename | Package | Purpose |
-|---|---|---|
-| `environment.rego` | `signalprocessing.environment` | Determines environment from namespace labels/name |
-| `priority.rego` | `signalprocessing.priority` | Computes priority (P0--P3) from severity + environment |
-| `business.rego` | `signalprocessing.business` | Extracts business unit from namespace labels |
-| `severity.rego` | `signalprocessing.severity` | Normalizes signal severity to standard levels |
-| `customlabels.rego` | `signalprocessing.customlabels` | Extracts `kubernaut.ai/label-*` labels for workflow scoring |
-
-### Proactive Signal Mappings
-
-The `proactive-signal-mappings.yaml` key maps proactive alert names to their reactive counterparts. This is used by the deduplication engine to correlate proactive signals with reactive ones.
-
-If no ActionTypes with proactive signals are registered, set the mappings to empty:
-
-```yaml
-proactive-signal-mappings.yaml: |
-  proactive_signal_mappings: {}
-```
-
-## Customization
-
-### Adding a Custom Environment
-
-Edit `environment.rego` to add new environment mappings:
+The policy file must use `package signalprocessing` and export 4 named rules:
 
 ```rego
-result := {"environment": "canary", "source": "namespace-name"} if {
-  not input.namespace.labels["kubernaut.ai/environment"]
-  startswith(input.namespace.name, "canary-")
+package signalprocessing
+import rego.v1
+
+# ========== Environment ==========
+# Returns: {"environment": string, "source": string}
+default environment := {"environment": "unknown", "source": "default"}
+environment := {"environment": "production", "source": "namespace-labels"} if {
+    input.namespace.labels["env"] == "production"
+}
+
+# ========== Severity ==========
+# Returns: string (critical/high/medium/low/unknown)
+default severity := "unknown"
+severity := "critical" if { input.signal.severity == "critical" }
+
+# ========== Priority ==========
+# Returns: {"priority": string, "policy_name": string}
+# Can reference `environment` and `severity` directly
+default priority := {"priority": "P3", "policy_name": "default"}
+priority := {"priority": "P0", "policy_name": "production-critical"} if {
+    environment.environment == "production"
+    severity == "critical"
+}
+
+# ========== Custom Labels ==========
+# Returns: map[string][]string
+default labels := {}
+```
+
+### Input Schema
+
+The Go controller sends a typed struct as Rego input:
+
+| Path | Type | Description |
+|---|---|---|
+| `input.namespace.name` | string | Namespace name |
+| `input.namespace.labels` | map | Namespace labels |
+| `input.namespace.annotations` | map | Namespace annotations |
+| `input.signal.severity` | string | External severity from alert source |
+| `input.signal.type` | string | Signal type (e.g., `PodCrashLoop`) |
+| `input.signal.source` | string | Gateway adapter that ingested signal |
+| `input.signal.labels` | map | Signal labels |
+| `input.workload.kind` | string | Target resource kind (e.g., `Deployment`) |
+| `input.workload.name` | string | Target resource name |
+| `input.workload.labels` | map | Target resource labels |
+
+### Cross-rule References
+
+Priority rules can reference `environment` and `severity` directly within the policy. Rego resolves these declaratively without requiring explicit Go-level sequencing:
+
+```rego
+priority := {"priority": "P0", "policy_name": "production-critical"} if {
+    environment.environment == "production"   # references the environment rule
+    severity == "critical"                     # references the severity rule
 }
 ```
 
-### Adjusting Priority Scoring
+## Proactive Signal Mappings
 
-Edit `priority.rego` to change the scoring thresholds:
+Proactive signal mappings are YAML (not Rego) and injected separately. They map proactive alert names to their reactive counterparts for deduplication.
 
-```rego
-result := {"priority": "P0", "policy_name": "score-based"} if { composite_score >= 5 }
+```bash
+helm install kubernaut charts/kubernaut/ \
+  --set-file signalprocessing.proactiveSignalMappings.content=mappings.yaml \
+  ...
 ```
 
-### Hot-Reload
+Example content:
 
-Rego policies support hot-reload via fsnotify (~60s kubelet sync delay). If a policy has a syntax error, the previous policy is kept and an error is logged.
+```yaml
+proactive_signal_mappings:
+  PredictedOOMKill: OOMKilled
+  PredictedCPUThrottling: CPUThrottling
+```
+
+If no proactive signals are used, this is optional (omit both fields).
+
+## Hot-Reload
+
+Policy changes are detected via `fsnotify` (~60s kubelet sync delay for ConfigMap updates). If the new policy has a syntax error, the previous policy is kept active and an error is logged.
+
+Since all rules share one file, any edit triggers a full reload. Structure your policy with clear section headers to make partial edits manageable.
 
 ## Reference File
 
-A complete example bundle is available in the chart: `charts/kubernaut/examples/signalprocessing-policies.yaml`
+A complete example policy is available in the chart: `charts/kubernaut/examples/signalprocessing-policy.rego`
 
-See also: [Rego Policies](policies.md) for the Rego language reference and input/output contracts.
+See also: [Rego Policies](policies.md) for the Rego language reference.

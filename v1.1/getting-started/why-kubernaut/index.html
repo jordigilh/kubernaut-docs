@@ -713,10 +713,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison-with-rule-based-remediation" class="md-nav__link">
+  <a href="#comparison-rule-based-predictive-ai-and-generative-ai" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison with Rule-Based Remediation
+        Comparison: Rule-Based, Predictive AI, and Generative AI
       
     </span>
   </a>
@@ -2739,10 +2739,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#comparison-with-rule-based-remediation" class="md-nav__link">
+  <a href="#comparison-rule-based-predictive-ai-and-generative-ai" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Comparison with Rule-Based Remediation
+        Comparison: Rule-Based, Predictive AI, and Generative AI
       
     </span>
   </a>
@@ -2817,70 +2817,95 @@
 <li><strong>Learns</strong> — effectiveness scores feed back into future investigations so the LLM avoids repeating what failed before</li>
 </ol>
 <p>See <a href="../architecture-overview/">Architecture Overview</a> for the full pipeline.</p>
-<h2 id="comparison-with-rule-based-remediation">Comparison with Rule-Based Remediation<a class="headerlink" href="#comparison-with-rule-based-remediation" title="Permanent link">&para;</a></h2>
+<h2 id="comparison-rule-based-predictive-ai-and-generative-ai">Comparison: Rule-Based, Predictive AI, and Generative AI<a class="headerlink" href="#comparison-rule-based-predictive-ai-and-generative-ai" title="Permanent link">&para;</a></h2>
+<p>The AIOps remediation landscape has three distinct approaches. Kubernaut uses generative AI but is designed to integrate with predictive AI platforms as complementary tools.</p>
 <table>
 <thead>
 <tr>
 <th>Capability</th>
-<th>Rule-Based Tools</th>
-<th>Kubernaut</th>
+<th>Rule-Based</th>
+<th>Predictive AI (Davis, Watchdog)</th>
+<th>Kubernaut (Generative AI)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><strong>Trigger</strong></td>
 <td>Pattern match on alert name/labels</td>
-<td>Same — Prometheus alerts, K8s events</td>
+<td>Statistical anomaly detection, baseline deviation</td>
+<td>Same as rule-based — Prometheus alerts, K8s events</td>
 </tr>
 <tr>
 <td><strong>Root cause analysis</strong></td>
 <td>None — assumes symptom = cause</td>
+<td>Topology-aware correlation across known dependency graphs</td>
 <td>LLM investigates live cluster state, logs, metrics, and history</td>
+</tr>
+<tr>
+<td><strong>Novel failure handling</strong></td>
+<td>Cannot handle — no matching rule</td>
+<td>Cannot handle — no historical baseline to correlate against</td>
+<td>Reasons about novel situations using Kubernetes semantics and context</td>
 </tr>
 <tr>
 <td><strong>Remediation selection</strong></td>
 <td>Static mapping (if X then Y)</td>
+<td>Triggers pre-configured runbooks</td>
 <td>AI selects from workflow catalog based on investigation context</td>
 </tr>
 <tr>
-<td><strong>Multiple root causes for same symptom</strong></td>
-<td>Cannot differentiate</td>
-<td>Selects different workflows based on diagnosed cause</td>
+<td><strong>Context awareness</strong></td>
+<td>Alert labels only</td>
+<td>Vendor telemetry (traces, metrics, topology)</td>
+<td>Full cluster state, GitOps labels, Rego policies, business metadata</td>
 </tr>
 <tr>
 <td><strong>Verification</strong></td>
 <td>Typically fire-and-forget</td>
+<td>Monitors recovery metrics</td>
 <td>Closed-loop: health checks, alert resolution, spec hash comparison</td>
 </tr>
 <tr>
 <td><strong>Learning from failure</strong></td>
 <td>None — repeats the same action</td>
+<td>Adjusts baselines over time</td>
 <td>Effectiveness scores feed into future investigations</td>
 </tr>
 <tr>
-<td><strong>Escalation</strong></td>
-<td>Alert or retry</td>
-<td>Escalates with full RCA after configurable attempts</td>
+<td><strong>Cold start</strong></td>
+<td>None — works immediately</td>
+<td>Weeks/months of baseline data required</td>
+<td>None — useful from day one</td>
 </tr>
 <tr>
 <td><strong>Latency</strong></td>
 <td>Milliseconds</td>
-<td>Seconds (LLM investigation adds 10-30s)</td>
+<td>Seconds (pre-computed models)</td>
+<td>10-30s (LLM investigation)</td>
 </tr>
 <tr>
 <td><strong>Token cost</strong></td>
 <td>None</td>
-<td>Per-investigation cost (rule-matched workflows skip LLM)</td>
+<td>Vendor license</td>
+<td>Per-investigation (rule-matched workflows skip LLM)</td>
 </tr>
 <tr>
 <td><strong>Auditability</strong></td>
 <td>Deterministic, easy to trace</td>
-<td>Full audit trail with SOC2 retention, but LLM reasoning is probabilistic</td>
+<td>Deterministic, vendor-specific dashboards</td>
+<td>Full audit trail with SOC2 retention; LLM reasoning is probabilistic</td>
+</tr>
+<tr>
+<td><strong>Vendor coupling</strong></td>
+<td>Low</td>
+<td>High — deep integration with vendor telemetry stack</td>
+<td>Low — works with any monitoring stack</td>
 </tr>
 </tbody>
 </table>
 <p><strong>Where rule-based tools win</strong>: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut supports rule-based workflows too — when signal labels match a workflow exactly, it's selected without LLM reasoning.</p>
-<p><strong>Where Kubernaut wins</strong>: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter.</p>
+<p><strong>Where predictive AI fits</strong>: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as <strong>knowledge-based agents</strong> that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See <a href="../../architecture/aiops-landscape/">AIOps Landscape</a> for the full integration architecture.</p>
+<p><strong>Where Kubernaut wins</strong>: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter. When integrated with predictive AI, Kubernaut can cross-validate its root cause analysis against statistical correlations — increasing confidence when they agree, and flagging discrepancies when they don't.</p>
 <h2 id="when-to-use-kubernaut">When to Use Kubernaut<a class="headerlink" href="#when-to-use-kubernaut" title="Permanent link">&para;</a></h2>
 <p><strong>Good fit:</strong></p>
 <ul>

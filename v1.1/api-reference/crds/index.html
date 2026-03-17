@@ -5636,7 +5636,10 @@ Immutability is enforced by CEL validation (self == oldSelf) to prevent tamperin
 </tbody>
 </table>
 <h3 id="enrichmentconfig">EnrichmentConfig<a class="headerlink" href="#enrichmentconfig" title="Permanent link">&para;</a></h3>
-<p>EnrichmentConfig specifies enrichment settings.</p>
+<p>EnrichmentConfig specifies per-signal enrichment settings.
+V2.0 PLACEHOLDER: These fields are currently NOT read by the controller.
+All signals use the global enrichment config from the controller's YAML configuration
+(enrichment.cacheTtl, enrichment.timeout). Per-signal overrides will be implemented in V2.0.</p>
 <p><em>Appears in:</em>
 - <a href="#signalprocessingspec">SignalProcessingSpec</a></p>
 <table>
@@ -7723,7 +7726,7 @@ This makes SignalProcessing self-contained for processing.</p>
 <tr>
 <td><code>targetType</code></td>
 <td><em>string</em></td>
-<td>Target system type</td>
+<td>Target system type.<br />V2.0 PLACEHOLDER: Currently only "kubernetes" is supported by the enricher.<br />Non-kubernetes values are accepted by validation but enrichment will run in degraded mode.</td>
 </tr>
 <tr>
 <td><code>targetResource</code></td>

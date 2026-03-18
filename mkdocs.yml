@@ -140,6 +140,7 @@ nav:
       - use-cases/index.md
       - Multi-Path Remediation: use-cases/multi-path-remediation.md
       - Remediation History Feedback: use-cases/remediation-history-feedback.md
+      - LLM Judgment & Approval Gate: use-cases/llm-judgment-approval-gate.md
   - Operations:
       - operations/index.md
       - Monitoring: operations/monitoring.md

@@ -2488,10 +2488,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#holmesgpt-api-metrics" class="md-nav__link">
+  <a href="#ai-agent-api-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HolmesGPT API Metrics
+        AI Agent API Metrics
       
     </span>
   </a>
@@ -3042,10 +3042,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#holmesgpt-api-metrics" class="md-nav__link">
+  <a href="#ai-agent-api-metrics" class="md-nav__link">
     <span class="md-ellipsis">
       
-        HolmesGPT API Metrics
+        AI Agent API Metrics
       
     </span>
   </a>
@@ -3632,11 +3632,7 @@
 </tr>
 </tbody>
 </table>
-<h2 id="holmesgpt-api-metrics">HolmesGPT API Metrics<a class="headerlink" href="#holmesgpt-api-metrics" title="Permanent link">&para;</a></h2>
-<div class="admonition note">
-<p class="admonition-title">Metric rename planned</p>
-<p>These metrics currently use the <code>holmesgpt_api_</code> prefix. A rename to <code>aiagent_api_</code> is planned (<a href="https://github.com/jordigilh/kubernaut/issues/293">GitHub #293</a>) to decouple metric names from the underlying implementation.</p>
-</div>
+<h2 id="ai-agent-api-metrics">AI Agent API Metrics<a class="headerlink" href="#ai-agent-api-metrics" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -3648,31 +3644,31 @@
 </thead>
 <tbody>
 <tr>
-<td><code>holmesgpt_api_investigations_total</code></td>
+<td><code>aiagent_api_investigations_total</code></td>
 <td>Counter</td>
 <td><code>status</code></td>
 <td>Investigation requests by outcome</td>
 </tr>
 <tr>
-<td><code>holmesgpt_api_investigations_duration_seconds</code></td>
+<td><code>aiagent_api_investigations_duration_seconds</code></td>
 <td>Histogram</td>
 <td>--</td>
 <td>End-to-end investigation duration</td>
 </tr>
 <tr>
-<td><code>holmesgpt_api_llm_calls_total</code></td>
+<td><code>aiagent_api_llm_calls_total</code></td>
 <td>Counter</td>
 <td><code>provider</code>, <code>model</code>, <code>status</code></td>
 <td>LLM API calls by provider and outcome</td>
 </tr>
 <tr>
-<td><code>holmesgpt_api_llm_call_duration_seconds</code></td>
+<td><code>aiagent_api_llm_call_duration_seconds</code></td>
 <td>Histogram</td>
 <td><code>provider</code>, <code>model</code></td>
 <td>LLM call latency</td>
 </tr>
 <tr>
-<td><code>holmesgpt_api_llm_token_usage_total</code></td>
+<td><code>aiagent_api_llm_token_usage_total</code></td>
 <td>Counter</td>
 <td><code>provider</code>, <code>model</code>, <code>type</code></td>
 <td>Token consumption (prompt, completion)</td>
@@ -3760,7 +3756,7 @@
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="o">*</span><span class="w"> </span><span class="mi">100</span>
 </span></code></pre></div>
 <h3 id="llm-latency-p99">LLM Latency (p99)<a class="headerlink" href="#llm-latency-p99" title="Permanent link">&para;</a></h3>
-<div class="language-promql highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kr">histogram_quantile</span><span class="o">(</span><span class="mf">0.99</span><span class="p">,</span><span class="w"> </span><span class="kr">rate</span><span class="o">(</span><span class="nv">holmesgpt_api_llm_call_duration_seconds_bucket</span><span class="p">[</span><span class="s">5m</span><span class="p">]</span><span class="o">))</span>
+<div class="language-promql highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kr">histogram_quantile</span><span class="o">(</span><span class="mf">0.99</span><span class="p">,</span><span class="w"> </span><span class="kr">rate</span><span class="o">(</span><span class="nv">aiagent_api_llm_call_duration_seconds_bucket</span><span class="p">[</span><span class="s">5m</span><span class="p">]</span><span class="o">))</span>
 </span></code></pre></div>
 <h3 id="signal-deduplication-rate">Signal Deduplication Rate<a class="headerlink" href="#signal-deduplication-rate" title="Permanent link">&para;</a></h3>
 <div class="language-promql highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">sum</span><span class="o">(</span><span class="kr">rate</span><span class="o">(</span><span class="nv">gateway_signals_deduplicated_total</span><span class="p">[</span><span class="s">5m</span><span class="p">]</span><span class="o">))</span>
@@ -3785,7 +3781,7 @@
 </span></code></pre></div>
 <h3 id="llm-token-cost-tracking">LLM Token Cost Tracking<a class="headerlink" href="#llm-token-cost-tracking" title="Permanent link">&para;</a></h3>
 <div class="language-promql highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Tokens consumed per hour by provider</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">sum</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="o">(</span><span class="nv">provider</span><span class="p">,</span><span class="w"> </span><span class="nv">type</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="kr">increase</span><span class="o">(</span><span class="nv">holmesgpt_api_llm_token_usage_total</span><span class="p">[</span><span class="s">1h</span><span class="p">]</span><span class="o">))</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">sum</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="o">(</span><span class="nv">provider</span><span class="p">,</span><span class="w"> </span><span class="nv">type</span><span class="o">)</span><span class="w"> </span><span class="o">(</span><span class="kr">increase</span><span class="o">(</span><span class="nv">aiagent_api_llm_token_usage_total</span><span class="p">[</span><span class="s">1h</span><span class="p">]</span><span class="o">))</span>
 </span></code></pre></div>
 <h2 id="logging">Logging<a class="headerlink" href="#logging" title="Permanent link">&para;</a></h2>
 <p>All services use <strong>structured JSON logging</strong> with configurable log levels:</p>

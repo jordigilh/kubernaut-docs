@@ -116,18 +116,15 @@ scrape_configs:
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |
 
-## HolmesGPT API Metrics
-
-!!! note "Metric rename planned"
-    These metrics currently use the `holmesgpt_api_` prefix. A rename to `aiagent_api_` is planned ([GitHub #293](https://github.com/jordigilh/kubernaut/issues/293)) to decouple metric names from the underlying implementation.
+## AI Agent API Metrics
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `holmesgpt_api_investigations_total` | Counter | `status` | Investigation requests by outcome |
-| `holmesgpt_api_investigations_duration_seconds` | Histogram | -- | End-to-end investigation duration |
-| `holmesgpt_api_llm_calls_total` | Counter | `provider`, `model`, `status` | LLM API calls by provider and outcome |
-| `holmesgpt_api_llm_call_duration_seconds` | Histogram | `provider`, `model` | LLM call latency |
-| `holmesgpt_api_llm_token_usage_total` | Counter | `provider`, `model`, `type` | Token consumption (prompt, completion) |
+| `aiagent_api_investigations_total` | Counter | `status` | Investigation requests by outcome |
+| `aiagent_api_investigations_duration_seconds` | Histogram | -- | End-to-end investigation duration |
+| `aiagent_api_llm_calls_total` | Counter | `provider`, `model`, `status` | LLM API calls by provider and outcome |
+| `aiagent_api_llm_call_duration_seconds` | Histogram | `provider`, `model` | LLM call latency |
+| `aiagent_api_llm_token_usage_total` | Counter | `provider`, `model`, `type` | Token consumption (prompt, completion) |
 
 ## Audit Pipeline Metrics
 
@@ -173,7 +170,7 @@ sum(rate(kubernaut_remediationorchestrator_phase_transitions_total{to_phase=~"Co
 ### LLM Latency (p99)
 
 ```promql
-histogram_quantile(0.99, rate(holmesgpt_api_llm_call_duration_seconds_bucket[5m]))
+histogram_quantile(0.99, rate(aiagent_api_llm_call_duration_seconds_bucket[5m]))
 ```
 
 ### Signal Deduplication Rate
@@ -213,7 +210,7 @@ kubernaut_notification_channel_circuit_breaker_state{channel="slack"} > 0
 
 ```promql
 # Tokens consumed per hour by provider
-sum by (provider, type) (increase(holmesgpt_api_llm_token_usage_total[1h]))
+sum by (provider, type) (increase(aiagent_api_llm_token_usage_total[1h]))
 ```
 
 ## Logging

@@ -152,6 +152,62 @@ but **low conviction** that action should be taken. This is a qualitatively diff
 kind of uncertainty — not "I'm unsure which fix to apply" but "I know the fix, I just
 don't think it's needed."
 
+### Why Was Approval Required?
+
+The `approvalReason` in the AA status reveals the trigger:
+
+```
+"approvalReason": "Production environment - requires manual approval"
+```
+
+This was the **Rego policy**, not the LLM's warning. The default `approval.rego` always
+requires approval for production namespaces, regardless of confidence or warnings. The
+LLM's `warnings` array is passed to the policy as `input.warnings`, but the default
+policy does not inspect it.
+
+!!! warning "What would happen in staging?"
+    If this scenario ran in a staging or development namespace, the default Rego policy
+    would **auto-approve** the `CleanupPVC` workflow — and the PVCs would be deleted.
+    The LLM's "no remediation warranted" warning would only appear in the audit trail
+    after execution. The production environment rule is what gave the operator the chance
+    to see the warning and reject.
+
+### Making the Warning Trigger Approval
+
+To ensure the LLM's warning triggers the approval gate in **any** environment, customize
+the Rego policy to inspect `input.warnings`:
+
+```rego
+package aianalysis.approval
+
+import rego.v1
+
+default require_approval := false
+default reason := "Auto-approved"
+
+require_approval if {
+  some w in input.warnings
+  contains(w, "no remediation warranted")
+}
+
+reason := "LLM warning: no remediation warranted" if {
+  some w in input.warnings
+  contains(w, "no remediation warranted")
+}
+```
+
+This policy can be combined with the default environment and affected-resource rules.
+Deploy it via Helm:
+
+```bash
+helm upgrade kubernaut charts/kubernaut/ \
+  --set-file aianalysis.policies.content=my-approval.rego \
+  --reuse-values
+```
+
+See [AIAnalysis Approval Policy](../user-guide/configmap-approval.md) for the full input
+contract and [Rego Policy Reference](../user-guide/rego-reference.md) for more examples.
+
 ## End-to-End Walkthrough
 
 The complete lifecycle, confirmed on a live OCP cluster:

@@ -16,6 +16,9 @@ from live Kubernetes clusters.
 - [Remediation History Feedback](remediation-history-feedback.md) -- How the LLM refused to
   repeat a failed workflow after remediation history revealed the prior attempt's failure,
   escalating to human review instead
+- [LLM Judgment and the Approval Gate](llm-judgment-approval-gate.md) -- How the LLM
+  selected a matching cleanup workflow but warned "no remediation warranted," deferring to
+  a human operator via the approval gate
 
 ## Demo Scenario Catalog
 
@@ -70,7 +73,7 @@ All scenarios are available in the [kubernaut-demo-scenarios](https://github.com
 |----------|--------|-------------|-------------|
 | [duplicate-alert-suppression](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/duplicate-alert-suppression) | `KubePodCrashLooping` | `RollbackDeployment` | Validates that duplicate alerts for the same incident are suppressed |
 | [concurrent-cross-namespace](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/concurrent-cross-namespace) | `KubePodCrashLooping` | Per-team workflow | Two teams hit the same fault; LLM selects different workflows based on risk labels |
-| [orphaned-pvc-no-action](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/orphaned-pvc-no-action) | `KubePersistentVolumeClaimOrphaned` | None (NoActionRequired) | LLM correctly identifies no remediation is needed |
+| [orphaned-pvc-no-action](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/orphaned-pvc-no-action) | `KubePersistentVolumeClaimOrphaned` | None (NoActionRequired) / `CleanupPVC` | Without cleanup workflow: LLM concludes no action needed. With workflow in catalog: LLM selects it but warns "no remediation warranted," deferring to human approval ([details](llm-judgment-approval-gate.md)) |
 
 ### Service Mesh
 

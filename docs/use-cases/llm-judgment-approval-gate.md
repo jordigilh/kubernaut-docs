@@ -3,19 +3,21 @@
 ## Summary
 
 During OCP validation of the **orphaned-pvc-no-action** scenario, removing a test
-workaround revealed a nuanced LLM behavior: when a matching `CleanupPVC` workflow is
-available in the catalog, the LLM selects it with high confidence (0.9) but simultaneously
-warns *"Alert not actionable — no remediation warranted."* The Rego policy then requires
-manual approval, giving a human operator the final say on a low-priority housekeeping action.
+workaround revealed two distinct LLM behaviors when a matching `CleanupPVC` workflow is
+available in the catalog. In some runs the LLM concludes no action is needed outright. In
+others, it selects the workflow with high confidence (0.9) but simultaneously warns
+*"Alert not actionable — no remediation warranted"* — presenting the option while
+flagging that automated execution is not warranted.
 
-This is a demonstration of three Kubernaut capabilities working together: contextual
-judgment, catalog matching, and the human-in-the-loop approval gate.
+The second behavior is the more compelling demo: it shows contextual judgment, catalog
+matching, and the human-in-the-loop approval gate working together.
 
 !!! info "Observed on a live cluster"
     This behavior was captured during OCP validation of `kubernaut-demo-scenarios#122`
-    and reproduced across 2 runs with Claude Sonnet 4 via Vertex AI. The scenario was
+    across 3 runs with Claude Sonnet 4 via Vertex AI. The LLM produced Path A
+    (NotActionable) in 1 run and Path B (workflow + warning) in 2 runs. The scenario was
     originally designed to test the `NoActionRequired` path by removing the
-    `cleanup-pvc-v1` workflow before execution. The behavior described here occurs when
+    `cleanup-pvc-v1` workflow before execution. The behaviors described here occur when
     that workflow **remains** in the catalog.
 
 ## The Scenario
@@ -30,19 +32,50 @@ graph LR
     Alert --> Kubernaut["Kubernaut Pipeline"]
 ```
 
-### Two Paths, One Scenario
+### Three Outcomes, One Scenario
 
-The scenario has two valid outcomes depending on the workflow catalog state:
+The LLM's decision depends on the workflow catalog state — and even with the same catalog
+state, the LLM may reach different conclusions across runs:
 
-| Catalog State | LLM Decision | RR Outcome |
-|---|---|---|
-| `cleanup-pvc-v1` **removed** | No matching workflow | Completed (NoActionRequired) |
-| `cleanup-pvc-v1` **available** | Selects workflow + emits warning | AwaitingApproval |
+| Catalog State | LLM Decision | RR Outcome | Observed |
+|---|---|---|---|
+| `cleanup-pvc-v1` **removed** | No matching workflow | Completed (NoActionRequired) | Original design |
+| `cleanup-pvc-v1` **available** | **Path A:** NotActionable, no workflow selected | Completed (NoActionRequired) | Run 2 |
+| `cleanup-pvc-v1` **available** | **Path B:** Selects workflow + emits warning | AwaitingApproval | Runs 1 & 3 |
 
-The first path is a straightforward `WorkflowNotNeeded` code path. The second path —
-discovered by removing the test workaround — is where the interesting behavior emerges.
+Path A is a clean "no action needed" decision — the LLM doesn't even present the
+workflow. Path B is the more interesting behavior: the LLM finds and presents the
+workflow but simultaneously warns against using it.
 
-## LLM Analysis
+## Path A: NotActionable (Run 2)
+
+In one of the three runs, the LLM concluded no action was needed outright. No workflow
+was selected and no warnings were raised:
+
+```yaml
+actionability: NotActionable
+selectedWorkflow: null
+warnings: []
+rootCauseAnalysis:
+  severity: low
+  summary: >
+    Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.
+    Five PVCs remain after their associated batch jobs completed. The data-processor
+    deployment is healthy and unaffected.
+  contributing_factors:
+    - Completed batch jobs cleanup
+    - PVC lifecycle independence
+    - Normal Kubernetes resource lifecycle
+```
+
+The RR auto-completed as `NoActionRequired` — no approval gate, no human involvement.
+This is the simpler story: *"Kubernaut's LLM correctly identifies orphaned PVCs as
+benign housekeeping and takes no action — even when a cleanup workflow is available."*
+
+## Path B: Workflow Selected with Warning (Runs 1 & 3)
+
+Path B is the stronger demo. The LLM finds a matching workflow but raises a warning,
+and the Rego policy escalates to human review.
 
 ### Root Cause Assessment
 
@@ -118,7 +151,7 @@ This scenario demonstrates the interplay between three layers of the Kubernaut p
 graph TD
     LLM["1. LLM Contextual Judgment<br/><i>Low severity, no remediation warranted</i>"]
     LLM --> Catalog["2. Workflow Catalog Matching<br/><i>CleanupPVC available, confidence 0.9</i>"]
-    Catalog --> Gate["3. Approval Gate<br/><i>Production environment → human decides</i>"]
+    Catalog --> Gate["3. Approval Gate<br/><i>Rego catches LLM warning → human decides</i>"]
 ```
 
 **1. LLM contextual judgment** — The LLM correctly identifies the issue as low-severity
@@ -130,10 +163,11 @@ warranted, it still presents the available option. The catalog match is accurate
 action type, correct parameters, high confidence), giving the operator a ready-to-execute
 remediation if they choose to proceed.
 
-**3. Human-in-the-loop approval** — The Rego policy requires manual approval for production
-environments. The operator receives the full context: the LLM's RCA (low severity), the
-matched workflow (CleanupPVC), and the warning (no remediation warranted). They can make
-an informed decision: clean up now, or leave it for the next maintenance window.
+**3. Human-in-the-loop approval** — The Rego policy catches the LLM's warning via the
+`has_warnings` rule and requires manual approval. The operator receives the full context:
+the LLM's RCA (low severity), the matched workflow (CleanupPVC), and the warning (no
+remediation warranted). They can make an informed decision: clean up now, or leave it for
+the next maintenance window.
 
 ### Contrast with Other Scenarios
 
@@ -154,28 +188,50 @@ don't think it's needed."
 
 ### Why Was Approval Required?
 
-The `approvalReason` in the AA status reveals the trigger:
+The answer depends on the Rego policy in effect. Across the 3 runs, two different
+policies were used:
 
-```
-"approvalReason": "Production environment - requires manual approval"
-```
+=== "Run 1: Default policy (production)"
 
-This was the **Rego policy**, not the LLM's warning. The default `approval.rego` always
-requires approval for production namespaces, regardless of confidence or warnings. The
-LLM's `warnings` array is passed to the policy as `input.warnings`, but the default
-policy does not inspect it.
+    ```
+    "approvalReason": "Production environment - requires manual approval"
+    ```
 
-!!! warning "What would happen in staging?"
-    If this scenario ran in a staging or development namespace, the default Rego policy
-    would **auto-approve** the `CleanupPVC` workflow — and the PVCs would be deleted.
-    The LLM's "no remediation warranted" warning would only appear in the audit trail
-    after execution. The production environment rule is what gave the operator the chance
-    to see the warning and reject.
+    The default `approval.rego` always requires approval for production namespaces,
+    regardless of confidence or warnings. The LLM's warning was coincidentally caught
+    — but by the environment rule, not the warning itself.
+
+=== "Run 3: Patched policy (staging)"
+
+    ```
+    "approvalReason": "LLM raised warnings — human review recommended"
+    ```
+
+    With the `has_warnings` rule added to the policy, the warning triggered approval
+    in a staging namespace where the default policy would have auto-approved.
+
+### The Gap in the Default Policy
+
+The default `approval.rego` defines a `has_warnings` helper but **never uses it** in
+any `require_approval` rule. This means:
+
+| Environment | Default Policy | LLM Warning Effect |
+|---|---|---|
+| Production | Approval required | Warning visible but irrelevant (caught by environment rule) |
+| Staging / Dev | **Auto-approved** | **Warning ignored** — workflow executes silently |
+
+!!! warning "Silent execution in non-production"
+    Without a policy fix, Path B in a staging or development namespace would
+    **auto-execute** the `CleanupPVC` workflow. The LLM's "no remediation warranted"
+    warning would only appear in the audit trail after the PVCs are already deleted.
+
+This gap is tracked in [kubernaut#439](https://github.com/jordigilh/kubernaut/issues/439)
+for inclusion in the default Helm chart policy.
 
 ### Making the Warning Trigger Approval
 
-To ensure the LLM's warning triggers the approval gate in **any** environment, customize
-the Rego policy to inspect `input.warnings`:
+Adding the `has_warnings` rule to the policy ensures the LLM's warning triggers the
+approval gate in **any** environment. This was confirmed in Run 3 (staging namespace):
 
 ```rego
 package aianalysis.approval
@@ -185,14 +241,16 @@ import rego.v1
 default require_approval := false
 default reason := "Auto-approved"
 
-require_approval if {
-  some w in input.warnings
-  contains(w, "no remediation warranted")
+has_warnings if {
+  count(input.warnings) > 0
 }
 
-reason := "LLM warning: no remediation warranted" if {
-  some w in input.warnings
-  contains(w, "no remediation warranted")
+require_approval if {
+  has_warnings
+}
+
+reason := "LLM raised warnings — human review recommended" if {
+  has_warnings
 }
 ```
 

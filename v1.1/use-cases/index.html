@@ -2116,6 +2116,8 @@
       
         
       
+        
+      
     
     
     
@@ -2216,6 +2218,34 @@
     
   
     Remediation History Feedback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="llm-judgment-approval-gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Judgment & Approval Gate
   
 
     
@@ -2742,6 +2772,9 @@ from live Kubernetes clusters.</p>
 <li><a href="remediation-history-feedback/">Remediation History Feedback</a> -- How the LLM refused to
   repeat a failed workflow after remediation history revealed the prior attempt's failure,
   escalating to human review instead</li>
+<li><a href="llm-judgment-approval-gate/">LLM Judgment and the Approval Gate</a> -- How the LLM
+  selected a matching cleanup workflow but warned "no remediation warranted," deferring to
+  a human operator via the approval gate</li>
 </ul>
 <h2 id="demo-scenario-catalog">Demo Scenario Catalog<a class="headerlink" href="#demo-scenario-catalog" title="Permanent link">&para;</a></h2>
 <p>The following scenarios demonstrate Kubernaut's remediation pipeline across different failure
@@ -2940,8 +2973,8 @@ triggers a Prometheus alert, and validates the full remediation lifecycle.</p>
 <tr>
 <td><a href="https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/orphaned-pvc-no-action">orphaned-pvc-no-action</a></td>
 <td><code>KubePersistentVolumeClaimOrphaned</code></td>
-<td>None (NoActionRequired)</td>
-<td>LLM correctly identifies no remediation is needed</td>
+<td>None (NoActionRequired) / <code>CleanupPVC</code></td>
+<td>Without cleanup workflow: LLM concludes no action needed. With workflow in catalog: LLM selects it but warns "no remediation warranted," deferring to human approval (<a href="llm-judgment-approval-gate/">details</a>)</td>
 </tr>
 </tbody>
 </table>

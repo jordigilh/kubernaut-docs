@@ -12,13 +12,13 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/use-cases/multi-path-remediation/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/use-cases/llm-judgment-approval-gate/">
       
       
-        <link rel="prev" href="../">
+        <link rel="prev" href="../remediation-history-feedback/">
       
       
-        <link rel="next" href="../remediation-history-feedback/">
+        <link rel="next" href="../../operations/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Multi-Path Remediation - Kubernaut</title>
+        <title>LLM Judgment & Approval Gate - Kubernaut</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#multiple-remediation-paths-aiops-vs-rule-based-systems" class="md-skip">
+        <a href="#llm-judgment-and-the-approval-gate-when-can-doesnt-mean-should" class="md-skip">
           Skip to content
         </a>
       
@@ -130,7 +130,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Multi-Path Remediation
+              LLM Judgment & Approval Gate
             
           </span>
         </div>
@@ -2177,6 +2177,62 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../multi-path-remediation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Path Remediation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../remediation-history-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation History Feedback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -2196,7 +2252,7 @@
   <span class="md-ellipsis">
     
   
-    Multi-Path Remediation
+    LLM Judgment & Approval Gate
   
 
     
@@ -2214,7 +2270,7 @@
   <span class="md-ellipsis">
     
   
-    Multi-Path Remediation
+    LLM Judgment & Approval Gate
   
 
     
@@ -2259,47 +2315,14 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#two-valid-remediation-paths" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two Valid Remediation Paths
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Two Valid Remediation Paths">
+    <nav class="md-nav" aria-label="The Scenario">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-a-gitrevertcommit-designed" class="md-nav__link">
+  <a href="#three-outcomes-one-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Path A: GitRevertCommit (Designed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#path-b-fixcertificate-observed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Path B: FixCertificate (Observed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Comparison
+        Three Outcomes, One Scenario
       
     </span>
   </a>
@@ -2312,22 +2335,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#llm-reasoning-analysis" class="md-nav__link">
+  <a href="#path-a-notactionable-run-2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLM Reasoning Analysis
+        Path A: NotActionable (Run 2)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LLM Reasoning Analysis">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-b-workflow-selected-with-warning-runs-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path B: Workflow Selected with Warning (Runs 1 &amp; 3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Path B: Workflow Selected with Warning (Runs 1 &amp; 3)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-correct-root-cause-identification" class="md-nav__link">
+  <a href="#root-cause-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Correct Root Cause Identification
+        Root Cause Assessment
       
     </span>
   </a>
@@ -2335,10 +2369,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-trade-off-awareness" class="md-nav__link">
+  <a href="#workflow-selection-with-reservations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Trade-Off Awareness
+        Workflow Selection with Reservations
       
     </span>
   </a>
@@ -2346,10 +2380,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-confidence-calibration" class="md-nav__link">
+  <a href="#the-full-aa-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Confidence Calibration
+        The Full AA Status
       
     </span>
   </a>
@@ -2362,22 +2396,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-recurrence-test" class="md-nav__link">
+  <a href="#why-this-matters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Recurrence Test
+        Why This Matters
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The Recurrence Test">
+    <nav class="md-nav" aria-label="Why This Matters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#history-informed-decision-making" class="md-nav__link">
+  <a href="#three-capabilities-working-together" class="md-nav__link">
     <span class="md-ellipsis">
       
-        History-Informed Decision Making
+        Three Capabilities Working Together
       
     </span>
   </a>
@@ -2385,10 +2419,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#built-in-escalation-safety" class="md-nav__link">
+  <a href="#contrast-with-other-scenarios" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-In Escalation Safety
+        Contrast with Other Scenarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-was-approval-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Was Approval Required?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-gap-in-the-default-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Gap in the Default Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-warning-trigger-approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the Warning Trigger Approval
       
     </span>
   </a>
@@ -2401,13 +2468,118 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aiops-vs-rule-based-systems" class="md-nav__link">
+  <a href="#end-to-end-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AIOps vs Rule-Based Systems
+        End-to-End Walkthrough
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="End-to-End Walkthrough">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-alert-fires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Alert fires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-llm-investigates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. LLM investigates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-workflow-matched-with-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Workflow matched with warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-approval-gate-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Approval gate triggers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-operator-reviews-and-rejects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Operator reviews and rejects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-rr-fails-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. RR fails gracefully
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-dedup-cooldown-absorbs-re-fires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Dedup cooldown absorbs re-fires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-after-cooldown-expires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. After cooldown expires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-would-approval-make-sense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Would Approval Make Sense?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2426,62 +2598,6 @@
   
 </nav>
       
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../remediation-history-feedback/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Remediation History Feedback
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../llm-judgment-approval-gate/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    LLM Judgment & Approval Gate
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -2883,47 +2999,14 @@
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#two-valid-remediation-paths" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Two Valid Remediation Paths
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Two Valid Remediation Paths">
+    <nav class="md-nav" aria-label="The Scenario">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#path-a-gitrevertcommit-designed" class="md-nav__link">
+  <a href="#three-outcomes-one-scenario" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Path A: GitRevertCommit (Designed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#path-b-fixcertificate-observed" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Path B: FixCertificate (Observed)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#comparison" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Comparison
+        Three Outcomes, One Scenario
       
     </span>
   </a>
@@ -2936,22 +3019,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#llm-reasoning-analysis" class="md-nav__link">
+  <a href="#path-a-notactionable-run-2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLM Reasoning Analysis
+        Path A: NotActionable (Run 2)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="LLM Reasoning Analysis">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#path-b-workflow-selected-with-warning-runs-1-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Path B: Workflow Selected with Warning (Runs 1 &amp; 3)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Path B: Workflow Selected with Warning (Runs 1 &amp; 3)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-correct-root-cause-identification" class="md-nav__link">
+  <a href="#root-cause-assessment" class="md-nav__link">
     <span class="md-ellipsis">
       
-        1. Correct Root Cause Identification
+        Root Cause Assessment
       
     </span>
   </a>
@@ -2959,10 +3053,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-trade-off-awareness" class="md-nav__link">
+  <a href="#workflow-selection-with-reservations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Trade-Off Awareness
+        Workflow Selection with Reservations
       
     </span>
   </a>
@@ -2970,10 +3064,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-confidence-calibration" class="md-nav__link">
+  <a href="#the-full-aa-status" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Confidence Calibration
+        The Full AA Status
       
     </span>
   </a>
@@ -2986,22 +3080,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-recurrence-test" class="md-nav__link">
+  <a href="#why-this-matters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Recurrence Test
+        Why This Matters
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="The Recurrence Test">
+    <nav class="md-nav" aria-label="Why This Matters">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#history-informed-decision-making" class="md-nav__link">
+  <a href="#three-capabilities-working-together" class="md-nav__link">
     <span class="md-ellipsis">
       
-        History-Informed Decision Making
+        Three Capabilities Working Together
       
     </span>
   </a>
@@ -3009,10 +3103,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#built-in-escalation-safety" class="md-nav__link">
+  <a href="#contrast-with-other-scenarios" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-In Escalation Safety
+        Contrast with Other Scenarios
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#why-was-approval-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Why Was Approval Required?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-gap-in-the-default-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Gap in the Default Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#making-the-warning-trigger-approval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Making the Warning Trigger Approval
       
     </span>
   </a>
@@ -3025,13 +3152,118 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#aiops-vs-rule-based-systems" class="md-nav__link">
+  <a href="#end-to-end-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
-        AIOps vs Rule-Based Systems
+        End-to-End Walkthrough
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="End-to-End Walkthrough">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-alert-fires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Alert fires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-llm-investigates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. LLM investigates
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-workflow-matched-with-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Workflow matched with warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-approval-gate-triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Approval gate triggers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-operator-reviews-and-rejects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Operator reviews and rejects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-rr-fails-gracefully" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. RR fails gracefully
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-dedup-cooldown-absorbs-re-fires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Dedup cooldown absorbs re-fires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-after-cooldown-expires" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. After cooldown expires
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#when-would-approval-make-sense" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Would Approval Make Sense?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3063,200 +3295,394 @@
 
 
 
-<h1 id="multiple-remediation-paths-aiops-vs-rule-based-systems">Multiple Remediation Paths: AIOps vs Rule-Based Systems<a class="headerlink" href="#multiple-remediation-paths-aiops-vs-rule-based-systems" title="Permanent link">&para;</a></h1>
+<h1 id="llm-judgment-and-the-approval-gate-when-can-doesnt-mean-should">LLM Judgment and the Approval Gate: When "Can" Doesn't Mean "Should"<a class="headerlink" href="#llm-judgment-and-the-approval-gate-when-can-doesnt-mean-should" title="Permanent link">&para;</a></h1>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
-<p>During live validation of the <strong>cert-failure-gitops</strong> scenario (#134), the LLM chose an
-alternative remediation workflow (<code>FixCertificate</code>) instead of the designed path
-(<code>GitRevertCommit</code>). Both approaches successfully remediated the alert and restored
-certificate issuance. This use case demonstrates a fundamental advantage of AIOps over
-rule-based remediation: the ability to reason about the problem and choose the most
-appropriate fix, rather than following a rigid playbook.</p>
+<p>During OCP validation of the <strong>orphaned-pvc-no-action</strong> scenario, removing a test
+workaround revealed two distinct LLM behaviors when a matching <code>CleanupPVC</code> workflow is
+available in the catalog. In some runs the LLM concludes no action is needed outright. In
+others, it selects the workflow with high confidence (0.9) but simultaneously warns
+<em>"Alert not actionable — no remediation warranted"</em> — presenting the option while
+flagging that automated execution is not warranted.</p>
+<p>The second behavior is the more compelling demo: it shows contextual judgment, catalog
+matching, and the human-in-the-loop approval gate working together.</p>
 <div class="admonition info">
-<p class="admonition-title">Kubernaut's Mission: Reduce MTTR</p>
-<p>Kubernaut's goal is to reduce Mean Time To Remediate (MTTR) -- restore service health
-and silence the alert. Providing a permanent long-term fix is the responsibility of the
-engineering team during post-incident review. Both remediation paths observed here
-fulfill Kubernaut's mission.</p>
+<p class="admonition-title">Observed on a live cluster</p>
+<p>This behavior was captured during OCP validation of <code>kubernaut-demo-scenarios#122</code>
+across 3 runs with Claude Sonnet 4 via Vertex AI. The LLM produced Path A
+(NotActionable) in 1 run and Path B (workflow + warning) in 2 runs. The scenario was
+originally designed to test the <code>NoActionRequired</code> path by removing the
+<code>cleanup-pvc-v1</code> workflow before execution. The behaviors described here occur when
+that workflow <strong>remains</strong> in the catalog.</p>
 </div>
 <h2 id="the-scenario">The Scenario<a class="headerlink" href="#the-scenario" title="Permanent link">&para;</a></h2>
-<p><strong>Scenario #134: cert-manager Certificate Failure with GitOps</strong></p>
-<p>A bad Git commit changes a cert-manager <code>ClusterIssuer</code> to reference a non-existent CA
-Secret (<code>nonexistent-ca-secret</code>). ArgoCD syncs the broken configuration. When the TLS
-certificate needs renewal, cert-manager fails to issue it, and the <code>CertManagerCertNotReady</code>
-alert fires.</p>
+<p><strong>orphaned-pvc-no-action</strong>: Five PVCs from completed batch jobs are left behind, consuming
+500Mi of storage. No pods reference them. Prometheus fires <code>KubePersistentVolumeClaimOrphaned</code>.</p>
 <pre class="mermaid"><code>graph LR
-    BadCommit[Bad Git Commit] --&gt; ArgoCD[ArgoCD Sync]
-    ArgoCD --&gt; BrokenIssuer["ClusterIssuer: nonexistent-ca-secret"]
-    BrokenIssuer --&gt; CertFail[Certificate NotReady]
-    CertFail --&gt; Alert[CertManagerCertNotReady]
-    Alert --&gt; Kubernaut[Kubernaut Pipeline]</code></pre>
-<h2 id="two-valid-remediation-paths">Two Valid Remediation Paths<a class="headerlink" href="#two-valid-remediation-paths" title="Permanent link">&para;</a></h2>
-<h3 id="path-a-gitrevertcommit-designed">Path A: GitRevertCommit (Designed)<a class="headerlink" href="#path-a-gitrevertcommit-designed" title="Permanent link">&para;</a></h3>
-<p>The workflow clones the Gitea repository, reverts the bad commit, and pushes. ArgoCD
-detects the new commit, syncs the reverted <code>ClusterIssuer</code> back to the correct CA Secret
-reference, and cert-manager successfully re-issues the certificate.</p>
-<h3 id="path-b-fixcertificate-observed">Path B: FixCertificate (Observed)<a class="headerlink" href="#path-b-fixcertificate-observed" title="Permanent link">&para;</a></h3>
-<p>The workflow identifies that the <code>ClusterIssuer</code> references a Secret named
-<code>nonexistent-ca-secret</code> that does not exist, generates a new self-signed CA key pair,
-and creates the Secret directly in the cluster. cert-manager picks up the new CA and
-re-issues the certificate.</p>
-<h3 id="comparison">Comparison<a class="headerlink" href="#comparison" title="Permanent link">&para;</a></h3>
+    BatchJobs["Batch Jobs Complete"] --&gt; OrphanedPVCs["5 Orphaned PVCs (500Mi)"]
+    OrphanedPVCs --&gt; Alert["KubePersistentVolumeClaimOrphaned"]
+    Alert --&gt; Kubernaut["Kubernaut Pipeline"]</code></pre>
+<h3 id="three-outcomes-one-scenario">Three Outcomes, One Scenario<a class="headerlink" href="#three-outcomes-one-scenario" title="Permanent link">&para;</a></h3>
+<p>The LLM's decision depends on the workflow catalog state — and even with the same catalog
+state, the LLM may reach different conclusions across runs:</p>
 <table>
 <thead>
 <tr>
-<th>Aspect</th>
-<th style="text-align: center;">GitRevertCommit</th>
-<th style="text-align: center;">FixCertificate</th>
+<th>Catalog State</th>
+<th>LLM Decision</th>
+<th>RR Outcome</th>
+<th>Observed</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Alert remediated</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
+<td><code>cleanup-pvc-v1</code> <strong>removed</strong></td>
+<td>No matching workflow</td>
+<td>Completed (NoActionRequired)</td>
+<td>Original design</td>
 </tr>
 <tr>
-<td>Certificate restored</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
+<td><code>cleanup-pvc-v1</code> <strong>available</strong></td>
+<td><strong>Path A:</strong> NotActionable, no workflow selected</td>
+<td>Completed (NoActionRequired)</td>
+<td>Run 2</td>
 </tr>
 <tr>
-<td>MTTR</td>
-<td style="text-align: center;">~3 min (clone, revert, push, ArgoCD sync)</td>
-<td style="text-align: center;">~10 sec (create Secret)</td>
-</tr>
-<tr>
-<td>Git state</td>
-<td style="text-align: center;">Clean (bad commit reverted)</td>
-<td style="text-align: center;">Dirty (broken commit remains)</td>
-</tr>
-<tr>
-<td>ArgoCD drift</td>
-<td style="text-align: center;">None</td>
-<td style="text-align: center;">Possible on next sync</td>
-</tr>
-<tr>
-<td>Long-term stability</td>
-<td style="text-align: center;">Stable</td>
-<td style="text-align: center;">Fragile until git is fixed</td>
+<td><code>cleanup-pvc-v1</code> <strong>available</strong></td>
+<td><strong>Path B:</strong> Selects workflow + emits warning</td>
+<td>AwaitingApproval</td>
+<td>Runs 1 &amp; 3</td>
 </tr>
 </tbody>
 </table>
-<p>Both paths achieve Kubernaut's goal: the alert is remediated and service health is restored.</p>
-<h2 id="llm-reasoning-analysis">LLM Reasoning Analysis<a class="headerlink" href="#llm-reasoning-analysis" title="Permanent link">&para;</a></h2>
-<p>The LLM's decision reveals three layers of reasoning that distinguish AIOps from rule-based
-systems:</p>
-<h3 id="1-correct-root-cause-identification">1. Correct Root Cause Identification<a class="headerlink" href="#1-correct-root-cause-identification" title="Permanent link">&para;</a></h3>
-<p>The LLM correctly diagnosed the root cause:</p>
-<blockquote>
-<p>Missing CA Secret 'nonexistent-ca-secret' prevents cert-manager ClusterIssuer from signing
-certificates, causing demo-app-cert to remain NotReady</p>
-</blockquote>
-<h3 id="2-trade-off-awareness">2. Trade-Off Awareness<a class="headerlink" href="#2-trade-off-awareness" title="Permanent link">&para;</a></h3>
-<p>The LLM acknowledged the GitOps context but prioritized infrastructure recovery:</p>
-<blockquote>
-<p>"Despite GitOps management, this is an infrastructure-level certificate issue requiring
-direct remediation."</p>
-</blockquote>
-<p>A rule-based system would apply a simple conditional: <code>if GitOps then revert commit</code>.
-The LLM reasoned that the immediate problem (missing Secret) is an infrastructure concern
-that can be fixed directly, regardless of how the configuration is managed.</p>
-<h3 id="3-confidence-calibration">3. Confidence Calibration<a class="headerlink" href="#3-confidence-calibration" title="Permanent link">&para;</a></h3>
-<p>The LLM set confidence to <strong>0.85</strong> -- high enough to act, but below the auto-approve
-threshold. This triggered a human approval request on both the first and second
-incidents.</p>
-<p>The LLM was aware that choosing direct remediation in a GitOps environment is a
-consequential decision. Rather than auto-executing, it deferred to a human operator
-for confirmation. This is situational awareness, not just pattern matching.</p>
-<h2 id="the-recurrence-test">The Recurrence Test<a class="headerlink" href="#the-recurrence-test" title="Permanent link">&para;</a></h2>
-<p>After the first remediation completed, the Effectiveness Assessment verified success
-(alert score 1/1, health score 1/1, outcome: Remediated). This result was recorded in
-the DataStorage audit trail.</p>
-<p>The <code>nonexistent-ca-secret</code> was then deleted to simulate the problem recurring. A second
-<code>CertManagerCertNotReady</code> alert fired.</p>
-<h3 id="history-informed-decision-making">History-Informed Decision Making<a class="headerlink" href="#history-informed-decision-making" title="Permanent link">&para;</a></h3>
-<p>When the LLM investigated the second incident, HAPI's <code>get_resource_context</code> tool
-automatically queried DataStorage for the resource's remediation history. The HAPI logs
-confirmed:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>resource_context_resolved: history_count=5, has_detected_infrastructure=True
+<p>Path A is a clean "no action needed" decision — the LLM doesn't even present the
+workflow. Path B is the more interesting behavior: the LLM finds and presents the
+workflow but simultaneously warns against using it.</p>
+<h2 id="path-a-notactionable-run-2">Path A: NotActionable (Run 2)<a class="headerlink" href="#path-a-notactionable-run-2" title="Permanent link">&para;</a></h2>
+<p>In one of the three runs, the LLM concluded no action was needed outright. No workflow
+was selected and no warnings were raised:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">actionability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NotActionable</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">selectedWorkflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">warnings</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">rootCauseAnalysis</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">low</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="no">Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="no">Five PVCs remain after their associated batch jobs completed. The data-processor</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="no">deployment is healthy and unaffected.</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">contributing_factors</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Completed batch jobs cleanup</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PVC lifecycle independence</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Normal Kubernetes resource lifecycle</span>
 </span></code></pre></div>
-<p>The LLM received the full remediation history for <code>Deployment/demo-app</code>, formatted as a
-prompt section that included:</p>
-<ul>
-<li>The previous <code>FixCertificate</code> workflow outcome (Completed/Remediated)</li>
-<li>Effectiveness scoring (alert resolved, health checks passed)</li>
-<li>Reasoning guidance: <em>"Use the above remediation history to inform your workflow
-  selection. Avoid repeating workflows that previously failed or had poor effectiveness."</em></li>
-</ul>
-<p><strong>Result</strong>: The LLM chose <code>FixCertificate</code> again with the same confidence (0.85) and
-the same rationale -- reinforced by the evidence that the previous remediation
-succeeded. This is not random consistency; it is evidence-based reasoning informed by
-verified historical outcomes.</p>
-<h3 id="built-in-escalation-safety">Built-In Escalation Safety<a class="headerlink" href="#built-in-escalation-safety" title="Permanent link">&para;</a></h3>
-<p>Kubernaut includes a safeguard against repeated but ultimately ineffective remediations.
-If the same workflow completes successfully multiple times but the same signal keeps
-recurring, the remediation history prompt injects a warning:</p>
+<p>The RR auto-completed as <code>NoActionRequired</code> — no approval gate, no human involvement.
+This is the simpler story: <em>"Kubernaut's LLM correctly identifies orphaned PVCs as
+benign housekeeping and takes no action — even when a cleanup workflow is available."</em></p>
+<h2 id="path-b-workflow-selected-with-warning-runs-1-3">Path B: Workflow Selected with Warning (Runs 1 &amp; 3)<a class="headerlink" href="#path-b-workflow-selected-with-warning-runs-1-3" title="Permanent link">&para;</a></h2>
+<p>Path B is the stronger demo. The LLM finds a matching workflow but raises a warning,
+and the Rego policy escalates to human review.</p>
+<h3 id="root-cause-assessment">Root Cause Assessment<a class="headerlink" href="#root-cause-assessment" title="Permanent link">&para;</a></h3>
+<p>The LLM correctly characterized the situation as low-priority housekeeping:</p>
 <blockquote>
-<p><strong>WARNING: REPEATED INEFFECTIVE REMEDIATION</strong> -- Completed N times for signal
-'CertManagerCertNotReady' but the issue continues to recur. This suggests the
-workflow treats the symptom, not the root cause. Recommend selecting
-<code>needs_human_review</code> or an alternative escalation workflow.</p>
+<p>"Five orphaned PVCs from completed batch jobs are consuming 500Mi of storage space.
+These PVCs (batch-output-job-1 through batch-output-job-5) are labeled as
+'batch-run=completed' and are not mounted by any running pods. The data-processor
+deployment is healthy and unaffected."</p>
 </blockquote>
-<p>This ensures that if <code>FixCertificate</code> kept being applied without addressing the
-underlying Git drift, the system would eventually escalate to human review rather
-than continuing an ineffective remediation loop.</p>
-<h2 id="aiops-vs-rule-based-systems">AIOps vs Rule-Based Systems<a class="headerlink" href="#aiops-vs-rule-based-systems" title="Permanent link">&para;</a></h2>
+<ul>
+<li><strong>Severity:</strong> <code>low</code></li>
+<li><strong>Contributing factors:</strong> "Completed batch jobs without automatic PVC cleanup",
+  "Missing storage lifecycle management"</li>
+</ul>
+<p>The LLM recognized that this is not an operational incident — no workloads are degraded,
+no alerts indicate service impact. It is leftover infrastructure from completed work.</p>
+<h3 id="workflow-selection-with-reservations">Workflow Selection with Reservations<a class="headerlink" href="#workflow-selection-with-reservations" title="Permanent link">&para;</a></h3>
+<p>Despite assessing the situation as low-severity, the LLM found and selected a matching
+workflow:</p>
+<ul>
+<li><strong>Selected:</strong> <code>CleanupPVC</code> (confidence 0.9)</li>
+<li><strong>Rationale:</strong> "The workflow specifically targets orphaned PVCs from completed batch
+  jobs, which exactly matches our scenario. The PVCs are confirmed orphaned (not mounted
+  by any pods) and labeled with 'batch-run=completed'."</li>
+<li><strong>Parameters:</strong> <code>LABEL_SELECTOR=batch-run=completed</code>, <code>TARGET_NAMESPACE=demo-orphaned-pvc</code></li>
+</ul>
+<p>But the LLM also emitted a warning alongside the selection:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>warnings: [&quot;Alert not actionable — no remediation warranted&quot;]
+</span></code></pre></div>
+<p>The LLM is effectively saying: <em>"I found a matching workflow and here it is, but I don't
+think this actually warrants automated action."</em></p>
+<h3 id="the-full-aa-status">The Full AA Status<a class="headerlink" href="#the-full-aa-status" title="Permanent link">&para;</a></h3>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;actionability&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Actionable&quot;</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;selectedWorkflow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">&quot;actionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CleanupPVC&quot;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="nt">&quot;LABEL_SELECTOR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;batch-run=completed&quot;</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="nt">&quot;TARGET_NAMESPACE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo-orphaned-pvc&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">&quot;rationale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The workflow specifically targets orphaned PVCs from completed batch jobs...&quot;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;rootCauseAnalysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;low&quot;</span><span class="p">,</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Five orphaned PVCs from completed batch jobs consuming 500Mi...&quot;</span><span class="p">,</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nt">&quot;contributingFactors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="s2">&quot;Completed batch jobs without automatic PVC cleanup&quot;</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">      </span><span class="s2">&quot;Missing storage lifecycle management&quot;</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="nt">&quot;approvalRequired&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">  </span><span class="nt">&quot;approvalReason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production environment - requires manual approval&quot;</span><span class="p">,</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Alert not actionable — no remediation warranted&quot;</span><span class="p">]</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="why-this-matters">Why This Matters<a class="headerlink" href="#why-this-matters" title="Permanent link">&para;</a></h2>
+<h3 id="three-capabilities-working-together">Three Capabilities Working Together<a class="headerlink" href="#three-capabilities-working-together" title="Permanent link">&para;</a></h3>
+<p>This scenario demonstrates the interplay between three layers of the Kubernaut pipeline:</p>
+<pre class="mermaid"><code>graph TD
+    LLM["1. LLM Contextual Judgment&lt;br/&gt;&lt;i&gt;Low severity, no remediation warranted&lt;/i&gt;"]
+    LLM --&gt; Catalog["2. Workflow Catalog Matching&lt;br/&gt;&lt;i&gt;CleanupPVC available, confidence 0.9&lt;/i&gt;"]
+    Catalog --&gt; Gate["3. Approval Gate&lt;br/&gt;&lt;i&gt;Rego catches LLM warning → human decides&lt;/i&gt;"]</code></pre>
+<p><strong>1. LLM contextual judgment</strong> — The LLM correctly identifies the issue as low-severity
+housekeeping, not an operational problem. It understands that orphaned PVCs from completed
+batch jobs are a cleanup concern, not a service-impacting incident.</p>
+<p><strong>2. Workflow catalog matching</strong> — Even when the LLM is ambivalent about whether action is
+warranted, it still presents the available option. The catalog match is accurate (correct
+action type, correct parameters, high confidence), giving the operator a ready-to-execute
+remediation if they choose to proceed.</p>
+<p><strong>3. Human-in-the-loop approval</strong> — The Rego policy catches the LLM's warning via the
+<code>has_warnings</code> rule and requires manual approval. The operator receives the full context:
+the LLM's RCA (low severity), the matched workflow (CleanupPVC), and the warning (no
+remediation warranted). They can make an informed decision: clean up now, or leave it for
+the next maintenance window.</p>
+<h3 id="contrast-with-other-scenarios">Contrast with Other Scenarios<a class="headerlink" href="#contrast-with-other-scenarios" title="Permanent link">&para;</a></h3>
+<p>This scenario fills a gap in the decision-making spectrum demonstrated by existing use cases:</p>
 <table>
 <thead>
 <tr>
-<th>Capability</th>
-<th style="text-align: center;">Rule-Based</th>
-<th style="text-align: center;">AIOps (Kubernaut)</th>
+<th>Scenario</th>
+<th>Confidence</th>
+<th>Approval</th>
+<th>LLM Stance</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Fixed playbook per alert type</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">No -- reasons per incident</td>
+<td>memory-leak</td>
+<td>High</td>
+<td>Auto-approved</td>
+<td>Clear action needed</td>
 </tr>
 <tr>
-<td>Multiple valid remediation paths</td>
-<td style="text-align: center;">No -- one rule, one action</td>
-<td style="text-align: center;">Yes -- selects best fit</td>
+<td>hpa-maxed</td>
+<td>High</td>
+<td>Auto-approved</td>
+<td>Clear action needed</td>
 </tr>
 <tr>
-<td>Trade-off awareness</td>
-<td style="text-align: center;">No</td>
-<td style="text-align: center;">Yes -- weighs alternatives</td>
+<td>cert-failure-gitops</td>
+<td>0.85</td>
+<td><a href="../multi-path-remediation/">Approval required</a></td>
+<td>Action needed, uncertain which path</td>
 </tr>
 <tr>
-<td>Confidence signaling</td>
-<td style="text-align: center;">No</td>
-<td style="text-align: center;">Yes -- flags uncertainty</td>
+<td>resource-quota-exhaustion</td>
+<td>--</td>
+<td><a href="../remediation-history-feedback/">Escalated to human</a></td>
+<td>First attempt failed, refuses to repeat</td>
 </tr>
 <tr>
-<td>Adapts to environment context</td>
-<td style="text-align: center;">Limited (if/else chains)</td>
-<td style="text-align: center;">Yes -- reads cluster state</td>
-</tr>
-<tr>
-<td>Requests human input when unsure</td>
-<td style="text-align: center;">No (fails or proceeds)</td>
-<td style="text-align: center;">Yes -- approval workflow</td>
+<td><strong>orphaned-pvc</strong></td>
+<td><strong>0.9</strong></td>
+<td><strong>Approval required</strong></td>
+<td><strong>Action available but not warranted</strong></td>
 </tr>
 </tbody>
 </table>
-<p>The key insight is that Kubernaut does not enforce a single correct answer. It provides
-an answer that works -- one that remediates the alert and restores service health. The
-engineering team retains responsibility for the permanent fix, informed by Kubernaut's
-audit trail of what was done and why.</p>
+<p>The orphaned PVC case is unique: the LLM has <strong>high confidence</strong> in the workflow match
+but <strong>low conviction</strong> that action should be taken. This is a qualitatively different
+kind of uncertainty — not "I'm unsure which fix to apply" but "I know the fix, I just
+don't think it's needed."</p>
+<h3 id="why-was-approval-required">Why Was Approval Required?<a class="headerlink" href="#why-was-approval-required" title="Permanent link">&para;</a></h3>
+<p>The answer depends on the Rego policy in effect. Across the 3 runs, two different
+policies were used:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Run 1: Default policy (production)</label><label for="__tabbed_1_2">Run 3: Patched policy (staging)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>&quot;approvalReason&quot;: &quot;Production environment - requires manual approval&quot;
+</span></code></pre></div>
+<p>The default <code>approval.rego</code> always requires approval for production namespaces,
+regardless of confidence or warnings. The LLM's warning was coincidentally caught
+— but by the environment rule, not the warning itself.</p>
+</div>
+<div class="tabbed-block">
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>&quot;approvalReason&quot;: &quot;LLM raised warnings — human review recommended&quot;
+</span></code></pre></div>
+<p>With the <code>has_warnings</code> rule added to the policy, the warning triggered approval
+in a staging namespace where the default policy would have auto-approved.</p>
+</div>
+</div>
+</div>
+<h3 id="the-gap-in-the-default-policy">The Gap in the Default Policy<a class="headerlink" href="#the-gap-in-the-default-policy" title="Permanent link">&para;</a></h3>
+<p>The default <code>approval.rego</code> defines a <code>has_warnings</code> helper but <strong>never uses it</strong> in
+any <code>require_approval</code> rule. This means:</p>
+<table>
+<thead>
+<tr>
+<th>Environment</th>
+<th>Default Policy</th>
+<th>LLM Warning Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Production</td>
+<td>Approval required</td>
+<td>Warning visible but irrelevant (caught by environment rule)</td>
+</tr>
+<tr>
+<td>Staging / Dev</td>
+<td><strong>Auto-approved</strong></td>
+<td><strong>Warning ignored</strong> — workflow executes silently</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Silent execution in non-production</p>
+<p>Without a policy fix, Path B in a staging or development namespace would
+<strong>auto-execute</strong> the <code>CleanupPVC</code> workflow. The LLM's "no remediation warranted"
+warning would only appear in the audit trail after the PVCs are already deleted.</p>
+</div>
+<p>This gap is tracked in <a href="https://github.com/jordigilh/kubernaut/issues/439">kubernaut#439</a>
+for inclusion in the default Helm chart policy.</p>
+<h3 id="making-the-warning-trigger-approval">Making the Warning Trigger Approval<a class="headerlink" href="#making-the-warning-trigger-approval" title="Permanent link">&para;</a></h3>
+<p>Adding the <code>has_warnings</code> rule to the policy ensures the LLM's warning triggers the
+approval gate in <strong>any</strong> environment. This was confirmed in Run 3 (staging namespace):</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">default</span><span class="w"> </span><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;Auto-approved&quot;</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">has_warnings</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="n">count</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">warnings</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">  </span><span class="n">has_warnings</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;LLM raised warnings — human review recommended&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">  </span><span class="n">has_warnings</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>This policy can be combined with the default environment and affected-resource rules.
+Deploy it via Helm:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--reuse-values
+</span></code></pre></div>
+<p>See <a href="../../user-guide/configmap-approval/">AIAnalysis Approval Policy</a> for the full input
+contract and <a href="../../user-guide/rego-reference/">Rego Policy Reference</a> for more examples.</p>
+<h2 id="end-to-end-walkthrough">End-to-End Walkthrough<a class="headerlink" href="#end-to-end-walkthrough" title="Permanent link">&para;</a></h2>
+<p>The complete lifecycle, confirmed on a live OCP cluster:</p>
+<pre class="mermaid"><code>graph LR
+    A["Alert fires"] --&gt; B["LLM investigates&lt;br/&gt;(91 s, 6 poll cycles)"]
+    B --&gt; C["CleanupPVC selected&lt;br/&gt;+ warning emitted"]
+    C --&gt; D["Approval gate&lt;br/&gt;triggers"]
+    D --&gt; E["Operator rejects"]
+    E --&gt; F["RR fails gracefully"]
+    F --&gt; G["Dedup cooldown&lt;br/&gt;absorbs re-fires"]
+    G --&gt; H["Cooldown expires&lt;br/&gt;→ fresh RR"]</code></pre>
+<h3 id="1-alert-fires">1. Alert fires<a class="headerlink" href="#1-alert-fires" title="Permanent link">&para;</a></h3>
+<p><code>KubePersistentVolumeClaimOrphaned</code> — 5 orphaned PVCs from completed batch jobs (500Mi
+total).</p>
+<h3 id="2-llm-investigates">2. LLM investigates<a class="headerlink" href="#2-llm-investigates" title="Permanent link">&para;</a></h3>
+<p>Over 91 seconds (6 poll cycles), the LLM identifies low-severity housekeeping.
+Contributing factors: "completed batch jobs without automatic PVC cleanup", "missing
+storage lifecycle management."</p>
+<h3 id="3-workflow-matched-with-warning">3. Workflow matched with warning<a class="headerlink" href="#3-workflow-matched-with-warning" title="Permanent link">&para;</a></h3>
+<p><code>CleanupPVC</code> selected (confidence 0.9) with parameters
+<code>LABEL_SELECTOR=batch-run=completed</code>. The LLM simultaneously emits: <em>"Alert not
+actionable — no remediation warranted."</em></p>
+<h3 id="4-approval-gate-triggers">4. Approval gate triggers<a class="headerlink" href="#4-approval-gate-triggers" title="Permanent link">&para;</a></h3>
+<p>Production environment requires manual review. A <code>RemediationApprovalRequest</code> is created.</p>
+<h3 id="5-operator-reviews-and-rejects">5. Operator reviews and rejects<a class="headerlink" href="#5-operator-reviews-and-rejects" title="Permanent link">&para;</a></h3>
+<p>The operator sees the low severity, the 0.9-confidence workflow match, and the "no
+remediation warranted" warning. They reject the cleanup:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>rar-rr-4deb88d0bae3-9418f0bc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--type<span class="o">=</span>merge<span class="w"> </span>--subresource<span class="o">=</span>status<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Rejected&quot;,&quot;decidedBy&quot;:&quot;operator&quot;,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="s1">       &quot;decisionMessage&quot;:&quot;Low-severity housekeeping — deferring to next maintenance window&quot;}}&#39;</span>
+</span></code></pre></div>
+<h3 id="6-rr-fails-gracefully">6. RR fails gracefully<a class="headerlink" href="#6-rr-fails-gracefully" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>overallPhase</code></td>
+<td><code>Failed</code></td>
+</tr>
+<tr>
+<td><code>failureReason</code></td>
+<td>"Low-severity housekeeping — deferring to next maintenance window"</td>
+</tr>
+<tr>
+<td>PVCs remaining</td>
+<td>5 (untouched)</td>
+</tr>
+<tr>
+<td>WorkflowExecution created</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>The operator's rejection message is carried through as the <code>failureReason</code>, providing a
+clear audit trail of why no action was taken. No workflow was ever executed — the PVCs
+remain exactly as they were.</p>
+<h3 id="7-dedup-cooldown-absorbs-re-fires">7. Dedup cooldown absorbs re-fires<a class="headerlink" href="#7-dedup-cooldown-absorbs-re-fires" title="Permanent link">&para;</a></h3>
+<p>After the rejection, the alert continues firing (the PVCs still exist), but the Gateway
+does not create a new RR. The deduplication cooldown is in effect:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">deduplication</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">firstSeenAt</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:14:50Z</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">lastSeenAt</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:21:50Z</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">occurrenceCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nt">nextAllowedExecution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:25:39Z</span>
+</span></code></pre></div>
+<p>Subsequent alerts with the same fingerprint increment <code>occurrenceCount</code> on the terminal
+RR but don't create a new one. This creates a natural "snooze" effect — rejecting an
+action doesn't silence the alert forever, but it prevents the platform from immediately
+nagging the operator again.</p>
+<h3 id="8-after-cooldown-expires">8. After cooldown expires<a class="headerlink" href="#8-after-cooldown-expires" title="Permanent link">&para;</a></h3>
+<p>Once <code>nextAllowedExecution</code> passes, the next alert with the same fingerprint creates a
+fresh RR with a new investigation. The cycle repeats: alert → LLM → approval gate →
+operator decision. This continues until the PVCs are cleaned up (manually or via an
+approved workflow) and the alert resolves.</p>
+<p>The operator's options during the cooldown window:</p>
+<ul>
+<li><strong>Clean up the PVCs manually</strong> during the next maintenance window — the alert resolves,
+  no new RR is created</li>
+<li><strong>Do nothing</strong> — after cooldown expires, a new RR is created and the LLM re-evaluates</li>
+</ul>
+<h3 id="when-would-approval-make-sense">When Would Approval Make Sense?<a class="headerlink" href="#when-would-approval-make-sense" title="Permanent link">&para;</a></h3>
+<p>The decision to reject was contextual. Approval would be appropriate if:</p>
+<ul>
+<li>Storage pressure is a concern or the team wants a clean namespace</li>
+<li>The orphaned PVCs are consuming quota needed by other workloads</li>
+<li>Organizational policy requires automated cleanup of completed batch artifacts</li>
+</ul>
+<p>In all cases, the operator starts with a complete picture — not just "there's an alert"
+but "here's what's happening, here's what we could do, and here's why we might not need to."</p>
 <h2 id="key-takeaway">Key Takeaway<a class="headerlink" href="#key-takeaway" title="Permanent link">&para;</a></h2>
-<p>Kubernaut reduces MTTR by any valid path. The LLM is free to choose the approach it
-judges most appropriate for each incident. This flexibility is a strength of AIOps:
-real-world problems rarely have a single correct solution, and the ability to reason
-about alternatives -- while flagging uncertainty for human review -- is what separates
-intelligent remediation from scripted automation.</p>
+<p>Kubernaut's value is not limited to executing remediations. It also surfaces situations
+where remediation is <em>available but not necessary</em> — and gives a human the context to
+make that call. The approval gate is not just a safety mechanism for risky actions; it is
+a decision support system for ambiguous ones.</p>
 
 
 
@@ -3292,7 +3718,7 @@ intelligent remediation from scripted automation.</p>
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Use Cases">
+          <a href="../remediation-history-feedback/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Remediation History Feedback">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3302,20 +3728,20 @@ intelligent remediation from scripted automation.</p>
                 Previous
               </span>
               <div class="md-ellipsis">
-                Use Cases
+                Remediation History Feedback
               </div>
             </div>
           </a>
         
         
           
-          <a href="../remediation-history-feedback/" class="md-footer__link md-footer__link--next" aria-label="Next: Remediation History Feedback">
+          <a href="../../operations/" class="md-footer__link md-footer__link--next" aria-label="Next: Operations">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Remediation History Feedback
+                Operations
               </div>
             </div>
             <div class="md-footer__button md-icon">

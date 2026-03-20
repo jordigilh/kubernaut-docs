@@ -32,6 +32,9 @@ toolsets:
       prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
 ```
 
+!!! tip "Token overhead from unused toolsets"
+    Each enabled toolset adds its full tool schema to every LLM context turn, even if none of its tools are called. This can add ~30% token overhead and bias the LLM toward irrelevant investigation paths. Enable only the toolsets your workload needs. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for guidance and an incident-type mapping table.
+
 The Helm chart supports three tiers for providing the SDK config -- see [Configuration Reference: HolmesGPT API](../user-guide/configuration.md#holmesgpt-api-llm-integration).
 
 ## Pipeline Overview

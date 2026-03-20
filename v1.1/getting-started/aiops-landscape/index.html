@@ -12,16 +12,20 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/architecture/aiops-landscape/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/getting-started/aiops-landscape/">
       
       
+        <link rel="prev" href="../why-kubernaut/">
+      
+      
+        <link rel="next" href="../installation/">
       
       
         
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -256,11 +260,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -304,7 +310,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../" class="md-tabs__link">
+        <a href="../../architecture/" class="md-tabs__link">
           
   
   
@@ -542,6 +548,8 @@
       
   
   
+    
+  
   
   
     
@@ -559,26 +567,29 @@
       
         
       
+        
+      
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -596,13 +607,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_2">
             <span class="md-nav__icon md-icon"></span>
             
@@ -622,7 +633,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
+      <a href="../why-kubernaut/" class="md-nav__link">
         
   
   
@@ -647,10 +658,285 @@
                 
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIOps Remediation Landscape
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIOps Remediation Landscape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#three-approaches" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Three Approaches
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-predictive-ai-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Predictive AI Works
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Predictive AI Works">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strengths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weaknesses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weaknesses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#how-generative-ai-works-kubernaut" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Generative AI Works (Kubernaut)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="How Generative AI Works (Kubernaut)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#strengths_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strengths
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#weaknesses_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Weaknesses
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predictive-ai-as-a-knowledge-based-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predictive AI as a Knowledge-Based Agent
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Predictive AI as a Knowledge-Based Agent">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-llm-uses-predictive-ai" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the LLM Uses Predictive AI
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#confidence-calibration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Confidence Calibration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#investigation-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Investigation Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hallucination-safeguards-via-cross-validation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hallucination Safeguards via Cross-Validation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Architecture
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Integration Architecture">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#signal-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signal Source
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#investigation-tool" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Investigation Tool
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#when-to-use-each-approach" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When to Use Each Approach
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/installation/" class="md-nav__link">
+      <a href="../installation/" class="md-nav__link">
         
   
   
@@ -678,7 +964,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../quickstart/" class="md-nav__link">
         
   
   
@@ -706,7 +992,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
+      <a href="../architecture-overview/" class="md-nav__link">
         
   
   
@@ -1416,7 +1702,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../architecture/" class="md-nav__link ">
               
   
   
@@ -1460,7 +1746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../overview/" class="md-nav__link">
+      <a href="../../architecture/overview/" class="md-nav__link">
         
   
   
@@ -1488,7 +1774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../gateway/" class="md-nav__link">
+      <a href="../../architecture/gateway/" class="md-nav__link">
         
   
   
@@ -1516,7 +1802,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../signal-processing/" class="md-nav__link">
+      <a href="../../architecture/signal-processing/" class="md-nav__link">
         
   
   
@@ -1544,7 +1830,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../ai-analysis/" class="md-nav__link">
+      <a href="../../architecture/ai-analysis/" class="md-nav__link">
         
   
   
@@ -1572,7 +1858,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../hapi-investigation/" class="md-nav__link">
+      <a href="../../architecture/hapi-investigation/" class="md-nav__link">
         
   
   
@@ -1600,7 +1886,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../remediation-routing/" class="md-nav__link">
+      <a href="../../architecture/remediation-routing/" class="md-nav__link">
         
   
   
@@ -1628,7 +1914,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow-selection/" class="md-nav__link">
+      <a href="../../architecture/workflow-selection/" class="md-nav__link">
         
   
   
@@ -1656,7 +1942,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow-execution/" class="md-nav__link">
+      <a href="../../architecture/workflow-execution/" class="md-nav__link">
         
   
   
@@ -1684,7 +1970,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../effectiveness/" class="md-nav__link">
+      <a href="../../architecture/effectiveness/" class="md-nav__link">
         
   
   
@@ -1712,7 +1998,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../notification/" class="md-nav__link">
+      <a href="../../architecture/notification/" class="md-nav__link">
         
   
   
@@ -1740,7 +2026,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../async-propagation/" class="md-nav__link">
+      <a href="../../architecture/async-propagation/" class="md-nav__link">
         
   
   
@@ -1768,7 +2054,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../audit-pipeline/" class="md-nav__link">
+      <a href="../../architecture/audit-pipeline/" class="md-nav__link">
         
   
   
@@ -1796,7 +2082,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-persistence/" class="md-nav__link">
+      <a href="../../architecture/data-persistence/" class="md-nav__link">
         
   
   
@@ -1824,7 +2110,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../security-rbac/" class="md-nav__link">
+      <a href="../../architecture/security-rbac/" class="md-nav__link">
         
   
   
@@ -3057,6 +3343,44 @@
       
         <footer class="md-footer">
   
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../why-kubernaut/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Why Kubernaut">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Why Kubernaut
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../installation/" class="md-footer__link md-footer__link--next" aria-label="Next: Installation">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Installation
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
     
   
   <div class="md-footer-meta md-typeset">

@@ -91,6 +91,7 @@ nav:
   - Getting Started:
       - getting-started/index.md
       - Why Kubernaut: getting-started/why-kubernaut.md
+      - AIOps Remediation Landscape: getting-started/aiops-landscape.md
       - Installation: getting-started/installation.md
       - Quickstart: getting-started/quickstart.md
       - Architecture Overview: getting-started/architecture-overview.md

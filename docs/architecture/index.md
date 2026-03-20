@@ -15,4 +15,3 @@ Deep-dive documentation for Kubernaut's internal design. Pages are ordered by th
 - **[Async Propagation](async-propagation.md)** — GitOps and operator delay model. Explains how Kubernaut handles GitOps and operator propagation delays.
 - **[Audit Pipeline](audit-pipeline.md)** — Buffered store, batching, per-service events, operator attribution. Details the audit store, batching, and event attribution.
 - **[Data Persistence](data-persistence.md)** — PostgreSQL schema, partitioning, retention, reconstruction. Covers the PostgreSQL schema, partitioning strategy, and data lifecycle.
-- **[AIOps Remediation Landscape](aiops-landscape.md)** — Comparison of rule-based, predictive AI, and generative AI approaches to AIOps remediation. Covers predictive AI as a knowledge-based agent for the LLM, hallucination safeguards via cross-validation, and integration architecture.

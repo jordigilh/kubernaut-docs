@@ -45,7 +45,7 @@ The AIOps remediation landscape has three distinct approaches. Kubernaut uses ge
 
 **Where rule-based tools win**: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut supports rule-based workflows too — when signal labels match a workflow exactly, it's selected without LLM reasoning.
 
-**Where predictive AI fits**: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as **knowledge-based agents** that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See [AIOps Landscape](../architecture/aiops-landscape.md) for the full integration architecture.
+**Where predictive AI fits**: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as **knowledge-based agents** that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See [AIOps Remediation Landscape](aiops-landscape.md) for the full integration architecture.
 
 **Where Kubernaut wins**: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter. When integrated with predictive AI, Kubernaut can cross-validate its root cause analysis against statistical correlations — increasing confidence when they agree, and flagging discrepancies when they don't.
 

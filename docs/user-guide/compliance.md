@@ -50,7 +50,7 @@ The control mapping on this page is derived from the following internal design d
 - **9 services** emit structured audit events covering the full remediation lifecycle, from signal ingestion through effectiveness assessment. Every phase transition, routing decision, approval, execution, and notification is recorded ([DD-AUDIT-003]).
 - The **workflow discovery audit trail** records every step of the LLM's 3-step selection protocol: which action types were listed, which workflows were scored, which workflow was retrieved, and whether the selection passed validation ([BR-AUDIT-021-030]).
 - All events share a `correlation_id` (the RemediationRequest name), enabling complete timeline reconstruction for any remediation.
-- ~115 Prometheus metrics provide real-time operational monitoring of throughput, latency, errors, audit health, and LLM cost.
+- ~90 Prometheus metric families (46 Kubernaut-specific plus controller-runtime built-ins across 6 controllers) provide real-time operational monitoring of throughput, latency, errors, audit health, and LLM cost.
 
 **Evidence**: [What Gets Audited](audit-and-observability.md#what-gets-audited), [Emitting Services](../architecture/audit-pipeline.md#emitting-services), [Metrics](audit-and-observability.md#metrics)
 

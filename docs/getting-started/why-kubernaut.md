@@ -40,7 +40,7 @@ The AIOps remediation landscape has three distinct approaches. Kubernaut uses ge
 | **Cold start** | None — works immediately | Weeks/months of baseline data required | None — useful from day one |
 | **Latency** | Milliseconds | Seconds (pre-computed models) | 10-30s (LLM investigation) |
 | **Token cost** | None | Vendor license | Per-investigation (rule-matched workflows skip LLM) |
-| **Auditability** | Deterministic, easy to trace | Deterministic, vendor-specific dashboards | Full audit trail with SOC2 retention; LLM reasoning is probabilistic |
+| **Auditability** | Deterministic, easy to trace | Deterministic, vendor-specific dashboards | Full audit trail with 7-year retention (SOC2-aligned); LLM reasoning is probabilistic |
 | **Vendor coupling** | Low | High — deep integration with vendor telemetry stack | Low — works with any monitoring stack |
 
 **Where rule-based tools win**: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut supports rule-based workflows too — when signal labels match a workflow exactly, it's selected without LLM reasoning.

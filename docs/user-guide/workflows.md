@@ -6,7 +6,7 @@ This page covers everything you need to author, build, register, and manage work
 
 ## Registration Model
 
-Workflows are registered by applying a `RemediationWorkflow` CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit, and computes a content hash for deduplication.
+Workflows are registered by applying a `RemediationWorkflow` CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and computes a content hash for deduplication.
 
 ```mermaid
 flowchart LR
@@ -144,7 +144,7 @@ Note the image digest from the push output -- update the `execution.bundle` fiel
 kubectl apply -f restart-deployment.yaml
 ```
 
-The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit attribution, and updates the CRD status with the assigned `workflowId` and `catalogStatus`.
+The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and updates the CRD status with the assigned `workflowId` and `catalogStatus`.
 
 Verify registration:
 
@@ -459,7 +459,7 @@ spec:
 kubectl apply -f restart-sidecar-actiontype.yaml
 ```
 
-The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for SOC2 audit. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.
+The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for audit attribution. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.
 
 !!! warning "Action type descriptions directly affect LLM behavior"
     The LLM reads `what`, `whenToUse`, `whenNotToUse`, and `preconditions` verbatim during workflow discovery. Poorly written or overlapping descriptions degrade workflow selection quality:

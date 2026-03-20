@@ -202,7 +202,7 @@ spec:
     preconditions: "cert-manager must be installed and the Certificate resource must exist"
 ```
 
-The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, captures the operator identity for SOC2 audit, and updates the CRD status. Deleting the CRD disables the action type in the catalog (soft delete).
+The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, captures the operator identity for audit attribution, and updates the CRD status. Deleting the CRD disables the action type in the catalog (soft delete).
 
 The description fields are presented to the LLM during Step 1 of the discovery protocol, so accurate, unambiguous descriptions are essential. Follow these guidelines:
 

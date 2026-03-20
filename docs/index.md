@@ -10,7 +10,7 @@ hide:
 
 Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes alert to automated remediation — without a human in the middle. When something goes wrong in your cluster (an OOMKill, a CrashLoopBackOff, node pressure), Kubernaut detects the signal, enriches it with context, sends it to an LLM for live root cause investigation, matches a remediation workflow from a searchable catalog, and executes the fix — or escalates to a human with a full RCA when it can't.
 
-**Mean time to resolution drops from 60 minutes to under 5**, while humans stay in control through approval gates, configurable confidence thresholds, and SOC2-compliant audit trails.
+**Mean time to resolution drops from 60 minutes to under 5**, while humans stay in control through approval gates, configurable confidence thresholds, and audit trails designed for SOC2 alignment.
 
 ---
 
@@ -107,7 +107,7 @@ graph LR
 | **Flexible Execution** | Tekton Pipelines (multi-step) or Kubernetes Jobs (single-step) with optional human approval gates |
 | **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |
 | **Safety-First Design** | Admission webhooks, human approval gates, configurable confidence thresholds, effectiveness tracking |
-| **SOC2 Compliance** | Full audit trails with 7-year retention, CRD reconstruction from audit events, operator attribution |
+| **SOC2 Alignment** | Full audit trails with 7-year retention, CRD reconstruction from audit events, operator attribution |
 | **Effectiveness Tracking** | Four-dimensional assessment (health, alert resolution, metrics, spec drift) with weighted scoring; remediation history feeds into HolmesGPT so the LLM avoids repeating failed remediations |
 
 ---

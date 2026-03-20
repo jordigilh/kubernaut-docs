@@ -3,7 +3,7 @@
 !!! info "Architecture reference"
     For the buffered audit store, flush triggers, and DLQ design, see [Architecture: Audit Pipeline](../architecture/audit-pipeline.md).
 
-Kubernaut provides a comprehensive audit trail that records every action taken during remediation. This supports compliance requirements (SOC2 Type II), incident review, and continuous improvement.
+Kubernaut provides a comprehensive audit trail that records every action taken during remediation. This supports SOC2 Type II alignment, incident review, and continuous improvement.
 
 ## Audit Architecture
 
@@ -63,7 +63,7 @@ The **Auth Webhook** captures human actions through Kubernetes admission control
 - **Workflow registration** — Who registered, deleted, or was denied a RemediationWorkflow CRD
 - **Action type management** — Who created, updated, deleted, or was denied an ActionType CRD
 
-This ensures that every human action in the system has a recorded identity, timestamp, and context — critical for SOC2 compliance.
+This ensures that every human action in the system has a recorded identity, timestamp, and context — critical for SOC2 readiness.
 
 ## Retention
 

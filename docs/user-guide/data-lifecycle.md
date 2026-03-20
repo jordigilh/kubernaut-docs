@@ -41,7 +41,7 @@ See [Architecture: Data Persistence](../architecture/data-persistence.md#remedia
 
 ### Use Cases
 
-- **SOC2 audits** — Produce the complete remediation record for any historical incident
+- **Compliance audits (SOC2)** — Produce the complete remediation record for any historical incident
 - **Post-mortems** — Reconstruct what happened, when, and why
 - **Compliance reports** — Generate evidence of automated remediation actions and human approvals
 - **Debugging** — Investigate a remediation that completed days ago

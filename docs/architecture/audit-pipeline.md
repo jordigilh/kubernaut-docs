@@ -158,7 +158,7 @@ The **admission webhook** captures human identity for all operator-driven action
 | Update action type (CRD UPDATE) | `actiontype.admitted.update` | Actor identity, action type, changed fields |
 | Delete action type (CRD DELETE) | `actiontype.admitted.delete` | Actor identity, action type name |
 
-This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II compliance.
+This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II readiness.
 
 ## Dead Letter Queue
 

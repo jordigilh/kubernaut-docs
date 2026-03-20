@@ -36,6 +36,8 @@ LLM tokens are consumed only during the investigation phase (root cause analysis
 
 Cost depends on the LLM provider and model. A typical investigation with Gemini 1.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via LiteLLM.
 
+Enabled-but-unused toolsets also contribute to token consumption — each toolset injects its full schema into every LLM turn, even when none of its tools are called. Starting with `toolsets: {}` and enabling additional toolsets only for workloads that need them can reduce token usage by ~30%. See [Toolset Optimization](user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for recommended configurations by incident type.
+
 ## Can I run it air-gapped?
 
 Yes. Point the HolmesGPT API service at a locally hosted LLM endpoint (via LiteLLM or any OpenAI-compatible server). All other components — the CRD controllers, DataStorage, workflow execution — run entirely within the cluster with no external network dependencies.

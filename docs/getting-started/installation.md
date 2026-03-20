@@ -300,6 +300,13 @@ kubectl create secret generic kubernaut-valkey-credentials \
 # 2. Copy and customize the SDK config (fill in your LLM provider + API key)
 cp charts/kubernaut/examples/sdk-config.yaml my-sdk-config.yaml
 # Edit my-sdk-config.yaml: set llm.provider, llm.model
+# Leave toolsets: {} empty unless you need Prometheus or other data sources
+```
+
+!!! tip "Start with minimal toolsets"
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation (SLO burn-rate alerts, latency spikes). Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
+
+```bash
 
 kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=sk-... \

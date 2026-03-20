@@ -299,3 +299,4 @@ The full audit trail of every step is stored in PostgreSQL for compliance and po
 - [Remediation Workflows](../user-guide/workflows.md) — Write your own workflow schemas
 - [Human Approval](../user-guide/approval.md) — Configure approval gates and confidence thresholds
 - [Architecture Overview](architecture-overview.md) — Dive deeper into the system design
+- [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md) — Configure LLM providers, toolsets, and token optimization

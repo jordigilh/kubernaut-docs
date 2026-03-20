@@ -59,6 +59,46 @@ toolsets: {}             # Optional: HolmesGPT data source toolsets
 mcp_servers: {}          # Optional: Model Context Protocol servers
 ```
 
+## Toolset Optimization (pre-v1.2)
+
+Each enabled toolset injects its full tool schema into every LLM context turn. When a toolset is enabled but never called during an investigation, those schema tokens are pure overhead — they consume budget and can bias the LLM toward irrelevant investigation paths.
+
+Empirical testing shows that loading a single unused toolset (Prometheus, 123 tools) can add ~30% token overhead and increase LLM latency by ~15%, with no benefit to the investigation outcome. See the [two-phase toolkit selection discussion](https://github.com/jordigilh/kubernaut/issues/434) for detailed measurements.
+
+**Recommendation:** Enable only the toolsets needed for your workload. The Kubernetes core toolset (`kubectl` commands and logs) is always available — it cannot be disabled.
+
+### Incident-Type to Toolset Mapping
+
+| Incident Type | Recommended Toolsets | Notes |
+|---|---|---|
+| Config errors, CrashLoopBackOff, OOMKilled | *(core only — no extra toolsets)* | `kubectl` access to pods, events, and logs is sufficient |
+| SLO burn-rate alerts, latency spikes | `prometheus/metrics` | Requires Prometheus for metric queries |
+| Cloud resource issues | Relevant cloud provider toolset | Add only the provider you use |
+
+### Example: Minimal SDK Config (No Optional Toolsets)
+
+```yaml
+llm:
+  provider: openai
+  model: gpt-4o
+  temperature: 0.5
+
+toolsets: {}
+```
+
+Enable Prometheus only when investigating metric-driven alerts:
+
+```yaml
+toolsets:
+  prometheus/metrics:
+    enabled: true
+    config:
+      prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+```
+
+!!! note "v1.2: Automatic toolset selection"
+    v1.2 will introduce [two-phase toolkit selection](https://github.com/jordigilh/kubernaut/issues/434) that automatically loads only the toolsets relevant to each investigation. This section will be updated when that feature ships.
+
 ## Provider Examples
 
 ### OpenAI

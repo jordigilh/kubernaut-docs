@@ -154,6 +154,7 @@ The LLM decides when and whether to query the predictive AI based on the investi
 | High-confidence RCA with cross-validation | Generative AI + Predictive AI |
 | Topology-dependent incidents across microservices | Predictive AI as knowledge agent for Generative AI |
 | Environments requiring closed-loop verification | Generative AI (Kubernaut) |
+| Air-gapped / disconnected clusters | Generative AI (Kubernaut) with a [locally hosted LLM](../operations/disconnected-install.md) -- predictive AI platforms typically require cloud connectivity |
 | Full lifecycle: detect, investigate, remediate, verify, learn | Combined: Predictive AI for detection and context, Generative AI for reasoning and execution |
 
 The strongest architecture uses predictive AI for what it does best -- high-fidelity anomaly detection, topology mapping, and correlation of known patterns -- and generative AI for what statistical models cannot do: reason about novel situations, select context-appropriate remediations, and verify outcomes in a closed loop.

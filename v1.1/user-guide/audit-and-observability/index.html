@@ -2945,7 +2945,7 @@
 <p class="admonition-title">Architecture reference</p>
 <p>For the buffered audit store, flush triggers, and DLQ design, see <a href="../../architecture/audit-pipeline/">Architecture: Audit Pipeline</a>.</p>
 </div>
-<p>Kubernaut provides a comprehensive audit trail that records every action taken during remediation. This supports compliance requirements (SOC2 Type II), incident review, and continuous improvement.</p>
+<p>Kubernaut provides a comprehensive audit trail that records every action taken during remediation. This supports SOC2 Type II alignment, incident review, and continuous improvement.</p>
 <h2 id="audit-architecture">Audit Architecture<a class="headerlink" href="#audit-architecture" title="Permanent link">&para;</a></h2>
 <p>Every Kubernaut service emits structured audit events to <strong>DataStorage</strong>, which persists them in <strong>PostgreSQL</strong>.</p>
 <pre class="mermaid"><code>graph LR
@@ -3038,7 +3038,7 @@
 <li><strong>Workflow registration</strong> — Who registered, deleted, or was denied a RemediationWorkflow CRD</li>
 <li><strong>Action type management</strong> — Who created, updated, deleted, or was denied an ActionType CRD</li>
 </ul>
-<p>This ensures that every human action in the system has a recorded identity, timestamp, and context — critical for SOC2 compliance.</p>
+<p>This ensures that every human action in the system has a recorded identity, timestamp, and context — critical for SOC2 readiness.</p>
 <h2 id="retention">Retention<a class="headerlink" href="#retention" title="Permanent link">&para;</a></h2>
 <p>Audit events are stored with a configured retention of <strong>2,555 days (7 years)</strong>, supporting long-term compliance requirements.</p>
 <div class="admonition note">

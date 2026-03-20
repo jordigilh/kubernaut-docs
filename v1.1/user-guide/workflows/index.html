@@ -3566,7 +3566,7 @@
 <p>Kubernaut remediates issues by running <strong>workflows</strong> -- containerized actions that fix known problems. Workflows are registered as <code>RemediationWorkflow</code> CRDs, synced to a searchable catalog by the Auth Webhook, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.</p>
 <p>This page covers everything you need to author, build, register, and manage workflows.</p>
 <h2 id="registration-model">Registration Model<a class="headerlink" href="#registration-model" title="Permanent link">&para;</a></h2>
-<p>Workflows are registered by applying a <code>RemediationWorkflow</code> CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit, and computes a content hash for deduplication.</p>
+<p>Workflows are registered by applying a <code>RemediationWorkflow</code> CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and computes a content hash for deduplication.</p>
 <pre class="mermaid"><code>flowchart LR
     Op["Operator&lt;br/&gt;&lt;small&gt;kubectl apply&lt;/small&gt;"] --&gt; AW["Auth Webhook&lt;br/&gt;&lt;small&gt;admission&lt;/small&gt;"]
     AW --&gt; DS["DataStorage&lt;br/&gt;&lt;small&gt;Catalog&lt;/small&gt;"]
@@ -3694,7 +3694,7 @@
 <h3 id="step-4-register-the-workflow">Step 4: Register the Workflow<a class="headerlink" href="#step-4-register-the-workflow" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>restart-deployment.yaml
 </span></code></pre></div>
-<p>The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for SOC2 audit attribution, and updates the CRD status with the assigned <code>workflowId</code> and <code>catalogStatus</code>.</p>
+<p>The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and updates the CRD status with the assigned <code>workflowId</code> and <code>catalogStatus</code>.</p>
 <p>Verify registration:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflow<span class="w"> </span>restart-deployment-v1<span class="w"> </span>-o<span class="w"> </span>wide
 </span></code></pre></div>
@@ -4144,7 +4144,7 @@
 </span></code></pre></div>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>restart-sidecar-actiontype.yaml
 </span></code></pre></div>
-<p>The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for SOC2 audit. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.</p>
+<p>The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for audit attribution. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.</p>
 <div class="admonition warning">
 <p class="admonition-title">Action type descriptions directly affect LLM behavior</p>
 <p>The LLM reads <code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, and <code>preconditions</code> verbatim during workflow discovery. Poorly written or overlapping descriptions degrade workflow selection quality:</p>

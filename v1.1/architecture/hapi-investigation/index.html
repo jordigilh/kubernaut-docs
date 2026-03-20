@@ -3890,6 +3890,10 @@
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
 </span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">prometheus_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
 </span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Token overhead from unused toolsets</p>
+<p>Each enabled toolset adds its full tool schema to every LLM context turn, even if none of its tools are called. This can add ~30% token overhead and bias the LLM toward irrelevant investigation paths. Enable only the toolsets your workload needs. See <a href="../../user-guide/configmap-holmesgpt/#toolset-optimization-pre-v12">Toolset Optimization</a> for guidance and an incident-type mapping table.</p>
+</div>
 <p>The Helm chart supports three tiers for providing the SDK config -- see <a href="../../user-guide/configuration/#holmesgpt-api-llm-integration">Configuration Reference: HolmesGPT API</a>.</p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
 <p>The investigation follows a 5-phase pipeline, executed as a single LLM agent session:</p>

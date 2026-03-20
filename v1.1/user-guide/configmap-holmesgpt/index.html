@@ -1399,6 +1399,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#toolset-optimization-pre-v12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolset Optimization (pre-v1.2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Toolset Optimization (pre-v1.2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#incident-type-to-toolset-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident-Type to Toolset Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-minimal-sdk-config-no-optional-toolsets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Minimal SDK Config (No Optional Toolsets)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#provider-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2941,6 +2980,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#toolset-optimization-pre-v12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Toolset Optimization (pre-v1.2)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Toolset Optimization (pre-v1.2)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#incident-type-to-toolset-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Incident-Type to Toolset Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#example-minimal-sdk-config-no-optional-toolsets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example: Minimal SDK Config (No Optional Toolsets)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#provider-examples" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3127,38 +3205,88 @@
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="nt">mcp_servers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">          </span><span class="c1"># Optional: Model Context Protocol servers</span>
 </span></code></pre></div>
-<h2 id="provider-examples">Provider Examples<a class="headerlink" href="#provider-examples" title="Permanent link">&para;</a></h2>
-<h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>
+<h2 id="toolset-optimization-pre-v12">Toolset Optimization (pre-v1.2)<a class="headerlink" href="#toolset-optimization-pre-v12" title="Permanent link">&para;</a></h2>
+<p>Each enabled toolset injects its full tool schema into every LLM context turn. When a toolset is enabled but never called during an investigation, those schema tokens are pure overhead — they consume budget and can bias the LLM toward irrelevant investigation paths.</p>
+<p>Empirical testing shows that loading a single unused toolset (Prometheus, 123 tools) can add ~30% token overhead and increase LLM latency by ~15%, with no benefit to the investigation outcome. See the <a href="https://github.com/jordigilh/kubernaut/issues/434">two-phase toolkit selection discussion</a> for detailed measurements.</p>
+<p><strong>Recommendation:</strong> Enable only the toolsets needed for your workload. The Kubernetes core toolset (<code>kubectl</code> commands and logs) is always available — it cannot be disabled.</p>
+<h3 id="incident-type-to-toolset-mapping">Incident-Type to Toolset Mapping<a class="headerlink" href="#incident-type-to-toolset-mapping" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Incident Type</th>
+<th>Recommended Toolsets</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Config errors, CrashLoopBackOff, OOMKilled</td>
+<td><em>(core only — no extra toolsets)</em></td>
+<td><code>kubectl</code> access to pods, events, and logs is sufficient</td>
+</tr>
+<tr>
+<td>SLO burn-rate alerts, latency spikes</td>
+<td><code>prometheus/metrics</code></td>
+<td>Requires Prometheus for metric queries</td>
+</tr>
+<tr>
+<td>Cloud resource issues</td>
+<td>Relevant cloud provider toolset</td>
+<td>Add only the provider you use</td>
+</tr>
+</tbody>
+</table>
+<h3 id="example-minimal-sdk-config-no-optional-toolsets">Example: Minimal SDK Config (No Optional Toolsets)<a class="headerlink" href="#example-minimal-sdk-config-no-optional-toolsets" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">llm</span><span class="p">:</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
 </span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.5</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="nt">toolsets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+</span></code></pre></div>
+<p>Enable Prometheus only when investigating metric-driven alerts:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">toolsets</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">prometheus/metrics</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="nt">prometheus_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">v1.2: Automatic toolset selection</p>
+<p>v1.2 will introduce <a href="https://github.com/jordigilh/kubernaut/issues/434">two-phase toolkit selection</a> that automatically loads only the toolsets relevant to each investigation. This section will be updated when that feature ships.</p>
+</div>
+<h2 id="provider-examples">Provider Examples<a class="headerlink" href="#provider-examples" title="Permanent link">&para;</a></h2>
+<h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-literal=OPENAI_API_KEY=sk-...</code></p>
 <h3 id="azure-openai">Azure OpenAI<a class="headerlink" href="#azure-openai" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">azure</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://my-resource.openai.azure.com/</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">azure</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://my-resource.openai.azure.com/</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-literal=AZURE_API_KEY=...</code></p>
 <h3 id="google-vertex-ai">Google Vertex AI<a class="headerlink" href="#google-vertex-ai" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertexai</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini-2.5-pro</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">gcp_project_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-id</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">gcp_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertexai</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini-2.5-pro</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">gcp_project_id</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-id</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">gcp_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-file=GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json</code></p>
 <p>GCP Workload Identity is also supported -- the secret can be omitted when authentication is handled by the node metadata service.</p>
 <h3 id="local-llm-litellm-air-gapped">Local LLM (LiteLLM / air-gapped)<a class="headerlink" href="#local-llm-litellm-air-gapped" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">litellm</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://litellm.internal.svc:4000</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">litellm</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://litellm.internal.svc:4000</span>
 </span></code></pre></div>
 <h2 id="secrets-pairing">Secrets Pairing<a class="headerlink" href="#secrets-pairing" title="Permanent link">&para;</a></h2>
 <p>LLM API credentials are stored in a separate Kubernetes Secret (default name: <code>llm-credentials</code>). The chart mounts this Secret into the HAPI pod alongside the SDK config. The Secret name is configured via <code>holmesgptApi.llm.credentialsSecretName</code>.</p>

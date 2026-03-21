@@ -3073,7 +3073,7 @@
 <p>Audit events are stored with a configured retention of <strong>2,555 days (7 years)</strong>, supporting long-term compliance requirements.</p>
 <div class="admonition note">
 <p class="admonition-title">Retention Enforcement</p>
-<p>The retention period is recorded per event but automatic deletion of expired events is deferred to v1.2. Events currently accumulate indefinitely.</p>
+<p>The retention period is recorded per event but automatic deletion of expired events is not yet implemented. Events currently accumulate indefinitely. Retention enforcement is tracked in <a href="https://github.com/jordigilh/kubernaut/issues/485">kubernaut#485</a> (v1.3). Customers are responsible for configuring retention policies based on their local regulatory requirements.</p>
 </div>
 <p>The <code>audit_events</code> table is partitioned by month for efficient storage and querying. Individual events can be flagged as <code>is_sensitive</code> for PII handling.</p>
 <h2 id="correlation">Correlation<a class="headerlink" href="#correlation" title="Permanent link">&para;</a></h2>

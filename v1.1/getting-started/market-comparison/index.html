@@ -3153,7 +3153,7 @@
 <p><strong>HolmesGPT</strong> (CNCF Sandbox, October 2025) is an agentic troubleshooting tool created by Robusta.dev. It uses an agentic loop with live tool calls (kubectl, Prometheus, Grafana, Datadog) to investigate incidents and identify root causes. HolmesGPT produces RCA reports but does not execute remediation workflows. It is the investigation engine, not the remediation platform.</p>
 <p><strong>kube-copilot</strong> is an LLM-powered kubectl assistant that can audit, diagnose, and execute kubectl commands interactively. It operates as a copilot for ad-hoc troubleshooting rather than an automated incident pipeline.</p>
 <h3 id="open-source-full-lifecycle-investigation-remediation">Open-Source Full-Lifecycle (Investigation + Remediation)<a class="headerlink" href="#open-source-full-lifecycle-investigation-remediation" title="Permanent link">&para;</a></h3>
-<p><strong>Kubernaut</strong> is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs, remediation history) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, webhook, file) &rarr; Learn (effectiveness scores feed future investigations).</p>
+<p><strong>Kubernaut</strong> is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs, remediation history) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, file) &rarr; Learn (effectiveness scores feed future investigations).</p>
 <h3 id="commercial-kubernetes-native-aiops">Commercial Kubernetes-Native AIOps<a class="headerlink" href="#commercial-kubernetes-native-aiops" title="Permanent link">&para;</a></h3>
 <p><strong>Komodor Klaudia</strong> (announced KubeCon Europe, March 2026) is a commercial SaaS platform using a multi-agent architecture with hundreds of specialized workflow and SME agents (Kubernetes, databases, cloud/AWS, networking, GPUs, Istio, ArgoCD, vLLM). Agents are coordinated by an Orchestrator that ranks hypotheses by confidence. Klaudia handles detection, investigation, remediation, and cost optimization. Built on AWS Bedrock with SOC 2 Type II, GDPR, CCPA, and HIPAA compliance. $67M in funding from Accel, Tiger Global, and others. See <a href="#head-to-head-komodor-klaudia">Head-to-Head: Komodor Klaudia</a> for a detailed comparison.</p>
 <p><strong>Robusta</strong> combines HolmesGPT (open-source investigation) with a commercial SaaS platform that provides alert management, playbook-based remediation, and a management UI. Robusta's playbook engine triggers remediation actions (delete pod, run job, scale) based on alert patterns. The LLM investigation and remediation execution are architecturally decoupled -- HolmesGPT diagnoses the root cause, but the playbook engine selects the remediation based on alert labels, not the LLM's output. This means the LLM does not drive workflow selection.</p>
@@ -3167,7 +3167,7 @@
 <h2 id="head-to-head-komodor-klaudia">Head-to-Head: Komodor Klaudia<a class="headerlink" href="#head-to-head-komodor-klaudia" title="Permanent link">&para;</a></h2>
 <p>Komodor Klaudia is the closest head-to-head competitor to Kubernaut in the agentic remediation space. Both platforms detect, investigate, and remediate Kubernetes incidents using AI. The architectural differences are significant.</p>
 <h3 id="remediation-architecture">Remediation Architecture<a class="headerlink" href="#remediation-architecture" title="Permanent link">&para;</a></h3>
-<p>Kubernaut separates investigation from remediation through a <strong>declarative workflow catalog</strong>. The LLM investigates the incident and produces a structured RCA. The Remediation Orchestrator matches the RCA against a catalog of pre-authored <code>RemediationWorkflow</code> CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. The LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.</p>
+<p>Kubernaut separates investigation from remediation through a <strong>declarative workflow catalog</strong>. The LLM investigates the incident and produces a structured RCA. The HolmesGPT API (HAPI) then matches the RCA against a catalog of pre-authored <code>RemediationWorkflow</code> CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. DataStorage ranks candidates by label-weighted SQL scoring, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.</p>
 <p>Klaudia uses an <strong>agent-generated remediation</strong> model. The Remediator agent determines and executes the fix based on the investigation output. In Komodor's demo, Klaudia produced a specific remediation instruction ("Change the secret to app mode with a value set to 'safe'") directly from agent reasoning, not from selecting a pre-defined workflow.</p>
 <table>
 <thead>
@@ -3190,7 +3190,7 @@
 </tr>
 <tr>
 <td>Predictability</td>
-<td>Deterministic catalog lookup after non-deterministic investigation</td>
+<td>Label-weighted scoring ranks workflows deterministically, but the LLM makes the final selection from the ranked list</td>
 <td>Both investigation and remediation selection are non-deterministic</td>
 </tr>
 <tr>
@@ -3206,7 +3206,7 @@
 </tbody>
 </table>
 <h3 id="approval-gates">Approval Gates<a class="headerlink" href="#approval-gates" title="Permanent link">&para;</a></h3>
-<p>Kubernaut provides <strong>per-remediation, context-aware approval gates</strong>. Each remediation can trigger a <code>RemediationApprovalRequest</code> CRD based on OPA/Rego policy evaluation of the specific context: confidence score, namespace, resource type, risk labels, remediation history, and business metadata. A high-confidence ConfigMap fix in dev auto-approves; the same fix in production with low confidence pauses for human review.</p>
+<p>Kubernaut provides <strong>per-remediation, context-aware approval gates</strong>. Each remediation can trigger a <code>RemediationApprovalRequest</code> CRD based on OPA/Rego policy evaluation of the specific context: confidence score, environment, affected resource kind, detected labels (e.g. <code>git_ops_managed</code>, <code>stateful</code>), and business classification. A high-confidence ConfigMap fix in dev auto-approves; the same fix in production with low confidence pauses for human review.</p>
 <p>Klaudia provides <strong>per-environment autonomy controls</strong>. Teams configure copilot mode (recommend and wait) or autopilot mode (execute autonomously) scoped by RBAC, namespace, environment category, or issue type. Policy guardrails define what actions Klaudia should never take. The autonomy level expands as trust grows.</p>
 <p>The difference: Kubernaut's gates evaluate each remediation individually against policy. Klaudia's gates are organizational toggles applied uniformly to categories of environments or issues.</p>
 <h3 id="effectiveness-verification">Effectiveness Verification<a class="headerlink" href="#effectiveness-verification" title="Permanent link">&para;</a></h3>
@@ -3223,7 +3223,7 @@
 <p>Kubernaut's effectiveness scores create a <strong>structured, per-remediation feedback loop</strong>. When the same resource triggers a future alert, the LLM receives the full remediation history -- what was tried before, what the effectiveness score was, and why it succeeded or failed. The LLM uses this to avoid repeating failed approaches and to select alternatives.</p>
 <p>Klaudia describes a <strong>general learning mechanism</strong>: "every incident helps the agents learn what worked, what didn't, and which signals mattered most" and "the system learns from your feedback, incorporating your approvals and rejections." This appears to be aggregate pattern learning rather than structured per-remediation scoring.</p>
 <h3 id="deployment-model">Deployment Model<a class="headerlink" href="#deployment-model" title="Permanent link">&para;</a></h3>
-<p>Kubernaut is <strong>fully self-hosted</strong>. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. LLM prompts, investigation transcripts, remediation records, and telemetry never leave the network boundary. For <a href="../../operations/disconnected-install/">disconnected and air-gapped environments</a>, Kubernaut works with locally hosted LLMs (Ollama, vLLM, or any OpenAI-compatible endpoint), eliminating all external network dependencies.</p>
+<p>Kubernaut is <strong>fully self-hosted</strong>. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. Investigation transcripts, remediation records, audit events, and telemetry are stored locally in PostgreSQL and never leave the cluster. When using a cloud LLM provider (OpenAI, Vertex AI, Bedrock, etc.), investigation prompts are sent to the provider's API; for full data containment, use a <a href="../../operations/disconnected-install/">locally hosted LLM</a> (Ollama, vLLM, or any OpenAI-compatible endpoint).</p>
 <p>Klaudia is a <strong>commercial SaaS</strong> platform built on AWS Bedrock. A lightweight agent runs in the customer's cluster and sends observability data to Komodor's cloud infrastructure for investigation and remediation orchestration. Komodor states that customer data is never used for training, but the data does leave the cluster boundary. No self-hosted deployment option is documented.</p>
 <table>
 <thead>
@@ -3241,7 +3241,7 @@
 </tr>
 <tr>
 <td>Data residency</td>
-<td>All data stays within the cluster boundary</td>
+<td>Remediation records, audit events, and telemetry stay in-cluster; LLM prompts go to the configured provider (use a local LLM for full containment)</td>
 <td>Data flows to Komodor's cloud</td>
 </tr>
 <tr>
@@ -3251,7 +3251,7 @@
 </tr>
 <tr>
 <td>Data sovereignty (GDPR, FedRAMP)</td>
-<td>Native -- no data leaves the jurisdiction</td>
+<td>With a local LLM, no data leaves the jurisdiction; with a cloud provider, only LLM prompts exit the boundary</td>
 <td>Depends on Komodor's cloud region and DPA</td>
 </tr>
 <tr>
@@ -3412,11 +3412,11 @@
 <ul>
 <li><strong>Full lifecycle in one pipeline</strong>: Detect &rarr; Investigate &rarr; Approve &rarr; Remediate &rarr; Verify &rarr; Notify &rarr; Learn. No tool handoffs, no manual glue between stages.</li>
 <li><strong>Declarative workflow catalog</strong>: The LLM selects from pre-authored, versioned, auditable workflows. The blast radius is bounded by the catalog. Auditors can enumerate every possible action the system can take.</li>
-<li><strong>Per-remediation approval gates</strong>: OPA/Rego policies evaluate each remediation individually based on confidence, namespace, resource type, risk labels, and remediation history. Not an environment-level toggle.</li>
+<li><strong>Per-remediation approval gates</strong>: OPA/Rego policies evaluate each remediation individually based on confidence, environment, affected resource kind, detected labels, and business classification. Not an environment-level toggle.</li>
 <li><strong>Closed-loop effectiveness verification</strong>: Every remediation is scored across four dimensions. Failed fixes are marked, triggering escalation or alternative selection.</li>
 <li><strong>Structured feedback loop</strong>: Per-remediation effectiveness scores feed directly into future LLM investigations. The system avoids repeating what failed and selects alternatives.</li>
 <li><strong>No vendor lock-in</strong>: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.</li>
-<li><strong>Data sovereignty and air-gapped support</strong>: The entire platform runs inside the customer's cluster. No data -- LLM prompts, investigation transcripts, remediation records, telemetry -- leaves the network boundary. Fully operational in <a href="../../operations/disconnected-install/">disconnected/air-gapped environments</a> with locally hosted LLMs. No commercial AIOps competitor offers this.</li>
+<li><strong>Data sovereignty and air-gapped support</strong>: The entire platform runs inside the customer's cluster. Investigation transcripts, remediation records, audit events, and telemetry stay in-cluster. With a locally hosted LLM, no data leaves the network boundary -- fully operational in <a href="../../operations/disconnected-install/">disconnected/air-gapped environments</a>. No commercial AIOps competitor offers this.</li>
 <li><strong>SOC2-aligned audit trails</strong>: Full audit pipeline with 7-year retention. Every investigation, approval decision, remediation action, and effectiveness assessment is a persistent, queryable record.</li>
 </ul>
 <h2 id="where-other-tools-win">Where Other Tools Win<a class="headerlink" href="#where-other-tools-win" title="Permanent link">&para;</a></h2>
@@ -3427,7 +3427,7 @@
 <li><strong>Enterprise support</strong>: Commercial platforms offer SLAs, dedicated support, and onboarding assistance. Kubernaut relies on community support.</li>
 <li><strong>Cost optimization</strong>: Klaudia's Optimizer agent handles right-sizing, pod placement, and headroom management alongside incident remediation. Kubernaut focuses on incident remediation and does not include FinOps capabilities.</li>
 <li><strong>Deeper telemetry integration</strong>: Dynatrace's OneAgent provides method-level traces, process metrics, and infrastructure topology. Datadog's Bits AI operates within its APM and metrics ecosystem. Kubernaut works with Prometheus and kubectl, which covers Kubernetes-level observability but not application-level distributed traces.</li>
-<li><strong>Deterministic speed</strong>: Rule-based tools (StackStorm, Shoreline.io) execute in milliseconds with no token cost. LLM investigation adds 10-30 seconds per incident. For well-understood, single-action problems, rule-based remediation is faster and cheaper. Kubernaut supports rule-matched workflows that skip LLM reasoning when signal labels directly match a workflow.</li>
+<li><strong>Deterministic speed</strong>: Rule-based tools (StackStorm, Shoreline.io) execute in milliseconds with no token cost. LLM investigation adds 10-30 seconds per incident. For well-understood, single-action problems, rule-based remediation is faster and cheaper.</li>
 </ul>
 
 

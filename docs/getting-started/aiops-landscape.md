@@ -52,9 +52,9 @@ Kubernaut's LLM investigates each incident as an open-ended question rather than
 ### Weaknesses
 
 - **Non-deterministic**: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.
-- **Latency**: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, rule-based workflows can bypass LLM reasoning entirely.
+- **Latency**: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.
 - **Hallucination risk**: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.
-- **Per-token cost**: Each investigation consumes LLM API tokens. Kubernaut minimizes this by skipping LLM reasoning when signal labels directly match a workflow.
+- **Per-token cost**: Each investigation consumes LLM API tokens. Workflow selection from the catalog is label-based (no LLM call), so cost scales with investigations, not catalog size. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.
 
 ## Predictive AI as a Knowledge-Based Agent
 

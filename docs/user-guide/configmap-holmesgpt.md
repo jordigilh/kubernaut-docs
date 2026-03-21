@@ -41,7 +41,7 @@ helm install kubernaut charts/kubernaut/ \
 
 ```yaml
 llm:
-  provider: ""           # Required: "openai", "azure", "vertexai", "bedrock", "litellm"
+  provider: ""           # Required: "openai", "azure", "vertex_ai", "bedrock", "litellm"
   model: ""              # Required: e.g., "gpt-4o", "gemini-2.0-flash"
   endpoint: ""           # API endpoint (required for Azure/LiteLLM, optional for others)
   gcp_project_id: ""     # Required for Vertex AI
@@ -129,7 +129,7 @@ Secret: `kubectl create secret generic llm-credentials --from-literal=AZURE_API_
 
 ```yaml
 llm:
-  provider: vertexai
+  provider: vertex_ai
   model: gemini-2.5-pro
   gcp_project_id: my-project-id
   gcp_region: us-central1
@@ -139,6 +139,22 @@ llm:
 Secret: `kubectl create secret generic llm-credentials --from-file=GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json`
 
 GCP Workload Identity is also supported -- the secret can be omitted when authentication is handled by the node metadata service.
+
+#### Vertex AI Model Garden (non-Google models)
+
+Anthropic Claude, Meta Llama, and other third-party models are available through [Vertex AI Model Garden](https://cloud.google.com/model-garden). Use `provider: vertex_ai` with the model name as listed in the Model Garden catalog:
+
+```yaml
+llm:
+  provider: vertex_ai
+  model: claude-sonnet-4-20250514
+  gcp_project_id: my-project-id
+  gcp_region: us-east5
+  timeout_seconds: 180
+```
+
+!!! warning "Provider name must be `vertex_ai`"
+    The provider field uses litellm's canonical name (`vertex_ai` with underscore), not `vertexai`. Using the wrong form causes `litellm.BadRequestError: LLM Provider NOT provided`. See [litellm Vertex AI docs](https://docs.litellm.ai/docs/providers/vertex) for supported models and regions.
 
 ### Local LLM (LiteLLM / air-gapped)
 

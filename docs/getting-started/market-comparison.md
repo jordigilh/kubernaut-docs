@@ -29,7 +29,7 @@ These tools use LLMs for Kubernetes troubleshooting but do not execute remediati
 
 ### Open-Source Full-Lifecycle (Investigation + Remediation)
 
-**Kubernaut** is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs, remediation history) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, webhook, file) &rarr; Learn (effectiveness scores feed future investigations).
+**Kubernaut** is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, file) &rarr; Learn (effectiveness scores feed future investigations).
 
 ### Commercial Kubernetes-Native AIOps
 
@@ -57,7 +57,7 @@ Komodor Klaudia is the closest head-to-head competitor to Kubernaut in the agent
 
 ### Remediation Architecture
 
-Kubernaut separates investigation from remediation through a **declarative workflow catalog**. The LLM investigates the incident and produces a structured RCA. The Remediation Orchestrator matches the RCA against a catalog of pre-authored `RemediationWorkflow` CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. The LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.
+Kubernaut separates investigation from remediation through a **declarative workflow catalog**. The LLM investigates the incident and produces a structured RCA. The HolmesGPT API (HAPI) then matches the RCA against a catalog of pre-authored `RemediationWorkflow` CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. DataStorage ranks candidates by label-weighted SQL scoring, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.
 
 Klaudia uses an **agent-generated remediation** model. The Remediator agent determines and executes the fix based on the investigation output. In Komodor's demo, Klaudia produced a specific remediation instruction ("Change the secret to app mode with a value set to 'safe'") directly from agent reasoning, not from selecting a pre-defined workflow.
 
@@ -65,13 +65,13 @@ Klaudia uses an **agent-generated remediation** model. The Remediator agent dete
 |---|---|---|
 | Blast radius | Bounded by the catalog -- LLM can only pick from pre-approved workflows | Bounded by policy guardrails, but the action space is broader |
 | Auditability | Every possible remediation is a versioned CRD in git -- auditors can enumerate the full action space | Actions are logged, but the action space is determined at runtime |
-| Predictability | Deterministic catalog lookup after non-deterministic investigation | Both investigation and remediation selection are non-deterministic |
+| Predictability | Label-weighted scoring ranks workflows deterministically, but the LLM makes the final selection from the ranked list | Both investigation and remediation selection are non-deterministic |
 | SOC2 alignment | Strong -- catalog is a complete inventory of every action the system can take (CC8 change management) | Relies on audit logging of what was done, not a pre-defined inventory of what could be done |
 | Flexibility | Limited to what is in the catalog -- novel fixes require authoring a new workflow | Can propose novel fixes the system has not encountered before |
 
 ### Approval Gates
 
-Kubernaut provides **per-remediation, context-aware approval gates**. Each remediation can trigger a `RemediationApprovalRequest` CRD based on OPA/Rego policy evaluation of the specific context: confidence score, namespace, resource type, risk labels, remediation history, and business metadata. A high-confidence ConfigMap fix in dev auto-approves; the same fix in production with low confidence pauses for human review.
+Kubernaut provides **per-remediation, context-aware approval gates**. Each remediation can trigger a `RemediationApprovalRequest` CRD based on OPA/Rego policy evaluation of the specific context: confidence score, environment, affected resource kind, detected labels (e.g. `git_ops_managed`, `stateful`), and business classification. A high-confidence ConfigMap fix in dev auto-approves; the same fix in production with low confidence pauses for human review.
 
 Klaudia provides **per-environment autonomy controls**. Teams configure copilot mode (recommend and wait) or autopilot mode (execute autonomously) scoped by RBAC, namespace, environment category, or issue type. Policy guardrails define what actions Klaudia should never take. The autonomy level expands as trust grows.
 
@@ -139,7 +139,7 @@ Kubernaut is the only platform -- open-source or commercial -- that combines all
 
 - **Full lifecycle in one pipeline**: Detect &rarr; Investigate &rarr; Approve &rarr; Remediate &rarr; Verify &rarr; Notify &rarr; Learn. No tool handoffs, no manual glue between stages.
 - **Declarative workflow catalog**: The LLM selects from pre-authored, versioned, auditable workflows. The blast radius is bounded by the catalog. Auditors can enumerate every possible action the system can take.
-- **Per-remediation approval gates**: OPA/Rego policies evaluate each remediation individually based on confidence, namespace, resource type, risk labels, and remediation history. Not an environment-level toggle.
+- **Per-remediation approval gates**: OPA/Rego policies evaluate each remediation individually based on confidence, environment, affected resource kind, detected labels, and business classification. Not an environment-level toggle.
 - **Closed-loop effectiveness verification**: Every remediation is scored across four dimensions. Failed fixes are marked, triggering escalation or alternative selection.
 - **Structured feedback loop**: Per-remediation effectiveness scores feed directly into future LLM investigations. The system avoids repeating what failed and selects alternatives.
 - **No vendor lock-in**: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.

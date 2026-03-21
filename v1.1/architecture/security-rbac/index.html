@@ -3157,9 +3157,9 @@
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
 </span></code></pre></div>
-<p>The <strong>Event Exporter</strong> is bound automatically by the chart -- no manual configuration needed.</p>
+<p>If you deploy a Kubernetes Event Exporter separately (see <a href="../../operations/event-exporter/">Event Exporter</a>), its ServiceAccount must also be registered as a signal source in the same <code>signalSources</code> list.</p>
 <p>Without the bearer token, the Gateway returns <code>401 Unauthorized</code>. Without the ClusterRoleBinding, the Gateway returns <code>403 Forbidden</code>.</p>
-<p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager and Event Exporter configuration examples.</p>
+<p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager configuration example. For Kubernetes event forwarding, see <a href="../../operations/event-exporter/">Event Exporter</a>.</p>
 <h2 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h2>
 <p>Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).</p>
 <p>Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
@@ -3498,7 +3498,7 @@
 <p>Hook jobs only run during <code>helm install</code>, <code>helm upgrade</code>, and <code>helm delete</code>. They do not have long-lived pods.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and Event Exporter signal sources</li>
+<li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager signal sources; for Kubernetes event forwarding see <a href="../../operations/event-exporter/">Event Exporter</a></li>
 <li><a href="../../user-guide/configuration/">Configuration Reference</a> -- Helm values for all services</li>
 <li><a href="../../operations/troubleshooting/">Troubleshooting</a> -- Diagnose RBAC-related issues</li>
 </ul>

@@ -3203,9 +3203,9 @@
 <h3 id="weaknesses_1">Weaknesses<a class="headerlink" href="#weaknesses_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Non-deterministic</strong>: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.</li>
-<li><strong>Latency</strong>: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, rule-based workflows can bypass LLM reasoning entirely.</li>
+<li><strong>Latency</strong>: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.</li>
 <li><strong>Hallucination risk</strong>: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.</li>
-<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Kubernaut minimizes this by skipping LLM reasoning when signal labels directly match a workflow.</li>
+<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Workflow selection from the catalog is label-based (no LLM call), so cost scales with investigations, not catalog size. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.</li>
 </ul>
 <h2 id="predictive-ai-as-a-knowledge-based-agent">Predictive AI as a Knowledge-Based Agent<a class="headerlink" href="#predictive-ai-as-a-knowledge-based-agent" title="Permanent link">&para;</a></h2>
 <p>The key architectural insight is that predictive AI and generative AI are not competing approaches. They operate at different layers, and the most effective architecture <strong>composes</strong> them: predictive AI as a tool the LLM calls during investigation, alongside <code>kubectl</code>, Prometheus, and logs.</p>

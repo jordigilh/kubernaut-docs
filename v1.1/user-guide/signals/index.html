@@ -3172,10 +3172,14 @@
 </span></code></pre></div>
 <p>The Gateway validates each alert, extracts the target resource, checks scope labels, and creates a <code>RemediationRequest</code> CRD.</p>
 <h3 id="kubernetes-events">Kubernetes Events<a class="headerlink" href="#kubernetes-events" title="Permanent link">&para;</a></h3>
-<p>Kubernaut uses an <strong>Event Exporter</strong> (deployed as part of the Helm chart) to forward <code>Warning</code>-type Kubernetes events to the Gateway:</p>
+<p>The Gateway accepts Kubernetes events via a webhook endpoint:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>POST /api/v1/signals/kubernetes-event
 </span></code></pre></div>
-<p>This captures events like <code>BackOff</code>, <code>OOMKilled</code>, <code>FailedScheduling</code>, and <code>Unhealthy</code> without requiring a Prometheus rule for each.</p>
+<p>This captures events like <code>BackOff</code>, <code>OOMKilled</code>, <code>FailedScheduling</code>, and <code>Unhealthy</code> without requiring a Prometheus rule for each. To use this source, deploy a Kubernetes Event Exporter (e.g., the <a href="https://github.com/resmoio/kubernetes-event-exporter">Resmo Event Exporter</a>) and point it at the Gateway endpoint. See <a href="../../operations/event-exporter/">Event Exporter</a> for setup details.</p>
+<div class="admonition note">
+<p class="admonition-title">Event Exporter removed from chart in v1.1</p>
+<p>The Event Exporter was previously bundled in the Helm chart. Since v1.1, Kubernetes event forwarding is a user-provided concern managed independently of the Kubernaut installation.</p>
+</div>
 <h2 id="signal-types">Signal Types<a class="headerlink" href="#signal-types" title="Permanent link">&para;</a></h2>
 <p>After ingestion, the Gateway normalizes all signals to a single type:</p>
 <table>

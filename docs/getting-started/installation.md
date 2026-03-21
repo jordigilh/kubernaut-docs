@@ -250,7 +250,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 
 ### Quickstart
 
-The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds 25 ActionTypes + 20 RemediationWorkflows.
+The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds built-in ActionTypes and RemediationWorkflows.
 
 ```bash
 # 1. Create namespace and LLM credentials
@@ -290,7 +290,7 @@ curl -s http://localhost:8080/api/v1/workflows | jq '.'
 
 ### Action Types and Workflows (Demo Content)
 
-When `demoContent.enabled: true` (the default), the chart seeds 25 ActionType definitions and 20 RemediationWorkflows into the catalog automatically. No manual loading is required.
+When `demoContent.enabled: true` (the default), the chart seeds built-in ActionType definitions and RemediationWorkflows into the catalog automatically. No manual loading is required.
 
 To disable demo content for production deployments and load only your own workflows:
 

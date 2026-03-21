@@ -72,7 +72,7 @@ See [Installation](../getting-started/installation.md#signal-source-authenticati
 
 Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).
 
-All four CRD controllers (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
+Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
 
 | Controller | ServiceAccount | CRDs Managed | Additional Access | Notes |
 |---|---|---|---|---|

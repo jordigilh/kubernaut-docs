@@ -295,7 +295,7 @@ If you created secrets manually in step 4a, add the corresponding `--set` flags:
 kubectl get pods -n kubernaut-system
 ```
 
-All 12 pods should reach `1/1 Running` within a few minutes.
+All pods should reach `1/1 Running` within a few minutes.
 
 ### Image pull errors
 

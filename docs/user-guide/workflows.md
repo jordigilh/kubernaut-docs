@@ -408,7 +408,7 @@ Action types form the vocabulary the LLM uses to reason about remediation. Each 
 
 ### Built-in Action Types
 
-Kubernaut seeds 24 action types during installation:
+Kubernaut seeds the following action types during installation:
 
 | Action Type | What It Does |
 |---|---|
@@ -436,6 +436,7 @@ Kubernaut seeds 24 action types during installation:
 | `FixAuthorizationPolicy` | Remove or fix a Linkerd AuthorizationPolicy blocking traffic |
 | `FixStatefulSetPVC` | Recreate a missing PVC for a StatefulSet and restart the stuck pod |
 | `FixNetworkPolicy` | Remove a deny-all NetworkPolicy blocking legitimate ingress |
+| `MigrateEmptyDirToPVC` | Migrate a stateful workload from ephemeral emptyDir storage to a persistent volume claim |
 
 ### Registering Custom Action Types
 
@@ -598,28 +599,32 @@ The `final_score` determines the order in which workflows are presented to the L
 
 ## Built-in Workflows
 
-Kubernaut seeds 18 workflows via a Helm post-install hook:
+When `demoContent.enabled: true` (the default), the chart seeds the following built-in workflows:
 
 | Workflow | Action Type |
 |---|---|
-| `crashloop-rollback-job` | RollbackDeployment |
-| `rollback-deployment-job` | RollbackDeployment |
-| `increase-memory-limits-job` | IncreaseMemoryLimits |
-| `graceful-restart-job` | GracefulRestart |
-| `git-revert-job` | GitRevertCommit |
-| `provision-node-job` | ProvisionNode |
-| `proactive-rollback-job` | ProactiveRollback |
-| `patch-hpa-job` | PatchHPA |
-| `relax-pdb-job` | RelaxPDB |
-| `remove-taint-job` | RemoveTaint |
-| `cleanup-pvc-job` | CleanupPVC |
-| `cordon-drain-job` | CordonDrainNode |
-| `fix-certificate-job` | FixCertificate |
-| `fix-certificate-gitops-job` | FixCertificate |
-| `helm-rollback-job` | HelmRollback |
-| `fix-authz-policy-job` | FixAuthorizationPolicy |
-| `fix-statefulset-pvc-job` | FixStatefulSetPVC |
-| `fix-network-policy-job` | FixNetworkPolicy |
+| `crashloop-rollback-v1` | RollbackDeployment |
+| `crashloop-rollback-risk-v1` | RollbackDeployment |
+| `restart-pods-v1` | RollbackDeployment |
+| `rollback-deployment-v1` | RollbackDeployment |
+| `increase-memory-limits-v1` | IncreaseMemoryLimits |
+| `increase-memory-limits-gitops-v1` | IncreaseMemoryLimits |
+| `graceful-restart-v1` | GracefulRestart |
+| `git-revert-v2` | GitRevertCommit |
+| `provision-node-v1` | ProvisionNode |
+| `proactive-rollback-v1` | ProactiveRollback |
+| `patch-hpa-v1` | PatchHPA |
+| `relax-pdb-v1` | RelaxPDB |
+| `remove-taint-v1` | RemoveTaint |
+| `cleanup-pvc-v1` | CleanupPVC |
+| `cordon-drain-v1` | CordonDrainNode |
+| `fix-certificate-v1` | FixCertificate |
+| `fix-certificate-gitops-v1` | GitRevertCommit |
+| `helm-rollback-v1` | HelmRollback |
+| `fix-authz-policy-v1` | FixAuthorizationPolicy |
+| `fix-statefulset-pvc-v1` | FixStatefulSetPVC |
+| `fix-network-policy-v1` | FixNetworkPolicy |
+| `migrate-emptydir-to-pvc-gitops-v1` | MigrateEmptyDirToPVC |
 
 These are starting points. Operators supplement them with custom workflows using custom or existing action types.
 

@@ -224,6 +224,19 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 
 See `charts/kubernaut/examples/` for reference configuration files you can copy and customize.
 
+!!! tip "Production: disable demo fixtures"
+    The chart seeds built-in ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`). For production deployments where you want only your own workflows, disable it:
+
+    ```bash
+    helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+      --namespace kubernaut-system \
+      --set demoContent.enabled=false \
+      --set holmesgptApi.llm.provider=openai \
+      --set holmesgptApi.llm.model=gpt-4o
+    ```
+
+    See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
+
 ### OpenShift (OCP)
 
 Layer the `values-ocp.yaml` overlay to switch to Red Hat catalog images and configure OCP monitoring endpoints:

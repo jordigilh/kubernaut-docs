@@ -49,6 +49,8 @@ The AIOps remediation landscape has three distinct approaches. Kubernaut uses ge
 
 **Where Kubernaut wins**: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter. When integrated with predictive AI, Kubernaut can cross-validate its root cause analysis against statistical correlations — increasing confidence when they agree, and flagging discrepancies when they don't.
 
+For a detailed comparison against specific products and platforms in the agentic remediation space, see [Agentic Remediation Market Comparison](market-comparison.md).
+
 ## When to Use Kubernaut
 
 **Good fit:**

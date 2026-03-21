@@ -1562,6 +1562,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#crd-safety-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Safety Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3048,6 +3059,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#crd-safety-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Safety Gate
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3268,6 +3290,17 @@
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.9</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
 </span></code></pre></div>
+<h3 id="crd-safety-gate">CRD Safety Gate<a class="headerlink" href="#crd-safety-gate" title="Permanent link">&para;</a></h3>
+<p>Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>For GitOps-managed clusters, combine with <code>detected_labels</code> — see <a href="../policies/#crd-safety-policy">CRD Safety Policy</a> for the full pattern.</p>
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). If the new policy has a syntax error, the previous policy is kept and an error is logged.</p>
 <h2 id="reference-file">Reference File<a class="headerlink" href="#reference-file" title="Permanent link">&para;</a></h2>

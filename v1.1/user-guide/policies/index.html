@@ -1226,6 +1226,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#crd-safety-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Safety Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3098,6 +3109,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#crd-safety-policy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Safety Policy
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3507,6 +3529,29 @@
 </span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_high_confidence</span>
 </span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="p">}</span>
 </span></code></pre></div>
+<h3 id="crd-safety-policy">CRD Safety Policy<a class="headerlink" href="#crd-safety-policy" title="Permanent link">&para;</a></h3>
+<p>Automated modifications to CustomResourceDefinitions are high-risk operations — a CRD change cascades to every CR of that type across the cluster. The approval policy can gate CRD remediations to require human review.</p>
+<p><strong>Require approval for all CRD modifications:</strong></p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">}</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">is_sensitive_resource</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">}</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
+</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong>Elevated risk for GitOps-managed CRDs:</strong></p>
+<p>When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine <code>affected_resource.kind</code> with <code>detected_labels</code> for a stricter gate:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification under GitOps management — requires human approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">detected_labels</span><span class="p">.</span><span class="n">git_ops_managed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">true</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
+</span></code></pre></div>
+<p>See the <a href="../rego-reference/#ai-analysis-approval-policy">Rego Reference</a> for the full list of <code>detected_labels</code> fields available in approval rules.</p>
 <h2 id="deployment-and-update">Deployment and Update<a class="headerlink" href="#deployment-and-update" title="Permanent link">&para;</a></h2>
 <h3 id="where-policies-live">Where Policies Live<a class="headerlink" href="#where-policies-live" title="Permanent link">&para;</a></h3>
 <table>

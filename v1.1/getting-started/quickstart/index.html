@@ -3048,11 +3048,11 @@
 <tr>
 <td><strong>Kind cluster</strong></td>
 <td>Local Kubernetes environment</td>
-<td><code>kind create cluster --config deploy/demo/overlays/kind/kind-cluster-config.yaml</code></td>
+<td><code>kind create cluster</code> (the demo runner creates one automatically)</td>
 </tr>
 <tr>
 <td><strong>Kubernaut platform</strong></td>
-<td>All 10 services running</td>
+<td>All services running</td>
 <td>Helm chart (see below)</td>
 </tr>
 <tr>
@@ -3068,62 +3068,65 @@
 <tr>
 <td><strong>LLM provider</strong></td>
 <td>Root cause analysis</td>
-<td>API key configured in <code>~/.kubernaut/helm/llm-values.yaml</code></td>
+<td>API key in an <code>llm-credentials</code> Secret</td>
 </tr>
 <tr>
 <td><strong>Workflow catalog</strong></td>
 <td><code>crashloop-rollback-v1</code> workflow registered</td>
-<td>Seeded by the demo runner or manually</td>
+<td>Embedded in chart via <code>demoContent.enabled</code> (default)</td>
 </tr>
 </tbody>
 </table>
 <h3 id="automated-setup">Automated Setup<a class="headerlink" href="#automated-setup" title="Permanent link">&para;</a></h3>
 <p>The demo runner handles all prerequisites automatically:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut.git
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>./deploy/demo/scenarios/crashloop/run.sh
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>./scripts/setup-demo-cluster.sh
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>./scenarios/crashloop/run.sh
 </span></code></pre></div>
 <p>This script:</p>
 <ol>
 <li>Creates a Kind cluster (if not running)</li>
 <li>Installs kube-prometheus-stack (Prometheus, AlertManager, kube-state-metrics, Grafana)</li>
-<li>Installs Kubernaut via Helm (all 10 services + infrastructure)</li>
-<li>Seeds the <code>crashloop-rollback-v1</code> workflow into the catalog</li>
+<li>Installs Kubernaut via Helm with demo content (ActionTypes + RemediationWorkflows)</li>
 <li>Runs the full scenario</li>
 </ol>
 <h3 id="manual-setup">Manual Setup<a class="headerlink" href="#manual-setup" title="Permanent link">&para;</a></h3>
 <p>If you prefer to set up each component yourself:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># 1. Create Kind cluster</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kind<span class="w"> </span>create<span class="w"> </span>cluster<span class="w"> </span>--config<span class="w"> </span>deploy/demo/overlays/kind/kind-cluster-config.yaml
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kind<span class="w"> </span>create<span class="w"> </span>cluster
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># 2. Install monitoring stack</span>
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>repo<span class="w"> </span>add<span class="w"> </span>prometheus-community<span class="w"> </span>https://prometheus-community.github.io/helm-charts
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>helm<span class="w"> </span>repo<span class="w"> </span>update
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a>helm<span class="w"> </span>install<span class="w"> </span>kube-prometheus-stack<span class="w"> </span>prometheus-community/kube-prometheus-stack<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">  </span>--namespace<span class="w"> </span>monitoring<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--values<span class="w"> </span>deploy/demo/helm/kube-prometheus-stack-values.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">  </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>5m
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="c1"># 3. Configure LLM credentials</span>
-</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>mkdir<span class="w"> </span>-p<span class="w"> </span>~/.kubernaut/helm
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>cp<span class="w"> </span>deploy/demo/helm/llm-values.yaml.example<span class="w"> </span>~/.kubernaut/helm/llm-values.yaml
-</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1"># Edit ~/.kubernaut/helm/llm-values.yaml with your LLM provider credentials</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">  </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>5m
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="c1"># 3. Install Kubernaut (secrets and policies are auto-generated)</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="c1"># 4. Install Kubernaut</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>charts/kubernaut/crds/
-</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span>--values<span class="w"> </span>deploy/demo/helm/kubernaut-kind-values.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-22"><a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="w">  </span>--values<span class="w"> </span>~/.kubernaut/helm/llm-values.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-23"><a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a><span class="w">  </span>--skip-crds<span class="w"> </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
 </span></code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">What the chart handles automatically</p>
+<p>The v1.1 chart auto-generates PostgreSQL, DataStorage, and Valkey credentials; embeds default Rego policies for signal processing and AI analysis approval; and seeds 25 ActionTypes + 20 RemediationWorkflows when <code>demoContent.enabled: true</code> (the default). The only secret you need to create is <code>llm-credentials</code>.</p>
+</div>
+<p>For advanced LLM configurations (Vertex AI, Azure, local models), see <a href="../../user-guide/configmap-holmesgpt/">HolmesGPT SDK Config</a>.</p>
 <hr />
 <h2 id="step-1-deploy-the-healthy-workload">Step 1: Deploy the Healthy Workload<a class="headerlink" href="#step-1-deploy-the-healthy-workload" title="Permanent link">&para;</a></h2>
-<p>Deploy a namespace, a healthy nginx worker, and a Prometheus alerting rule:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/demo/scenarios/crashloop/manifests/namespace.yaml
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/demo/scenarios/crashloop/manifests/configmap.yaml
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/demo/scenarios/crashloop/manifests/deployment.yaml
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/demo/scenarios/crashloop/manifests/prometheus-rule.yaml
+<p>Deploy a namespace, a healthy nginx worker, and a Prometheus alerting rule. If you cloned the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>scenarios/crashloop/manifests/namespace.yaml
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>scenarios/crashloop/manifests/configmap.yaml
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>scenarios/crashloop/manifests/deployment.yaml
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>scenarios/crashloop/manifests/prometheus-rule.yaml
 </span></code></pre></div>
 <p>The namespace is labeled for Kubernaut management:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
@@ -3220,38 +3223,40 @@
 <p>Let Prometheus establish a healthy baseline (wait ~20 seconds for at least one scrape cycle).</p>
 <h2 id="step-3-inject-bad-configuration">Step 3: Inject Bad Configuration<a class="headerlink" href="#step-3-inject-bad-configuration" title="Permanent link">&para;</a></h2>
 <p>Now break the deployment by injecting an invalid nginx configuration:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>bash<span class="w"> </span>deploy/demo/scenarios/crashloop/inject-bad-config.sh
-</span></code></pre></div>
-<p>This script creates a new ConfigMap with an invalid nginx directive and patches the deployment to reference it:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># The bad ConfigMap contains:</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="l l-Scalar l-Scalar-Plain">http {</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">invalid_directive_that_breaks_nginx on;</span><span class="w">  </span><span class="c1"># causes nginx to fail on startup</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">...</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="l l-Scalar l-Scalar-Plain">}</span>
-</span></code></pre></div>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># What the script does:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>&lt;bad-configmap&gt;
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>deployment<span class="w"> </span>worker<span class="w"> </span>-n<span class="w"> </span>demo-crashloop<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>--type<span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/template/spec/volumes/0/configMap/name&quot;,&quot;value&quot;:&quot;worker-config-bad&quot;}]&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;EOF&#39;</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="s">apiVersion: v1</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="s">kind: ConfigMap</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="s">metadata:</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="s">  name: worker-config-bad</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="s">  namespace: demo-crashloop</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="s">data:</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="s">  nginx.conf: |</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="s">    http {</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="s">        invalid_directive_that_breaks_nginx on;</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="s">    }</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="s">EOF</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>deployment<span class="w"> </span>worker<span class="w"> </span>-n<span class="w"> </span>demo-crashloop<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="w">  </span>--type<span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/spec/template/spec/volumes/0/configMap/name&quot;,&quot;value&quot;:&quot;worker-config-bad&quot;}]&#39;</span>
 </span></code></pre></div>
 <h2 id="step-4-observe-crashloopbackoff">Step 4: Observe CrashLoopBackOff<a class="headerlink" href="#step-4-observe-crashloopbackoff" title="Permanent link">&para;</a></h2>
 <p>Watch the pods crash:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>demo-crashloop<span class="w"> </span>-w
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>demo-crashloop<span class="w"> </span>-w
 </span></code></pre></div>
 <p>You'll see pods cycle through <code>Error</code> → <code>CrashLoopBackOff</code> → <code>Error</code>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>NAME                      READY   STATUS             RESTARTS   AGE
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>worker-7f8a9b3c2-xyz78   0/1     CrashLoopBackOff   3          45s
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>worker-7f8a9b3c2-uvw56   0/1     Error              2          45s
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>NAME                      READY   STATUS             RESTARTS   AGE
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>worker-7f8a9b3c2-xyz78   0/1     CrashLoopBackOff   3          45s
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>worker-7f8a9b3c2-uvw56   0/1     Error              2          45s
 </span></code></pre></div>
 <h2 id="step-5-wait-for-alert-and-pipeline">Step 5: Wait for Alert and Pipeline<a class="headerlink" href="#step-5-wait-for-alert-and-pipeline" title="Permanent link">&para;</a></h2>
 <p>The <code>KubePodCrashLooping</code> alert fires after &gt;3 restarts in 3 minutes (~2-3 min). You can check Prometheus directly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>monitoring<span class="w"> </span>svc/kube-prometheus-stack-prometheus<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span><span class="p">&amp;</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="c1"># Open http://localhost:9090/alerts to see the alert firing</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>monitoring<span class="w"> </span>svc/kube-prometheus-stack-prometheus<span class="w"> </span><span class="m">9090</span>:9090<span class="w"> </span><span class="p">&amp;</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># Open http://localhost:9090/alerts to see the alert firing</span>
 </span></code></pre></div>
 <p>Once the alert fires, AlertManager sends it to Kubernaut's Gateway webhook. Watch the remediation pipeline progress:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationrequests,signalprocessing,aianalysis,workflowexecution,effectivenessassessment<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-w
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationrequests,signalprocessing,aianalysis,workflowexecution,effectivenessassessment<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-w
 </span></code></pre></div>
 <p>The pipeline flows through these stages:</p>
 <table>
@@ -3297,17 +3302,17 @@
 </table>
 <h2 id="step-6-verify-the-fix">Step 6: Verify the Fix<a class="headerlink" href="#step-6-verify-the-fix" title="Permanent link">&para;</a></h2>
 <p>After the pipeline completes, check that the workload is healthy again:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>demo-crashloop
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>demo-crashloop
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>NAME                      READY   STATUS    RESTARTS   AGE
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>worker-5d4b8c7f9-new12   1/1     Running   0          60s
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>worker-5d4b8c7f9-new34   1/1     Running   0          60s
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>NAME                      READY   STATUS    RESTARTS   AGE
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>worker-5d4b8c7f9-new12   1/1     Running   0          60s
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>worker-5d4b8c7f9-new34   1/1     Running   0          60s
 </span></code></pre></div>
 <p>The deployment was rolled back to the previous healthy revision:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span><span class="nb">history</span><span class="w"> </span>deployment/worker<span class="w"> </span>-n<span class="w"> </span>demo-crashloop
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span><span class="nb">history</span><span class="w"> </span>deployment/worker<span class="w"> </span>-n<span class="w"> </span>demo-crashloop
 </span></code></pre></div>
 <h2 id="clean-up">Clean Up<a class="headerlink" href="#clean-up" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>demo-crashloop
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>demo-crashloop
 </span></code></pre></div>
 <h2 id="what-just-happened">What Just Happened?<a class="headerlink" href="#what-just-happened" title="Permanent link">&para;</a></h2>
 <ol>

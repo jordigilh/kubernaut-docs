@@ -274,7 +274,7 @@ When the Orchestrator creates a WorkflowExecution CRD:
 3. The Orchestrator monitors WFE status and transitions accordingly
 
 ```
-RO creates WFE → WFE validates spec → WFE resolves deps → WFE creates Job/PipelineRun → WFE reports status → RO transitions
+RO creates WFE → WFE validates spec → WFE resolves deps → WFE creates Job/PipelineRun/AWX Job → WFE reports status → RO transitions
 ```
 
 ## Next Steps

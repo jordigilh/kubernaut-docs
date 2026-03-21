@@ -8310,6 +8310,11 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td>BlockClearance tracks the clearing of PreviousExecutionFailed blocks<br />When set, allows new executions despite previous execution failure<br />Preserves audit trail of WHO cleared the block and WHY</td>
 </tr>
 <tr>
+<td><code>ephemeralCredentialIDs</code></td>
+<td><em>integer array</em></td>
+<td>EphemeralCredentialIDs stores AWX credential IDs created by the ansible<br />executor for cleanup after execution . Written via the status<br />subresource to avoid violating spec immutability .</td>
+</tr>
+<tr>
 <td><code>conditions</code></td>
 <td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta">Condition</a> array</em></td>
 <td>Conditions provide detailed status information</td>

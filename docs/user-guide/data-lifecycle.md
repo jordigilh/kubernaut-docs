@@ -25,7 +25,7 @@ While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every serv
 | Storage | Lifetime | Purpose |
 |---|---|---|
 | Kubernetes CRDs | Indefinite (TTL cleanup planned) | Active state, `kubectl` visibility, controller reconciliation |
-| PostgreSQL `audit_events` | 7 years (configured, deletion deferred to v1.2) | Compliance, reconstruction, analytics, post-mortems |
+| PostgreSQL `audit_events` | 7 years (configured default; deletion not yet enforced — see [kubernaut#485](https://github.com/jordigilh/kubernaut/issues/485)) | Compliance, reconstruction, analytics, post-mortems |
 
 ## RemediationRequest Reconstruction
 

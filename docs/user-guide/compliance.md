@@ -67,8 +67,8 @@ The control mapping on this page is derived from the following internal design d
 - The **hash chain** provides cryptographic tamper detection. Any modification to a stored event breaks the chain and is detectable by walking the hash sequence ([ADR-034]).
 - The table is **partitioned by month** for efficient storage and querying at scale.
 
-!!! note "Retention enforcement (v1.1)"
-    The retention period is recorded per event, but automatic deletion of expired events is deferred to v1.2. Events currently accumulate indefinitely -- retention is effectively unlimited.
+!!! note "Retention enforcement"
+    The retention period is recorded per event, but automatic deletion of expired events is not yet implemented. Events currently accumulate indefinitely -- retention is effectively unlimited. Retention enforcement is tracked in [kubernaut#485](https://github.com/jordigilh/kubernaut/issues/485) (v1.3). Customers are responsible for configuring retention periods based on their jurisdictional and regulatory requirements (e.g., GDPR, HIPAA, SOC2, SEC).
 
 **Evidence**: [Retention](audit-and-observability.md#retention), [Event Structure](../architecture/audit-pipeline.md#event-structure)
 

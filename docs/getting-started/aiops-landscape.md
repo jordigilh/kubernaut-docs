@@ -154,7 +154,7 @@ The LLM decides when and whether to query the predictive AI based on the investi
 | High-confidence RCA with cross-validation | Generative AI + Predictive AI |
 | Topology-dependent incidents across microservices | Predictive AI as knowledge agent for Generative AI |
 | Environments requiring closed-loop verification | Generative AI (Kubernaut) |
-| On-premises with data sovereignty requirements | Generative AI (Kubernaut) -- fully self-hosted; LLM prompts, telemetry, and remediation data never leave the network boundary. Predictive AI platforms typically require cloud-hosted SaaS |
+| On-premises with data sovereignty requirements | Generative AI (Kubernaut) -- fully self-hosted; telemetry, remediation records, and audit data stay in-cluster. With a locally hosted LLM, no data leaves the network boundary. Predictive AI platforms typically require cloud-hosted SaaS |
 | Air-gapped / disconnected clusters | Generative AI (Kubernaut) with a [locally hosted LLM](../operations/disconnected-install.md) -- no external network dependencies |
 | Full lifecycle: detect, investigate, remediate, verify, learn | Combined: Predictive AI for detection and context, Generative AI for reasoning and execution |
 

@@ -29,7 +29,7 @@ These tools use LLMs for Kubernetes troubleshooting but do not execute remediati
 
 ### Open-Source Full-Lifecycle (Investigation + Remediation)
 
-**Kubernaut** is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, file) &rarr; Learn (effectiveness scores feed future investigations).
+**Kubernaut** is the only open-source platform that combines LLM-driven investigation with automated remediation execution, closed-loop verification, and effectiveness feedback. The full pipeline: Detect (Prometheus alerts, Kubernetes events) &rarr; Investigate (LLM with live kubectl, Prometheus, logs, remediation history) &rarr; Approve (RemediationApprovalRequest CRDs + OPA/Rego policies) &rarr; Remediate (Kubernetes Jobs, Tekton Pipelines, Ansible/AWX) &rarr; Verify (4-dimension effectiveness scoring) &rarr; Notify (Slack, file) &rarr; Learn (effectiveness scores feed future investigations).
 
 ### Commercial Kubernetes-Native AIOps
 
@@ -98,16 +98,16 @@ Klaudia describes a **general learning mechanism**: "every incident helps the ag
 
 ### Deployment Model
 
-Kubernaut is **fully self-hosted**. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. LLM prompts, investigation transcripts, remediation records, and telemetry never leave the network boundary. For [disconnected and air-gapped environments](../operations/disconnected-install.md), Kubernaut works with locally hosted LLMs (Ollama, vLLM, or any OpenAI-compatible endpoint), eliminating all external network dependencies.
+Kubernaut is **fully self-hosted**. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. Investigation transcripts, remediation records, audit events, and telemetry are stored locally in PostgreSQL and never leave the cluster. When using a cloud LLM provider (OpenAI, Vertex AI, Bedrock, etc.), investigation prompts are sent to the provider's API; for full data containment, use a [locally hosted LLM](../operations/disconnected-install.md) (Ollama, vLLM, or any OpenAI-compatible endpoint).
 
 Klaudia is a **commercial SaaS** platform built on AWS Bedrock. A lightweight agent runs in the customer's cluster and sends observability data to Komodor's cloud infrastructure for investigation and remediation orchestration. Komodor states that customer data is never used for training, but the data does leave the cluster boundary. No self-hosted deployment option is documented.
 
 | Aspect | Kubernaut | Klaudia |
 |---|---|---|
 | Deployment | Self-hosted, in-cluster | SaaS (AWS) |
-| Data residency | All data stays within the cluster boundary | Data flows to Komodor's cloud |
+| Data residency | Remediation records, audit events, and telemetry stay in-cluster; LLM prompts go to the configured provider (use a local LLM for full containment) | Data flows to Komodor's cloud |
 | Air-gapped / disconnected | Fully supported with local LLM | Not supported |
-| Data sovereignty (GDPR, FedRAMP) | Native -- no data leaves the jurisdiction | Depends on Komodor's cloud region and DPA |
+| Data sovereignty (GDPR, FedRAMP) | With a local LLM, no data leaves the jurisdiction; with a cloud provider, only LLM prompts exit the boundary | Depends on Komodor's cloud region and DPA |
 | Regulated industries | No third-party data processor involved | Komodor is a data processor |
 | LLM provider choice | Any provider or self-hosted model | AWS Bedrock (Komodor-managed) |
 
@@ -143,7 +143,7 @@ Kubernaut is the only platform -- open-source or commercial -- that combines all
 - **Closed-loop effectiveness verification**: Every remediation is scored across four dimensions. Failed fixes are marked, triggering escalation or alternative selection.
 - **Structured feedback loop**: Per-remediation effectiveness scores feed directly into future LLM investigations. The system avoids repeating what failed and selects alternatives.
 - **No vendor lock-in**: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.
-- **Data sovereignty and air-gapped support**: The entire platform runs inside the customer's cluster. No data -- LLM prompts, investigation transcripts, remediation records, telemetry -- leaves the network boundary. Fully operational in [disconnected/air-gapped environments](../operations/disconnected-install.md) with locally hosted LLMs. No commercial AIOps competitor offers this.
+- **Data sovereignty and air-gapped support**: The entire platform runs inside the customer's cluster. Investigation transcripts, remediation records, audit events, and telemetry stay in-cluster. With a locally hosted LLM, no data leaves the network boundary -- fully operational in [disconnected/air-gapped environments](../operations/disconnected-install.md). No commercial AIOps competitor offers this.
 - **SOC2-aligned audit trails**: Full audit pipeline with 7-year retention. Every investigation, approval decision, remediation action, and effectiveness assessment is a persistent, queryable record.
 
 ## Where Other Tools Win

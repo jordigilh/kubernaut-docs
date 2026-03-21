@@ -62,11 +62,11 @@ gateway:
         namespace: monitoring
 ```
 
-The **Event Exporter** is bound automatically by the chart -- no manual configuration needed.
+If you deploy a Kubernetes Event Exporter separately (see [Event Exporter](../operations/event-exporter.md)), its ServiceAccount must also be registered as a signal source in the same `signalSources` list.
 
 Without the bearer token, the Gateway returns `401 Unauthorized`. Without the ClusterRoleBinding, the Gateway returns `403 Forbidden`.
 
-See [Installation](../getting-started/installation.md#signal-source-authentication) for the complete AlertManager and Event Exporter configuration examples.
+See [Installation](../getting-started/installation.md#signal-source-authentication) for the complete AlertManager configuration example. For Kubernetes event forwarding, see [Event Exporter](../operations/event-exporter.md).
 
 ## CRD Controllers
 
@@ -171,6 +171,6 @@ Hook jobs only run during `helm install`, `helm upgrade`, and `helm delete`. The
 
 ## Next Steps
 
-- [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager and Event Exporter signal sources
+- [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager signal sources; for Kubernetes event forwarding see [Event Exporter](../operations/event-exporter.md)
 - [Configuration Reference](../user-guide/configuration.md) -- Helm values for all services
 - [Troubleshooting](../operations/troubleshooting.md) -- Diagnose RBAC-related issues

@@ -34,13 +34,16 @@ The Gateway validates each alert, extracts the target resource, checks scope lab
 
 ### Kubernetes Events
 
-Kubernaut uses an **Event Exporter** (deployed as part of the Helm chart) to forward `Warning`-type Kubernetes events to the Gateway:
+The Gateway accepts Kubernetes events via a webhook endpoint:
 
 ```
 POST /api/v1/signals/kubernetes-event
 ```
 
-This captures events like `BackOff`, `OOMKilled`, `FailedScheduling`, and `Unhealthy` without requiring a Prometheus rule for each.
+This captures events like `BackOff`, `OOMKilled`, `FailedScheduling`, and `Unhealthy` without requiring a Prometheus rule for each. To use this source, deploy a Kubernetes Event Exporter (e.g., the [Resmo Event Exporter](https://github.com/resmoio/kubernetes-event-exporter)) and point it at the Gateway endpoint. See [Event Exporter](../operations/event-exporter.md) for setup details.
+
+!!! note "Event Exporter removed from chart in v1.1"
+    The Event Exporter was previously bundled in the Helm chart. Since v1.1, Kubernetes event forwarding is a user-provided concern managed independently of the Kubernaut installation.
 
 ## Signal Types
 

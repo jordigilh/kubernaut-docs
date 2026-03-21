@@ -3162,7 +3162,7 @@
 <p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager and Event Exporter configuration examples.</p>
 <h2 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h2>
 <p>Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).</p>
-<p>All four CRD controllers (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
+<p>Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
 <table>
 <thead>
 <tr>

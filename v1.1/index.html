@@ -2911,7 +2911,7 @@
 <li><strong>Signal Detection</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a <code>RemediationRequest</code>.</li>
 <li><strong>Signal Processing</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
 <li><strong>AI Analysis</strong> — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
-<li><strong>Workflow Execution</strong> — Runs the selected remediation via Tekton Pipelines or Kubernetes Jobs, with optional human approval gates.</li>
+<li><strong>Workflow Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP), with optional human approval gates.</li>
 <li><strong>Effectiveness Monitoring</strong> — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.</li>
 <li><strong>Notification</strong> — Notifies the team with the full remediation outcome, including the effectiveness assessment results.</li>
 </ol>
@@ -2939,7 +2939,7 @@
 </tr>
 <tr>
 <td><strong>Flexible Execution</strong></td>
-<td>Tekton Pipelines (multi-step) or Kubernetes Jobs (single-step) with optional human approval gates</td>
+<td>Kubernetes Jobs (single-step), Tekton Pipelines (multi-step), or Ansible (AWX/AAP) with optional human approval gates</td>
 </tr>
 <tr>
 <td><strong>Resource Scope Management</strong></td>

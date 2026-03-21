@@ -4051,7 +4051,7 @@
 <h2 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h2>
 <p>Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, <code>preconditions</code>) that the LLM reads during the <code>list_available_actions</code> step.</p>
 <h3 id="built-in-action-types">Built-in Action Types<a class="headerlink" href="#built-in-action-types" title="Permanent link">&para;</a></h3>
-<p>Kubernaut seeds 24 action types during installation:</p>
+<p>Kubernaut seeds the following action types during installation:</p>
 <table>
 <thead>
 <tr>
@@ -4155,6 +4155,10 @@
 <tr>
 <td><code>FixNetworkPolicy</code></td>
 <td>Remove a deny-all NetworkPolicy blocking legitimate ingress</td>
+</tr>
+<tr>
+<td><code>MigrateEmptyDirToPVC</code></td>
+<td>Migrate a stateful workload from ephemeral emptyDir storage to a persistent volume claim</td>
 </tr>
 </tbody>
 </table>
@@ -4415,7 +4419,7 @@
 <h3 id="scoring-is-internal-ordering-not-selection">Scoring Is Internal Ordering, Not Selection<a class="headerlink" href="#scoring-is-internal-ordering-not-selection" title="Permanent link">&para;</a></h3>
 <p>The <code>final_score</code> determines the order in which workflows are presented to the LLM, but the <strong>LLM makes the final selection</strong> based on descriptions, remediation history, and context. A workflow ranked #2 by score can still be selected if its description better matches the root cause.</p>
 <h2 id="built-in-workflows">Built-in Workflows<a class="headerlink" href="#built-in-workflows" title="Permanent link">&para;</a></h2>
-<p>Kubernaut seeds 18 workflows via a Helm post-install hook:</p>
+<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds the following built-in workflows:</p>
 <table>
 <thead>
 <tr>
@@ -4425,76 +4429,92 @@
 </thead>
 <tbody>
 <tr>
-<td><code>crashloop-rollback-job</code></td>
+<td><code>crashloop-rollback-v1</code></td>
 <td>RollbackDeployment</td>
 </tr>
 <tr>
-<td><code>rollback-deployment-job</code></td>
+<td><code>crashloop-rollback-risk-v1</code></td>
 <td>RollbackDeployment</td>
 </tr>
 <tr>
-<td><code>increase-memory-limits-job</code></td>
+<td><code>restart-pods-v1</code></td>
+<td>RollbackDeployment</td>
+</tr>
+<tr>
+<td><code>rollback-deployment-v1</code></td>
+<td>RollbackDeployment</td>
+</tr>
+<tr>
+<td><code>increase-memory-limits-v1</code></td>
 <td>IncreaseMemoryLimits</td>
 </tr>
 <tr>
-<td><code>graceful-restart-job</code></td>
+<td><code>increase-memory-limits-gitops-v1</code></td>
+<td>IncreaseMemoryLimits</td>
+</tr>
+<tr>
+<td><code>graceful-restart-v1</code></td>
 <td>GracefulRestart</td>
 </tr>
 <tr>
-<td><code>git-revert-job</code></td>
+<td><code>git-revert-v2</code></td>
 <td>GitRevertCommit</td>
 </tr>
 <tr>
-<td><code>provision-node-job</code></td>
+<td><code>provision-node-v1</code></td>
 <td>ProvisionNode</td>
 </tr>
 <tr>
-<td><code>proactive-rollback-job</code></td>
+<td><code>proactive-rollback-v1</code></td>
 <td>ProactiveRollback</td>
 </tr>
 <tr>
-<td><code>patch-hpa-job</code></td>
+<td><code>patch-hpa-v1</code></td>
 <td>PatchHPA</td>
 </tr>
 <tr>
-<td><code>relax-pdb-job</code></td>
+<td><code>relax-pdb-v1</code></td>
 <td>RelaxPDB</td>
 </tr>
 <tr>
-<td><code>remove-taint-job</code></td>
+<td><code>remove-taint-v1</code></td>
 <td>RemoveTaint</td>
 </tr>
 <tr>
-<td><code>cleanup-pvc-job</code></td>
+<td><code>cleanup-pvc-v1</code></td>
 <td>CleanupPVC</td>
 </tr>
 <tr>
-<td><code>cordon-drain-job</code></td>
+<td><code>cordon-drain-v1</code></td>
 <td>CordonDrainNode</td>
 </tr>
 <tr>
-<td><code>fix-certificate-job</code></td>
+<td><code>fix-certificate-v1</code></td>
 <td>FixCertificate</td>
 </tr>
 <tr>
-<td><code>fix-certificate-gitops-job</code></td>
-<td>FixCertificate</td>
+<td><code>fix-certificate-gitops-v1</code></td>
+<td>GitRevertCommit</td>
 </tr>
 <tr>
-<td><code>helm-rollback-job</code></td>
+<td><code>helm-rollback-v1</code></td>
 <td>HelmRollback</td>
 </tr>
 <tr>
-<td><code>fix-authz-policy-job</code></td>
+<td><code>fix-authz-policy-v1</code></td>
 <td>FixAuthorizationPolicy</td>
 </tr>
 <tr>
-<td><code>fix-statefulset-pvc-job</code></td>
+<td><code>fix-statefulset-pvc-v1</code></td>
 <td>FixStatefulSetPVC</td>
 </tr>
 <tr>
-<td><code>fix-network-policy-job</code></td>
+<td><code>fix-network-policy-v1</code></td>
 <td>FixNetworkPolicy</td>
+</tr>
+<tr>
+<td><code>migrate-emptydir-to-pvc-gitops-v1</code></td>
+<td>MigrateEmptyDirToPVC</td>
 </tr>
 </tbody>
 </table>

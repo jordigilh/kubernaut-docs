@@ -70,7 +70,7 @@ This ensures that every human action in the system has a recorded identity, time
 Audit events are stored with a configured retention of **2,555 days (7 years)**, supporting long-term compliance requirements.
 
 !!! note "Retention Enforcement"
-    The retention period is recorded per event but automatic deletion of expired events is deferred to v1.2. Events currently accumulate indefinitely.
+    The retention period is recorded per event but automatic deletion of expired events is not yet implemented. Events currently accumulate indefinitely. Retention enforcement is tracked in [kubernaut#485](https://github.com/jordigilh/kubernaut/issues/485) (v1.3). Customers are responsible for configuring retention policies based on their local regulatory requirements.
 
 The `audit_events` table is partitioned by month for efficient storage and querying. Individual events can be flagged as `is_sensitive` for PII handling.
 

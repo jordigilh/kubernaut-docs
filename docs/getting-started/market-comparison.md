@@ -96,6 +96,23 @@ Kubernaut's effectiveness scores create a **structured, per-remediation feedback
 
 Klaudia describes a **general learning mechanism**: "every incident helps the agents learn what worked, what didn't, and which signals mattered most" and "the system learns from your feedback, incorporating your approvals and rejections." This appears to be aggregate pattern learning rather than structured per-remediation scoring.
 
+### Deployment Model
+
+Kubernaut is **fully self-hosted**. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. LLM prompts, investigation transcripts, remediation records, and telemetry never leave the network boundary. For [disconnected and air-gapped environments](../operations/disconnected-install.md), Kubernaut works with locally hosted LLMs (Ollama, vLLM, or any OpenAI-compatible endpoint), eliminating all external network dependencies.
+
+Klaudia is a **commercial SaaS** platform built on AWS Bedrock. A lightweight agent runs in the customer's cluster and sends observability data to Komodor's cloud infrastructure for investigation and remediation orchestration. Komodor states that customer data is never used for training, but the data does leave the cluster boundary. No self-hosted deployment option is documented.
+
+| Aspect | Kubernaut | Klaudia |
+|---|---|---|
+| Deployment | Self-hosted, in-cluster | SaaS (AWS) |
+| Data residency | All data stays within the cluster boundary | Data flows to Komodor's cloud |
+| Air-gapped / disconnected | Fully supported with local LLM | Not supported |
+| Data sovereignty (GDPR, FedRAMP) | Native -- no data leaves the jurisdiction | Depends on Komodor's cloud region and DPA |
+| Regulated industries | No third-party data processor involved | Komodor is a data processor |
+| LLM provider choice | Any provider or self-hosted model | AWS Bedrock (Komodor-managed) |
+
+This distinction is decisive for organizations in regulated industries (finance, government, defense, healthcare), environments with strict data sovereignty requirements, or clusters that operate in disconnected or air-gapped networks. In these contexts, a SaaS dependency is not a preference -- it is a disqualifier.
+
 ### Investigation Architecture
 
 Klaudia's investigation is more sophisticated today. Hundreds of specialized SME agents run parallel hypotheses coordinated by an Orchestrator that ranks findings by confidence and evidence. Kubernaut uses a single-agent investigation via HAPI with sequential tool calls.
@@ -125,7 +142,8 @@ Kubernaut is the only platform -- open-source or commercial -- that combines all
 - **Per-remediation approval gates**: OPA/Rego policies evaluate each remediation individually based on confidence, namespace, resource type, risk labels, and remediation history. Not an environment-level toggle.
 - **Closed-loop effectiveness verification**: Every remediation is scored across four dimensions. Failed fixes are marked, triggering escalation or alternative selection.
 - **Structured feedback loop**: Per-remediation effectiveness scores feed directly into future LLM investigations. The system avoids repeating what failed and selects alternatives.
-- **No vendor lock-in**: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted including [disconnected/air-gapped environments](../operations/disconnected-install.md).
+- **No vendor lock-in**: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.
+- **Data sovereignty and air-gapped support**: The entire platform runs inside the customer's cluster. No data -- LLM prompts, investigation transcripts, remediation records, telemetry -- leaves the network boundary. Fully operational in [disconnected/air-gapped environments](../operations/disconnected-install.md) with locally hosted LLMs. No commercial AIOps competitor offers this.
 - **SOC2-aligned audit trails**: Full audit pipeline with 7-year retention. Every investigation, approval decision, remediation action, and effectiveness assessment is a persistent, queryable record.
 
 ## Where Other Tools Win

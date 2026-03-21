@@ -168,22 +168,22 @@ oc set data secret/pull-secret -n openshift-config \
 
 ### 4a. Provision secrets
 
-Follow the standard [secret provisioning](../getting-started/installation.md#2-provision-secrets) steps:
+The chart auto-generates PostgreSQL, DataStorage, and Valkey credentials. For disconnected environments where you want explicit control over passwords, create them before install:
 
 ```bash
 kubectl create namespace kubernaut-system
 
-kubectl create secret generic kubernaut-pg-credentials \
+kubectl create secret generic postgresql-secret \
   --from-literal=POSTGRES_USER=slm_user \
   --from-literal=POSTGRES_PASSWORD=<password> \
   --from-literal=POSTGRES_DB=action_history \
   -n kubernaut-system
 
-kubectl create secret generic kubernaut-ds-db-credentials \
+kubectl create secret generic datastorage-db-secret \
   --from-literal=db-secrets.yaml=$'username: slm_user\npassword: <password>' \
   -n kubernaut-system
 
-kubectl create secret generic kubernaut-valkey-credentials \
+kubectl create secret generic valkey-secret \
   --from-literal=valkey-secrets.yaml=$'password: <password>' \
   -n kubernaut-system
 
@@ -191,6 +191,8 @@ kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=<your-local-llm-key> \
   -n kubernaut-system
 ```
+
+See the [secret provisioning](../getting-started/installation.md#2-provision-secrets) reference for details. If you prefer auto-generated credentials, omit the first three secrets — only `llm-credentials` is required.
 
 ### 4b. Edit the air-gap overlay
 
@@ -260,12 +262,7 @@ helm install kubernaut charts/kubernaut/ \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=harbor.corp \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
-  --set valkey.existingSecret=kubernaut-valkey-credentials \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
 ```
 
 **Flat registry** (quay.io, OCP internal):
@@ -277,12 +274,15 @@ helm install kubernaut charts/kubernaut/ \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=quay.io/myorg \
   --set global.image.separator=- \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
-  --set valkey.existingSecret=kubernaut-valkey-credentials \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
+```
+
+If you created secrets manually in step 4a, add the corresponding `--set` flags:
+
+```bash
+  --set postgresql.auth.existingSecret=postgresql-secret \
+  --set datastorage.dbExistingSecret=datastorage-db-secret \
+  --set valkey.existingSecret=valkey-secret
 ```
 
 ---
@@ -374,9 +374,7 @@ helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-ocp.yaml \
   --set global.image.digest=sha256:<digest> \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
 ```
 
 !!! tip "Recommendation"
@@ -397,9 +395,7 @@ helm upgrade kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
+  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
 ```
 
 ### Migration Job fails connecting to PostgreSQL

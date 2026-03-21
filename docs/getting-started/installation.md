@@ -147,45 +147,16 @@ kubectl create namespace kubernaut-system
 
 ### 2. Provision Secrets
 
-Create the required secrets in the namespace before installing. The chart references these by name.
+The chart **auto-generates** credentials for PostgreSQL, DataStorage, and Valkey on first install using random alphanumeric passwords. For most deployments (including quickstart), no manual secret creation is needed for these services.
 
-**PostgreSQL credentials** (required):
+!!! tip "Production: bring your own secrets"
+    To use specific credentials (e.g., managed databases, password policies), create the secrets before install and reference them via Helm values. The chart skips auto-generation when an existing secret is found.
 
-```bash
-kubectl create secret generic kubernaut-pg-credentials \
-  --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD=<password> \
-  --from-literal=POSTGRES_DB=action_history \
-  -n kubernaut-system
-```
-
-| Chart Value | Secret Name | Required Keys |
-|---|---|---|
-| `postgresql.auth.existingSecret` | Your secret name | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
-
-**DataStorage DB config** (required):
-
-```bash
-kubectl create secret generic kubernaut-ds-db-credentials \
-  --from-literal=db-secrets.yaml=$'username: slm_user\npassword: <password>' \
-  -n kubernaut-system
-```
-
-| Chart Value | Secret Name | Required Keys |
-|---|---|---|
-| `datastorage.dbExistingSecret` | Your secret name | `db-secrets.yaml` (YAML with `username` and `password`) |
-
-**Valkey credentials** (required):
-
-```bash
-kubectl create secret generic kubernaut-valkey-credentials \
-  --from-literal=valkey-secrets.yaml=$'password: <password>' \
-  -n kubernaut-system
-```
-
-| Chart Value | Secret Name | Required Keys |
-|---|---|---|
-| `valkey.existingSecret` | Your secret name | `valkey-secrets.yaml` (YAML with `password`) |
+    | Chart Value | Auto-generated Secret | Required Keys |
+    |---|---|---|
+    | `postgresql.auth.existingSecret` | `postgresql-secret` | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
+    | `datastorage.dbExistingSecret` | `datastorage-db-secret` | `db-secrets.yaml` (YAML with `username` and `password`) |
+    | `valkey.existingSecret` | `valkey-secret` | `valkey-secrets.yaml` (YAML with `password`) |
 
 **LLM credentials** (required for AI analysis):
 
@@ -232,20 +203,26 @@ Only required when Slack delivery is configured in the notification routing conf
 
 ### Standard (Kind / vanilla Kubernetes)
 
-With namespace and secrets already provisioned, provide the three mandatory content configs via `--set-file`:
+With namespace and LLM credentials provisioned, the chart handles everything else (DB secrets, default policies, demo content):
 
 ```bash
-helm install kubernaut charts/kubernaut/ \
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
-  --set valkey.existingSecret=kubernaut-valkey-credentials \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
+```
+
+For advanced LLM configurations (Vertex AI, local models) or custom Rego policies, use `--set-file`:
+
+```bash
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+  --namespace kubernaut-system \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=my-approval.rego \
   --set-file signalprocessing.policy=my-policy.rego
 ```
 
-See `charts/kubernaut/examples/` for reference configuration files you can copy and customize. For a quickstart, see [Quickstart](#quickstart) below.
+See `charts/kubernaut/examples/` for reference configuration files you can copy and customize.
 
 ### OpenShift (OCP)
 
@@ -255,12 +232,8 @@ Layer the `values-ocp.yaml` overlay to switch to Red Hat catalog images and conf
 helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-ocp.yaml \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
-  --set valkey.existingSecret=kubernaut-valkey-credentials \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=my-approval.rego \
-  --set-file signalprocessing.policy=my-policy.rego
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
 ```
 
 !!! tip "Disconnected / air-gapped clusters"
@@ -277,62 +250,31 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 
 ### Quickstart
 
-For getting started quickly, the chart ships example configuration files in `charts/kubernaut/examples/`. The only real customization required is the LLM provider credentials.
+The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds 25 ActionTypes + 20 RemediationWorkflows.
 
 ```bash
-# 1. Create namespace and minimal secrets
+# 1. Create namespace and LLM credentials
 kubectl create namespace kubernaut-system
-
-kubectl create secret generic kubernaut-pg-credentials \
-  --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD=devpass \
-  --from-literal=POSTGRES_DB=action_history \
-  -n kubernaut-system
-
-kubectl create secret generic kubernaut-ds-db-credentials \
-  --from-literal=db-secrets.yaml=$'username: slm_user\npassword: devpass' \
-  -n kubernaut-system
-
-kubectl create secret generic kubernaut-valkey-credentials \
-  --from-literal=valkey-secrets.yaml=$'password: valkeypass' \
-  -n kubernaut-system
-
-# 2. Copy and customize the SDK config (fill in your LLM provider + API key)
-cp charts/kubernaut/examples/sdk-config.yaml my-sdk-config.yaml
-# Edit my-sdk-config.yaml: set llm.provider, llm.model
-# Leave toolsets: {} empty unless you need Prometheus or other data sources
-```
-
-!!! tip "Start with minimal toolsets"
-    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation (SLO burn-rate alerts, latency spikes). Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
-
-```bash
-
 kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=sk-... \
   -n kubernaut-system
 
-# 3. Install using the example configs
-helm install kubernaut charts/kubernaut/ \
+# 2. Install Kubernaut
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
-  --set postgresql.auth.existingSecret=kubernaut-pg-credentials \
-  --set datastorage.dbExistingSecret=kubernaut-ds-db-credentials \
-  --set valkey.existingSecret=kubernaut-valkey-credentials \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
-  --set-file aianalysis.policies.content=charts/kubernaut/examples/approval.rego \
-  --set-file signalprocessing.policy=charts/kubernaut/examples/signalprocessing-policy.rego
-
-# 4. Load demo ActionTypes and RemediationWorkflows
-kubectl apply -f https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/action-types/ -n kubernaut-system
-kubectl apply -f https://raw.githubusercontent.com/jordigilh/kubernaut-demo-scenarios/main/deploy/workflows/ -n kubernaut-system
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
 ```
+
+!!! tip "Start with minimal toolsets"
+    The auto-generated SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
 
 See the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository for complete demo scenarios that exercise the full remediation pipeline.
 
 ### Post-Install Verification
 
 ```bash
-# All 12 pods should be 1/1 Running
+# All pods should be 1/1 Running
 kubectl get pods -n kubernaut-system
 
 # Verify LLM connectivity
@@ -346,24 +288,21 @@ curl -s http://localhost:8080/api/v1/workflows | jq '.'
 
 ## Post-Installation
 
-### Action Types
+### Action Types and Workflows (Demo Content)
 
-Kubernaut ships with 25 ActionType definitions that define the remediation catalog (e.g., `delete-pod`, `restart-deployment`, `scale-replicas`). These live in the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository:
+When `demoContent.enabled: true` (the default), the chart seeds 25 ActionType definitions and 20 RemediationWorkflows into the catalog automatically. No manual loading is required.
 
-```bash
-# From a local clone of kubernaut-demo-scenarios
-kubectl apply -f deploy/action-types/ -n kubernaut-system
-```
-
-If you don't have a local clone, download the action types directly:
+To disable demo content for production deployments and load only your own workflows:
 
 ```bash
-curl -sL https://github.com/jordigilh/kubernaut-demo-scenarios/archive/refs/heads/main.tar.gz | \
-  tar xz --strip-components=2 kubernaut-demo-scenarios-main/deploy/action-types
-kubectl apply -f action-types/ -n kubernaut-system
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+  --namespace kubernaut-system \
+  --set demoContent.enabled=false \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
 ```
 
-### Remediation Workflows
+### Custom Remediation Workflows
 
 Create RemediationWorkflow CRs to define end-to-end remediation flows that reference ActionTypes. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines.
 

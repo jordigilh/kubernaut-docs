@@ -6,30 +6,30 @@ This guide walks you through the **CrashLoopBackOff remediation demo** — Kuber
 
 | Component | Purpose | How to Set Up |
 |---|---|---|
-| **Kind cluster** | Local Kubernetes environment | `kind create cluster --config deploy/demo/overlays/kind/kind-cluster-config.yaml` |
-| **Kubernaut platform** | All 10 services running | Helm chart (see below) |
+| **Kind cluster** | Local Kubernetes environment | `kind create cluster` (the demo runner creates one automatically) |
+| **Kubernaut platform** | All services running | Helm chart (see below) |
 | **Prometheus + AlertManager** | Fires `KubePodCrashLooping` alert | kube-prometheus-stack via Helm |
 | **kube-state-metrics** | Exposes `kube_pod_container_status_restarts_total` | Included in kube-prometheus-stack |
-| **LLM provider** | Root cause analysis | API key configured in `~/.kubernaut/helm/llm-values.yaml` |
-| **Workflow catalog** | `crashloop-rollback-v1` workflow registered | Seeded by the demo runner or manually |
+| **LLM provider** | Root cause analysis | API key in an `llm-credentials` Secret |
+| **Workflow catalog** | `crashloop-rollback-v1` workflow registered | Embedded in chart via `demoContent.enabled` (default) |
 
 ### Automated Setup
 
 The demo runner handles all prerequisites automatically:
 
 ```bash
-git clone https://github.com/jordigilh/kubernaut.git
-cd kubernaut
-./deploy/demo/scenarios/crashloop/run.sh
+git clone https://github.com/jordigilh/kubernaut-demo-scenarios.git
+cd kubernaut-demo-scenarios
+./scripts/setup-demo-cluster.sh
+./scenarios/crashloop/run.sh
 ```
 
 This script:
 
 1. Creates a Kind cluster (if not running)
 2. Installs kube-prometheus-stack (Prometheus, AlertManager, kube-state-metrics, Grafana)
-3. Installs Kubernaut via Helm (all 10 services + infrastructure)
-4. Seeds the `crashloop-rollback-v1` workflow into the catalog
-5. Runs the full scenario
+3. Installs Kubernaut via Helm with demo content (ActionTypes + RemediationWorkflows)
+4. Runs the full scenario
 
 ### Manual Setup
 
@@ -37,41 +37,44 @@ If you prefer to set up each component yourself:
 
 ```bash
 # 1. Create Kind cluster
-kind create cluster --config deploy/demo/overlays/kind/kind-cluster-config.yaml
+kind create cluster
 
 # 2. Install monitoring stack
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm repo update
 helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
-  --values deploy/demo/helm/kube-prometheus-stack-values.yaml \
   --wait --timeout 5m
 
-# 3. Configure LLM credentials
-mkdir -p ~/.kubernaut/helm
-cp deploy/demo/helm/llm-values.yaml.example ~/.kubernaut/helm/llm-values.yaml
-# Edit ~/.kubernaut/helm/llm-values.yaml with your LLM provider credentials
+# 3. Install Kubernaut (secrets and policies are auto-generated)
+kubectl create namespace kubernaut-system
+kubectl create secret generic llm-credentials \
+  --from-literal=OPENAI_API_KEY=sk-... \
+  -n kubernaut-system
 
-# 4. Install Kubernaut
-kubectl apply -f charts/kubernaut/crds/
-helm install kubernaut charts/kubernaut \
-  --namespace kubernaut-system --create-namespace \
-  --values deploy/demo/helm/kubernaut-kind-values.yaml \
-  --values ~/.kubernaut/helm/llm-values.yaml \
-  --skip-crds --wait --timeout 10m
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+  --namespace kubernaut-system \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o \
+  --wait --timeout 10m
 ```
+
+!!! tip "What the chart handles automatically"
+    The v1.1 chart auto-generates PostgreSQL, DataStorage, and Valkey credentials; embeds default Rego policies for signal processing and AI analysis approval; and seeds 25 ActionTypes + 20 RemediationWorkflows when `demoContent.enabled: true` (the default). The only secret you need to create is `llm-credentials`.
+
+For advanced LLM configurations (Vertex AI, Azure, local models), see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md).
 
 ---
 
 ## Step 1: Deploy the Healthy Workload
 
-Deploy a namespace, a healthy nginx worker, and a Prometheus alerting rule:
+Deploy a namespace, a healthy nginx worker, and a Prometheus alerting rule. If you cloned the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository:
 
 ```bash
-kubectl apply -f deploy/demo/scenarios/crashloop/manifests/namespace.yaml
-kubectl apply -f deploy/demo/scenarios/crashloop/manifests/configmap.yaml
-kubectl apply -f deploy/demo/scenarios/crashloop/manifests/deployment.yaml
-kubectl apply -f deploy/demo/scenarios/crashloop/manifests/prometheus-rule.yaml
+kubectl apply -f scenarios/crashloop/manifests/namespace.yaml
+kubectl apply -f scenarios/crashloop/manifests/configmap.yaml
+kubectl apply -f scenarios/crashloop/manifests/deployment.yaml
+kubectl apply -f scenarios/crashloop/manifests/prometheus-rule.yaml
 ```
 
 The namespace is labeled for Kubernaut management:
@@ -191,22 +194,19 @@ Let Prometheus establish a healthy baseline (wait ~20 seconds for at least one s
 Now break the deployment by injecting an invalid nginx configuration:
 
 ```bash
-bash deploy/demo/scenarios/crashloop/inject-bad-config.sh
-```
+kubectl apply -f - <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: worker-config-bad
+  namespace: demo-crashloop
+data:
+  nginx.conf: |
+    http {
+        invalid_directive_that_breaks_nginx on;
+    }
+EOF
 
-This script creates a new ConfigMap with an invalid nginx directive and patches the deployment to reference it:
-
-```yaml
-# The bad ConfigMap contains:
-http {
-    invalid_directive_that_breaks_nginx on;  # causes nginx to fail on startup
-    ...
-}
-```
-
-```bash
-# What the script does:
-kubectl apply -f <bad-configmap>
 kubectl patch deployment worker -n demo-crashloop \
   --type=json \
   -p '[{"op":"replace","path":"/spec/template/spec/volumes/0/configMap/name","value":"worker-config-bad"}]'

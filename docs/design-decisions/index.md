@@ -30,7 +30,7 @@ This section documents the key architectural decisions made during Kubernaut's d
 | Decision | Summary |
 |---|---|
 | **DD-WORKFLOW-016** | Workflow catalog architecture — searchable catalog in DataStorage; API-based seeding via AuthWebhook **(updated v1.1)** |
-| **DD-WORKFLOW-017** | V1.0 workflow registration — seed-workflows Helm hook for initial catalog |
+| **DD-WORKFLOW-017** | Workflow registration — embedded demo content via `demoContent.enabled` replaces the v1.0 seed-workflows hook **(updated v1.1)** |
 | **DD-WE-003** | Resource lock persistence — deterministic naming with pre-execution cleanup and ownership-verified deletion **(v1.1)** |
 
 ## Gateway

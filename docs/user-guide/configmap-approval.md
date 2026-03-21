@@ -108,6 +108,22 @@ require_approval if {
 }
 ```
 
+### CRD Safety Gate
+
+Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:
+
+```rego
+require_approval if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+}
+
+risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+}
+```
+
+For GitOps-managed clusters, combine with `detected_labels` — see [CRD Safety Policy](policies.md#crd-safety-policy) for the full pattern.
+
 ## Hot-Reload
 
 The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). If the new policy has a syntax error, the previous policy is kept and an error is logged.

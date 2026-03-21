@@ -253,6 +253,39 @@ risk_factors contains {"score": 65, "reason": "Low confidence remediation requir
 }
 ```
 
+### CRD Safety Policy
+
+Automated modifications to CustomResourceDefinitions are high-risk operations — a CRD change cascades to every CR of that type across the cluster. The approval policy can gate CRD remediations to require human review.
+
+**Require approval for all CRD modifications:**
+
+```rego
+require_approval if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+}
+
+is_sensitive_resource if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+}
+
+risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+}
+```
+
+**Elevated risk for GitOps-managed CRDs:**
+
+When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine `affected_resource.kind` with `detected_labels` for a stricter gate:
+
+```rego
+risk_factors contains {"score": 95, "reason": "CRD modification under GitOps management — requires human approval"} if {
+    input.affected_resource.kind == "CustomResourceDefinition"
+    input.detected_labels.git_ops_managed == true
+}
+```
+
+See the [Rego Reference](rego-reference.md#ai-analysis-approval-policy) for the full list of `detected_labels` fields available in approval rules.
+
 ## Deployment and Update
 
 ### Where Policies Live

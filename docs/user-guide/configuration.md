@@ -171,9 +171,9 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | `effectivenessmonitor.config.assessment.stabilizationWindow` | Wait time after remediation before assessment | `30s` |
 | `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `120s` |
 | `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
-| `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `true` |
+| `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
-| `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `true` |
+| `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `false` |
 
 ### AIAnalysis
 

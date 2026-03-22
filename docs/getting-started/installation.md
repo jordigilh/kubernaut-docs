@@ -25,7 +25,7 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
   - Alert resolution checks (AlertManager API)
   - Metrics scraping for all Kubernaut services (all pods expose `/metrics`)
 
-If Prometheus and AlertManager are not deployed, set `effectivenessmonitor.external.prometheusEnabled=false` and `effectivenessmonitor.external.alertManagerEnabled=false`.
+Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set `effectivenessmonitor.external.prometheusEnabled=true` and `effectivenessmonitor.external.alertManagerEnabled=true`.
 
 ## Infrastructure Setup
 

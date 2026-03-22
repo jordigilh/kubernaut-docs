@@ -71,7 +71,7 @@ Before creating a new execution, the controller checks for recently completed WF
 - If a Completed or Failed WFE exists with `CompletionTime` within the cooldown window → **block**
 - Returns the remaining cooldown time for requeue
 
-**Default cooldown**: 5 minutes. Prevents rapid re-execution of the same workflow on the same target.
+**Default cooldown**: 1 minute (configurable via `workflowexecution.config.execution.cooldownPeriod`). Prevents rapid re-execution of the same workflow on the same target.
 
 ### 3. Dependency Resolution
 
@@ -108,7 +108,7 @@ The Running phase polls the executor status every **10 seconds**:
 
 After reaching `Completed` or `Failed`, the controller does not immediately clean up:
 
-1. **Wait for cooldown** (default 5m) after `CompletionTime`
+1. **Wait for cooldown** (default 1m) after `CompletionTime`
 2. **Cleanup** -- `exec.Cleanup(ctx, wfe, namespace)` deletes the Job or PipelineRun
 3. **Emit** `LockReleased` Kubernetes event
 

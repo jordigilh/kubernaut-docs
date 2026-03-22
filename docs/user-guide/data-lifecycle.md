@@ -29,15 +29,7 @@ While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every serv
 
 ## RemediationRequest Reconstruction
 
-Because audit events capture the full context of every stage, Kubernaut can **reconstruct a complete RemediationRequest** from audit data — even after the CRD has expired.
-
-The DataStorage service provides a reconstruction endpoint:
-
-```
-POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct
-```
-
-See [Architecture: Data Persistence](../architecture/data-persistence.md#remediationrequest-reconstruction) for the full reconstruction pipeline and source event mapping.
+Because audit events capture the full context of every stage, Kubernaut can **reconstruct a complete RemediationRequest** from audit data — even after the CRD has expired. The DataStorage service provides a reconstruction endpoint that rebuilds the full spec and status from typed audit payloads. See [Architecture: Data Persistence](../architecture/data-persistence.md#remediationrequest-reconstruction) for the endpoint, reconstruction pipeline, and source event mapping.
 
 ### Use Cases
 

@@ -406,9 +406,9 @@ This ensures workflows are **idempotent** and **safe to retry**. If the validate
 
 Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (`what`, `whenToUse`, `whenNotToUse`, `preconditions`) that the LLM reads during the `list_available_actions` step.
 
-### Built-in Action Types
+### Demo Action Types
 
-Kubernaut seeds the following action types during installation:
+When `demoContent.enabled: true` (the default), the chart seeds the following action types:
 
 | Action Type | What It Does |
 |---|---|
@@ -467,7 +467,7 @@ The Auth Webhook intercepts the CREATE, registers the action type in the DataSto
 
     - **Write clear, unambiguous descriptions** so the LLM can distinguish between action types
     - **Avoid semantic collisions** -- action types that overlap in meaning (e.g., `RestartPod` vs `RecyclePod`) will confuse the LLM
-    - **Use PascalCase naming** consistent with built-in types
+    - **Use PascalCase naming** consistent with existing demo types
     - Action types are intentionally **stable** -- they should not change frequently during a deployment's lifecycle
 
 ## Workflow Lifecycle
@@ -597,9 +597,9 @@ All classification rules live in a single `policy.rego` file under `package sign
 
 The `final_score` determines the order in which workflows are presented to the LLM, but the **LLM makes the final selection** based on descriptions, remediation history, and context. A workflow ranked #2 by score can still be selected if its description better matches the root cause.
 
-## Built-in Workflows
+## Demo Workflows
 
-When `demoContent.enabled: true` (the default), the chart seeds the following built-in workflows:
+When `demoContent.enabled: true` (the default), the chart seeds the following demo workflows:
 
 | Workflow | Action Type |
 |---|---|

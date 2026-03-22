@@ -178,9 +178,9 @@ The LLM makes the final selection decision based on information available in the
 
 Action types provide a stable vocabulary for categorizing remediation actions. They are provisioned as Kubernetes CRDs (`ActionType`) and synced to the `action_type_taxonomy` PostgreSQL table by the Auth Webhook admission handler.
 
-### Built-In Types
+### Demo Action Types
 
-Kubernaut ships with 24 built-in action types:
+When `demoContent.enabled: true` (the default), the chart seeds 24 demo action types:
 
 `ScaleReplicas`, `RestartPod`, `IncreaseCPULimits`, `IncreaseMemoryLimits`, `RollbackDeployment`, `DrainNode`, `CordonNode`, `RestartDeployment`, `CleanupNode`, `DeletePod`, `GitRevertCommit`, `ProvisionNode`, `GracefulRestart`, `CleanupPVC`, `RemoveTaint`, `PatchHPA`, `RelaxPDB`, `ProactiveRollback`, `CordonDrainNode`, `FixCertificate`, `HelmRollback`, `FixAuthorizationPolicy`, `FixStatefulSetPVC`, `FixNetworkPolicy`
 

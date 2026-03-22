@@ -2946,11 +2946,7 @@
 </tbody>
 </table>
 <h2 id="remediationrequest-reconstruction">RemediationRequest Reconstruction<a class="headerlink" href="#remediationrequest-reconstruction" title="Permanent link">&para;</a></h2>
-<p>Because audit events capture the full context of every stage, Kubernaut can <strong>reconstruct a complete RemediationRequest</strong> from audit data — even after the CRD has expired.</p>
-<p>The DataStorage service provides a reconstruction endpoint:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct
-</span></code></pre></div>
-<p>See <a href="../../architecture/data-persistence/#remediationrequest-reconstruction">Architecture: Data Persistence</a> for the full reconstruction pipeline and source event mapping.</p>
+<p>Because audit events capture the full context of every stage, Kubernaut can <strong>reconstruct a complete RemediationRequest</strong> from audit data — even after the CRD has expired. The DataStorage service provides a reconstruction endpoint that rebuilds the full spec and status from typed audit payloads. See <a href="../../architecture/data-persistence/#remediationrequest-reconstruction">Architecture: Data Persistence</a> for the endpoint, reconstruction pipeline, and source event mapping.</p>
 <h3 id="use-cases">Use Cases<a class="headerlink" href="#use-cases" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Compliance audits (SOC2)</strong> — Produce the complete remediation record for any historical incident</li>

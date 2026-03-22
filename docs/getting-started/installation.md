@@ -6,7 +6,7 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
 
 | Requirement | Version | Notes |
 |---|---|---|
-| Kubernetes | 1.31+ | selectableFields (beta in 1.31, GA in 1.32) |
+| Kubernetes | 1.32+ | selectableFields GA in 1.32; required for CRD field selectors |
 | Helm | 3.12+ | |
 | StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
 | cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
@@ -183,7 +183,7 @@ The chart **auto-generates** credentials for PostgreSQL, DataStorage, and Valkey
 |---|---|---|
 | `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `GOOGLE_APPLICATION_CREDENTIALS` (file) |
 
-HAPI starts without this secret (`optional: true`) but all LLM calls will fail until it is created.
+The LLM credentials secret **must** exist before installing the chart. Without valid credentials, AI analysis cannot function.
 
 **Notification credentials** (optional, only for Slack delivery):
 

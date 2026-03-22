@@ -45,8 +45,8 @@ theme:
     - toc.follow
 
 extra:
-  chart_version: "1.1.0-rc0"
-  image_tag: "v1.1.0-rc0"
+  chart_version: "1.1.0"
+  image_tag: "v1.1.0"
   version:
     provider: mike
     default: latest

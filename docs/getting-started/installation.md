@@ -318,18 +318,27 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 
 ## Upgrading
 
-Helm does **not** upgrade CRDs on `helm upgrade`. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs first:
+Use `helm upgrade` to apply configuration changes or move to a new chart version:
 
 ```bash
-# 1. Pull the new chart version and extract CRDs
+helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+  -n kubernaut-system --reuse-values \
+  --set holmesgptApi.llm.model=gpt-4o-mini
+```
+
+To upgrade to a specific version, add `--version <new-version>`.
+
+### CRD Schema Changes
+
+Helm does **not** upgrade CRDs on `helm upgrade`. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs before upgrading:
+
+```bash
 helm pull oci://quay.io/kubernaut-ai/charts/kubernaut \
   --version <new-version> --untar
 kubectl apply --server-side --force-conflicts -f kubernaut/crds/
 
-# 2. Upgrade the release
 helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version <new-version> \
-  -n kubernaut-system -f my-values.yaml
+  --version <new-version> -n kubernaut-system --reuse-values
 ```
 
 Key upgrade behaviors:

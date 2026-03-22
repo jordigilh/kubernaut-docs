@@ -256,7 +256,7 @@ See the [sdk-config.yaml.example](https://github.com/jordigilh/kubernaut-demo-sc
 To pin a specific chart version, add `--version <version>`. Omitting `--version` pulls the latest release.
 
 !!! tip "Production: disable demo fixtures"
-    The chart seeds built-in ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`). For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
+    The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
     The auto-generated SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
@@ -277,7 +277,7 @@ export KUBERNAUT_LLM_MODEL=gpt-4o
 ./scripts/setup-demo-cluster.sh
 ```
 
-The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, installs infrastructure dependencies (cert-manager, metrics-server, Istio, Gitea, ArgoCD), and seeds the workflow catalog. See the [demo scenarios README](https://github.com/jordigilh/kubernaut-demo-scenarios#readme) for all options including OCP support and advanced LLM configuration.
+The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, and installs infrastructure dependencies (cert-manager, metrics-server, Istio, blackbox-exporter). Gitea and ArgoCD are installed automatically when running GitOps scenarios. See the [demo scenarios README](https://github.com/jordigilh/kubernaut-demo-scenarios#readme) for all options including OCP support and advanced LLM configuration.
 
 ### Post-Install Verification
 
@@ -293,21 +293,13 @@ kubectl get remediationworkflows -A
 
 ### Action Types and Workflows (Demo Content)
 
-When `demoContent.enabled: true` (the default), the chart seeds built-in ActionType definitions and RemediationWorkflows into the catalog automatically. No manual loading is required.
+When `demoContent.enabled: true` (the default), the chart seeds demo ActionType definitions and RemediationWorkflows into the catalog as a convenience path for getting started quickly. These are not built-in product features -- they are reusable demo content covering common remediation scenarios (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, etc.). No manual loading is required.
 
-To disable demo content for production deployments and load only your own workflows:
-
-```bash
-helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --namespace kubernaut-system \
-  --set demoContent.enabled=false \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
-```
+To disable demo content for production, add `--set demoContent.enabled=false` during install. See the [production tip](#install) in the Install section.
 
 ### Custom Remediation Workflows
 
-Create RemediationWorkflow CRs to define end-to-end remediation flows that reference ActionTypes. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines.
+Each RemediationWorkflow references an ActionType by name. When `demoContent.enabled: true` (default), demo ActionTypes are available in the catalog. For production deployments with `demoContent.enabled=false`, register your own ActionType CRs before creating RemediationWorkflows. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for the full list.
 
 ## Resource Scope
 

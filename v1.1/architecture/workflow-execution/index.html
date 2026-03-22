@@ -2719,6 +2719,8 @@
       
         
       
+        
+      
     
     
     
@@ -2854,6 +2856,113 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/upgrading/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/upgrading/1.0-to-1.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.0 to v1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3521,7 +3630,7 @@
 <li>If a Completed or Failed WFE exists with <code>CompletionTime</code> within the cooldown window → <strong>block</strong></li>
 <li>Returns the remaining cooldown time for requeue</li>
 </ul>
-<p><strong>Default cooldown</strong>: 5 minutes. Prevents rapid re-execution of the same workflow on the same target.</p>
+<p><strong>Default cooldown</strong>: 1 minute (configurable via <code>workflowexecution.config.execution.cooldownPeriod</code>). Prevents rapid re-execution of the same workflow on the same target.</p>
 <h3 id="3-dependency-resolution">3. Dependency Resolution<a class="headerlink" href="#3-dependency-resolution" title="Permanent link">&para;</a></h3>
 <p>Fetches workflow dependencies from DataStorage and validates them in the execution namespace:</p>
 <ol>
@@ -3555,7 +3664,7 @@
 <h2 id="terminal-phase-cooldown-and-cleanup">Terminal Phase (Cooldown and Cleanup)<a class="headerlink" href="#terminal-phase-cooldown-and-cleanup" title="Permanent link">&para;</a></h2>
 <p>After reaching <code>Completed</code> or <code>Failed</code>, the controller does not immediately clean up:</p>
 <ol>
-<li><strong>Wait for cooldown</strong> (default 5m) after <code>CompletionTime</code></li>
+<li><strong>Wait for cooldown</strong> (default 1m) after <code>CompletionTime</code></li>
 <li><strong>Cleanup</strong> -- <code>exec.Cleanup(ctx, wfe, namespace)</code> deletes the Job or PipelineRun</li>
 <li><strong>Emit</strong> <code>LockReleased</code> Kubernetes event</li>
 </ol>
@@ -3647,7 +3756,7 @@
 <li><strong>Injects dependency Secrets</strong> as ephemeral AWX credentials with <code>KUBERNAUT_SECRET_{NAME}_{KEY}</code> environment variables (sensitive data, never in <code>extra_vars</code>)</li>
 <li><strong>Launches the AWX Job</strong> with the combined <code>extra_vars</code> and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.</li>
 <li><strong>Polls job status</strong> via <code>GET /api/v2/jobs/{id}/</code> mapping AWX states (<code>pending</code>, <code>waiting</code>, <code>running</code>, <code>successful</code>, <code>failed</code>, <code>error</code>, <code>canceled</code>) to WFE phases</li>
-<li><strong>Cleans up</strong> ephemeral credentials after execution completes (stored in the <code>kubernaut.ai/awx-ephemeral-credentials</code> annotation)</li>
+<li><strong>Cleans up</strong> ephemeral credentials after execution completes (credential IDs are persisted in <code>status.ephemeralCredentialIDs</code> via the status subresource)</li>
 </ol>
 <p>The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX <code>extra_vars</code> (which are logged). Instead, each Secret gets a dynamic AWX credential type with <code>env</code> injectors, and an ephemeral credential is created per execution and deleted on cleanup.</p>
 <h2 id="deterministic-locking-dd-we-003">Deterministic Locking (DD-WE-003)<a class="headerlink" href="#deterministic-locking-dd-we-003" title="Permanent link">&para;</a></h2>

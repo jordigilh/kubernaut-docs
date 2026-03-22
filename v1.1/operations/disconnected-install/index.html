@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/operations/disconnected-install/">
       
       
-        <link rel="prev" href="../troubleshooting/">
+        <link rel="prev" href="../upgrading/1.0-to-1.1/">
       
       
         <link rel="next" href="../../user-guide/compliance/">
@@ -2344,6 +2344,8 @@
       
         
       
+        
+      
     
     
     
@@ -2480,6 +2482,116 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../upgrading/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrading/1.0-to-1.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.0 to v1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3540,7 +3652,7 @@
 <td>OCP CLI for TLS certificate hook Jobs</td>
 </tr>
 <tr>
-<td><code>quay.io/kubernaut-ai/db-migrate:v1.1.0-rc0</code></td>
+<td><code>quay.io/kubernaut-ai/db-migrate:v1.1.0</code></td>
 <td>Database migrations (goose + psql on UBI9)</td>
 </tr>
 </tbody>
@@ -3548,7 +3660,7 @@
 <h3 id="automated-image-list">Automated image list<a class="headerlink" href="#automated-image-list" title="Permanent link">&para;</a></h3>
 <p>Use the included script to extract the exact images from the chart templates:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./hack/airgap/generate-image-list.sh<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span>v1.1.0-rc0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span>v1.1.0<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml
 </span></code></pre></div>
 <p>This outputs one image per line -- the authoritative list of everything to mirror.</p>
@@ -3557,7 +3669,7 @@
 <h3 id="2a-prepare-the-imagesetconfiguration">2a. Prepare the ImageSetConfiguration<a class="headerlink" href="#2a-prepare-the-imagesetconfiguration" title="Permanent link">&para;</a></h3>
 <p>Copy the template and replace the version placeholder:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cp<span class="w"> </span>hack/airgap/imageset-config.yaml.tmpl<span class="w"> </span>imageset-config.yaml
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/v1.1.0-rc0/g&#39;</span><span class="w"> </span>imageset-config.yaml
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/v1.1.0/g&#39;</span><span class="w"> </span>imageset-config.yaml
 </span></code></pre></div>
 <p>The resulting file lists every image under <code>mirror.additionalImages</code>:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ImageSetConfiguration</span>
@@ -3567,10 +3679,10 @@
 </span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./kubernaut-mirror</span>
 </span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nt">mirror</span><span class="p">:</span>
 </span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">additionalImages</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/gateway:v1.1.0-rc0</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/datastorage:v1.1.0-rc0</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/gateway:v1.1.0</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/datastorage:v1.1.0</span>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="c1"># ... all 10 Kubernaut services ...</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/db-migrate:v1.1.0-rc0</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/db-migrate:v1.1.0</span>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/rhel10/postgresql-16</span>
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/rhel10/valkey-8</span>
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/openshift4/ose-cli-rhel9:v4.17</span>
@@ -3585,13 +3697,13 @@
 <p class="admonition-title">Alternative: skopeo</p>
 <p>For individual images (nested registry):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>docker://harbor.corp/kubernaut-ai/gateway:v1.1.0-rc0
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>docker://harbor.corp/kubernaut-ai/gateway:v1.1.0
 </span></code></pre></div>
 <p>For flat registries (quay.io, Docker Hub) use dash-joined names:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>docker://quay.io/myorg/kubernaut-ai-gateway:v1.1.0-rc0
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>docker://quay.io/myorg/kubernaut-ai-gateway:v1.1.0
 </span></code></pre></div>
 <p><code>oc mirror</code> is preferred because it processes all images in one pass and preserves multi-arch manifests.</p>
 </div>
@@ -3599,8 +3711,8 @@
 <p class="admonition-title">OCP internal registry and multi-arch images</p>
 <p>The OCP integrated registry does not support multi-arch manifest pushes via <code>skopeo copy --all</code> (returns HTTP 500). When mirroring to the OCP internal registry with skopeo, use single-arch copies:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span>--override-arch<span class="o">=</span>amd64<span class="w"> </span>--override-os<span class="o">=</span>linux<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0-rc0<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>docker://&lt;ocp-registry&gt;/kubernaut-system/kubernaut-ai-gateway:v1.1.0-rc0
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.1.0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>docker://&lt;ocp-registry&gt;/kubernaut-system/kubernaut-ai-gateway:v1.1.0
 </span></code></pre></div>
 <p>This limitation does not affect <code>oc mirror</code>, which handles the OCP registry natively.</p>
 </div>
@@ -3833,11 +3945,11 @@
 <h3 id="verifying-mirror-registry-contents">Verifying mirror registry contents<a class="headerlink" href="#verifying-mirror-registry-contents" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Nested registry (separator=&quot;/&quot;):</span>
 </span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>skopeo<span class="w"> </span>list-tags<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai/gateway
-</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai/gateway:v1.1.0-rc0
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai/gateway:v1.1.0
 </span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>
 </span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="c1"># Flat registry (separator=&quot;-&quot;):</span>
 </span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>skopeo<span class="w"> </span>list-tags<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai-gateway
-</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai-gateway:v1.1.0-rc0
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai-gateway:v1.1.0
 </span></code></pre></div>
 <hr />
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
@@ -3886,7 +3998,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../troubleshooting/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Troubleshooting">
+          <a href="../upgrading/1.0-to-1.1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: v1.0 to v1.1">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3896,7 +4008,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Troubleshooting
+                v1.0 to v1.1
               </div>
             </div>
           </a>

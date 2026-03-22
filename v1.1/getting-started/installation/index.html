@@ -1026,23 +1026,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Upgrading">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#crd-schema-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CRD Schema Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2720,6 +2703,8 @@
       
         
       
+        
+      
     
     
     
@@ -2855,6 +2840,113 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/upgrading/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/upgrading/1.0-to-1.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.0 to v1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3316,23 +3408,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Upgrading">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#crd-schema-changes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CRD Schema Changes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -3461,7 +3536,7 @@
 <li>Alert resolution checks (AlertManager API)</li>
 <li>Metrics scraping for all Kubernaut services (all pods expose <code>/metrics</code>)</li>
 </ul>
-<p>If Prometheus and AlertManager are not deployed, set <code>effectivenessmonitor.external.prometheusEnabled=false</code> and <code>effectivenessmonitor.external.alertManagerEnabled=false</code>.</p>
+<p>Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set <code>effectivenessmonitor.external.prometheusEnabled=true</code> and <code>effectivenessmonitor.external.alertManagerEnabled=true</code>.</p>
 <h2 id="infrastructure-setup">Infrastructure Setup<a class="headerlink" href="#infrastructure-setup" title="Permanent link">&para;</a></h2>
 <p>Complete these steps before installing the Kubernaut chart.</p>
 <h3 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h3>
@@ -3776,30 +3851,9 @@ With GCP Workload Identity the secret can be omitted.</p>
 </span></code></pre></div>
 <p>See <a href="../../user-guide/signals/">Signals &amp; Alert Routing</a> for details on scope management.</p>
 <h2 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">&para;</a></h2>
-<p>Use <code>helm upgrade</code> to apply configuration changes or move to a new chart version:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o-mini
-</span></code></pre></div>
-<p>To upgrade to a specific version, add <code>--version &lt;new-version&gt;</code>.</p>
-<h3 id="crd-schema-changes">CRD Schema Changes<a class="headerlink" href="#crd-schema-changes" title="Permanent link">&para;</a></h3>
-<p>Helm does <strong>not</strong> upgrade CRDs on <code>helm upgrade</code>. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs before upgrading:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>pull<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>--untar
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--server-side<span class="w"> </span>--force-conflicts<span class="w"> </span>-f<span class="w"> </span>kubernaut/crds/
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values
-</span></code></pre></div>
-<p>Key upgrade behaviors:</p>
-<ul>
-<li><strong>TLS certificates</strong> (<code>tls.mode: hook</code>): Renewed automatically if expiring within 30 days. In <code>cert-manager</code> mode, cert-manager handles renewal.</li>
-<li><strong>Database migrations</strong> run automatically via the post-upgrade hook.</li>
-<li><strong>PVCs</strong> are not modified (immutable for bound claims).</li>
-<li><strong>ConfigMaps and Secrets</strong> are updated to reflect new values.</li>
-</ul>
+<p>See the <a href="../../operations/upgrading/">Upgrading Guide</a> for general upgrade procedures, CRD schema change handling, and version-specific migration notes.</p>
 <h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h3 id="what-is-retained-after-uninstall">What is retained after uninstall<a class="headerlink" href="#what-is-retained-after-uninstall" title="Permanent link">&para;</a></h3>
 <table>
@@ -3854,28 +3908,28 @@ With GCP Workload Identity the secret can be omitted.</p>
 </tbody>
 </table>
 <p>If the <code>kubernaut-workflows</code> namespace gets stuck in <code>Terminating</code> state:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
 </span></code></pre></div>
 <h3 id="full-cleanup">Full cleanup<a class="headerlink" href="#full-cleanup" title="Permanent link">&para;</a></h3>
 <p>To remove everything including persistent data:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="c1"># Remove PVCs retained by resource policy</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>valkey-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="c1"># Remove hook-created cluster resources (not tracked by Helm)</span>
-</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-hook-role<span class="w"> </span>--ignore-not-found
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-hook-rolebinding<span class="w"> </span>--ignore-not-found
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
-</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a><span class="c1"># Remove CRDs and all CR instances</span>
-</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>crd<span class="w"> </span>actiontypes.kubernaut.ai<span class="w"> </span>aianalyses.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">  </span>effectivenessassessments.kubernaut.ai<span class="w"> </span>notificationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="w">  </span>remediationapprovalrequests.kubernaut.ai<span class="w"> </span>remediationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="w">  </span>remediationworkflows.kubernaut.ai<span class="w"> </span>signalprocessings.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="w">  </span>workflowexecutions.kubernaut.ai
-</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a>
-</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># Remove PVCs retained by resource policy</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>valkey-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="c1"># Remove hook-created cluster resources (not tracked by Helm)</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-hook-role<span class="w"> </span>--ignore-not-found
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-hook-rolebinding<span class="w"> </span>--ignore-not-found
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="c1"># Remove CRDs and all CR instances</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>crd<span class="w"> </span>actiontypes.kubernaut.ai<span class="w"> </span>aianalyses.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">  </span>effectivenessassessments.kubernaut.ai<span class="w"> </span>notificationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">  </span>remediationapprovalrequests.kubernaut.ai<span class="w"> </span>remediationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">  </span>remediationworkflows.kubernaut.ai<span class="w"> </span>signalprocessings.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">  </span>workflowexecutions.kubernaut.ai
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
 <ul>

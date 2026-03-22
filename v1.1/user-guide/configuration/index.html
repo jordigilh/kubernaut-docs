@@ -2805,6 +2805,8 @@
       
         
       
+        
+      
     
     
     
@@ -2940,6 +2942,113 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/upgrading/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrading
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Upgrading
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/upgrading/1.0-to-1.1/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.0 to v1.1
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -3735,7 +3844,7 @@
 </tr>
 </tbody>
 </table>
-<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.1.0-rc0</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.1.0-rc0</code>.</p>
+<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.1.0</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.1.0</code>.</p>
 <h3 id="gateway">Gateway<a class="headerlink" href="#gateway" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4035,7 +4144,7 @@
 <tr>
 <td><code>effectivenessmonitor.external.prometheusEnabled</code></td>
 <td>Enable Prometheus integration</td>
-<td><code>true</code></td>
+<td><code>false</code></td>
 </tr>
 <tr>
 <td><code>effectivenessmonitor.external.alertManagerUrl</code></td>
@@ -4045,7 +4154,7 @@
 <tr>
 <td><code>effectivenessmonitor.external.alertManagerEnabled</code></td>
 <td>Enable AlertManager integration</td>
-<td><code>true</code></td>
+<td><code>false</code></td>
 </tr>
 </tbody>
 </table>

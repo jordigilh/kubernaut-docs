@@ -71,7 +71,7 @@ Before creating a new execution, the controller checks for recently completed WF
 - If a Completed or Failed WFE exists with `CompletionTime` within the cooldown window → **block**
 - Returns the remaining cooldown time for requeue
 
-**Default cooldown**: 5 minutes. Prevents rapid re-execution of the same workflow on the same target.
+**Default cooldown**: 1 minute (configurable via `workflowexecution.config.execution.cooldownPeriod`). Prevents rapid re-execution of the same workflow on the same target.
 
 ### 3. Dependency Resolution
 
@@ -108,7 +108,7 @@ The Running phase polls the executor status every **10 seconds**:
 
 After reaching `Completed` or `Failed`, the controller does not immediately clean up:
 
-1. **Wait for cooldown** (default 5m) after `CompletionTime`
+1. **Wait for cooldown** (default 1m) after `CompletionTime`
 2. **Cleanup** -- `exec.Cleanup(ctx, wfe, namespace)` deletes the Job or PipelineRun
 3. **Emit** `LockReleased` Kubernetes event
 
@@ -189,7 +189,7 @@ The Ansible executor:
 4. **Injects dependency Secrets** as ephemeral AWX credentials with `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables (sensitive data, never in `extra_vars`)
 5. **Launches the AWX Job** with the combined `extra_vars` and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.
 6. **Polls job status** via `GET /api/v2/jobs/{id}/` mapping AWX states (`pending`, `waiting`, `running`, `successful`, `failed`, `error`, `canceled`) to WFE phases
-7. **Cleans up** ephemeral credentials after execution completes (stored in the `kubernaut.ai/awx-ephemeral-credentials` annotation)
+7. **Cleans up** ephemeral credentials after execution completes (credential IDs are persisted in `status.ephemeralCredentialIDs` via the status subresource)
 
 The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX `extra_vars` (which are logged). Instead, each Secret gets a dynamic AWX credential type with `env` injectors, and an ephemeral credential is created per execution and deleted on cleanup.
 

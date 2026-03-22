@@ -60,7 +60,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 ```
 
 !!! tip "What the chart handles automatically"
-    The v1.1 chart auto-generates PostgreSQL, DataStorage, and Valkey credentials; embeds default Rego policies for signal processing and AI analysis approval; and seeds built-in ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default). The only secret you need to create is `llm-credentials`.
+    The v1.1 chart auto-generates PostgreSQL, DataStorage, and Valkey credentials; embeds default Rego policies for signal processing and AI analysis approval; and seeds demo ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default). The only secret you need to create is `llm-credentials`.
 
 For advanced LLM configurations (Vertex AI, Azure, local models), see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md).
 

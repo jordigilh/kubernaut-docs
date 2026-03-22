@@ -113,7 +113,7 @@ Key response fields:
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/health` | Liveness probe |
-| `GET` | `/ready` | Readiness probe (includes LLM connectivity) |
+| `GET` | `/ready` | Readiness probe (checks SDK, context API, Prometheus client) |
 | `GET` | `/config` | Configuration snapshot (dev mode only) |
 | `GET` | `/metrics` | Prometheus metrics |
 

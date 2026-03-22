@@ -489,7 +489,10 @@ _Appears in:_
 ### EnrichmentConfig
 
 
-EnrichmentConfig specifies enrichment settings.
+EnrichmentConfig specifies per-signal enrichment settings.
+V2.0 PLACEHOLDER: These fields are currently NOT read by the controller.
+All signals use the global enrichment config from the controller's YAML configuration
+(enrichment.cacheTtl, enrichment.timeout). Per-signal overrides will be implemented in V2.0.
 
 _Appears in:_
 - [SignalProcessingSpec](#signalprocessingspec)
@@ -1346,7 +1349,7 @@ _Appears in:_
 | `severity`| _string_| Severity level (external/raw value from monitoring system)<br /> No enum restriction - allows external severity schemes (Sev1-4, P0-P4, etc.)<br />Normalized severity is stored in Status.Severity|
 | `type`| _string_| Signal type: "alert" (generic signal type; adapter-specific values like "prometheus-alert" or "kubernetes-event" are deprecated)|
 | `source`| _string_| Adapter that ingested the signal|
-| `targetType`| _string_| Target system type|
+| `targetType`| _string_| Target system type.<br />V2.0 PLACEHOLDER: Currently only "kubernetes" is supported by the enricher.<br />Non-kubernetes values are accepted by validation but enrichment will run in degraded mode.|
 | `targetResource`| _[ResourceIdentifier](#resourceidentifier)_| Target resource identification|
 | `labels`| _object (keys:string, values:string)_| Signal labels extracted from provider-specific data|
 | `annotations`| _object (keys:string, values:string)_| Signal annotations extracted from provider-specific data|
@@ -1565,6 +1568,7 @@ _Appears in:_
 | `failureReason`| _string_| FailureReason explains why execution failed (if applicable)<br />DEPRECATED: Use FailureDetails for structured failure information|
 | `failureDetails`| _[FailureDetails](#failuredetails)_| FailureDetails contains structured failure information<br />Populated when Phase=Failed|
 | `blockClearance`| _[BlockClearanceDetails](#blockclearancedetails)_| BlockClearance tracks the clearing of PreviousExecutionFailed blocks<br />When set, allows new executions despite previous execution failure<br />Preserves audit trail of WHO cleared the block and WHY|
+| `ephemeralCredentialIDs`| _integer array_| EphemeralCredentialIDs stores AWX credential IDs created by the ansible<br />executor for cleanup after execution . Written via the status<br />subresource to avoid violating spec immutability .|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions provide detailed status information|
 
 

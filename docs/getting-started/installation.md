@@ -195,9 +195,9 @@ kubectl create secret generic slack-webhook \
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `notification.credentials[].secretName` | Your secret name | `webhook-url` (or custom key via `secretKey`) |
+| `notification.slack.secretName` | `slack-webhook` (example) | `webhook-url` |
 
-Only required when Slack delivery is configured in the notification routing config. When using console-only routing (default), no notification secret is needed.
+Only required when Slack delivery is configured. When using console-only routing (default), no notification secret is needed. For advanced multi-receiver routing, use `notification.credentials[]` and `notification.routing.content` instead of the Slack shortcut.
 
 ## Install
 
@@ -287,16 +287,11 @@ See the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-s
 ### Post-Install Verification
 
 ```bash
-# All pods should be 1/1 Running
+# All pods should be 1/1 Running (readiness probes confirm service health)
 kubectl get pods -n kubernaut-system
 
-# Verify LLM connectivity
-kubectl port-forward -n kubernaut-system svc/holmesgpt-api 8080:8080
-curl -s http://localhost:8080/health | jq '.'
-
 # Verify workflow catalog
-kubectl port-forward -n kubernaut-system svc/data-storage-service 8080:8080
-curl -s http://localhost:8080/api/v1/workflows | jq '.'
+kubectl get remediationworkflows -A
 ```
 
 ## Post-Installation

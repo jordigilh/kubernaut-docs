@@ -201,9 +201,9 @@ Only required when Slack delivery is configured in the notification routing conf
 
 ## Install
 
-### Standard (Kind / vanilla Kubernetes)
+The chart is distributed as an OCI artifact. With the namespace and LLM credentials provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
-With namespace and LLM credentials provisioned, the chart handles everything else (DB secrets, default policies, demo content):
+### Kind / Vanilla Kubernetes
 
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
@@ -212,7 +212,36 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --set holmesgptApi.llm.model=gpt-4o
 ```
 
-For advanced LLM configurations (Vertex AI, local models) or custom Rego policies, use `--set-file`:
+### OpenShift (OCP)
+
+OpenShift requires additional configuration: cert-manager TLS mode, OCP monitoring endpoints (TLS + service-serving CA), and the Red Hat PostgreSQL image. Download the OCP values overlay from the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository and layer it on top:
+
+```bash
+helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+  --namespace kubernaut-system \
+  --values kubernaut-ocp-values.yaml \
+  --set holmesgptApi.llm.provider=openai \
+  --set holmesgptApi.llm.model=gpt-4o
+```
+
+The OCP values overlay configures:
+
+| Setting | Value |
+|---|---|
+| TLS mode | `cert-manager` with a `selfsigned-issuer` ClusterIssuer |
+| Signal source | `alertmanager-main` in `openshift-monitoring` |
+| Prometheus URL | `https://prometheus-k8s.openshift-monitoring.svc:9091` (TLS) |
+| AlertManager URL | `https://alertmanager-main.openshift-monitoring.svc:9094` (TLS) |
+| PostgreSQL image | `registry.redhat.io/rhel10/postgresql-16` |
+
+See the [kubernaut-ocp-values.yaml](https://github.com/jordigilh/kubernaut-demo-scenarios/blob/main/helm/kubernaut-ocp-values.yaml) reference file for the full configuration.
+
+!!! tip "Disconnected / air-gapped clusters"
+    If your OCP cluster has no internet access, see the [Disconnected Installation Guide](../operations/disconnected-install.md) for mirroring images and configuring the chart for offline use.
+
+### Advanced Configuration
+
+For advanced LLM configurations (Vertex AI, local models) or custom Rego policies, use `--set-file` to inject configuration files:
 
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
@@ -222,67 +251,33 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --set-file signalprocessing.policy=my-policy.rego
 ```
 
-See `charts/kubernaut/examples/` for reference configuration files you can copy and customize.
+See the [sdk-config.yaml.example](https://github.com/jordigilh/kubernaut-demo-scenarios/blob/main/helm/sdk-config.yaml.example) for a reference SDK config covering Vertex AI, Anthropic, OpenAI, and local models.
+
+To pin a specific chart version, add `--version <version>`. Omitting `--version` pulls the latest release.
 
 !!! tip "Production: disable demo fixtures"
-    The chart seeds built-in ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`). For production deployments where you want only your own workflows, disable it:
-
-    ```bash
-    helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-      --namespace kubernaut-system \
-      --set demoContent.enabled=false \
-      --set holmesgptApi.llm.provider=openai \
-      --set holmesgptApi.llm.model=gpt-4o
-    ```
-
-    See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
-
-### OpenShift (OCP)
-
-Layer the `values-ocp.yaml` overlay to switch to Red Hat catalog images and configure OCP monitoring endpoints:
-
-```bash
-helm install kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system \
-  -f charts/kubernaut/values-ocp.yaml \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
-```
-
-!!! tip "Disconnected / air-gapped clusters"
-    If your OCP cluster has no internet access, see the [Disconnected Installation Guide](../operations/disconnected-install.md) for mirroring images and configuring the chart for offline use.
-
-### From OCI Registry
-
-```bash
-helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version {{ chart_version }} \
-  --namespace kubernaut-system \
-  -f my-values.yaml
-```
-
-### Quickstart
-
-The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds built-in ActionTypes and RemediationWorkflows.
-
-```bash
-# 1. Create namespace and LLM credentials
-kubectl create namespace kubernaut-system
-kubectl create secret generic llm-credentials \
-  --from-literal=OPENAI_API_KEY=sk-... \
-  -n kubernaut-system
-
-# 2. Install Kubernaut
-helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --namespace kubernaut-system \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
-```
+    The chart seeds built-in ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`). For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
     The auto-generated SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
 
-See the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository for complete demo scenarios that exercise the full remediation pipeline.
+### Quickstart
+
+For a complete end-to-end demo environment (Kind cluster, monitoring stack, Kubernaut, infrastructure dependencies, workflow catalog), use the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository:
+
+```bash
+git clone https://github.com/jordigilh/kubernaut-demo-scenarios.git
+cd kubernaut-demo-scenarios
+
+# Configure your LLM provider
+export KUBERNAUT_LLM_PROVIDER=openai
+export KUBERNAUT_LLM_MODEL=gpt-4o
+
+# Create the full demo environment (~10 minutes)
+./scripts/setup-demo-cluster.sh
+```
+
+The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, installs infrastructure dependencies (cert-manager, metrics-server, Istio, Gitea, ArgoCD), and seeds the workflow catalog. See the [demo scenarios README](https://github.com/jordigilh/kubernaut-demo-scenarios#readme) for all options including OCP support and advanced LLM configuration.
 
 ### Post-Install Verification
 

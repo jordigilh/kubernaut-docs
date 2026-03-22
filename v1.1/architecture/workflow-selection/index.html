@@ -1952,10 +1952,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-types" class="md-nav__link">
+  <a href="#demo-action-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-In Types
+        Demo Action Types
       
     </span>
   </a>
@@ -3213,10 +3213,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-types" class="md-nav__link">
+  <a href="#demo-action-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-In Types
+        Demo Action Types
       
     </span>
   </a>
@@ -3563,8 +3563,8 @@
 </ol>
 <h2 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h2>
 <p>Action types provide a stable vocabulary for categorizing remediation actions. They are provisioned as Kubernetes CRDs (<code>ActionType</code>) and synced to the <code>action_type_taxonomy</code> PostgreSQL table by the Auth Webhook admission handler.</p>
-<h3 id="built-in-types">Built-In Types<a class="headerlink" href="#built-in-types" title="Permanent link">&para;</a></h3>
-<p>Kubernaut ships with 24 built-in action types:</p>
+<h3 id="demo-action-types">Demo Action Types<a class="headerlink" href="#demo-action-types" title="Permanent link">&para;</a></h3>
+<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds 24 demo action types:</p>
 <p><code>ScaleReplicas</code>, <code>RestartPod</code>, <code>IncreaseCPULimits</code>, <code>IncreaseMemoryLimits</code>, <code>RollbackDeployment</code>, <code>DrainNode</code>, <code>CordonNode</code>, <code>RestartDeployment</code>, <code>CleanupNode</code>, <code>DeletePod</code>, <code>GitRevertCommit</code>, <code>ProvisionNode</code>, <code>GracefulRestart</code>, <code>CleanupPVC</code>, <code>RemoveTaint</code>, <code>PatchHPA</code>, <code>RelaxPDB</code>, <code>ProactiveRollback</code>, <code>CordonDrainNode</code>, <code>FixCertificate</code>, <code>HelmRollback</code>, <code>FixAuthorizationPolicy</code>, <code>FixStatefulSetPVC</code>, <code>FixNetworkPolicy</code></p>
 <h3 id="user-extensible">User-Extensible<a class="headerlink" href="#user-extensible" title="Permanent link">&para;</a></h3>
 <p>Action types are fully configurable. Operators register custom types by applying an <code>ActionType</code> CRD:</p>

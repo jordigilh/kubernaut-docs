@@ -1026,6 +1026,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Upgrading">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crd-schema-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Schema Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3299,6 +3316,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Upgrading">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#crd-schema-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Schema Changes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3393,8 +3427,8 @@
 <tbody>
 <tr>
 <td>Kubernetes</td>
-<td>1.31+</td>
-<td>selectableFields (beta in 1.31, GA in 1.32)</td>
+<td>1.32+</td>
+<td>selectableFields GA in 1.32; required for CRD field selectors</td>
 </tr>
 <tr>
 <td>Helm</td>
@@ -3617,7 +3651,7 @@ With GCP Workload Identity the secret can be omitted.</p>
 </tr>
 </tbody>
 </table>
-<p>HAPI starts without this secret (<code>optional: true</code>) but all LLM calls will fail until it is created.</p>
+<p>The LLM credentials secret <strong>must</strong> exist before installing the chart. Without valid credentials, AI analysis cannot function.</p>
 <p><strong>Notification credentials</strong> (optional, only for Slack delivery):</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span>https://hooks.slack.com/services/T.../B.../...<span class="w"> </span><span class="se">\</span>
@@ -3633,13 +3667,13 @@ With GCP Workload Identity the secret can be omitted.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>notification.credentials[].secretName</code></td>
-<td>Your secret name</td>
-<td><code>webhook-url</code> (or custom key via <code>secretKey</code>)</td>
+<td><code>notification.slack.secretName</code></td>
+<td><code>slack-webhook</code> (example)</td>
+<td><code>webhook-url</code></td>
 </tr>
 </tbody>
 </table>
-<p>Only required when Slack delivery is configured in the notification routing config. When using console-only routing (default), no notification secret is needed.</p>
+<p>Only required when Slack delivery is configured. When using console-only routing (default), no notification secret is needed. For advanced multi-receiver routing, use <code>notification.credentials[]</code> and <code>notification.routing.content</code> instead of the Slack shortcut.</p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <p>The chart is distributed as an OCI artifact. With the namespace and LLM credentials provisioned in <a href="#pre-installation">Pre-Installation</a>, install using <code>helm install</code>:</p>
 <h3 id="kind-vanilla-kubernetes">Kind / Vanilla Kubernetes<a class="headerlink" href="#kind-vanilla-kubernetes" title="Permanent link">&para;</a></h3>
@@ -3704,7 +3738,7 @@ With GCP Workload Identity the secret can be omitted.</p>
 <p>To pin a specific chart version, add <code>--version &lt;version&gt;</code>. Omitting <code>--version</code> pulls the latest release.</p>
 <div class="admonition tip">
 <p class="admonition-title">Production: disable demo fixtures</p>
-<p>The chart seeds built-in ActionTypes and RemediationWorkflows by default (<code>demoContent.enabled: true</code>). For production deployments where you want only your own workflows, add <code>--set demoContent.enabled=false</code>. See <a href="#action-types-and-workflows-demo-content">Action Types and Workflows (Demo Content)</a> for details.</p>
+<p>The chart seeds demo ActionTypes and RemediationWorkflows by default (<code>demoContent.enabled: true</code>) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add <code>--set demoContent.enabled=false</code>. See <a href="#action-types-and-workflows-demo-content">Action Types and Workflows (Demo Content)</a> for details.</p>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Start with minimal toolsets</p>
@@ -3722,47 +3756,40 @@ With GCP Workload Identity the secret can be omitted.</p>
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="c1"># Create the full demo environment (~10 minutes)</span>
 </span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a>./scripts/setup-demo-cluster.sh
 </span></code></pre></div>
-<p>The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, installs infrastructure dependencies (cert-manager, metrics-server, Istio, Gitea, ArgoCD), and seeds the workflow catalog. See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios#readme">demo scenarios README</a> for all options including OCP support and advanced LLM configuration.</p>
+<p>The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, and installs infrastructure dependencies (cert-manager, metrics-server, Istio, blackbox-exporter). Gitea and ArgoCD are installed automatically when running GitOps scenarios. See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios#readme">demo scenarios README</a> for all options including OCP support and advanced LLM configuration.</p>
 <h3 id="post-install-verification">Post-Install Verification<a class="headerlink" href="#post-install-verification" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># All pods should be 1/1 Running</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="c1"># All pods should be 1/1 Running (readiness probes confirm service health)</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Verify LLM connectivity</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>svc/holmesgpt-api<span class="w"> </span><span class="m">8080</span>:8080
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/health<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.&#39;</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a>
-</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="c1"># Verify workflow catalog</span>
-</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>svc/data-storage-service<span class="w"> </span><span class="m">8080</span>:8080
-</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8080/api/v1/workflows<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.&#39;</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1"># Verify workflow catalog</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-A
 </span></code></pre></div>
 <h2 id="post-installation">Post-Installation<a class="headerlink" href="#post-installation" title="Permanent link">&para;</a></h2>
 <h3 id="action-types-and-workflows-demo-content">Action Types and Workflows (Demo Content)<a class="headerlink" href="#action-types-and-workflows-demo-content" title="Permanent link">&para;</a></h3>
-<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds built-in ActionType definitions and RemediationWorkflows into the catalog automatically. No manual loading is required.</p>
-<p>To disable demo content for production deployments and load only your own workflows:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--set<span class="w"> </span>demoContent.enabled<span class="o">=</span><span class="nb">false</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o
-</span></code></pre></div>
+<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds demo ActionType definitions and RemediationWorkflows into the catalog as a convenience path for getting started quickly. These are not built-in product features -- they are reusable demo content covering common remediation scenarios (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, etc.). No manual loading is required.</p>
+<p>To disable demo content for production, add <code>--set demoContent.enabled=false</code> during install. See the <a href="#install">production tip</a> in the Install section.</p>
 <h3 id="custom-remediation-workflows">Custom Remediation Workflows<a class="headerlink" href="#custom-remediation-workflows" title="Permanent link">&para;</a></h3>
-<p>Create RemediationWorkflow CRs to define end-to-end remediation flows that reference ActionTypes. See <a href="../../user-guide/workflow-authoring/">Authoring Workflows</a> for guidelines.</p>
+<p>Each RemediationWorkflow references an ActionType by name. When <code>demoContent.enabled: true</code> (default), demo ActionTypes are available in the catalog. For production deployments with <code>demoContent.enabled=false</code>, register your own ActionType CRs before creating RemediationWorkflows. See <a href="../../user-guide/workflow-authoring/">Authoring Workflows</a> for guidelines and the <a href="../../user-guide/workflows/#action-type-taxonomy">Action Type reference</a> for the full list.</p>
 <h2 id="resource-scope">Resource Scope<a class="headerlink" href="#resource-scope" title="Permanent link">&para;</a></h2>
 <p>After installation, Kubernaut only manages namespaces and resources that opt in via labels:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
 </span></code></pre></div>
 <p>See <a href="../../user-guide/signals/">Signals &amp; Alert Routing</a> for details on scope management.</p>
 <h2 id="upgrading">Upgrading<a class="headerlink" href="#upgrading" title="Permanent link">&para;</a></h2>
-<p>Helm does <strong>not</strong> upgrade CRDs on <code>helm upgrade</code>. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs first:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># 1. Pull the new chart version and extract CRDs</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>helm<span class="w"> </span>pull<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>--untar
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--server-side<span class="w"> </span>--force-conflicts<span class="w"> </span>-f<span class="w"> </span>kubernaut/crds/
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="c1"># 2. Upgrade the release</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-f<span class="w"> </span>my-values.yaml
+<p>Use <code>helm upgrade</code> to apply configuration changes or move to a new chart version:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>--set<span class="w"> </span>holmesgptApi.llm.model<span class="o">=</span>gpt-4o-mini
+</span></code></pre></div>
+<p>To upgrade to a specific version, add <code>--version &lt;new-version&gt;</code>.</p>
+<h3 id="crd-schema-changes">CRD Schema Changes<a class="headerlink" href="#crd-schema-changes" title="Permanent link">&para;</a></h3>
+<p>Helm does <strong>not</strong> upgrade CRDs on <code>helm upgrade</code>. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs before upgrading:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>pull<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>--untar
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--server-side<span class="w"> </span>--force-conflicts<span class="w"> </span>-f<span class="w"> </span>kubernaut/crds/
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values
 </span></code></pre></div>
 <p>Key upgrade behaviors:</p>
 <ul>

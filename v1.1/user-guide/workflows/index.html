@@ -1238,10 +1238,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-action-types" class="md-nav__link">
+  <a href="#demo-action-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Action Types
+        Demo Action Types
       
     </span>
   </a>
@@ -1376,10 +1376,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-workflows" class="md-nav__link">
+  <a href="#demo-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Workflows
+        Demo Workflows
       
     </span>
   </a>
@@ -3377,10 +3377,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#built-in-action-types" class="md-nav__link">
+  <a href="#demo-action-types" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Action Types
+        Demo Action Types
       
     </span>
   </a>
@@ -3515,10 +3515,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#built-in-workflows" class="md-nav__link">
+  <a href="#demo-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Built-in Workflows
+        Demo Workflows
       
     </span>
   </a>
@@ -4050,8 +4050,8 @@
 <p>This ensures workflows are <strong>idempotent</strong> and <strong>safe to retry</strong>. If the validate step fails, the workflow exits early without making changes. If the verify step fails, the Effectiveness Monitor will detect the failure.</p>
 <h2 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h2>
 <p>Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, <code>preconditions</code>) that the LLM reads during the <code>list_available_actions</code> step.</p>
-<h3 id="built-in-action-types">Built-in Action Types<a class="headerlink" href="#built-in-action-types" title="Permanent link">&para;</a></h3>
-<p>Kubernaut seeds the following action types during installation:</p>
+<h3 id="demo-action-types">Demo Action Types<a class="headerlink" href="#demo-action-types" title="Permanent link">&para;</a></h3>
+<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds the following action types:</p>
 <table>
 <thead>
 <tr>
@@ -4185,7 +4185,7 @@
 <ul>
 <li><strong>Write clear, unambiguous descriptions</strong> so the LLM can distinguish between action types</li>
 <li><strong>Avoid semantic collisions</strong> -- action types that overlap in meaning (e.g., <code>RestartPod</code> vs <code>RecyclePod</code>) will confuse the LLM</li>
-<li><strong>Use PascalCase naming</strong> consistent with built-in types</li>
+<li><strong>Use PascalCase naming</strong> consistent with existing demo types</li>
 <li>Action types are intentionally <strong>stable</strong> -- they should not change frequently during a deployment's lifecycle</li>
 </ul>
 </div>
@@ -4418,8 +4418,8 @@
 </div>
 <h3 id="scoring-is-internal-ordering-not-selection">Scoring Is Internal Ordering, Not Selection<a class="headerlink" href="#scoring-is-internal-ordering-not-selection" title="Permanent link">&para;</a></h3>
 <p>The <code>final_score</code> determines the order in which workflows are presented to the LLM, but the <strong>LLM makes the final selection</strong> based on descriptions, remediation history, and context. A workflow ranked #2 by score can still be selected if its description better matches the root cause.</p>
-<h2 id="built-in-workflows">Built-in Workflows<a class="headerlink" href="#built-in-workflows" title="Permanent link">&para;</a></h2>
-<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds the following built-in workflows:</p>
+<h2 id="demo-workflows">Demo Workflows<a class="headerlink" href="#demo-workflows" title="Permanent link">&para;</a></h2>
+<p>When <code>demoContent.enabled: true</code> (the default), the chart seeds the following demo workflows:</p>
 <table>
 <thead>
 <tr>

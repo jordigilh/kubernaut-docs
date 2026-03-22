@@ -225,7 +225,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 See `charts/kubernaut/examples/` for reference configuration files you can copy and customize.
 
 !!! tip "Production: disable demo fixtures"
-    The chart seeds built-in ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`). For production deployments where you want only your own workflows, disable it:
+    The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, disable it:
 
     ```bash
     helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
@@ -263,7 +263,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 
 ### Quickstart
 
-The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds built-in ActionTypes and RemediationWorkflows.
+The only customization required is the LLM provider credentials. The chart auto-generates all infrastructure secrets, embeds default Rego policies, and seeds demo ActionTypes and RemediationWorkflows.
 
 ```bash
 # 1. Create namespace and LLM credentials
@@ -298,21 +298,13 @@ kubectl get remediationworkflows -A
 
 ### Action Types and Workflows (Demo Content)
 
-When `demoContent.enabled: true` (the default), the chart seeds built-in ActionType definitions and RemediationWorkflows into the catalog automatically. No manual loading is required.
+When `demoContent.enabled: true` (the default), the chart seeds demo ActionType definitions and RemediationWorkflows into the catalog as a convenience path for getting started quickly. These are not built-in product features -- they are reusable demo content covering common remediation scenarios (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, etc.). No manual loading is required.
 
-To disable demo content for production deployments and load only your own workflows:
-
-```bash
-helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --namespace kubernaut-system \
-  --set demoContent.enabled=false \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
-```
+To disable demo content for production, add `--set demoContent.enabled=false` during install. See the [production tip](#install) in the Install section.
 
 ### Custom Remediation Workflows
 
-Create RemediationWorkflow CRs to define end-to-end remediation flows that reference ActionTypes. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines.
+Each RemediationWorkflow references an ActionType by name. When `demoContent.enabled: true` (default), demo ActionTypes are available in the catalog. For production deployments with `demoContent.enabled=false`, register your own ActionType CRs before creating RemediationWorkflows. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for the full list.
 
 ## Resource Scope
 

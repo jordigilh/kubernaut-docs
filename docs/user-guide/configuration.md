@@ -336,6 +336,88 @@ Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate
 
 The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read and patch resources across namespaces. See [Security & RBAC -- Workflow Execution](../architecture/security-rbac.md#workflow-execution) for the full permission list.
 
+## Ansible Engine (AWX/AAP)
+
+To enable the Ansible execution engine for workflows that run Ansible playbooks via AWX or AAP, configure the `workflowexecution.config.ansible` block.
+
+### 1. Create the AWX API token secret
+
+Generate an API token in your AWX/AAP instance and store it in a Kubernetes Secret. The secret name is user-chosen -- it just needs to match `tokenSecretRef.name` in step 3.
+
+```bash
+kubectl create secret generic awx-api-token \
+  --from-literal=token=<YOUR_AWX_API_TOKEN> \
+  -n kubernaut-system
+```
+
+Replace `awx-api-token` with your preferred name (e.g. `aap-api-token` for AAP deployments).
+
+### 2. Grant RBAC for the token secret
+
+The `workflowexecution-controller` ServiceAccount needs permission to read the token secret at startup. The chart does **not** create this RBAC automatically -- you must create it:
+
+```bash
+kubectl create role awx-token-reader \
+  --verb=get --resource=secrets --resource-name=awx-api-token \
+  -n kubernaut-system
+
+kubectl create rolebinding awx-token-reader \
+  --role=awx-token-reader \
+  --serviceaccount=kubernaut-system:workflowexecution-controller \
+  -n kubernaut-system
+```
+
+Replace `awx-api-token` in `--resource-name` with the secret name you chose in step 1.
+
+!!! warning "Without this RBAC, the ansible executor is silently skipped"
+    The controller logs `"Failed to read AWX token secret, ansible executor not available"` and only registers the `job` and `tekton` engines. Any `WorkflowExecution` with `engine: ansible` will fail with `unsupported execution engine: "ansible"`.
+
+### 3. Configure Helm values
+
+Uncomment the ansible block in your values file:
+
+```yaml
+workflowexecution:
+  config:
+    ansible:
+      apiURL: "https://awx.example.com"
+      insecure: false            # set true to skip TLS verification
+      organizationID: 1          # AWX organization ID for credential creation
+      tokenSecretRef:
+        name: awx-api-token      # Secret created in step 1
+        key: token               # key within the Secret
+        namespace: ""            # empty = release namespace (kubernaut-system)
+```
+
+| Parameter | Required | Default | Description |
+|---|---|---|---|
+| `ansible.apiURL` | Yes | -- | AWX/AAP API base URL |
+| `ansible.insecure` | No | `false` | Skip TLS certificate verification |
+| `ansible.organizationID` | No | `1` | AWX organization ID for ephemeral credential creation |
+| `ansible.tokenSecretRef.name` | Yes | -- | Kubernetes Secret name containing the AWX API token |
+| `ansible.tokenSecretRef.key` | No | `token` | Key within the Secret |
+| `ansible.tokenSecretRef.namespace` | No | release namespace | Namespace of the token Secret |
+
+### 4. Verify
+
+After installing or upgrading with the ansible config, check the controller logs:
+
+```bash
+kubectl logs -n kubernaut-system deployment/workflowexecution-controller | grep -i ansible
+```
+
+Expected output:
+
+```
+"Ansible executor registered" "awxURL"="https://awx.example.com" "organizationID"=1
+```
+
+```
+"Executor registry initialized" "engines"=["tekton","job","ansible"]
+```
+
+For authoring ansible workflows, see [Ansible (AWX/AAP) in Remediation Workflows](workflows.md#ansible-awxaap) and [Workflow Execution Architecture](../architecture/workflow-execution.md#ansible-awxaap).
+
 ## TLS and Certificate Management
 
 The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.

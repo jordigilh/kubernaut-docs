@@ -172,16 +172,19 @@ The chart **auto-generates** credentials for PostgreSQL, DataStorage, and Valkey
 
     ```bash
     kubectl create secret generic llm-credentials \
-      --from-file=GOOGLE_APPLICATION_CREDENTIALS=path/to/service-account-key.json \
+      --from-file=application_default_credentials.json=path/to/service-account-key.json \
       -n kubernaut-system
     ```
 
-    The chart mounts this file and sets `GOOGLE_APPLICATION_CREDENTIALS` automatically.
+    HAPI auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` to the mount path at runtime.
     With GCP Workload Identity the secret can be omitted.
+
+    !!! note "Vertex AI requires an SDK config file"
+        The quickstart `--set holmesgptApi.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-holmesgpt.md#google-vertex-ai).
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `GOOGLE_APPLICATION_CREDENTIALS` (file) |
+| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `application_default_credentials.json` (file) |
 
 The LLM credentials secret **must** exist before installing the chart. Without valid credentials, AI analysis cannot function.
 

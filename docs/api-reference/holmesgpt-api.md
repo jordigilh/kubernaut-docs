@@ -145,7 +145,7 @@ HolmesGPT uses **LiteLLM** under the hood, supporting any compatible provider:
 | Provider | Configuration |
 |---|---|
 | OpenAI | `provider: openai`, `model: gpt-4o` |
-| Vertex AI | `provider: vertex_ai`, `model: gemini-2.5-pro`, `gcpProjectId`, `gcpRegion` |
+| Vertex AI | `provider: vertex_ai`, `model: gemini-2.5-pro`, `gcp_project_id`, `gcp_region` |
 | Azure OpenAI | `provider: azure`, `model: gpt-4o`, `endpoint` |
 | Any LiteLLM provider | See [LiteLLM documentation](https://docs.litellm.ai/docs/providers) |
 

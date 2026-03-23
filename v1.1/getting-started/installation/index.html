@@ -3702,11 +3702,15 @@
 </div>
 <div class="tabbed-block">
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--from-file<span class="o">=</span><span class="nv">GOOGLE_APPLICATION_CREDENTIALS</span><span class="o">=</span>path/to/service-account-key.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--from-file<span class="o">=</span>application_default_credentials.json<span class="o">=</span>path/to/service-account-key.json<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
-<p>The chart mounts this file and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> automatically.
+<p>HAPI auto-detects <code>application_default_credentials.json</code> in the mounted secret and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> to the mount path at runtime.
 With GCP Workload Identity the secret can be omitted.</p>
+<div class="admonition note">
+<p class="admonition-title">Vertex AI requires an SDK config file</p>
+<p>The quickstart <code>--set holmesgptApi.llm.provider=...</code> path only supports OpenAI and Anthropic. Vertex AI requires <code>gcp_project_id</code> and <code>gcp_region</code>, which must be provided via <code>sdkConfigContent</code> or <code>existingSdkConfigMap</code>. See <a href="#advanced-configuration">Advanced Configuration</a> and the <a href="../../user-guide/configmap-holmesgpt/#google-vertex-ai">Vertex AI SDK config example</a>.</p>
+</div>
 </div>
 </div>
 </div>
@@ -3722,7 +3726,7 @@ With GCP Workload Identity the secret can be omitted.</p>
 <tr>
 <td><code>holmesgptApi.llm.credentialsSecretName</code></td>
 <td><code>llm-credentials</code> (default)</td>
-<td>Provider-specific: <code>OPENAI_API_KEY</code>, <code>AZURE_API_KEY</code>, or <code>GOOGLE_APPLICATION_CREDENTIALS</code> (file)</td>
+<td>Provider-specific: <code>OPENAI_API_KEY</code>, <code>AZURE_API_KEY</code>, or <code>application_default_credentials.json</code> (file)</td>
 </tr>
 </tbody>
 </table>

@@ -3453,7 +3453,8 @@
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">gcp_region</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
 </span></code></pre></div>
-<p>Secret: <code>kubectl create secret generic llm-credentials --from-file=GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json</code></p>
+<p>Secret: <code>kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system</code></p>
+<p>HAPI auto-detects <code>application_default_credentials.json</code> in the mounted secret and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> to the mount path at runtime. The <code>gcp_project_id</code> and <code>gcp_region</code> fields from the SDK config are used to set <code>VERTEXAI_PROJECT</code> and <code>VERTEXAI_LOCATION</code>.</p>
 <p>GCP Workload Identity is also supported -- the secret can be omitted when authentication is handled by the node metadata service.</p>
 <h4 id="vertex-ai-model-garden-non-google-models">Vertex AI Model Garden (non-Google models)<a class="headerlink" href="#vertex-ai-model-garden-non-google-models" title="Permanent link">&para;</a></h4>
 <p>Anthropic Claude, Meta Llama, and other third-party models are available through <a href="https://cloud.google.com/model-garden">Vertex AI Model Garden</a>. Use <code>provider: vertex_ai</code> with the model name as listed in the Model Garden catalog:</p>

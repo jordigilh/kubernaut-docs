@@ -342,13 +342,15 @@ To enable the Ansible execution engine for workflows that run Ansible playbooks 
 
 ### 1. Create the AWX API token secret
 
-Generate an API token in your AWX/AAP instance and store it in a Kubernetes Secret:
+Generate an API token in your AWX/AAP instance and store it in a Kubernetes Secret. The secret name is user-chosen -- it just needs to match `tokenSecretRef.name` in step 3.
 
 ```bash
 kubectl create secret generic awx-api-token \
   --from-literal=token=<YOUR_AWX_API_TOKEN> \
   -n kubernaut-system
 ```
+
+Replace `awx-api-token` with your preferred name (e.g. `aap-api-token` for AAP deployments).
 
 ### 2. Grant RBAC for the token secret
 
@@ -364,6 +366,8 @@ kubectl create rolebinding awx-token-reader \
   --serviceaccount=kubernaut-system:workflowexecution-controller \
   -n kubernaut-system
 ```
+
+Replace `awx-api-token` in `--resource-name` with the secret name you chose in step 1.
 
 !!! warning "Without this RBAC, the ansible executor is silently skipped"
     The controller logs `"Failed to read AWX token secret, ansible executor not available"` and only registers the `job` and `tekton` engines. Any `WorkflowExecution` with `engine: ansible` will fail with `unsupported execution engine: "ansible"`.

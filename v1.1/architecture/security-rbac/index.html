@@ -3309,7 +3309,7 @@
 <td><code>workflowexecution-controller</code></td>
 <td>WorkflowExecution</td>
 <td>Tekton PipelineRuns (full), TaskRuns (read), Jobs (full), events (create); leases (full)</td>
-<td>Creates Jobs and PipelineRuns in the execution namespace</td>
+<td>Creates Jobs and PipelineRuns in the execution namespace. When the ansible engine is enabled, also requires <code>get</code> on the AWX API token Secret -- see <a href="../../user-guide/configuration/#ansible-engine-awxaap">Ansible Engine Setup</a>.</td>
 </tr>
 <tr>
 <td>EffectivenessMonitor</td>

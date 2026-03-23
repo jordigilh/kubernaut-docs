@@ -136,7 +136,9 @@ llm:
   timeout_seconds: 180
 ```
 
-Secret: `kubectl create secret generic llm-credentials --from-file=GOOGLE_APPLICATION_CREDENTIALS=service-account-key.json`
+Secret: `kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system`
+
+HAPI auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` to the mount path at runtime. The `gcp_project_id` and `gcp_region` fields from the SDK config are used to set `VERTEXAI_PROJECT` and `VERTEXAI_LOCATION`.
 
 GCP Workload Identity is also supported -- the secret can be omitted when authentication is handled by the node metadata service.
 

@@ -3643,7 +3643,7 @@
 </li>
 </ol>
 <h3 id="4-execution-creation">4. Execution Creation<a class="headerlink" href="#4-execution-creation" title="Permanent link">&para;</a></h3>
-<p>Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job based on <code>ExecutionEngine</code>:</p>
+<p>Resolves the execution engine from the DS workflow catalog and creates a Kubernetes Job, Tekton PipelineRun, or AWX Job accordingly:</p>
 <ul>
 <li>The executor registry dispatches to the appropriate engine (<code>tekton</code>, <code>job</code>, or <code>ansible</code>)</li>
 <li><strong>AlreadyExists handling</strong> (Job/Tekton only): If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as <code>Failed</code> (race condition).</li>

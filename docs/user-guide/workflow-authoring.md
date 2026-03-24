@@ -286,10 +286,18 @@ spec:
     engine: job
     bundle: registry.example.com/workflows/restart-pods@sha256:abc123...
   parameters:
-    - name: TARGET_NAMESPACE
+    - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Namespace of the deployment"
+      description: "Name of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_KIND
+      type: string
+      required: true
+      description: "Kind of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the root managing resource (HAPI-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -322,10 +330,18 @@ spec:
     engine: job
     bundle: registry.example.com/workflows/crashloop-rollback@sha256:def456...
   parameters:
-    - name: TARGET_NAMESPACE
+    - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Namespace of the deployment"
+      description: "Name of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_KIND
+      type: string
+      required: true
+      description: "Kind of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the root managing resource (HAPI-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true

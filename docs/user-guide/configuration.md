@@ -416,6 +416,9 @@ Expected output:
 "Executor registry initialized" "engines"=["tekton","job","ansible"]
 ```
 
+!!! note "Automatic K8s API credentials for playbooks"
+    The ansible executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using `kubernetes.core` modules receive `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` without manual credential configuration. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
+
 For authoring ansible workflows, see [Ansible (AWX/AAP) in Remediation Workflows](workflows.md#ansible-awxaap) and [Workflow Execution Architecture](../architecture/workflow-execution.md#ansible-awxaap).
 
 ## TLS and Certificate Management

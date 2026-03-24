@@ -8374,11 +8374,6 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td>Rationale from LLM (for audit trail)</td>
 </tr>
 <tr>
-<td><code>executionEngine</code></td>
-<td><em>string</em></td>
-<td>ExecutionEngine specifies the backend engine for workflow execution.<br />"tekton" creates a Tekton PipelineRun; "job" creates a Kubernetes Job; "ansible" runs an AWX job.</td>
-</tr>
-<tr>
 <td><code>executionConfig</code></td>
 <td><em><a href="#executionconfig">ExecutionConfig</a></em></td>
 <td>ExecutionConfig contains minimal execution settings</td>
@@ -8452,6 +8447,11 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td><code>ephemeralCredentialIDs</code></td>
 <td><em>integer array</em></td>
 <td>EphemeralCredentialIDs stores AWX credential IDs created by the ansible<br />executor for cleanup after execution . Written via the status<br />subresource to avoid violating spec immutability .</td>
+</tr>
+<tr>
+<td><code>executionEngine</code></td>
+<td><em>string</em></td>
+<td>ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowExecutionEngine; immutable thereafter.<br />Values: "tekton", "job", "ansible".</td>
 </tr>
 <tr>
 <td><code>conditions</code></td>

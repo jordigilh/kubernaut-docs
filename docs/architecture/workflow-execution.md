@@ -85,7 +85,7 @@ Fetches workflow dependencies from DataStorage and validates them in the executi
 
 ### 4. Execution Creation
 
-Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job based on `ExecutionEngine`:
+Resolves the execution engine from the DS workflow catalog and creates a Kubernetes Job, Tekton PipelineRun, or AWX Job accordingly:
 
 - The executor registry dispatches to the appropriate engine (`tekton`, `job`, or `ansible`)
 - **AlreadyExists handling** (Job/Tekton only): If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as `Failed` (race condition).

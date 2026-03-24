@@ -424,7 +424,7 @@ flowchart TD
 
 ### Outcome 1: Success (Workflow Selected)
 
-The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, `parameters`, and `affectedResource`. This is the only outcome that proceeds to Rego evaluation.
+The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `affectedResource` from the K8s-verified `root_owner` (resolved via `get_resource_context`). This is the only outcome that proceeds to Rego evaluation.
 
 **Fields:** `needs_human_review=false`, `selected_workflow` present, `confidence >= 0.7`
 **Next:** AA transitions to `Analyzing` phase → Rego evaluation
@@ -457,7 +457,7 @@ The LLM identified the root cause but no workflow in the catalog matches the req
 
 ### Outcome 5: RCA Incomplete
 
-The LLM selected a workflow but did not identify the `affectedResource`. This is a defense-in-depth check (BR-HAPI-212) -- a workflow without a confirmed target resource is unsafe.
+HAPI could not determine the target resource identity because `root_owner` is missing from `session_state` -- either `get_resource_context` was never called during the investigation or it returned no owner chain. Without a verified target, HAPI cannot inject the canonical `TARGET_RESOURCE_*` parameters and the investigation is unsafe to proceed.
 
 **Fields:** `needs_human_review=true`, `human_review_reason=rca_incomplete`
 **Next:** Routed to human review.

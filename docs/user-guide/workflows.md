@@ -63,10 +63,18 @@ spec:
     bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
 
   parameters:
-    - name: TARGET_NAMESPACE
+    - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Namespace of the deployment to restart"
+      description: "Name of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_KIND
+      type: string
+      required: true
+      description: "Kind of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the root managing resource (HAPI-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -86,20 +94,20 @@ Create `remediate.sh`:
 set -euo pipefail
 
 echo "Validating deployment exists..."
-kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" || {
+kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_RESOURCE_NAMESPACE" || {
   echo "ERROR: Deployment not found"
   exit 1
 }
 
 echo "Performing rolling restart..."
-kubectl rollout restart deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE"
+kubectl rollout restart deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_RESOURCE_NAMESPACE"
 
 echo "Waiting for rollout to complete..."
-kubectl rollout status deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" --timeout=120s
+kubectl rollout status deployment/"$TARGET_DEPLOYMENT" -n "$TARGET_RESOURCE_NAMESPACE" --timeout=120s
 
 echo "Verifying deployment health..."
-READY=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" -o jsonpath='{.status.readyReplicas}')
-DESIRED=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_NAMESPACE" -o jsonpath='{.spec.replicas}')
+READY=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_RESOURCE_NAMESPACE" -o jsonpath='{.status.readyReplicas}')
+DESIRED=$(kubectl get deployment "$TARGET_DEPLOYMENT" -n "$TARGET_RESOURCE_NAMESPACE" -o jsonpath='{.spec.replicas}')
 
 if [ "$READY" = "$DESIRED" ]; then
   echo "SUCCESS: All $READY/$DESIRED replicas ready"
@@ -294,7 +302,25 @@ Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variable
 
 The `description` field is shown to the LLM during `get_workflow`, so it should be clear enough for the LLM to populate the parameter from its investigation findings.
 
-`TARGET_RESOURCE` is always injected automatically from the `RemediationRequest` target.
+#### Canonical target resource parameters
+
+Every workflow schema **must** declare these three parameters as `required: true`:
+
+| Parameter | Description |
+|---|---|
+| `TARGET_RESOURCE_NAME` | Name of the root managing resource |
+| `TARGET_RESOURCE_KIND` | Kind of the root managing resource (e.g., `Deployment`) |
+| `TARGET_RESOURCE_NAMESPACE` | Namespace of the root managing resource |
+
+These are **HAPI-injected** -- HAPI derives them from the K8s-verified `root_owner` (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into `selected_workflow.parameters` before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).
+
+If HAPI cannot determine the `root_owner` (e.g., `get_resource_context` was never called), the investigation is flagged `rca_incomplete` with `needs_human_review=true`.
+
+Additionally, the WFE controller injects `TARGET_RESOURCE` (composite format `namespace/kind/name`) from `wfe.Spec.TargetResource` into every Job and Tekton PipelineRun as a system variable.
+
+Workflows may also declare additional **operational parameters** (e.g., `TARGET_DEPLOYMENT`, `GRACE_PERIOD_SECONDS`) that the LLM populates from its investigation findings.
+
+#### Ansible auto-injected variables
 
 For `ansible` executions, the executor also auto-injects remediation context variables into AWX `extra_vars` (BR-WE-015 TR-6):
 
@@ -321,7 +347,7 @@ execution:
 
 The Workflow Execution controller creates a Job with:
 
-- **Environment variables** -- All parameters injected as env vars, plus `TARGET_RESOURCE`
+- **Environment variables** -- All parameters (including the three canonical `TARGET_RESOURCE_*` params) injected as env vars, plus the system-injected `TARGET_RESOURCE`
 - **Dependency mounts** -- Secrets at `/run/kubernaut/secrets/<name>`, ConfigMaps at `/run/kubernaut/configmaps/<name>`
 - **ServiceAccount** -- `kubernaut-workflow-runner` (pre-configured RBAC)
 
@@ -338,7 +364,7 @@ execution:
 The bundle must contain a Tekton Pipeline named `workflow`. The controller creates a PipelineRun with:
 
 - **Tekton bundle resolver** -- The bundle is referenced via `resolver: bundles` with the digest-pinned image
-- **Parameters** -- All parameters injected as Tekton params, plus `TARGET_RESOURCE`
+- **Parameters** -- All parameters (including the three canonical `TARGET_RESOURCE_*` params) injected as Tekton params, plus the system-injected `TARGET_RESOURCE`
 - **Dependency workspaces** -- Secrets as `secret-<name>` workspace bindings, ConfigMaps as `configmap-<name>` workspace bindings
 
 Tekton provides step ordering, retries, and artifact passing between steps.
@@ -371,10 +397,18 @@ spec:
       playbookPath: "playbooks/fix-config.yml"
       jobTemplateName: "kubernaut-fix-config"
   parameters:
-    - name: target_kind
+    - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Kind of the target resource"
+      description: "Name of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_KIND
+      type: string
+      required: true
+      description: "Kind of the root managing resource (HAPI-injected)"
+    - name: TARGET_RESOURCE_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the root managing resource (HAPI-injected)"
 ```
 
 The `engineConfig` fields for Ansible:
@@ -391,6 +425,10 @@ The Workflow Execution controller launches the AWX job template, passes paramete
 
 - **Secrets** (`dependencies.secrets`): Injected as environment variables via ephemeral AWX credentials (`KUBERNAUT_SECRET_{NAME}_{KEY}`). Use `lookup('env', ...)` in your playbook.
 - **ConfigMaps** (`dependencies.configMaps`): Merged into AWX extra_vars (`KUBERNAUT_CONFIGMAP_{NAME}_{KEY}`). Access as standard Ansible variables.
+
+**Automatic K8s API credentials:**
+
+The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using `kubernetes.core` modules receive `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
 
 ## The Validate-Action-Verify Pattern
 

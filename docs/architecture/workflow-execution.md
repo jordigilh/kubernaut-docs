@@ -187,9 +187,10 @@ The Ansible executor:
 
 3. **Injects dependency ConfigMaps** as `extra_vars` with a `KUBERNAUT_CONFIGMAP_{NAME}_{KEY}` prefix (non-sensitive data)
 4. **Injects dependency Secrets** as ephemeral AWX credentials with `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables (sensitive data, never in `extra_vars`)
-5. **Launches the AWX Job** with the combined `extra_vars` and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.
-6. **Polls job status** via `GET /api/v2/jobs/{id}/` mapping AWX states (`pending`, `waiting`, `running`, `successful`, `failed`, `error`, `canceled`) to WFE phases
-7. **Cleans up** ephemeral credentials after execution completes (credential IDs are persisted in `status.ephemeralCredentialIDs` via the status subresource)
+5. **Injects K8s API credentials** -- reads the controller's in-cluster ServiceAccount token and creates an ephemeral AWX credential that injects `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` into the Execution Environment. Playbooks using `kubernetes.core` modules authenticate automatically. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
+6. **Launches the AWX Job** with the combined `extra_vars` and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.
+7. **Polls job status** via `GET /api/v2/jobs/{id}/` mapping AWX states (`pending`, `waiting`, `running`, `successful`, `failed`, `error`, `canceled`) to WFE phases
+8. **Cleans up** ephemeral credentials (including K8s credentials) after execution completes (credential IDs are persisted in `status.ephemeralCredentialIDs` via the status subresource)
 
 The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX `extra_vars` (which are logged). Instead, each Secret gets a dynamic AWX credential type with `env` injectors, and an ephemeral credential is created per execution and deleted on cleanup.
 
@@ -231,8 +232,11 @@ The executor injects system variables and passes through all parameters from the
 
 | Variable | Source |
 |---|---|
-| `TARGET_RESOURCE` | `wfe.Spec.TargetResource` (system-injected) |
-| Custom parameters | All entries from `wfe.Spec.Parameters` (from LLM selection) |
+| `TARGET_RESOURCE` | `wfe.Spec.TargetResource` (system-injected by WFE controller) |
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| Custom parameters | All remaining entries from `wfe.Spec.Parameters` (LLM-populated) |
 
 Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables (Jobs) or Tekton params (PipelineRuns).
 
@@ -240,13 +244,19 @@ Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment v
 
 | Variable | Source |
 |---|---|
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
 | `WFE_NAME` | `wfe.Name` (auto-injected) |
 | `WFE_NAMESPACE` | `wfe.Namespace` (auto-injected) |
 | `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` (auto-injected) |
 | `RR_NAMESPACE` | `wfe.Spec.RemediationRequestRef.Namespace` (auto-injected) |
 | `KUBERNAUT_CONFIGMAP_{NAME}_{KEY}` | Dependency ConfigMap data (auto-injected) |
 | `KUBERNAUT_SECRET_{NAME}_{KEY}` | Dependency Secret data (via ephemeral AWX credentials) |
-| Custom parameters | All entries from `wfe.Spec.Parameters` (type-coerced into `extra_vars`) |
+| `K8S_AUTH_HOST` | WE controller in-cluster SA (ephemeral AWX credential) |
+| `K8S_AUTH_API_KEY` | WE controller in-cluster SA (ephemeral AWX credential) |
+| `K8S_AUTH_SSL_CA_CERT` | WE controller in-cluster SA (ephemeral AWX credential) |
+| Custom parameters | All remaining entries from `wfe.Spec.Parameters` (type-coerced into `extra_vars`) |
 
 ## Handoff
 

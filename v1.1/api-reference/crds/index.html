@@ -4903,12 +4903,12 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>needsHumanReview</code></td>
 <td><em>boolean</em></td>
-<td>Set by HAPI when AI cannot produce reliable result<br />True if human review required (HAPI decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br /> Set when workflow selected but affectedResource missing</td>
+<td>Set by HAPI when AI cannot produce reliable result<br />True if human review required (HAPI decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.</td>
 </tr>
 <tr>
 <td><code>humanReviewReason</code></td>
 <td><em>string</em></td>
-<td>Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values<br /> Includes "rca_incomplete" for missing affectedResource</td>
+<td>Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values</td>
 </tr>
 <tr>
 <td><code>actionability</code></td>

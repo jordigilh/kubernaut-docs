@@ -3754,9 +3754,10 @@
 <p><strong>Injects dependency ConfigMaps</strong> as <code>extra_vars</code> with a <code>KUBERNAUT_CONFIGMAP_{NAME}_{KEY}</code> prefix (non-sensitive data)</p>
 </li>
 <li><strong>Injects dependency Secrets</strong> as ephemeral AWX credentials with <code>KUBERNAUT_SECRET_{NAME}_{KEY}</code> environment variables (sensitive data, never in <code>extra_vars</code>)</li>
+<li><strong>Injects K8s API credentials</strong> -- reads the controller's in-cluster ServiceAccount token and creates an ephemeral AWX credential that injects <code>K8S_AUTH_HOST</code>, <code>K8S_AUTH_API_KEY</code>, and <code>K8S_AUTH_SSL_CA_CERT</code> into the Execution Environment. Playbooks using <code>kubernetes.core</code> modules authenticate automatically. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.</li>
 <li><strong>Launches the AWX Job</strong> with the combined <code>extra_vars</code> and credential IDs. When ephemeral credentials are present, the executor also fetches the job template's pre-configured credentials and merges them (deduplicated, template-first ordering) so AWX receives the full union.</li>
 <li><strong>Polls job status</strong> via <code>GET /api/v2/jobs/{id}/</code> mapping AWX states (<code>pending</code>, <code>waiting</code>, <code>running</code>, <code>successful</code>, <code>failed</code>, <code>error</code>, <code>canceled</code>) to WFE phases</li>
-<li><strong>Cleans up</strong> ephemeral credentials after execution completes (credential IDs are persisted in <code>status.ephemeralCredentialIDs</code> via the status subresource)</li>
+<li><strong>Cleans up</strong> ephemeral credentials (including K8s credentials) after execution completes (credential IDs are persisted in <code>status.ephemeralCredentialIDs</code> via the status subresource)</li>
 </ol>
 <p>The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX <code>extra_vars</code> (which are logged). Instead, each Secret gets a dynamic AWX credential type with <code>env</code> injectors, and an ephemeral credential is created per execution and deleted on cleanup.</p>
 <h2 id="deterministic-locking-dd-we-003">Deterministic Locking (DD-WE-003)<a class="headerlink" href="#deterministic-locking-dd-we-003" title="Permanent link">&para;</a></h2>
@@ -3793,11 +3794,23 @@
 <tbody>
 <tr>
 <td><code>TARGET_RESOURCE</code></td>
-<td><code>wfe.Spec.TargetResource</code> (system-injected)</td>
+<td><code>wfe.Spec.TargetResource</code> (system-injected by WFE controller)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_NAME</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_KIND</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_NAMESPACE</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
 </tr>
 <tr>
 <td>Custom parameters</td>
-<td>All entries from <code>wfe.Spec.Parameters</code> (from LLM selection)</td>
+<td>All remaining entries from <code>wfe.Spec.Parameters</code> (LLM-populated)</td>
 </tr>
 </tbody>
 </table>
@@ -3811,6 +3824,18 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>TARGET_RESOURCE_NAME</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_KIND</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_NAMESPACE</code></td>
+<td><code>wfe.Spec.Parameters</code> (HAPI-injected from K8s root_owner)</td>
+</tr>
 <tr>
 <td><code>WFE_NAME</code></td>
 <td><code>wfe.Name</code> (auto-injected)</td>
@@ -3836,8 +3861,20 @@
 <td>Dependency Secret data (via ephemeral AWX credentials)</td>
 </tr>
 <tr>
+<td><code>K8S_AUTH_HOST</code></td>
+<td>WE controller in-cluster SA (ephemeral AWX credential)</td>
+</tr>
+<tr>
+<td><code>K8S_AUTH_API_KEY</code></td>
+<td>WE controller in-cluster SA (ephemeral AWX credential)</td>
+</tr>
+<tr>
+<td><code>K8S_AUTH_SSL_CA_CERT</code></td>
+<td>WE controller in-cluster SA (ephemeral AWX credential)</td>
+</tr>
+<tr>
 <td>Custom parameters</td>
-<td>All entries from <code>wfe.Spec.Parameters</code> (type-coerced into <code>extra_vars</code>)</td>
+<td>All remaining entries from <code>wfe.Spec.Parameters</code> (type-coerced into <code>extra_vars</code>)</td>
 </tr>
 </tbody>
 </table>

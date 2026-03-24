@@ -4743,6 +4743,10 @@
 </span></code></pre></div>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&quot;Executor registry initialized&quot; &quot;engines&quot;=[&quot;tekton&quot;,&quot;job&quot;,&quot;ansible&quot;]
 </span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Automatic K8s API credentials for playbooks</p>
+<p>The ansible executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using <code>kubernetes.core</code> modules receive <code>K8S_AUTH_HOST</code>, <code>K8S_AUTH_API_KEY</code>, and <code>K8S_AUTH_SSL_CA_CERT</code> without manual credential configuration. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.</p>
+</div>
 <p>For authoring ansible workflows, see <a href="../workflows/#ansible-awxaap">Ansible (AWX/AAP) in Remediation Workflows</a> and <a href="../../architecture/workflow-execution/#ansible-awxaap">Workflow Execution Architecture</a>.</p>
 <h2 id="tls-and-certificate-management">TLS and Certificate Management<a class="headerlink" href="#tls-and-certificate-management" title="Permanent link">&para;</a></h2>
 <p>The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.</p>

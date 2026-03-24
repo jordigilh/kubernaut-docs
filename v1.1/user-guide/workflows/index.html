@@ -1157,6 +1157,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canonical-target-resource-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canonical target resource parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ansible-auto-injected-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible auto-injected variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -3405,6 +3433,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Parameters">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#canonical-target-resource-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Canonical target resource parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ansible-auto-injected-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible auto-injected variables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
       </ul>
@@ -3768,18 +3824,26 @@
 </span><span id="__span-0-29"><a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">    </span><span class="nt">bundle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.example.com/workflows/restart-deployment@sha256:abc123...</span>
 </span><span id="__span-0-30"><a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a>
 </span><span id="__span-0-31"><a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">  </span><span class="nt">parameters</span><span class="p">:</span>
-</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_NAMESPACE</span>
+</span><span id="__span-0-32"><a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_NAME</span>
 </span><span id="__span-0-33"><a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 </span><span id="__span-0-34"><a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Namespace</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
-</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_DEPLOYMENT</span>
+</span><span id="__span-0-35"><a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
+</span><span id="__span-0-36"><a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_KIND</span>
 </span><span id="__span-0-37"><a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 </span><span id="__span-0-38"><a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
-</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a>
-</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span>
-</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">    </span><span class="nt">secrets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
-</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="w">    </span><span class="nt">configMaps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-39"><a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Kind</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
+</span><span id="__span-0-40"><a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_NAMESPACE</span>
+</span><span id="__span-0-41"><a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</span><span id="__span-0-42"><a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-0-43"><a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Namespace</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
+</span><span id="__span-0-44"><a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_DEPLOYMENT</span>
+</span><span id="__span-0-45"><a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</span><span id="__span-0-46"><a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-0-47"><a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">to</span><span class="nv"> </span><span class="s">restart&quot;</span>
+</span><span id="__span-0-48"><a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a>
+</span><span id="__span-0-49"><a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="w">  </span><span class="nt">dependencies</span><span class="p">:</span>
+</span><span id="__span-0-50"><a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="w">    </span><span class="nt">secrets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-51"><a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="w">    </span><span class="nt">configMaps</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </span></code></pre></div>
 <h3 id="step-2-write-the-remediation-script">Step 2: Write the Remediation Script<a class="headerlink" href="#step-2-write-the-remediation-script" title="Permanent link">&para;</a></h3>
 <p>Create <code>remediate.sh</code>:</p>
@@ -3787,20 +3851,20 @@
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nb">set</span><span class="w"> </span>-euo<span class="w"> </span>pipefail
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Validating deployment exists...&quot;</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">{</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_RESOURCE_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="o">{</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ERROR: Deployment not found&quot;</span>
 </span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 </span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="o">}</span>
 </span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a>
 </span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Performing rolling restart...&quot;</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment/<span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_NAMESPACE</span><span class="s2">&quot;</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment/<span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_RESOURCE_NAMESPACE</span><span class="s2">&quot;</span>
 </span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
 </span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Waiting for rollout to complete...&quot;</span>
-</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/<span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>--timeout<span class="o">=</span>120s
+</span><span id="__span-1-14"><a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>status<span class="w"> </span>deployment/<span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_RESOURCE_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>--timeout<span class="o">=</span>120s
 </span><span id="__span-1-15"><a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a>
 </span><span id="__span-1-16"><a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Verifying deployment health...&quot;</span>
-</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nv">READY</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.readyReplicas}&#39;</span><span class="k">)</span>
-</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nv">DESIRED</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.replicas}&#39;</span><span class="k">)</span>
+</span><span id="__span-1-17"><a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a><span class="nv">READY</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_RESOURCE_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.readyReplicas}&#39;</span><span class="k">)</span>
+</span><span id="__span-1-18"><a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="nv">DESIRED</span><span class="o">=</span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>deployment<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_DEPLOYMENT</span><span class="s2">&quot;</span><span class="w"> </span>-n<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TARGET_RESOURCE_NAMESPACE</span><span class="s2">&quot;</span><span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.replicas}&#39;</span><span class="k">)</span>
 </span><span id="__span-1-19"><a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
 </span><span id="__span-1-20"><a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$READY</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DESIRED</span><span class="s2">&quot;</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
 </span><span id="__span-1-21"><a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;SUCCESS: All </span><span class="nv">$READY</span><span class="s2">/</span><span class="nv">$DESIRED</span><span class="s2"> replicas ready&quot;</span>
@@ -4026,7 +4090,35 @@
 <h3 id="parameters">Parameters<a class="headerlink" href="#parameters" title="Permanent link">&para;</a></h3>
 <p>Parameters use <code>UPPER_SNAKE_CASE</code> names and are injected as environment variables. For the complete parameter schema, see <a href="../../api-reference/crds/#remediationworkflow">RemediationWorkflow</a> in the CRD Reference.</p>
 <p>The <code>description</code> field is shown to the LLM during <code>get_workflow</code>, so it should be clear enough for the LLM to populate the parameter from its investigation findings.</p>
-<p><code>TARGET_RESOURCE</code> is always injected automatically from the <code>RemediationRequest</code> target.</p>
+<h4 id="canonical-target-resource-parameters">Canonical target resource parameters<a class="headerlink" href="#canonical-target-resource-parameters" title="Permanent link">&para;</a></h4>
+<p>Every workflow schema <strong>must</strong> declare these three parameters as <code>required: true</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TARGET_RESOURCE_NAME</code></td>
+<td>Name of the root managing resource</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_KIND</code></td>
+<td>Kind of the root managing resource (e.g., <code>Deployment</code>)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_NAMESPACE</code></td>
+<td>Namespace of the root managing resource</td>
+</tr>
+</tbody>
+</table>
+<p>These are <strong>HAPI-injected</strong> -- HAPI derives them from the K8s-verified <code>root_owner</code> (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into <code>selected_workflow.parameters</code> before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).</p>
+<p>If HAPI cannot determine the <code>root_owner</code> (e.g., <code>get_resource_context</code> was never called), the investigation is flagged <code>rca_incomplete</code> with <code>needs_human_review=true</code>.</p>
+<p>Additionally, the WFE controller injects <code>TARGET_RESOURCE</code> (composite format <code>namespace/kind/name</code>) from <code>wfe.Spec.TargetResource</code> into every Job and Tekton PipelineRun as a system variable.</p>
+<p>Workflows may also declare additional <strong>operational parameters</strong> (e.g., <code>TARGET_DEPLOYMENT</code>, <code>GRACE_PERIOD_SECONDS</code>) that the LLM populates from its investigation findings.</p>
+<h4 id="ansible-auto-injected-variables">Ansible auto-injected variables<a class="headerlink" href="#ansible-auto-injected-variables" title="Permanent link">&para;</a></h4>
 <p>For <code>ansible</code> executions, the executor also auto-injects remediation context variables into AWX <code>extra_vars</code> (BR-WE-015 TR-6):</p>
 <table>
 <thead>
@@ -4069,7 +4161,7 @@
 </span></code></pre></div>
 <p>The Workflow Execution controller creates a Job with:</p>
 <ul>
-<li><strong>Environment variables</strong> -- All parameters injected as env vars, plus <code>TARGET_RESOURCE</code></li>
+<li><strong>Environment variables</strong> -- All parameters (including the three canonical <code>TARGET_RESOURCE_*</code> params) injected as env vars, plus the system-injected <code>TARGET_RESOURCE</code></li>
 <li><strong>Dependency mounts</strong> -- Secrets at <code>/run/kubernaut/secrets/&lt;name&gt;</code>, ConfigMaps at <code>/run/kubernaut/configmaps/&lt;name&gt;</code></li>
 <li><strong>ServiceAccount</strong> -- <code>kubernaut-workflow-runner</code> (pre-configured RBAC)</li>
 </ul>
@@ -4082,7 +4174,7 @@
 <p>The bundle must contain a Tekton Pipeline named <code>workflow</code>. The controller creates a PipelineRun with:</p>
 <ul>
 <li><strong>Tekton bundle resolver</strong> -- The bundle is referenced via <code>resolver: bundles</code> with the digest-pinned image</li>
-<li><strong>Parameters</strong> -- All parameters injected as Tekton params, plus <code>TARGET_RESOURCE</code></li>
+<li><strong>Parameters</strong> -- All parameters (including the three canonical <code>TARGET_RESOURCE_*</code> params) injected as Tekton params, plus the system-injected <code>TARGET_RESOURCE</code></li>
 <li><strong>Dependency workspaces</strong> -- Secrets as <code>secret-&lt;name&gt;</code> workspace bindings, ConfigMaps as <code>configmap-&lt;name&gt;</code> workspace bindings</li>
 </ul>
 <p>Tekton provides step ordering, retries, and artifact passing between steps.</p>
@@ -4111,10 +4203,18 @@
 </span><span id="__span-14-21"><a id="__codelineno-14-21" name="__codelineno-14-21" href="#__codelineno-14-21"></a><span class="w">      </span><span class="nt">playbookPath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;playbooks/fix-config.yml&quot;</span>
 </span><span id="__span-14-22"><a id="__codelineno-14-22" name="__codelineno-14-22" href="#__codelineno-14-22"></a><span class="w">      </span><span class="nt">jobTemplateName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;kubernaut-fix-config&quot;</span>
 </span><span id="__span-14-23"><a id="__codelineno-14-23" name="__codelineno-14-23" href="#__codelineno-14-23"></a><span class="w">  </span><span class="nt">parameters</span><span class="p">:</span>
-</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">target_kind</span>
+</span><span id="__span-14-24"><a id="__codelineno-14-24" name="__codelineno-14-24" href="#__codelineno-14-24"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_NAME</span>
 </span><span id="__span-14-25"><a id="__codelineno-14-25" name="__codelineno-14-25" href="#__codelineno-14-25"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
 </span><span id="__span-14-26"><a id="__codelineno-14-26" name="__codelineno-14-26" href="#__codelineno-14-26"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Kind</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">target</span><span class="nv"> </span><span class="s">resource&quot;</span>
+</span><span id="__span-14-27"><a id="__codelineno-14-27" name="__codelineno-14-27" href="#__codelineno-14-27"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Name</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
+</span><span id="__span-14-28"><a id="__codelineno-14-28" name="__codelineno-14-28" href="#__codelineno-14-28"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_KIND</span>
+</span><span id="__span-14-29"><a id="__codelineno-14-29" name="__codelineno-14-29" href="#__codelineno-14-29"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</span><span id="__span-14-30"><a id="__codelineno-14-30" name="__codelineno-14-30" href="#__codelineno-14-30"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-14-31"><a id="__codelineno-14-31" name="__codelineno-14-31" href="#__codelineno-14-31"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Kind</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
+</span><span id="__span-14-32"><a id="__codelineno-14-32" name="__codelineno-14-32" href="#__codelineno-14-32"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">TARGET_RESOURCE_NAMESPACE</span>
+</span><span id="__span-14-33"><a id="__codelineno-14-33" name="__codelineno-14-33" href="#__codelineno-14-33"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">string</span>
+</span><span id="__span-14-34"><a id="__codelineno-14-34" name="__codelineno-14-34" href="#__codelineno-14-34"></a><span class="w">      </span><span class="nt">required</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-14-35"><a id="__codelineno-14-35" name="__codelineno-14-35" href="#__codelineno-14-35"></a><span class="w">      </span><span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Namespace</span><span class="nv"> </span><span class="s">of</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">root</span><span class="nv"> </span><span class="s">managing</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">(HAPI-injected)&quot;</span>
 </span></code></pre></div>
 <p>The <code>engineConfig</code> fields for Ansible:</p>
 <table>
@@ -4149,6 +4249,8 @@
 <li><strong>Secrets</strong> (<code>dependencies.secrets</code>): Injected as environment variables via ephemeral AWX credentials (<code>KUBERNAUT_SECRET_{NAME}_{KEY}</code>). Use <code>lookup('env', ...)</code> in your playbook.</li>
 <li><strong>ConfigMaps</strong> (<code>dependencies.configMaps</code>): Merged into AWX extra_vars (<code>KUBERNAUT_CONFIGMAP_{NAME}_{KEY}</code>). Access as standard Ansible variables.</li>
 </ul>
+<p><strong>Automatic K8s API credentials:</strong></p>
+<p>The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using <code>kubernetes.core</code> modules receive <code>K8S_AUTH_HOST</code>, <code>K8S_AUTH_API_KEY</code>, and <code>K8S_AUTH_SSL_CA_CERT</code> environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.</p>
 <h2 id="the-validate-action-verify-pattern">The Validate-Action-Verify Pattern<a class="headerlink" href="#the-validate-action-verify-pattern" title="Permanent link">&para;</a></h2>
 <p>Workflows should follow the <strong>Validate-Action-Verify</strong> (VAV) pattern:</p>
 <ol>

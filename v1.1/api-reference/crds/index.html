@@ -2240,17 +2240,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#affectedresource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AffectedResource
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#alternativeapproach" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2730,6 +2719,17 @@
     <span class="md-ellipsis">
       
         RemediationRequestStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remediationtarget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RemediationTarget
       
     </span>
   </a>
@@ -3890,17 +3890,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#affectedresource" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AffectedResource
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#alternativeapproach" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4380,6 +4369,17 @@
     <span class="md-ellipsis">
       
         RemediationRequestStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remediationtarget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RemediationTarget
       
     </span>
   </a>
@@ -5167,38 +5167,6 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 </tr>
 </tbody>
 </table>
-<h3 id="affectedresource">AffectedResource<a class="headerlink" href="#affectedresource" title="Permanent link">&para;</a></h3>
-<p>AffectedResource identifies the Kubernetes resource identified by the LLM as the
-actual target for remediation. This may differ from the signal's source resource
-(e.g., the signal comes from a Pod, but the Deployment should be patched).</p>
-<p><em>Appears in:</em>
-- <a href="#rootcauseanalysis">RootCauseAnalysis</a></p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>kind</code></td>
-<td><em>string</em></td>
-<td>Kind is the Kubernetes resource kind (e.g., "Deployment", "StatefulSet", "DaemonSet")</td>
-</tr>
-<tr>
-<td><code>name</code></td>
-<td><em>string</em></td>
-<td>Name is the resource name</td>
-</tr>
-<tr>
-<td><code>namespace</code></td>
-<td><em>string</em></td>
-<td>Namespace is the resource namespace. Empty for cluster-scoped resources (e.g., Node, PersistentVolume).</td>
-</tr>
-</tbody>
-</table>
 <h3 id="alternativeapproach">AlternativeApproach<a class="headerlink" href="#alternativeapproach" title="Permanent link">&para;</a></h3>
 <p>AlternativeApproach describes an alternative approach with pros/cons</p>
 <p><em>Appears in:</em>
@@ -5750,7 +5718,7 @@ Immutability is enforced by CEL validation (self == oldSelf) to prevent tamperin
 <tr>
 <td><code>remediationTarget</code></td>
 <td><em><a href="#targetresource">TargetResource</a></em></td>
-<td>RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.AffectedResource (from HAPI RCA resolution).<br />Used by: spec hash computation, drift detection .</td>
+<td>RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.RemediationTarget (from HAPI RCA resolution).<br />Used by: spec hash computation, drift detection .</td>
 </tr>
 <tr>
 <td><code>config</code></td>
@@ -7265,6 +7233,38 @@ but retained for explicit documentation of critical fields.</p>
 </tr>
 </tbody>
 </table>
+<h3 id="remediationtarget">RemediationTarget<a class="headerlink" href="#remediationtarget" title="Permanent link">&para;</a></h3>
+<p>RemediationTarget identifies the Kubernetes resource identified by the LLM as the
+actual target for remediation. This may differ from the signal's source resource
+(e.g., the signal comes from a Pod, but the Deployment should be patched).</p>
+<p><em>Appears in:</em>
+- <a href="#rootcauseanalysis">RootCauseAnalysis</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kind</code></td>
+<td><em>string</em></td>
+<td>Kind is the Kubernetes resource kind (e.g., "Deployment", "StatefulSet", "DaemonSet")</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><em>string</em></td>
+<td>Name is the resource name</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><em>string</em></td>
+<td>Namespace is the resource namespace. Empty for cluster-scoped resources (e.g., Node, PersistentVolume).</td>
+</tr>
+</tbody>
+</table>
 <h2 id="remediationworkflow">RemediationWorkflow<a class="headerlink" href="#remediationworkflow" title="Permanent link">&para;</a></h2>
 <p>RemediationWorkflow is the Schema for the remediationworkflows API.
  Kubernetes-native workflow schema definition.</p>
@@ -7755,9 +7755,9 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td>Contributing factors</td>
 </tr>
 <tr>
-<td><code>affectedResource</code></td>
-<td><em><a href="#affectedresource">AffectedResource</a></em></td>
-<td>AffectedResource identifies the actual resource the LLM determined should be remediated.<br /> The LLM may identify a higher-level resource (e.g., Deployment) rather than<br />the Pod that generated the signal. The WFE creator should prefer this over the RR's<br />TargetResource when available to ensure the correct resource is patched.</td>
+<td><code>remediationTarget</code></td>
+<td><em><a href="#remediationtarget">RemediationTarget</a></em></td>
+<td>RemediationTarget identifies the actual resource the LLM determined should be remediated.<br /> The LLM may identify a higher-level resource (e.g., Deployment) rather than<br />the Pod that generated the signal. The WFE creator should prefer this over the RR's<br />TargetResource when available to ensure the correct resource is patched.</td>
 </tr>
 </tbody>
 </table>

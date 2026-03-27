@@ -14,14 +14,14 @@ Approval is determined by a **user-replaceable Rego policy** evaluated during th
 The shipped `approval.rego` makes decisions based on **environment** and **affected resource presence**:
 
 - **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence
-- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `affected_resource` is present
+- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present
 - **Missing affected resource** — always requires approval (default-deny safety per ADR-055)
 
 When approval is required, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.
 
 ### Custom Policies
 
-The Rego policy receives a rich input context (see [Rego Policy Evaluation](#rego-policy-evaluation) below), including `confidence`, `confidence_threshold`, `environment`, `detected_labels`, `affected_resource`, `custom_labels`, and `business_classification`. Operators can write policies that use any combination of these inputs -- for example, a confidence-gated policy that auto-approves high-confidence analyses in production.
+The Rego policy receives a rich input context (see [Rego Policy Evaluation](#rego-policy-evaluation) below), including `confidence`, `confidence_threshold`, `environment`, `detected_labels`, `remediation_target`, `custom_labels`, and `business_classification`. Operators can write policies that use any combination of these inputs -- for example, a confidence-gated policy that auto-approves high-confidence analyses in production.
 
 The default policy defines an `is_high_confidence` helper but does not use it in its approval rules. This is a building block for custom policies.
 
@@ -257,13 +257,13 @@ The approval decision is governed by the `aianalysis.approval` Rego policy. The 
 | `environment` | Signal Processing classification | `production`, `staging`, `development`, `qa`, `test` |
 | `detected_labels` | HAPI label detection | Infrastructure labels (e.g., `stateful`, `gitOpsManaged`) |
 | `failed_detections` | HAPI label detection | Labels where detection failed |
-| `affected_resource` | AI Analysis RCA result | Target resource `kind` and `name` |
+| `remediation_target` | AI Analysis RCA result | Target resource `kind` and `name` |
 | `warnings` | HAPI investigation | Non-fatal investigation warnings |
 
 The built-in policy behavior:
 
 - **Production namespaces** (`kubernaut.ai/environment=production`): Always require approval, regardless of confidence
-- **Non-production namespaces**: Auto-approved unless critical safety conditions (missing `affected_resource`)
+- **Non-production namespaces**: Auto-approved unless critical safety conditions (missing `remediation_target`)
 - **Missing affected resource**: Always requires approval (default-deny safety)
 
 Operators can customize approval behavior by modifying the Rego policy in the `aianalysis-rego` ConfigMap.

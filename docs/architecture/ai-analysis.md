@@ -112,8 +112,8 @@ The Analyzing handler evaluates a **user-replaceable Rego policy** (`approval.re
 The **default shipped policy** gates on environment and affected resource presence:
 
 - **Production** — always requires approval
-- **Non-production** — auto-approved when `affected_resource` is present
-- **Missing `affected_resource`** — always requires approval (default-deny per ADR-055)
+- **Non-production** — auto-approved when `remediation_target` is present
+- **Missing `remediation_target`** — always requires approval (default-deny per ADR-055)
 
 The policy also receives `confidence`, `confidence_threshold`, `detected_labels` (snake_case keys: `"stateful"`, `"pdb_protected"`, `"hpa_enabled"`), `failed_detections`, `custom_labels`, and `business_classification`. Operators can write custom policies that use any combination of these inputs -- for example, confidence-gated approval for production.
 

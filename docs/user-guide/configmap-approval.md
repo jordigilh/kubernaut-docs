@@ -42,7 +42,7 @@ The approval policy receives this input from the AIAnalysis controller:
 | `environment` | string | Namespace environment (`production`, `staging`, `development`, etc.) |
 | `confidence` | float | LLM investigation confidence score (0.0--1.0) |
 | `confidence_threshold` | float | Configurable threshold (default 0.8, via `aianalysis.rego.confidenceThreshold`) |
-| `affected_resource` | object | LLM-identified affected resource (`kind`, `name`, `namespace`) |
+| `remediation_target` | object | LLM-identified remediation target (`kind`, `name`, `namespace`) |
 | `target_resource` | object | Original alert target resource |
 | `detected_labels` | map | Detected workload labels (`stateful`, `gitOpsManaged`, `pdbProtected`) |
 | `failed_detections` | array | Detection fields that failed (e.g., `["gitOpsManaged"]`) |
@@ -63,7 +63,7 @@ The reference policy (`charts/kubernaut/examples/approval.rego`) implements:
 
 - **Production environments**: Always require approval (controlled via `kubernaut.ai/environment=production` namespace label)
 - **Sensitive resources** (Node, StatefulSet): Always require approval regardless of environment
-- **Missing affected resource**: Always require approval (safety default)
+- **Missing remediation target**: Always require approval (safety default)
 - **Non-production**: Auto-approved unless critical safety conditions are met
 
 ## Risk Factors
@@ -72,7 +72,7 @@ The reference policy uses scored risk factors for reason generation:
 
 | Score | Condition |
 |---|---|
-| 90 | Missing affected resource |
+| 90 | Missing remediation target |
 | 85 | Sensitive resource kind (Node/StatefulSet) |
 | 80 | Production + sensitive resource |
 | 70 | Production environment |
@@ -114,11 +114,11 @@ Block automated CRD modifications and require human approval. CRD changes cascad
 
 ```rego
 require_approval if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
 }
 
 risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
 }
 ```
 

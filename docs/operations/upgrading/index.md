@@ -34,6 +34,18 @@ helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 - **PVCs** are not modified (immutable for bound claims).
 - **ConfigMaps and Secrets** are updated to reflect new values.
 
+### Secret Changes
+
+Starting with chart version **v1.1.0-rc14**, the chart no longer auto-generates PostgreSQL or Valkey credentials. All database and cache secrets must be pre-created before running `helm install` or `helm upgrade`.
+
+Key changes:
+
+- **`datastorage-db-secret` consolidated into `postgresql-secret`** — The `db-secrets.yaml` key that was previously in a separate `datastorage-db-secret` is now expected inside `postgresql-secret`. This eliminates password mismatch risks between the two secrets.
+- **`datastorage.dbExistingSecret` deprecated** — Leave empty to use the consolidated `postgresql-secret`. Only set if you need DataStorage to read from a separate secret.
+- **Mandatory pre-creation** — If a required secret is missing, `helm install`/`helm upgrade` fails at template time with a descriptive error including the exact `kubectl create secret` command needed.
+
+See the [installation guide](../../getting-started/installation.md#2-provision-secrets) for the full pre-creation commands.
+
 ## Version-Specific Notes
 
 - [v1.0 to v1.1](1.0-to-1.1.md) -- Valkey migration, demo content, unified Rego, SDK config externalization

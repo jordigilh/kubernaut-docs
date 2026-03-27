@@ -253,6 +253,46 @@ If webhook calls fail immediately after switching from `tls.mode=hook` to `tls.m
     kubectl rollout restart deployment authwebhook -n kubernaut-system
     ```
 
+## Database Authentication Failure (SQLSTATE 28P01)
+
+DataStorage or the migration hook fails with:
+
+```
+FATAL: password authentication failed for user "slm_user" (SQLSTATE 28P01)
+```
+
+**Cause**: The password in `postgresql-secret` does not match what PostgreSQL was initialized with, or the `db-secrets.yaml` key inside `postgresql-secret` contains a different password than `POSTGRES_PASSWORD`.
+
+**Check**:
+
+```bash
+kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d
+kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.db-secrets\.yaml}' | base64 -d
+```
+
+Both passwords must be identical. If they differ, recreate the secret with matching values:
+
+```bash
+PG_PASSWORD=$(openssl rand -base64 24)
+kubectl delete secret postgresql-secret -n kubernaut-system
+kubectl create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+  --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+  -n kubernaut-system
+```
+
+After recreating the secret, delete the PostgreSQL PVC and restart the PostgreSQL pod to reinitialize with the new credentials:
+
+```bash
+kubectl delete pvc postgresql-data -n kubernaut-system
+kubectl rollout restart statefulset postgresql -n kubernaut-system
+```
+
+!!! warning
+    Deleting the PVC destroys all existing data. For production clusters, consider resetting the password inside PostgreSQL directly instead.
+
 ## Collecting Diagnostics
 
 Use the must-gather tool to collect a comprehensive diagnostic bundle:

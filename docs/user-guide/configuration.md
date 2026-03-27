@@ -89,7 +89,7 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | Parameter | Description | Default |
 |---|---|---|
 | `datastorage.replicas` | Number of datastorage replicas | `1` |
-| `datastorage.dbExistingSecret` | Pre-created Secret with `db-secrets.yaml` key | `""` |
+| `datastorage.dbExistingSecret` | **Deprecated.** Override secret name for DataStorage DB credentials. Leave empty to use the consolidated `postgresql-secret`. Only needed when DataStorage must read from a separate secret (e.g., BYO PostgreSQL with split credentials). | `""` |
 | `datastorage.config.database.sslMode` | PostgreSQL SSL mode | `disable` |
 | `datastorage.config.database.maxOpenConns` | Maximum open database connections | `100` |
 | `datastorage.config.database.maxIdleConns` | Maximum idle database connections | `20` |

@@ -18,6 +18,9 @@ Kubernaut sends notifications at key points in the remediation lifecycle: when h
 | SMS | Schema-defined | Not yet implemented |
 | Webhook | Schema-defined | Not yet implemented |
 
+!!! tip "Workflow name enrichment"
+    Notification bodies automatically resolve workflow UUIDs to human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID) when the workflow exists in the catalog. If resolution fails, the original UUID is preserved. See [Architecture: Notification Enrichment](../architecture/notification.md#notification-enrichment) for details.
+
 ## Routing Configuration
 
 Notifications are routed using a ConfigMap with an AlertManager-style `route` + `receivers` structure.

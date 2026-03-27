@@ -235,6 +235,25 @@ The credential resolver reads secrets from a mounted directory (projected volume
 - **Hot-reload**: `fsnotify` watches the directory; cache is reloaded on file changes
 - **Validation**: `ValidateRefs(refs)` ensures all referenced credentials exist before delivery
 
+## Notification Enrichment
+
+Before delivery, the controller enriches notification bodies by resolving workflow UUIDs to human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.
+
+### Enrichment Flow
+
+1. Extract the workflow UUID from `spec.Metadata` (checks `workflowId` for completion notifications, then `selectedWorkflow` for approval notifications)
+2. Call the DataStorage catalog API (`GET /api/v1/workflows/{id}`) to resolve the UUID to a workflow name
+3. Replace every occurrence of the UUID in `spec.Body` with the resolved name
+4. Pass the enriched notification to the delivery orchestrator
+
+### Graceful Degradation
+
+If the workflow UUID is absent from metadata, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.
+
+### Extensibility
+
+The enrichment layer uses a `WorkflowNameResolver` interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.
+
 ## Audit Events
 
 | Event Type | When |

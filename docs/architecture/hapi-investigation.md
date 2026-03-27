@@ -39,23 +39,23 @@ The Helm chart supports three tiers for providing the SDK config -- see [Configu
 
 ## Pipeline Overview
 
-The investigation follows a 5-phase pipeline, executed as a single LLM agent session:
+The investigation follows a three-phase pipeline (redesigned in v1.1, BR-HAPI-260--265), executed as a single LLM agent session:
 
 ```mermaid
 flowchart LR
-    P1["Phase 1<br/>Investigate"] --> P2["Phase 2<br/>Root Cause"]
-    P2 --> P3["Phase 3<br/>Resource Context"]
-    P3 --> P4["Phase 4<br/>Workflow Selection"]
-    P4 --> P5["Phase 5<br/>Structured Response"]
+    P1["Phase 1<br/>Investigate"] --> P2["Phase 2<br/>Enrich"]
+    P2 --> P3["Phase 3<br/>Workflow Select"]
 ```
 
-| Phase | Reactive Mode | Proactive Mode |
+| Phase | Purpose | Key Operations |
 |---|---|---|
-| **Phase 1** | Investigate the Incident | Investigate the Anticipated Incident |
-| **Phase 2** | Determine Root Cause | Assess Prediction and Determine Prevention Strategy |
-| **Phase 3 + 3b** | Identify signal name + call `get_resource_context` | Same |
-| **Phase 4** | Discover and Select Workflow (Three-Step Protocol) | Same |
-| **Phase 5** | Return Summary + JSON Payload | Same |
+| **Phase 1: Investigate** | Root cause analysis using live cluster data | Kubernetes tool calls (logs, events, describe), root cause identification, signal name determination |
+| **Phase 2: Enrich** | Gather context and validate the remediation target | Call `get_resource_context` (owner chain resolution, spec hash, detected labels, remediation history), validate LLM-provided `remediationTarget` (BR-HAPI-261, BR-HAPI-212) |
+| **Phase 3: Workflow Select** | Discover and select a workflow from the catalog | Three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`, parameter mapping, confidence scoring, structured JSON response |
+
+In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
+
+The dedicated `get_remediation_history` tool (BR-HAPI-260) replaces the previous inline history injection, providing tiered remediation history (24h by target resource, 90d by spec hash) as a separate tool call during Phase 2.
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
@@ -118,7 +118,7 @@ The RCA phase is unconstrained -- the LLM decides which tools to call and in wha
 
 ## Post-RCA: Resource Context
 
-Once the LLM identifies the affected resource (Phase 3b), it calls `get_resource_context(kind, name, namespace)`. This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
+Once the LLM identifies the affected resource (Phase 2: Enrich), it calls `get_namespaced_resource_context(kind, name, namespace)` (or `get_cluster_resource_context(kind, name)` for cluster-scoped resources). This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
 
 The tool performs four operations in sequence:
 
@@ -590,7 +590,9 @@ Complete list of tools available during investigation:
 
 | Tool | Description | Parameters |
 |---|---|---|
-| `get_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history | `kind`, `name`, `namespace` (optional) |
+| `get_namespaced_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history for **namespaced** resources | `kind`, `name`, `namespace` |
+| `get_cluster_resource_context` | Same as above for **cluster-scoped** resources (Nodes, PersistentVolumes) | `kind`, `name` |
+| `get_remediation_history` | Fetch tiered remediation history from DataStorage independently of resource context resolution | `kind`, `name`, `namespace` (optional) |
 
 ### Workflow Discovery (Custom)
 

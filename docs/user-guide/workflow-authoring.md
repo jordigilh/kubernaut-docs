@@ -218,6 +218,43 @@ Custom label matches add to the raw score (before normalization to 0-1). See [Wo
 
 This is a **tiebreaker/ordering influence**, not an override. It won't overcome a strong semantic mismatch in descriptions -- if the LLM strongly prefers a lower-ranked workflow based on its `whenToUse`, it will still pick it.
 
+## Standard Resource Parameters
+
+Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. The WorkflowExecution controller **automatically injects** these from the `remediationTarget` field in the AIAnalysis result -- workflow authors do not need to populate them manually.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `TARGET_RESOURCE_NAME` | string | Name of the root managing resource (e.g., `my-app`) |
+| `TARGET_RESOURCE_KIND` | string | Kind of the root managing resource (e.g., `Deployment`, `StatefulSet`, `Node`) |
+| `TARGET_RESOURCE_NAMESPACE` | string | Namespace of the root managing resource. **Omitted** for cluster-scoped resources (e.g., Nodes) |
+| `TARGET_RESOURCE_API_GROUP` | string | API group of the resource. Empty for core resources (e.g., Pods, Nodes) |
+
+### Declaring Standard Parameters in Workflow Schemas
+
+Workflows that operate on the target resource should declare these as **required** parameters in their schema. The WFE controller validates that all required parameters are satisfied before launching the workflow.
+
+```yaml
+parameters:
+  - name: TARGET_RESOURCE_NAME
+    type: string
+    required: true
+    description: "Name of the root managing resource (auto-injected)"
+  - name: TARGET_RESOURCE_KIND
+    type: string
+    required: true
+    description: "Kind of the root managing resource (auto-injected)"
+  - name: TARGET_RESOURCE_NAMESPACE
+    type: string
+    required: true
+    description: "Namespace of the root managing resource (auto-injected)"
+```
+
+### Cluster-Scoped Resources
+
+For cluster-scoped resources (e.g., Nodes, PersistentVolumes), `TARGET_RESOURCE_NAMESPACE` is **not injected** to prevent parameter validation failures. Workflows that handle both namespaced and cluster-scoped resources should declare `TARGET_RESOURCE_NAMESPACE` as **optional** (`required: false`).
+
+See the [worked example below](#step-4-create-the-workflows) for a complete workflow schema that declares these parameters.
+
 ## Worked Example: Risk-Based CrashLoopBackOff Remediation
 
 This example demonstrates two workflows for the same problem (CrashLoopBackOff), differentiated by risk tolerance, from Rego policy through workflow schema to successful selection.

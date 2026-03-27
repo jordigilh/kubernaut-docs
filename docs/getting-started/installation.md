@@ -147,7 +147,7 @@ kubectl create namespace kubernaut-system
 
 ### 2. Provision Secrets
 
-All database and cache credentials **must** be pre-created before running `helm install`. The chart validates their presence at template time and fails with a descriptive error if any required secret is missing.
+All required secrets **must** be pre-created before running `helm install`. The chart validates the presence of database and cache secrets at template time and fails with a descriptive error if any are missing.
 
 #### PostgreSQL + DataStorage (consolidated secret)
 
@@ -177,8 +177,9 @@ kubectl create secret generic valkey-secret \
 |---|---|---|
 | `postgresql-secret` | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `db-secrets.yaml` | PostgreSQL (env vars), DataStorage (file mount), migration hook |
 | `valkey-secret` | `valkey-secrets.yaml` | DataStorage (file mount) |
+| `llm-credentials` | Provider-specific (see [below](#llm-credentials-required-for-ai-analysis)) | HolmesGPT API |
 
-To use custom secret names, pass `--set postgresql.auth.existingSecret=<name>` and `--set valkey.existingSecret=<name>` at install time.
+To use custom secret names for database/cache secrets, pass `--set postgresql.auth.existingSecret=<name>` and `--set valkey.existingSecret=<name>` at install time. For LLM credentials, use `--set holmesgptApi.llm.credentialsSecretName=<name>`.
 
 #### LLM credentials (required for AI analysis)
 
@@ -282,7 +283,7 @@ To pin a specific chart version, add `--version <version>`. Omitting `--version`
     The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
-    The auto-generated SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
 
 ### Quickstart
 

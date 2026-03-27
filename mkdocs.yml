@@ -148,9 +148,7 @@ nav:
       - Monitoring: operations/monitoring.md
       - Event Exporter: operations/event-exporter.md
       - Troubleshooting: operations/troubleshooting.md
-      - Upgrading:
-          - operations/upgrading/index.md
-          - v1.0 to v1.1: operations/upgrading/1.0-to-1.1.md
+      - Upgrading: operations/upgrading/index.md
       - Disconnected Install: operations/disconnected-install.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md

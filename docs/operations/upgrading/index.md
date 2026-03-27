@@ -48,4 +48,4 @@ See the [installation guide](../../getting-started/installation.md#2-provision-s
 
 ## Version-Specific Notes
 
-- [v1.0 to v1.1](1.0-to-1.1.md) -- Valkey migration, demo content, unified Rego, SDK config externalization
+No active version-specific migration guides. v1.0 is end-of-life and no longer documented.

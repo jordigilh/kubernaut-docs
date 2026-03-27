@@ -54,6 +54,9 @@ Routes match on notification attributes:
 | `environment` | Namespace environment | `production`, `staging`, `development` |
 | `review-source` | Why review was triggered | `WorkflowResolutionFailed`, `ExhaustedRetries` |
 
+!!! note "Match key naming"
+    Routing match keys use **kebab-case** (e.g., `review-source`) in the YAML routing configuration. The [architecture reference](../architecture/notification.md#routing-attributes) documents the same attributes using their Go struct field names (e.g., `reviewSource`). Both refer to the same underlying attribute.
+
 ### Routing Logic
 
 - **First matching route wins** (depth-first evaluation)
@@ -270,7 +273,7 @@ spec:
           secretKey: webhook-url
     ```
 
-5. **Verify** the notification pod has the credential mounted:
+4. **Verify** the notification pod has the credential mounted:
 
     ```bash
     kubectl exec -n kubernaut-system deploy/notification-controller -- \

@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main]
+    branches: [main, release/v1.2]
   repository_dispatch:
     types: [crd-docs-updated]
   workflow_dispatch:
@@ -49,6 +49,14 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
-            VERSION="v1.1"
+            case "${{ github.ref_name }}" in
+              release/v1.2) VERSION="v1.2-rc" ;;
+              *)            VERSION="v1.1" ;;
+            esac
           fi
-          mike deploy --push --update-aliases "$VERSION" latest
+
+          if [ "$VERSION" = "v1.2-rc" ]; then
+            mike deploy --push "$VERSION"
+          else
+            mike deploy --push --update-aliases "$VERSION" latest
+          fi

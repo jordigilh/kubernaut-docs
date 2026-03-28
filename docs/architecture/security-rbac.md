@@ -84,6 +84,12 @@ Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, Effect
 | Notification | `notification-controller` | NotificationRequest | Events (create) | Minimal scope |
 | AuthWebhook | `authwebhook` | All Kubernaut CRDs (read), status subresources (update, patch) | -- | Admission webhook validation, defaulting, and catalog registration. Intercepts CREATE and UPDATE operations on `RemediationWorkflow` CRDs. Uses retry-on-conflict for `ActionType` status updates. |
 
+### Broad Read Access via `view` ClusterRole
+
+The RemediationOrchestrator and EffectivenessMonitor are additionally bound to the Kubernetes built-in `view` ClusterRole via `remediationorchestrator-view` and `effectivenessmonitor-view` ClusterRoleBindings. This provides broad read access to CRD types not individually enumerated in their dedicated ClusterRoles -- for example, cert-manager `Certificate` resources and Istio networking resources -- which is required for pre- and post-remediation hash capture (DD-EM-002).
+
+If the `view` ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), hash capture emits a `HashCaptureDegraded` Kubernetes event and the EffectivenessAssessment proceeds in **degraded mode** rather than failing the pipeline. In degraded mode, the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.
+
 ## Workflow Execution
 
 Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the `kubernaut-workflows` namespace under the `kubernaut-workflow-runner` ServiceAccount. This is the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.
@@ -104,6 +110,12 @@ Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in 
 | `policy.linkerd.io` | `authorizationpolicies`, `servers`, `meshtlsauthentications` | get, list, delete | Manage Linkerd policies (legacy) |
 | `security.istio.io` | `authorizationpolicies`, `peerauthentications`, `requestauthentications` | get, list, delete | Manage Istio security policies |
 | `networking.istio.io` | `virtualservices`, `destinationrules`, `gateways`, `serviceentries` | get, list, create, update, patch, delete | Manage Istio networking resources |
+| `kubernaut.ai` | `workflowexecutions` | get | Ansible playbooks read WFE ownerReferences for RR correlation |
+| `storage.k8s.io` | `storageclasses` | get, list | Discover default StorageClass for PVC migration |
+| (core) | `endpoints` | get, list | Check service endpoint health |
+| `batch` | `jobs` | get, list, create, delete | pg_dump/pg_restore Job lifecycle (disk-pressure-emptydir scenario) |
+
+The last four rules were added for production Ansible playbooks (DD-WE-007). In v1.2, per-workflow SA scoping ([#501](https://github.com/jordigilh/kubernaut/issues/501)) will replace the shared ClusterRole with schema-declared RBAC per execution.
 
 Additionally, a namespace-scoped `workflowexecution-dep-reader` Role grants `get`, `list`, `watch` on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.
 
@@ -123,6 +135,23 @@ When `effectivenessmonitor.external.ocpMonitoringRbac` is `true`, the chart crea
 The AlertManager ClusterRole and ClusterRoleBinding are only created when **both** `ocpMonitoringRbac` and `alertManagerEnabled` are `true`.
 
 OCP's `kube-rbac-proxy` requires **resource-level** RBAC (`monitoring.coreos.com/alertmanagers/api`) rather than `nonResourceURLs` for AlertManager API access. Standard `nonResourceURLs` rules are silently ignored by `kube-rbac-proxy`, causing EM AlertManager queries to fail with `403 Forbidden`.
+
+### Ansible Credential Injection
+
+When the Ansible/AWX execution engine is enabled, the WorkflowExecution controller injects the cluster's Kubernetes API credentials into AWX Job Templates so that `kubernetes.core` Ansible modules can authenticate against the target cluster. The v2 custom credential type (`kubernaut-k8s-bearer-token-v2`) uses **kubeconfig-file injection** rather than environment variables, because in-cluster ServiceAccount config inside AAP execution environments takes precedence over `K8S_AUTH_*` env vars. If resolution picks a built-in or kind-matched type, the injector may differ.
+
+The credential type resolution follows a 6-step process:
+
+1. Look for the built-in AWX type ("OpenShift or Kubernetes API Bearer Token")
+2. Look up a credential type by kind (`FindCredentialTypeByKind("kubernetes", true)`)
+3. Fall back to `kubernaut-k8s-bearer-token` (custom type from earlier versions)
+4. Fall back to `kubernaut-k8s-bearer-token-v2` (kubeconfig-based type)
+5. If none exist, create the v2 type with a Jinja2 kubeconfig template that AWX renders at job launch
+6. Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate
+
+The v2 kubeconfig template conditionally includes `certificate-authority-data` when the cluster CA is available, or sets `insecure-skip-tls-verify: true` otherwise. AWX injects the rendered kubeconfig as a temp file and sets `K8S_AUTH_KUBECONFIG` to point to it, ensuring `kubernetes.core` modules use the injected credentials instead of in-cluster config.
+
+Ephemeral credentials are cleaned up after the AWX job completes. See [BR-WE-017](https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md) for the full shared SA model and the planned v1.2 transition to per-workflow ServiceAccounts.
 
 ## Internal Service Communication
 
@@ -171,12 +200,13 @@ Both run with dedicated ServiceAccounts that have `automountServiceAccountToken:
 
 ### Helm Hooks
 
-The shared hook ServiceAccount (`kubernaut-hook-sa`) and its ClusterRole are used by TLS certificate generation jobs and the database migration job:
+The shared hook ServiceAccount (`kubernaut-hook-sa`) and its ClusterRole are used by TLS certificate generation jobs, the database migration job, and the CRD upgrade job:
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|
 | (core) | `secrets`, `configmaps` | get, create, update, patch, delete | TLS cert/CA storage, migration state |
 | `admissionregistration.k8s.io` | `mutatingwebhookconfigurations`, `validatingwebhookconfigurations` | get, patch | Patch `caBundle` (hook mode only, see [#334](https://github.com/jordigilh/kubernaut/issues/334)) |
+| `apiextensions.k8s.io` | `customresourcedefinitions` | get, list, create, update, patch | CRD pre-upgrade server-side apply ([#521](https://github.com/jordigilh/kubernaut/issues/521)) |
 | (core) | `pods` | get, list | Post-install verification |
 | `apps` | `deployments` | get | Post-install verification |
 | `batch` | `jobs` | get, list | Migration job monitoring |

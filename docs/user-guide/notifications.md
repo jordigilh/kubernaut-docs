@@ -18,6 +18,9 @@ Kubernaut sends notifications at key points in the remediation lifecycle: when h
 | SMS | Schema-defined | Not yet implemented |
 | Webhook | Schema-defined | Not yet implemented |
 
+!!! tip "Workflow name enrichment"
+    Notification bodies automatically resolve workflow UUIDs to human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID) when the workflow exists in the catalog. If resolution fails, the original UUID is preserved. See [Architecture: Notification Enrichment](../architecture/notification.md#notification-enrichment) for details.
+
 ## Routing Configuration
 
 Notifications are routed using a ConfigMap with an AlertManager-style `route` + `receivers` structure.
@@ -50,6 +53,9 @@ Routes match on notification attributes:
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |
 | `environment` | Namespace environment | `production`, `staging`, `development` |
 | `review-source` | Why review was triggered | `WorkflowResolutionFailed`, `ExhaustedRetries` |
+
+!!! note "Match key naming"
+    Routing match keys use **kebab-case** (e.g., `review-source`) in the YAML routing configuration. The [architecture reference](../architecture/notification.md#routing-attributes) documents the same attributes using their Go struct field names (e.g., `reviewSource`). Both refer to the same underlying attribute.
 
 ### Routing Logic
 
@@ -267,7 +273,7 @@ spec:
           secretKey: webhook-url
     ```
 
-5. **Verify** the notification pod has the credential mounted:
+4. **Verify** the notification pod has the credential mounted:
 
     ```bash
     kubectl exec -n kubernaut-system deploy/notification-controller -- \

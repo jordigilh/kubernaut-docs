@@ -16,19 +16,23 @@ To upgrade to a specific version, add `--version <new-version>`.
 
 ### CRD Schema Changes
 
-Helm does **not** upgrade CRDs on `helm upgrade`. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs before upgrading:
+Helm does **not** upgrade CRDs on `helm upgrade`. Starting with **v1.1**, the chart includes a `pre-upgrade` hook that automatically applies all CRD manifests via `kubectl apply --server-side --force-conflicts` before the upgrade proceeds. This ensures CRD schema changes (field additions, removals, default changes) take effect without manual intervention.
 
-```bash
-helm pull oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version <new-version> --untar
-kubectl apply --server-side --force-conflicts -f kubernaut/crds/
+!!! note "Upgrading from chart versions before v1.1"
+    If you are upgrading from a chart version that does not include the pre-upgrade hook, you must manually apply the new CRDs first:
 
-helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
-  --version <new-version> -n kubernaut-system --reuse-values
-```
+    ```bash
+    helm pull oci://quay.io/kubernaut-ai/charts/kubernaut \
+      --version <new-version> --untar
+    kubectl apply --server-side --force-conflicts -f kubernaut/crds/
+
+    helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+      --version <new-version> -n kubernaut-system --reuse-values
+    ```
 
 ### Key Upgrade Behaviors
 
+- **CRD schemas** are applied automatically via the pre-upgrade hook using server-side apply with force-conflicts.
 - **TLS certificates** (`tls.mode: hook`): Renewed automatically if expiring within 30 days. In `cert-manager` mode, cert-manager handles renewal.
 - **Database migrations** run automatically via the post-upgrade hook.
 - **PVCs** are not modified (immutable for bound claims).

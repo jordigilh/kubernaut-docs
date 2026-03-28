@@ -1,8 +1,16 @@
 {% extends "base.html" %}
 
 {% block outdated %}
-  You're not viewing the latest version.
-  <a href="{{ '../' ~ base_url }}">
-    <strong>Click here to go to latest.</strong>
-  </a>
+  {% if "rc" in config.extra.image_tag %}
+    <strong>Release Candidate</strong> — This is pre-release documentation for {{ config.extra.image_tag }}.
+    Content may change before GA.
+    <a href="{{ '../' ~ base_url }}">
+      <strong>View stable documentation.</strong>
+    </a>
+  {% else %}
+    You're not viewing the latest version.
+    <a href="{{ '../' ~ base_url }}">
+      <strong>Click here to go to latest.</strong>
+    </a>
+  {% endif %}
 {% endblock %}

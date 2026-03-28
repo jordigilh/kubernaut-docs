@@ -1962,6 +1962,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#manualreviewrequired-outcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ManualReviewRequired Outcome
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#timeout-system" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3359,6 +3370,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#manualreviewrequired-outcome" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ManualReviewRequired Outcome
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#timeout-system" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3519,7 +3541,7 @@
     Analyzing --&gt; AwaitingApproval : Low confidence → Create RAR
     Analyzing --&gt; Executing : Auto-approved + post-analysis passes → Create WFE
     Analyzing --&gt; Blocked : Post-analysis check fails
-    Analyzing --&gt; Completed : No workflow needed
+    Analyzing --&gt; Completed : No workflow needed / ManualReviewRequired
     Analyzing --&gt; Failed : AI analysis failed
     Analyzing --&gt; TimedOut : Phase timeout
     AwaitingApproval --&gt; Executing : Approved → Create WFE
@@ -3636,7 +3658,7 @@
 <li>If SP <code>Failed</code> → transition to <strong>Failed</strong> with SP error details</li>
 </ol>
 <h3 id="analyzing-multiple-outcomes">Analyzing → (multiple outcomes)<a class="headerlink" href="#analyzing-multiple-outcomes" title="Permanent link">&para;</a></h3>
-<p>The AI Analysis produces one of four outcomes:</p>
+<p>The AI Analysis produces one of five outcomes:</p>
 <table>
 <thead>
 <tr>
@@ -3656,6 +3678,10 @@
 <tr>
 <td><strong>WorkflowNotNeeded</strong> (issue already resolved)</td>
 <td>Transition to <strong>Completed</strong> with <code>Outcome: NoActionRequired</code></td>
+</tr>
+<tr>
+<td><strong>ManualReviewRequired</strong> (no workflow, human review needed)</td>
+<td>Transition to <strong>Completed</strong> with <code>Outcome: ManualReviewRequired</code></td>
 </tr>
 <tr>
 <td><strong>Failed</strong> (AI analysis error)</td>
@@ -3854,6 +3880,17 @@
 <p>When an RR completes with <code>Outcome: NoActionRequired</code> (the LLM determined no remediation was needed), the Orchestrator sets <code>NextAllowedExecution</code> to <code>now + NoActionRequiredDelayHours</code> on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.</p>
 <p>This prevents duplicate RR churn for signals whose underlying condition is unchanged by design (e.g., a <code>DiskPressure</code> alert for a PVC that the LLM correctly identified as not requiring automated action). Without this suppression, the same alert would generate a new RR on every AlertManager re-fire interval, each producing the same <code>NoActionRequired</code> outcome.</p>
 <p>The default delay is <strong>24 hours</strong> (<code>NoActionRequiredDelayHours: 24</code>), configurable in the routing config. After the delay expires, a new RR is created if the alert is still firing, allowing the LLM to re-evaluate whether conditions have changed.</p>
+<h2 id="manualreviewrequired-outcome">ManualReviewRequired Outcome<a class="headerlink" href="#manualreviewrequired-outcome" title="Permanent link">&para;</a></h2>
+<p>When the AIAnalysis result has <code>NeedsHumanReview=true</code> AND <code>SelectedWorkflow=nil</code>, the Orchestrator transitions the RR to <strong>Completed</strong> with <code>Outcome: ManualReviewRequired</code> rather than <strong>Failed</strong>. This distinction is important for operational metrics:</p>
+<ul>
+<li>A <strong>Failed</strong> RR increments <code>ConsecutiveFailureCount</code> and may trigger exponential backoff or consecutive failure blocking for future signals with the same fingerprint.</li>
+<li>A <strong>Completed</strong> (ManualReviewRequired) RR does <strong>not</strong> increment <code>ConsecutiveFailureCount</code>, preventing false failure metric inflation.</li>
+</ul>
+<p>The Orchestrator still creates a <code>NotificationRequest</code> to inform the operator that human review is required. The 24-hour <code>NoActionRequiredDelayHours</code> suppression window is also applied (same as <code>NoActionRequired</code>), preventing duplicate RRs while the operator investigates.</p>
+<div class="admonition note">
+<p class="admonition-title">Low confidence WITH a selected workflow</p>
+<p>When <code>NeedsHumanReview=true</code> but <code>SelectedWorkflow</code> is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR transitions to <strong>Failed</strong> instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.</p>
+</div>
 <h2 id="timeout-system">Timeout System<a class="headerlink" href="#timeout-system" title="Permanent link">&para;</a></h2>
 <p>The Orchestrator enforces both global and per-phase timeouts. Per-RR overrides are supported via <code>TimeoutConfig</code>.</p>
 <h3 id="default-timeouts">Default Timeouts<a class="headerlink" href="#default-timeouts" title="Permanent link">&para;</a></h3>

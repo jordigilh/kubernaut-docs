@@ -3423,7 +3423,7 @@
 <li><strong>Cross-service tracing</strong> -- Follow a remediation across all services</li>
 </ul>
 <h2 id="emitting-services">Emitting Services<a class="headerlink" href="#emitting-services" title="Permanent link">&para;</a></h2>
-<p>All 7 Go services plus the auth webhook emit audit events:</p>
+<p>All 7 Go services, the auth webhook, and HolmesGPT API emit audit events:</p>
 <table>
 <thead>
 <tr>
@@ -3447,6 +3447,11 @@
 <td><strong>AI Analysis</strong></td>
 <td><code>aianalysis.*</code></td>
 <td><code>investigation.submitted</code>, <code>analysis.completed</code>, <code>rego.evaluation</code>, <code>approval.decision</code></td>
+</tr>
+<tr>
+<td><strong>HolmesGPT API</strong></td>
+<td><code>aiagent.*</code></td>
+<td><code>enrichment.completed</code>, <code>enrichment.failed</code></td>
 </tr>
 <tr>
 <td><strong>Remediation Orchestrator</strong></td>

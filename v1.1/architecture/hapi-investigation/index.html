@@ -3956,48 +3956,38 @@
 </div>
 <p>The Helm chart supports three tiers for providing the SDK config -- see <a href="../../user-guide/configuration/#holmesgpt-api-llm-integration">Configuration Reference: HolmesGPT API</a>.</p>
 <h2 id="pipeline-overview">Pipeline Overview<a class="headerlink" href="#pipeline-overview" title="Permanent link">&para;</a></h2>
-<p>The investigation follows a 5-phase pipeline, executed as a single LLM agent session:</p>
+<p>The investigation follows a three-phase pipeline (redesigned in v1.1, BR-HAPI-260--265), executed as a single LLM agent session:</p>
 <pre class="mermaid"><code>flowchart LR
-    P1["Phase 1&lt;br/&gt;Investigate"] --&gt; P2["Phase 2&lt;br/&gt;Root Cause"]
-    P2 --&gt; P3["Phase 3&lt;br/&gt;Resource Context"]
-    P3 --&gt; P4["Phase 4&lt;br/&gt;Workflow Selection"]
-    P4 --&gt; P5["Phase 5&lt;br/&gt;Structured Response"]</code></pre>
+    P1["Phase 1&lt;br/&gt;Investigate"] --&gt; P2["Phase 2&lt;br/&gt;Enrich"]
+    P2 --&gt; P3["Phase 3&lt;br/&gt;Workflow Select"]</code></pre>
 <table>
 <thead>
 <tr>
 <th>Phase</th>
-<th>Reactive Mode</th>
-<th>Proactive Mode</th>
+<th>Purpose</th>
+<th>Key Operations</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>Phase 1</strong></td>
-<td>Investigate the Incident</td>
-<td>Investigate the Anticipated Incident</td>
+<td><strong>Phase 1: Investigate</strong></td>
+<td>Root cause analysis using live cluster data</td>
+<td>Kubernetes tool calls (logs, events, describe), root cause identification, signal name determination</td>
 </tr>
 <tr>
-<td><strong>Phase 2</strong></td>
-<td>Determine Root Cause</td>
-<td>Assess Prediction and Determine Prevention Strategy</td>
+<td><strong>Phase 2: Enrich</strong></td>
+<td>Gather context and validate the remediation target</td>
+<td>Call <code>get_namespaced_resource_context</code> or <code>get_cluster_resource_context</code> (owner chain resolution, spec hash, detected labels, remediation history), validate LLM-provided <code>remediationTarget</code> (BR-HAPI-261, BR-HAPI-212)</td>
 </tr>
 <tr>
-<td><strong>Phase 3 + 3b</strong></td>
-<td>Identify signal name + call <code>get_resource_context</code></td>
-<td>Same</td>
-</tr>
-<tr>
-<td><strong>Phase 4</strong></td>
-<td>Discover and Select Workflow (Three-Step Protocol)</td>
-<td>Same</td>
-</tr>
-<tr>
-<td><strong>Phase 5</strong></td>
-<td>Return Summary + JSON Payload</td>
-<td>Same</td>
+<td><strong>Phase 3: Workflow Select</strong></td>
+<td>Discover and select a workflow from the catalog</td>
+<td>Three-step protocol: <code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>, parameter mapping, confidence scoring, structured JSON response</td>
 </tr>
 </tbody>
 </table>
+<p>In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.</p>
+<p>Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (<code>get_remediation_history_context</code> API), providing tiered remediation history based on spec hash matching (24h with full detail, 90d with summary detail) as part of the resource context result during Phase 2.</p>
 <p>The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.</p>
 <h2 id="pre-rca-prompt-construction">Pre-RCA: Prompt Construction<a class="headerlink" href="#pre-rca-prompt-construction" title="Permanent link">&para;</a></h2>
 <p>Before any tools are called, HAPI assembles the initial prompt from the enriched signal. This context frames the entire investigation:</p>
@@ -4023,20 +4013,20 @@
 <h3 id="reactive-mode-default">Reactive Mode (default)<a class="headerlink" href="#reactive-mode-default" title="Permanent link">&para;</a></h3>
 <p>The LLM investigates an <strong>active incident</strong>:</p>
 <ul>
-<li><strong>Phase 1:</strong> "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions</li>
-<li><strong>Phase 2:</strong> "Identify the root cause" -- determine if the signal is the root cause or a symptom of a deeper issue</li>
-<li><strong>Phase 5:</strong> Natural language summary + structured JSON with workflow selection</li>
+<li><strong>Investigate:</strong> "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions. Identify the root cause -- determine if the signal is the root cause or a symptom of a deeper issue.</li>
+<li><strong>Enrich:</strong> Resolve the target resource via owner chain, compute spec hash, detect infrastructure labels, fetch remediation history.</li>
+<li><strong>Workflow Select:</strong> Natural language summary + structured JSON with workflow selection.</li>
 </ul>
 <h3 id="proactive-mode">Proactive Mode<a class="headerlink" href="#proactive-mode" title="Permanent link">&para;</a></h3>
 <p>The LLM investigates an <strong>anticipated incident</strong>:</p>
 <ul>
-<li><strong>Phase 1:</strong> "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize"</li>
-<li><strong>Phase 2:</strong> "Decide if the anticipated incident is likely and what preventive actions to take" -- <strong>"no action needed" is a valid outcome</strong> if the prediction is unlikely</li>
-<li><strong>Phase 5:</strong> Same structured output, but the LLM may conclude that no remediation is warranted</li>
+<li><strong>Investigate:</strong> "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize." Decide if the anticipated incident is likely and what preventive actions to take -- <strong>"no action needed" is a valid outcome</strong> if the prediction is unlikely.</li>
+<li><strong>Enrich:</strong> Same resource context resolution as reactive mode.</li>
+<li><strong>Workflow Select:</strong> Same structured output, but the LLM may conclude that no remediation is warranted.</li>
 </ul>
 <p>The proactive mode distinction is important: it tells the LLM that doing nothing is acceptable, preventing unnecessary remediations for predictions that may not materialize.</p>
 <h2 id="rca-execution">RCA Execution<a class="headerlink" href="#rca-execution" title="Permanent link">&para;</a></h2>
-<p>During Phases 1 and 2, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:</p>
+<p>During the Investigate phase, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:</p>
 <ol>
 <li><strong>Inspect the target resource</strong> -- <code>kubectl describe</code>, <code>kubectl get</code> for the resource mentioned in the signal</li>
 <li><strong>Read pod logs</strong> -- Current and previous container logs to identify errors, panics, or OOM events</li>
@@ -4046,7 +4036,7 @@
 </ol>
 <p>The RCA phase is unconstrained -- the LLM decides which tools to call and in what order based on what it discovers. A CrashLoopBackOff investigation might start with pod status, move to logs, then check events for OOM signals. A NodePressure investigation might start with <code>top pods</code>, then check for pending pods and resource quotas.</p>
 <h2 id="post-rca-resource-context">Post-RCA: Resource Context<a class="headerlink" href="#post-rca-resource-context" title="Permanent link">&para;</a></h2>
-<p>Once the LLM identifies the affected resource (Phase 3b), it calls <code>get_resource_context(kind, name, namespace)</code>. This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."</p>
+<p>Once the LLM identifies the affected resource (Phase 2: Enrich), it calls <code>get_namespaced_resource_context(kind, name, namespace)</code> (or <code>get_cluster_resource_context(kind, name)</code> for cluster-scoped resources). This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."</p>
 <p>The tool performs four operations in sequence:</p>
 <h3 id="1-owner-chain-resolution">1. Owner Chain Resolution<a class="headerlink" href="#1-owner-chain-resolution" title="Permanent link">&para;</a></h3>
 <p>Walks the Kubernetes ownership hierarchy to find the <strong>root managing resource</strong>:</p>
@@ -4124,7 +4114,7 @@
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  &amp;targetNamespace=production
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  &amp;currentSpecHash=sha256:abc123...
 </span></code></pre></div>
-<p>The response contains two tiers of history, each using a different query strategy:</p>
+<p>The response contains two tiers of history, both filtered by spec hash match but with different time windows and detail levels:</p>
 <table>
 <thead>
 <tr>
@@ -4138,25 +4128,28 @@
 <tr>
 <td><strong>Tier 1</strong></td>
 <td>Last 24 hours</td>
-<td>By <code>target_resource</code> (namespace/kind/name)</td>
+<td>By spec hash</td>
 <td>Full: effectiveness score, health checks, metric deltas, hash match</td>
 </tr>
 <tr>
 <td><strong>Tier 2</strong></td>
 <td>24 hours – 90 days</td>
-<td>By <code>pre_remediation_spec_hash</code></td>
+<td>By spec hash</td>
 <td>Summary: effectiveness score, hash match, assessment reason</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Why the query strategies differ:</strong></p>
 <ul>
-<li><strong>Tier 1</strong> queries by target resource to catch <strong>all recent remediation attempts</strong>, regardless of configuration changes. This is critical because a chain of remediations often involves config changes -- the LLM needs to see the full recent chain including transitions between configurations.</li>
-<li><strong>Tier 2</strong> queries by spec hash to find <strong>older history only when the same configuration recurs</strong>. If a resource's config reverted to a state last seen 60 days ago, Tier 2 surfaces what happened back then.</li>
+<li><strong>Tier 1</strong> provides full-detail recent history for the current configuration, giving the LLM visibility into the immediate remediation chain.</li>
+<li><strong>Tier 2</strong> extends the window to 90 days with reduced detail, surfacing older outcomes for the same configuration to help the LLM identify recurring patterns.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Known issue: Tier 1 query strategy</p>
+<p>Both tiers are designed to filter by spec hash to ensure the LLM only reasons from remediations with an intact causal chain. A known issue (<a href="https://github.com/jordigilh/kubernaut/issues/586">kubernaut#586</a>) exists where Tier 1 currently queries by target resource instead; this is tracked for fix in v1.2.</p>
+</div>
 <p><strong>How the chain is visible:</strong> Every entry in both tiers carries <code>preRemediationSpecHash</code> and <code>postRemediationSpecHash</code>. DataStorage annotates each entry with a <code>hashMatch</code> field by comparing the caller's <code>currentSpecHash</code> against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.</p>
 <h2 id="how-remediation-history-influences-the-llm">How Remediation History Influences the LLM<a class="headerlink" href="#how-remediation-history-influences-the-llm" title="Permanent link">&para;</a></h2>
-<p>The history returned by <code>get_resource_context</code> is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full <code>RemediationHistoryContext</code> as part of the tool result, and the Phase 3b prompt instructs: <em>"Use this to avoid repeating recently failed workflows."</em></p>
+<p>The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full <code>RemediationHistoryContext</code> as part of the tool result, and the Enrich phase prompt instructs: <em>"Use this to avoid repeating recently failed workflows."</em></p>
 <h3 id="three-way-hash-comparison">Three-Way Hash Comparison<a class="headerlink" href="#three-way-hash-comparison" title="Permanent link">&para;</a></h3>
 <p>For each history entry, DataStorage compares the <code>currentSpecHash</code> (from HAPI) against both stored hashes:</p>
 <table>
@@ -4340,7 +4333,7 @@
 </ol>
 <p>This is Kubernaut's "learning" mechanism -- not model fine-tuning, but contextual memory via the audit trail. The more remediations a resource undergoes, the richer the context available to the LLM for future decisions.</p>
 <h2 id="workflow-selection-three-step-discovery">Workflow Selection: Three-Step Discovery<a class="headerlink" href="#workflow-selection-three-step-discovery" title="Permanent link">&para;</a></h2>
-<p>After resource context is gathered, the LLM enters Phase 4 -- workflow selection. The <code>session_state["detected_labels"]</code> from the previous phase are automatically injected into all DataStorage queries as context filters.</p>
+<p>After resource context is gathered (Phase 2: Enrich), the LLM enters the Workflow Select phase. The <code>session_state["detected_labels"]</code> from the previous phase are automatically injected into all DataStorage queries as context filters.</p>
 <h3 id="step-1-list-available-actions">Step 1: List Available Actions<a class="headerlink" href="#step-1-list-available-actions" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>list_available_actions(offset=0, limit=20)
 </span></code></pre></div>
@@ -4383,7 +4376,7 @@
     Confidence --&gt;|no| LowConf["Low Confidence&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
     Confidence --&gt;|yes| Rego["Rego Evaluation&lt;br/&gt;&lt;small&gt;Phase: Analyzing&lt;/small&gt;"]</code></pre>
 <h3 id="outcome-1-success-workflow-selected">Outcome 1: Success (Workflow Selected)<a class="headerlink" href="#outcome-1-success-workflow-selected" title="Permanent link">&para;</a></h3>
-<p>The LLM returns a <code>selected_workflow</code> with <code>workflow_id</code>, <code>confidence</code>, and <code>parameters</code>. HAPI then injects the three canonical <code>TARGET_RESOURCE_*</code> parameters and constructs <code>remediationTarget</code> from the K8s-verified <code>root_owner</code> (resolved via <code>get_resource_context</code>). This is the only outcome that proceeds to Rego evaluation.</p>
+<p>The LLM returns a <code>selected_workflow</code> with <code>workflow_id</code>, <code>confidence</code>, and <code>parameters</code>. HAPI then injects the three canonical <code>TARGET_RESOURCE_*</code> parameters and constructs <code>remediationTarget</code> from the K8s-verified <code>root_owner</code> (resolved via <code>get_namespaced_resource_context</code> or <code>get_cluster_resource_context</code>). This is the only outcome that proceeds to Rego evaluation.</p>
 <p><strong>Fields:</strong> <code>needs_human_review=false</code>, <code>selected_workflow</code> present, <code>confidence &gt;= 0.7</code>
 <strong>Next:</strong> AA transitions to <code>Analyzing</code> phase → Rego evaluation</p>
 <h3 id="outcome-2-problem-self-resolved">Outcome 2: Problem Self-Resolved<a class="headerlink" href="#outcome-2-problem-self-resolved" title="Permanent link">&para;</a></h3>
@@ -4404,7 +4397,7 @@
 <p><strong>Fields:</strong> <code>selected_workflow=null</code> (without <code>resolved</code> outcome), <code>needs_human_review=true</code>, <code>human_review_reason=no_matching_workflows</code>
 <strong>Next:</strong> Routed to human review. Operators should check whether a suitable workflow exists or needs to be authored.</p>
 <h3 id="outcome-5-rca-incomplete">Outcome 5: RCA Incomplete<a class="headerlink" href="#outcome-5-rca-incomplete" title="Permanent link">&para;</a></h3>
-<p>HAPI could not determine the target resource identity because <code>root_owner</code> is missing from <code>session_state</code> -- either <code>get_resource_context</code> was never called during the investigation or it returned no owner chain. Without a verified target, HAPI cannot inject the canonical <code>TARGET_RESOURCE_*</code> parameters and the investigation is unsafe to proceed.</p>
+<p>HAPI could not determine the target resource identity because <code>root_owner</code> is missing from <code>session_state</code> -- either <code>get_namespaced_resource_context</code> / <code>get_cluster_resource_context</code> was never called during the investigation or it returned no owner chain. Without a verified target, HAPI cannot inject the canonical <code>TARGET_RESOURCE_*</code> parameters and the investigation is unsafe to proceed.</p>
 <p><strong>Fields:</strong> <code>needs_human_review=true</code>, <code>human_review_reason=rca_incomplete</code>
 <strong>Next:</strong> Routed to human review.</p>
 <h3 id="outcome-6-workflow-validation-failed">Outcome 6: Workflow Validation Failed<a class="headerlink" href="#outcome-6-workflow-validation-failed" title="Permanent link">&para;</a></h3>
@@ -4634,9 +4627,14 @@
 </thead>
 <tbody>
 <tr>
-<td><code>get_resource_context</code></td>
-<td>Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history</td>
-<td><code>kind</code>, <code>name</code>, <code>namespace</code> (optional)</td>
+<td><code>get_namespaced_resource_context</code></td>
+<td>Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history (via internal DataStorage lookup) for <strong>namespaced</strong> resources</td>
+<td><code>kind</code>, <code>name</code>, <code>namespace</code></td>
+</tr>
+<tr>
+<td><code>get_cluster_resource_context</code></td>
+<td>Same as above for <strong>cluster-scoped</strong> resources (Nodes, PersistentVolumes)</td>
+<td><code>kind</code>, <code>name</code></td>
 </tr>
 </tbody>
 </table>

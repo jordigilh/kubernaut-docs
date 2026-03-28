@@ -62,7 +62,7 @@ gateway:
         namespace: monitoring
 ```
 
-If you deploy a Kubernetes Event Exporter separately (see [Event Exporter](../operations/event-exporter.md)), its ServiceAccount must also be registered as a signal source in the same `signalSources` list.
+If you deploy a Kubernetes Event Exporter separately (not included in the chart since v1.1), its ServiceAccount must also be registered as a signal source in the same `signalSources` list.
 
 Without the bearer token, the Gateway returns `401 Unauthorized`. Without the ClusterRoleBinding, the Gateway returns `403 Forbidden`.
 
@@ -109,6 +109,17 @@ Additionally, a namespace-scoped `workflowexecution-dep-reader` Role grants `get
 
 !!! info "Per-workflow scoped RBAC"
     All workflows share the `kubernaut-workflow-runner` ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.2.
+
+## OCP Monitoring RBAC
+
+When `effectivenessmonitor.external.ocpMonitoringRbac` is `true`, the chart creates additional RBAC resources for EM to access OCP's monitoring stack through `kube-rbac-proxy`:
+
+| Resource | Kind | Purpose |
+|---|---|---|
+| `kubernaut-cluster-monitoring-view` | ClusterRoleBinding | Binds EM ServiceAccount to the built-in `cluster-monitoring-view` ClusterRole for Prometheus API access |
+| `kubernaut-alertmanager-view` | ClusterRole + ClusterRoleBinding | Grants EM `get` on `monitoring.coreos.com/alertmanagers/api` for AlertManager API access through `kube-rbac-proxy` |
+
+OCP's `kube-rbac-proxy` requires **resource-level** RBAC (`monitoring.coreos.com/alertmanagers/api`) rather than `nonResourceURLs` for AlertManager API access. Standard `nonResourceURLs` rules are silently ignored by `kube-rbac-proxy`, causing EM AlertManager queries to fail with `403 Forbidden`.
 
 ## Internal Service Communication
 
@@ -171,6 +182,6 @@ Hook jobs only run during `helm install`, `helm upgrade`, and `helm delete`. The
 
 ## Next Steps
 
-- [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager signal sources; for Kubernetes event forwarding see [Event Exporter](../operations/event-exporter.md)
+- [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager and other signal sources
 - [Configuration Reference](../user-guide/configuration.md) -- Helm values for all services
 - [Troubleshooting](../operations/troubleshooting.md) -- Diagnose RBAC-related issues

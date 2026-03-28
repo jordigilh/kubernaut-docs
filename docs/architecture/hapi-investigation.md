@@ -39,23 +39,23 @@ The Helm chart supports three tiers for providing the SDK config -- see [Configu
 
 ## Pipeline Overview
 
-The investigation follows a 5-phase pipeline, executed as a single LLM agent session:
+The investigation follows a three-phase pipeline (redesigned in v1.1, BR-HAPI-260--265), executed as a single LLM agent session:
 
 ```mermaid
 flowchart LR
-    P1["Phase 1<br/>Investigate"] --> P2["Phase 2<br/>Root Cause"]
-    P2 --> P3["Phase 3<br/>Resource Context"]
-    P3 --> P4["Phase 4<br/>Workflow Selection"]
-    P4 --> P5["Phase 5<br/>Structured Response"]
+    P1["Phase 1<br/>Investigate"] --> P2["Phase 2<br/>Enrich"]
+    P2 --> P3["Phase 3<br/>Workflow Select"]
 ```
 
-| Phase | Reactive Mode | Proactive Mode |
+| Phase | Purpose | Key Operations |
 |---|---|---|
-| **Phase 1** | Investigate the Incident | Investigate the Anticipated Incident |
-| **Phase 2** | Determine Root Cause | Assess Prediction and Determine Prevention Strategy |
-| **Phase 3 + 3b** | Identify signal name + call `get_resource_context` | Same |
-| **Phase 4** | Discover and Select Workflow (Three-Step Protocol) | Same |
-| **Phase 5** | Return Summary + JSON Payload | Same |
+| **Phase 1: Investigate** | Root cause analysis using live cluster data | Kubernetes tool calls (logs, events, describe), root cause identification, signal name determination |
+| **Phase 2: Enrich** | Gather context and validate the remediation target | Call `get_namespaced_resource_context` or `get_cluster_resource_context` (owner chain resolution, spec hash, detected labels, remediation history), validate LLM-provided `remediationTarget` (BR-HAPI-261, BR-HAPI-212) |
+| **Phase 3: Workflow Select** | Discover and select a workflow from the catalog | Three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`, parameter mapping, confidence scoring, structured JSON response |
+
+In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
+
+Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (`get_remediation_history_context` API), providing tiered remediation history based on spec hash matching (24h with full detail, 90d with summary detail) as part of the resource context result during Phase 2.
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
@@ -90,23 +90,23 @@ The `signal_mode` field determines how the LLM frames its investigation. The too
 
 The LLM investigates an **active incident**:
 
-- **Phase 1:** "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions
-- **Phase 2:** "Identify the root cause" -- determine if the signal is the root cause or a symptom of a deeper issue
-- **Phase 5:** Natural language summary + structured JSON with workflow selection
+- **Investigate:** "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions. Identify the root cause -- determine if the signal is the root cause or a symptom of a deeper issue.
+- **Enrich:** Resolve the target resource via owner chain, compute spec hash, detect infrastructure labels, fetch remediation history.
+- **Workflow Select:** Natural language summary + structured JSON with workflow selection.
 
 ### Proactive Mode
 
 The LLM investigates an **anticipated incident**:
 
-- **Phase 1:** "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize"
-- **Phase 2:** "Decide if the anticipated incident is likely and what preventive actions to take" -- **"no action needed" is a valid outcome** if the prediction is unlikely
-- **Phase 5:** Same structured output, but the LLM may conclude that no remediation is warranted
+- **Investigate:** "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize." Decide if the anticipated incident is likely and what preventive actions to take -- **"no action needed" is a valid outcome** if the prediction is unlikely.
+- **Enrich:** Same resource context resolution as reactive mode.
+- **Workflow Select:** Same structured output, but the LLM may conclude that no remediation is warranted.
 
 The proactive mode distinction is important: it tells the LLM that doing nothing is acceptable, preventing unnecessary remediations for predictions that may not materialize.
 
 ## RCA Execution
 
-During Phases 1 and 2, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:
+During the Investigate phase, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:
 
 1. **Inspect the target resource** -- `kubectl describe`, `kubectl get` for the resource mentioned in the signal
 2. **Read pod logs** -- Current and previous container logs to identify errors, panics, or OOM events
@@ -118,7 +118,7 @@ The RCA phase is unconstrained -- the LLM decides which tools to call and in wha
 
 ## Post-RCA: Resource Context
 
-Once the LLM identifies the affected resource (Phase 3b), it calls `get_resource_context(kind, name, namespace)`. This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
+Once the LLM identifies the affected resource (Phase 2: Enrich), it calls `get_namespaced_resource_context(kind, name, namespace)` (or `get_cluster_resource_context(kind, name)` for cluster-scoped resources). This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
 
 The tool performs four operations in sequence:
 
@@ -183,23 +183,24 @@ GET /api/v1/remediation-history/context
   &currentSpecHash=sha256:abc123...
 ```
 
-The response contains two tiers of history, each using a different query strategy:
+The response contains two tiers of history, both filtered by spec hash match but with different time windows and detail levels:
 
 | Tier | Window | Query Filter | Detail Level |
 |---|---|---|---|
-| **Tier 1** | Last 24 hours | By `target_resource` (namespace/kind/name) | Full: effectiveness score, health checks, metric deltas, hash match |
-| **Tier 2** | 24 hours – 90 days | By `pre_remediation_spec_hash` | Summary: effectiveness score, hash match, assessment reason |
+| **Tier 1** | Last 24 hours | By spec hash | Full: effectiveness score, health checks, metric deltas, hash match |
+| **Tier 2** | 24 hours – 90 days | By spec hash | Summary: effectiveness score, hash match, assessment reason |
 
-**Why the query strategies differ:**
+- **Tier 1** provides full-detail recent history for the current configuration, giving the LLM visibility into the immediate remediation chain.
+- **Tier 2** extends the window to 90 days with reduced detail, surfacing older outcomes for the same configuration to help the LLM identify recurring patterns.
 
-- **Tier 1** queries by target resource to catch **all recent remediation attempts**, regardless of configuration changes. This is critical because a chain of remediations often involves config changes -- the LLM needs to see the full recent chain including transitions between configurations.
-- **Tier 2** queries by spec hash to find **older history only when the same configuration recurs**. If a resource's config reverted to a state last seen 60 days ago, Tier 2 surfaces what happened back then.
+!!! warning "Known issue: Tier 1 query strategy"
+    Both tiers are designed to filter by spec hash to ensure the LLM only reasons from remediations with an intact causal chain. A known issue ([kubernaut#586](https://github.com/jordigilh/kubernaut/issues/586)) exists where Tier 1 currently queries by target resource instead; this is tracked for fix in v1.2.
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 
 ## How Remediation History Influences the LLM
 
-The history returned by `get_resource_context` is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the Phase 3b prompt instructs: *"Use this to avoid repeating recently failed workflows."*
+The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the Enrich phase prompt instructs: *"Use this to avoid repeating recently failed workflows."*
 
 ### Three-Way Hash Comparison
 
@@ -359,7 +360,7 @@ This is Kubernaut's "learning" mechanism -- not model fine-tuning, but contextua
 
 ## Workflow Selection: Three-Step Discovery
 
-After resource context is gathered, the LLM enters Phase 4 -- workflow selection. The `session_state["detected_labels"]` from the previous phase are automatically injected into all DataStorage queries as context filters.
+After resource context is gathered (Phase 2: Enrich), the LLM enters the Workflow Select phase. The `session_state["detected_labels"]` from the previous phase are automatically injected into all DataStorage queries as context filters.
 
 ### Step 1: List Available Actions
 
@@ -424,7 +425,7 @@ flowchart TD
 
 ### Outcome 1: Success (Workflow Selected)
 
-The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved via `get_resource_context`). This is the only outcome that proceeds to Rego evaluation.
+The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved via `get_namespaced_resource_context` or `get_cluster_resource_context`). This is the only outcome that proceeds to Rego evaluation.
 
 **Fields:** `needs_human_review=false`, `selected_workflow` present, `confidence >= 0.7`
 **Next:** AA transitions to `Analyzing` phase → Rego evaluation
@@ -457,7 +458,7 @@ The LLM identified the root cause but no workflow in the catalog matches the req
 
 ### Outcome 5: RCA Incomplete
 
-HAPI could not determine the target resource identity because `root_owner` is missing from `session_state` -- either `get_resource_context` was never called during the investigation or it returned no owner chain. Without a verified target, HAPI cannot inject the canonical `TARGET_RESOURCE_*` parameters and the investigation is unsafe to proceed.
+HAPI could not determine the target resource identity because `root_owner` is missing from `session_state` -- either `get_namespaced_resource_context` / `get_cluster_resource_context` was never called during the investigation or it returned no owner chain. Without a verified target, HAPI cannot inject the canonical `TARGET_RESOURCE_*` parameters and the investigation is unsafe to proceed.
 
 **Fields:** `needs_human_review=true`, `human_review_reason=rca_incomplete`
 **Next:** Routed to human review.
@@ -590,7 +591,8 @@ Complete list of tools available during investigation:
 
 | Tool | Description | Parameters |
 |---|---|---|
-| `get_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history | `kind`, `name`, `namespace` (optional) |
+| `get_namespaced_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history (via internal DataStorage lookup) for **namespaced** resources | `kind`, `name`, `namespace` |
+| `get_cluster_resource_context` | Same as above for **cluster-scoped** resources (Nodes, PersistentVolumes) | `kind`, `name` |
 
 ### Workflow Discovery (Custom)
 

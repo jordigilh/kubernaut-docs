@@ -28,7 +28,7 @@ stateDiagram-v2
     Analyzing --> AwaitingApproval : Low confidence → Create RAR
     Analyzing --> Executing : Auto-approved + post-analysis passes → Create WFE
     Analyzing --> Blocked : Post-analysis check fails
-    Analyzing --> Completed : No workflow needed
+    Analyzing --> Completed : No workflow needed / ManualReviewRequired
     Analyzing --> Failed : AI analysis failed
     Analyzing --> TimedOut : Phase timeout
     AwaitingApproval --> Executing : Approved → Create WFE
@@ -97,13 +97,14 @@ Failed      → Blocked
 
 ### Analyzing → (multiple outcomes)
 
-The AI Analysis produces one of four outcomes:
+The AI Analysis produces one of five outcomes:
 
 | AA Outcome | RR Action |
 |---|---|
 | **Normal** (workflow selected, auto-approved) | Run post-analysis checks → create **WFE** → **Executing** |
 | **ApprovalRequired** (low confidence) | Create **RemediationApprovalRequest** → **AwaitingApproval** |
 | **WorkflowNotNeeded** (issue already resolved) | Transition to **Completed** with `Outcome: NoActionRequired` |
+| **ManualReviewRequired** (no workflow, human review needed) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
 | **Failed** (AI analysis error) | Transition to **Failed** |
 
 For the normal path, the Orchestrator runs **post-analysis routing checks** before creating the WFE. If blocked, the RR enters **Blocked** (returning to Analyzing when the block clears).
@@ -190,6 +191,18 @@ When an RR completes with `Outcome: NoActionRequired` (the LLM determined no rem
 This prevents duplicate RR churn for signals whose underlying condition is unchanged by design (e.g., a `DiskPressure` alert for a PVC that the LLM correctly identified as not requiring automated action). Without this suppression, the same alert would generate a new RR on every AlertManager re-fire interval, each producing the same `NoActionRequired` outcome.
 
 The default delay is **24 hours** (`NoActionRequiredDelayHours: 24`), configurable in the routing config. After the delay expires, a new RR is created if the alert is still firing, allowing the LLM to re-evaluate whether conditions have changed.
+
+## ManualReviewRequired Outcome
+
+When the AIAnalysis result has `NeedsHumanReview=true` AND `SelectedWorkflow=nil`, the Orchestrator transitions the RR to **Completed** with `Outcome: ManualReviewRequired` rather than **Failed**. This distinction is important for operational metrics:
+
+- A **Failed** RR increments `ConsecutiveFailureCount` and may trigger exponential backoff or consecutive failure blocking for future signals with the same fingerprint.
+- A **Completed** (ManualReviewRequired) RR does **not** increment `ConsecutiveFailureCount`, preventing false failure metric inflation.
+
+The Orchestrator still creates a `NotificationRequest` to inform the operator that human review is required. The 24-hour `NoActionRequiredDelayHours` suppression window is also applied (same as `NoActionRequired`), preventing duplicate RRs while the operator investigates.
+
+!!! note "Low confidence WITH a selected workflow"
+    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
 
 ## Timeout System
 

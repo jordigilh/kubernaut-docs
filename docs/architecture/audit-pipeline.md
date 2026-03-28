@@ -128,13 +128,14 @@ All audit events for a single remediation share a `correlation_id` set to the `R
 
 ## Emitting Services
 
-All 7 Go services plus the auth webhook emit audit events:
+All 7 Go services, the auth webhook, and HolmesGPT API emit audit events:
 
 | Service | Event Prefix | Key Events |
 |---|---|---|
 | **Gateway** | `gateway.*` | `signal.received`, `signal.deduplicated`, `crd.created`, `crd.failed` |
 | **Signal Processing** | `signalprocessing.*` | `enrichment.completed`, `classification.completed`, `phase.transition` |
 | **AI Analysis** | `aianalysis.*` | `investigation.submitted`, `analysis.completed`, `rego.evaluation`, `approval.decision` |
+| **HolmesGPT API** | `aiagent.*` | `enrichment.completed`, `enrichment.failed` |
 | **Remediation Orchestrator** | `orchestrator.*` | `lifecycle.created`, `phase.transition`, `child.created`, `timeout` |
 | **Workflow Execution** | `workflowexecution.*` | `selection.completed`, `execution.started`, `execution.completed`, `block.cleared` |
 | **Notification** | `notification.*` | `message.sent`, `message.failed`, `message.acknowledged`, `message.escalated` |

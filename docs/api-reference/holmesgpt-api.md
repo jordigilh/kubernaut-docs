@@ -103,7 +103,7 @@ Key response fields:
 | `investigation_outcome` | string | Outcome classification (e.g., `resolved`, `workflow_selected`) |
 | `selected_workflow` | object | Workflow recommendation (name, action type, parameters) |
 | `actionable` | boolean | Whether the investigation identified a concrete remediation action |
-| `remediation_target` | object | Target resource (kind, name, namespace) after owner chain resolution |
+| `remediation_target` | object | Target resource (kind, name, namespace) — constructed by the AA controller from HAPI's `root_owner` tool result, not a direct HAPI response field |
 | `detected_labels` | object | Infrastructure labels detected during investigation |
 
 **Response**: `409 Conflict` — Session not yet complete

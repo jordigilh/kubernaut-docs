@@ -344,7 +344,10 @@ These are infrastructure characteristics detected by the LLM during root cause a
 
 ### Example: Default Policy (Environment-Gated)
 
-The default policy shipped with Kubernaut requires approval for all production remediations and when the LLM cannot identify the affected resource:
+The default policy shipped with Kubernaut requires approval for all production remediations and when the LLM cannot identify the remediation target:
+
+!!! note "Reason string backward compatibility"
+    The `risk_factors` reason strings (e.g., `"Missing affected resource"`) are operator-facing and intentionally kept unchanged from earlier releases, even though the rule and input field were renamed to `has_remediation_target` / `input.remediation_target`. This avoids breaking dashboards or alerting rules that match on these strings.
 
 ```rego
 package aianalysis.approval

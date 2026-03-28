@@ -55,7 +55,7 @@ flowchart LR
 
 In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
 
-Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (`get_remediation_history_context` API), providing tiered remediation history (24h by target resource, 90d by spec hash) as part of the resource context result during Phase 2.
+Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (`get_remediation_history_context` API), providing tiered remediation history based on spec hash matching (24h with full detail, 90d with summary detail) as part of the resource context result during Phase 2.
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
@@ -183,17 +183,15 @@ GET /api/v1/remediation-history/context
   &currentSpecHash=sha256:abc123...
 ```
 
-The response contains two tiers of history, each using a different query strategy:
+The response contains two tiers of history, both filtered by spec hash match but with different time windows and detail levels:
 
 | Tier | Window | Query Filter | Detail Level |
 |---|---|---|---|
-| **Tier 1** | Last 24 hours | By `target_resource` (namespace/kind/name) | Full: effectiveness score, health checks, metric deltas, hash match |
-| **Tier 2** | 24 hours – 90 days | By `pre_remediation_spec_hash` | Summary: effectiveness score, hash match, assessment reason |
+| **Tier 1** | Last 24 hours | By spec hash | Full: effectiveness score, health checks, metric deltas, hash match |
+| **Tier 2** | 24 hours – 90 days | By spec hash | Summary: effectiveness score, hash match, assessment reason |
 
-**Why the query strategies differ:**
-
-- **Tier 1** queries by target resource to catch **all recent remediation attempts**, regardless of configuration changes. This is critical because a chain of remediations often involves config changes -- the LLM needs to see the full recent chain including transitions between configurations.
-- **Tier 2** queries by spec hash to find **older history only when the same configuration recurs**. If a resource's config reverted to a state last seen 60 days ago, Tier 2 surfaces what happened back then.
+- **Tier 1** provides full-detail recent history for the current configuration, giving the LLM visibility into the immediate remediation chain.
+- **Tier 2** extends the window to 90 days with reduced detail, surfacing older outcomes for the same configuration to help the LLM identify recurring patterns.
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 

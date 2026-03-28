@@ -220,18 +220,17 @@ This is a **tiebreaker/ordering influence**, not an override. It won't overcome 
 
 ## Standard Resource Parameters
 
-Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. The WorkflowExecution controller **automatically injects** these from the `remediationTarget` field in the AIAnalysis result -- workflow authors do not need to populate them manually.
+Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **HAPI (HolmesGPT API)** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
 
 | Parameter | Type | Description |
 |---|---|---|
 | `TARGET_RESOURCE_NAME` | string | Name of the root managing resource (e.g., `my-app`) |
 | `TARGET_RESOURCE_KIND` | string | Kind of the root managing resource (e.g., `Deployment`, `StatefulSet`, `Node`) |
 | `TARGET_RESOURCE_NAMESPACE` | string | Namespace of the root managing resource. **Omitted** for cluster-scoped resources (e.g., Nodes) |
-| `TARGET_RESOURCE_API_GROUP` | string | API group of the resource. Empty for core resources (e.g., Pods, Nodes) |
 
 ### Declaring Standard Parameters in Workflow Schemas
 
-Workflows that operate on the target resource should declare these as **required** parameters in their schema. The WFE controller validates that all required parameters are satisfied before launching the workflow.
+Workflows that operate on the target resource should declare these as **required** parameters in their schema. HAPI validates that all required parameters in the workflow schema are satisfied during its workflow response validation step.
 
 ```yaml
 parameters:

@@ -424,7 +424,7 @@ flowchart TD
 
 ### Outcome 1: Success (Workflow Selected)
 
-The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `affectedResource` from the K8s-verified `root_owner` (resolved via `get_resource_context`). This is the only outcome that proceeds to Rego evaluation.
+The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved via `get_resource_context`). This is the only outcome that proceeds to Rego evaluation.
 
 **Fields:** `needs_human_review=false`, `selected_workflow` present, `confidence >= 0.7`
 **Next:** AA transitions to `Analyzing` phase → Rego evaluation
@@ -507,7 +507,7 @@ The `buildPolicyInput()` function assembles the Rego input from the HAPI respons
 | `environment` | Signal context (from SP enrichment) | Production vs non-production |
 | `confidence` | `SelectedWorkflow.Confidence` | LLM's confidence in the selection |
 | `confidence_threshold` | Operator config (Helm), default 0.8 | Configurable threshold |
-| `affected_resource` | `RootCauseAnalysis.AffectedResource` | LLM-identified target resource |
+| `remediation_target` | `RootCauseAnalysis.RemediationTarget` | LLM-identified target resource |
 | `detected_labels` | `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
 | `failed_detections` | `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
 | `warnings` | `Status.Warnings` | HAPI investigation warnings |
@@ -517,11 +517,11 @@ The `buildPolicyInput()` function assembles the Rego input from the HAPI respons
 
 The default policy has two mandatory approval triggers:
 
-1. **Missing affected resource** -- If `affected_resource` is absent or has an empty `kind`, approval is always required. This is a safety net for incomplete RCA.
+1. **Missing remediation target** -- If `remediation_target` is absent or has an empty `kind`, approval is always required. This is a safety net for incomplete RCA.
 
 2. **Production environment** -- All production remediations require human approval, regardless of confidence. Operators control this by setting `kubernaut.ai/environment=production` on the namespace.
 
-Non-production environments (development, staging, qa, test) auto-approve when `affected_resource` is present.
+Non-production environments (development, staging, qa, test) auto-approve when `remediation_target` is present.
 
 ### Confidence Threshold
 
@@ -541,7 +541,7 @@ Scored risk factors determine the human-readable approval reason but do not chan
 
 | Score | Risk Factor |
 |---|---|
-| 90 | Missing affected resource |
+| 90 | Missing remediation target |
 | 80 | Production environment with sensitive resource kind |
 | 70 | Production environment |
 

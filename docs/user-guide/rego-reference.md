@@ -303,10 +303,10 @@ The approval policy runs after the investigation pipeline returns a successful w
 | `input.target_resource.kind` | `string` | Kind of the resource targeted by the signal (e.g., `Deployment`) |
 | `input.target_resource.name` | `string` | Name of the target resource |
 | `input.target_resource.namespace` | `string` | Namespace of the target resource |
-| `input.affected_resource` | `object` or `null` | LLM-identified resource for remediation (ADR-055). `null` when the LLM could not identify the root cause resource |
-| `input.affected_resource.kind` | `string` | Kind of the affected resource (e.g., `Deployment`, `StatefulSet`, `Node`) |
-| `input.affected_resource.name` | `string` | Name of the affected resource |
-| `input.affected_resource.namespace` | `string` | Namespace of the affected resource |
+| `input.remediation_target` | `object` or `null` | LLM-identified resource for remediation (ADR-055). `null` when the LLM could not identify the root cause resource |
+| `input.remediation_target.kind` | `string` | Kind of the affected resource (e.g., `Deployment`, `StatefulSet`, `Node`) |
+| `input.remediation_target.name` | `string` | Name of the affected resource |
+| `input.remediation_target.namespace` | `string` | Namespace of the affected resource |
 
 #### Investigation Results
 
@@ -344,7 +344,10 @@ These are infrastructure characteristics detected by the LLM during root cause a
 
 ### Example: Default Policy (Environment-Gated)
 
-The default policy shipped with Kubernaut requires approval for all production remediations and when the LLM cannot identify the affected resource:
+The default policy shipped with Kubernaut requires approval for all production remediations and when the LLM cannot identify the remediation target:
+
+!!! note "Reason string backward compatibility"
+    The `risk_factors` reason strings (e.g., `"Missing affected resource"`) are operator-facing and intentionally kept unchanged from earlier releases, even though the rule and input field were renamed to `has_remediation_target` / `input.remediation_target`. This avoids breaking dashboards or alerting rules that match on these strings.
 
 ```rego
 package aianalysis.approval
@@ -354,20 +357,20 @@ import rego.v1
 default require_approval := false
 default reason := "Auto-approved"
 
-has_affected_resource if {
-    input.affected_resource
-    input.affected_resource.kind != ""
+has_remediation_target if {
+    input.remediation_target
+    input.remediation_target.kind != ""
 }
 
 is_production if {
     input.environment == "production"
 }
 
-require_approval if { not has_affected_resource }
+require_approval if { not has_remediation_target }
 require_approval if { is_production }
 
 risk_factors contains {"score": 90, "reason": "Missing affected resource"} if {
-    not has_affected_resource
+    not has_remediation_target
 }
 risk_factors contains {"score": 70, "reason": "Production environment"} if {
     is_production
@@ -400,19 +403,19 @@ is_high_confidence if {
     input.confidence >= confidence_threshold
 }
 
-has_affected_resource if {
-    input.affected_resource
-    input.affected_resource.kind != ""
+has_remediation_target if {
+    input.remediation_target
+    input.remediation_target.kind != ""
 }
 
 # Always require approval when affected resource is unknown
-require_approval if { not has_affected_resource }
+require_approval if { not has_remediation_target }
 
 # Low confidence in any environment
 require_approval if { not is_high_confidence }
 
 risk_factors contains {"score": 90, "reason": "Missing affected resource"} if {
-    not has_affected_resource
+    not has_remediation_target
 }
 risk_factors contains {"score": 65, "reason": "Low confidence score"} if {
     not is_high_confidence
@@ -435,9 +438,9 @@ import rego.v1
 default require_approval := false
 default reason := "Auto-approved"
 
-has_affected_resource if {
-    input.affected_resource
-    input.affected_resource.kind != ""
+has_remediation_target if {
+    input.remediation_target
+    input.remediation_target.kind != ""
 }
 
 # Critical business services always require approval
@@ -462,13 +465,13 @@ require_approval if {
     input.detected_labels.pdb_protected == true
 }
 
-require_approval if { not has_affected_resource }
+require_approval if { not has_remediation_target }
 
 risk_factors contains {"score": 85, "reason": "Critical business service"} if {
     input.business_classification.criticality == "critical"
 }
 risk_factors contains {"score": 90, "reason": "Missing affected resource"} if {
-    not has_affected_resource
+    not has_remediation_target
 }
 risk_factors contains {"score": 75, "reason": "Stateful production workload"} if {
     input.environment == "production"
@@ -543,7 +546,7 @@ reason := f.reason if { some f in risk_factors; f.score == max_risk_score }
 |---|---|---|
 | **Signal context** | `input.*` | `signal_type`, `severity`, `environment`, `business_priority` |
 | **Target resource** | `input.target_resource.*` | `kind`, `name`, `namespace` |
-| **Affected resource** | `input.affected_resource.*` | `kind`, `name`, `namespace` (or `null`) |
+| **Remediation target** | `input.remediation_target.*` | `kind`, `name`, `namespace` (or `null`) |
 | **Investigation** | `input.*` | `confidence`, `confidence_threshold`, `warnings`, `failed_detections` |
 | **Detected labels** | `input.detected_labels.*` | `git_ops_managed`, `git_ops_tool`, `pdb_protected`, `hpa_enabled`, `stateful`, `helm_managed`, `network_isolated`, `service_mesh` |
 | **Classification** | `input.custom_labels`, `input.business_classification.*` | `custom_labels` (map), `business_unit`, `service_owner`, `criticality`, `sla_requirement` |

@@ -174,7 +174,7 @@ The approval policy runs after HAPI returns a successful workflow selection. It 
 | `input.environment` | SP enrichment | `production`, `staging`, `development`, `qa`, `test` |
 | `input.confidence` | HAPI `SelectedWorkflow.Confidence` | LLM confidence score (0.0--1.0) |
 | `input.confidence_threshold` | Helm config (optional) | Overrides default 0.8 |
-| `input.affected_resource` | HAPI `RootCauseAnalysis.AffectedResource` | `{kind, name, namespace}` |
+| `input.remediation_target` | HAPI `RootCauseAnalysis.RemediationTarget` | `{kind, name, namespace}` |
 | `input.detected_labels` | HAPI `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
 | `input.failed_detections` | HAPI `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
 | `input.warnings` | HAPI investigation warnings | Array of warning strings |
@@ -183,11 +183,11 @@ The approval policy runs after HAPI returns a successful workflow selection. It 
 
 Two mandatory triggers:
 
-1. **Missing affected resource** -- If `affected_resource` is absent or has an empty `kind`, approval is always required. Safety net for incomplete RCA.
+1. **Missing remediation target** -- If `remediation_target` is absent or has an empty `kind`, approval is always required. Safety net for incomplete RCA.
 
 2. **Production environment** -- All production remediations require human approval, regardless of confidence. Controlled by setting `kubernaut.ai/environment=production` on the namespace.
 
-Non-production environments (development, staging, qa, test) auto-approve when `affected_resource` is present.
+Non-production environments (development, staging, qa, test) auto-approve when `remediation_target` is present.
 
 ### Confidence Threshold
 
@@ -219,7 +219,7 @@ Scored risk factors determine the human-readable reason shown in the `Remediatio
 
 | Score | Condition | Reason |
 |---|---|---|
-| 90 | Missing affected resource | "Cannot determine remediation target" |
+| 90 | Missing remediation target | "Cannot determine remediation target" |
 | 80 | Production + sensitive resource (Node, StatefulSet) | "Production environment with sensitive resource kind" |
 | 70 | Production environment | "Production environment - requires manual approval" |
 
@@ -232,12 +232,12 @@ The highest-scoring factor becomes the approval reason. Scores affect the reason
 ```rego
 require_approval if {
     input.environment == "staging"
-    input.affected_resource.kind == "StatefulSet"
+    input.remediation_target.kind == "StatefulSet"
 }
 
 risk_factors contains {"score": 60, "reason": "Staging StatefulSet remediation requires approval"} if {
     input.environment == "staging"
-    input.affected_resource.kind == "StatefulSet"
+    input.remediation_target.kind == "StatefulSet"
 }
 ```
 
@@ -261,25 +261,25 @@ Automated modifications to CustomResourceDefinitions are high-risk operations �
 
 ```rego
 require_approval if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
 }
 
 is_sensitive_resource if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
 }
 
 risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
 }
 ```
 
 **Elevated risk for GitOps-managed CRDs:**
 
-When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine `affected_resource.kind` with `detected_labels` for a stricter gate:
+When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine `remediation_target.kind` with `detected_labels` for a stricter gate:
 
 ```rego
 risk_factors contains {"score": 95, "reason": "CRD modification under GitOps management — requires human approval"} if {
-    input.affected_resource.kind == "CustomResourceDefinition"
+    input.remediation_target.kind == "CustomResourceDefinition"
     input.detected_labels.git_ops_managed == true
 }
 ```

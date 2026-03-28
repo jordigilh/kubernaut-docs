@@ -94,7 +94,7 @@ The filter matches known monitoring naming patterns:
 - **Service labels**: Names containing `prometheus`, `kube-state-metrics`, `alertmanager`, `grafana`, `thanos`, or `exporter`; names prefixed with `victoria`, `loki`, or `jaeger`; names ending with `-operator`
 - **Pod labels**: Names containing `kube-state-metrics`, `prometheus-node-exporter`, `alertmanager-kube-prometheus`, or `prometheus-kube-prometheus`; names prefixed with `kube-prometheus-stack-*`
 
-Filtered labels are skipped during target resource extraction. The LLM's `affectedResource` field provides a safety net for edge cases where the filter is too aggressive.
+Filtered labels are skipped during target resource extraction. The LLM's `remediationTarget` field provides a safety net for edge cases where the filter is too aggressive.
 
 ## Fingerprinting
 

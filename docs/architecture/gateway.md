@@ -19,7 +19,7 @@ flowchart LR
 | Endpoint | Method | Source | Description |
 |---|---|---|---|
 | `/api/v1/signals/prometheus` | POST | AlertManager | Prometheus AlertManager webhook receiver |
-| `/api/v1/signals/kubernetes-event` | POST | Event Exporter | Kubernetes Event API webhook receiver |
+| `/api/v1/signals/kubernetes-event` | POST | Event Exporter (external) | Kubernetes Event API webhook receiver. Requires a user-deployed Event Exporter -- not included in the chart since v1.1. |
 | `/health`, `/healthz` | GET | -- | Liveness probe (always 200) |
 | `/ready` | GET | -- | Readiness probe (checks K8s API + shutdown flag) |
 | `/metrics` | GET | -- | Prometheus metrics |

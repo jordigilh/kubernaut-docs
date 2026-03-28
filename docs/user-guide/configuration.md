@@ -174,6 +174,8 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
 | `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `false` |
+| `effectivenessmonitor.external.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with `ocpMonitoringRbac`, set to `/etc/ssl/em/service-ca.crt` (auto-mounted). | `""` |
+| `effectivenessmonitor.external.ocpMonitoringRbac` | Create `cluster-monitoring-view` ClusterRoleBinding and (when `alertManagerEnabled`) a ClusterRole granting `monitoring.coreos.com/alertmanagers/api` access for OCP's `kube-rbac-proxy`. Also sets `IS_OPENSHIFT` env and auto-configures TLS CA trust via a service-CA ConfigMap. | `false` |
 
 ### AIAnalysis
 

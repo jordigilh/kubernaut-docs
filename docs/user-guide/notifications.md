@@ -36,7 +36,7 @@ receivers:
         credentialRef: slack-webhook
 ```
 
-The catch-all receiver routes **all** notification types (escalation, approval_required, failed, manual-review, completion) to both Slack and console. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel.
+The catch-all receiver routes **all** notification types to both Slack and console. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel.
 
 ### Match Fields
 

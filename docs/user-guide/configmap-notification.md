@@ -35,7 +35,9 @@ helm install kubernaut charts/kubernaut/ \
 
 ### Default (no config provided)
 
-When neither option is set and `notification.slack.secretName` is empty, the chart generates a console-only routing config:
+When `routing.existingConfigMap` is set, the chart skips ConfigMap creation entirely and uses the pre-existing ConfigMap as-is. The defaults below only apply when **neither** `routing.content` **nor** `routing.existingConfigMap` is set.
+
+When `notification.slack.secretName` is empty, the chart generates a console-only routing config:
 
 ```yaml
 route:

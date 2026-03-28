@@ -168,31 +168,32 @@ oc set data secret/pull-secret -n openshift-config \
 
 ### 4a. Provision secrets
 
-The chart auto-generates PostgreSQL, DataStorage, and Valkey credentials. For disconnected environments where you want explicit control over passwords, create them before install:
+All database, cache, and LLM credentials must be pre-created before install. The chart validates their presence at template time.
 
 ```bash
 kubectl create namespace kubernaut-system
 
+# PostgreSQL + DataStorage (consolidated secret)
+PG_PASSWORD=$(openssl rand -base64 24)
 kubectl create secret generic postgresql-secret \
   --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD=<password> \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
   --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
   -n kubernaut-system
 
-kubectl create secret generic datastorage-db-secret \
-  --from-literal=db-secrets.yaml=$'username: slm_user\npassword: <password>' \
-  -n kubernaut-system
-
+# Valkey
 kubectl create secret generic valkey-secret \
-  --from-literal=valkey-secrets.yaml=$'password: <password>' \
+  --from-literal=valkey-secrets.yaml="$(printf 'password: %s' "$(openssl rand -base64 24)")" \
   -n kubernaut-system
 
+# LLM credentials
 kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=<your-local-llm-key> \
   -n kubernaut-system
 ```
 
-See the [secret provisioning](../getting-started/installation.md#2-provision-secrets) reference for details. If you prefer auto-generated credentials, omit the first three secrets — only `llm-credentials` is required.
+See the [secret provisioning](../getting-started/installation.md#2-provision-secrets) reference for the full secret schema.
 
 ### 4b. Edit the air-gap overlay
 
@@ -277,12 +278,11 @@ helm install kubernaut charts/kubernaut/ \
   --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
 ```
 
-If you created secrets manually in step 4a, add the corresponding `--set` flags:
+If you used custom secret names in step 4a, add the corresponding `--set` flags:
 
 ```bash
-  --set postgresql.auth.existingSecret=postgresql-secret \
-  --set datastorage.dbExistingSecret=datastorage-db-secret \
-  --set valkey.existingSecret=valkey-secret
+  --set postgresql.auth.existingSecret=<your-pg-secret-name> \
+  --set valkey.existingSecret=<your-valkey-secret-name>
 ```
 
 ---

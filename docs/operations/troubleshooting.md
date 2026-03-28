@@ -253,6 +253,65 @@ If webhook calls fail immediately after switching from `tls.mode=hook` to `tls.m
     kubectl rollout restart deployment authwebhook -n kubernaut-system
     ```
 
+## Database Authentication Failure (SQLSTATE 28P01)
+
+DataStorage or the migration hook fails with:
+
+```
+FATAL: password authentication failed for user "slm_user" (SQLSTATE 28P01)
+```
+
+**Cause**: The password in `postgresql-secret` does not match what PostgreSQL was initialized with, or the `db-secrets.yaml` key inside `postgresql-secret` contains a different password than `POSTGRES_PASSWORD`.
+
+**Check**:
+
+```bash
+kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d
+kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.db-secrets\.yaml}' | base64 -d
+```
+
+Both passwords must be identical.
+
+**Fix 1 — Align the secret (non-destructive)**
+
+If PostgreSQL was already initialized and running, update the secret to match the password PostgreSQL is using rather than reinitializing:
+
+```bash
+# Read the password PG was initialized with (from a running psql session or from your records)
+PG_PASSWORD="<current-pg-password>"
+
+kubectl delete secret postgresql-secret -n kubernaut-system
+kubectl create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+  --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+  -n kubernaut-system
+
+kubectl rollout restart deployment datastorage -n kubernaut-system
+```
+
+**Fix 2 — Reinitialize PostgreSQL (destructive)**
+
+If you cannot recover the original password, recreate the secret with a new password and reinitialize PostgreSQL:
+
+!!! warning
+    This destroys all existing data in PostgreSQL (audit history, workflow catalog). Only use as a last resort.
+
+```bash
+PG_PASSWORD=$(openssl rand -base64 24)
+kubectl delete secret postgresql-secret -n kubernaut-system
+kubectl create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+  --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+  -n kubernaut-system
+
+kubectl delete pvc postgresql-data -n kubernaut-system
+kubectl rollout restart statefulset postgresql -n kubernaut-system
+```
+
 ## Collecting Diagnostics
 
 Use the must-gather tool to collect a comprehensive diagnostic bundle:

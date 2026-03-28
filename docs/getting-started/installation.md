@@ -147,18 +147,41 @@ kubectl create namespace kubernaut-system
 
 ### 2. Provision Secrets
 
-The chart **auto-generates** credentials for PostgreSQL, DataStorage, and Valkey on first install using random alphanumeric passwords. For most deployments (including quickstart), no manual secret creation is needed for these services.
+All required secrets **must** be pre-created before running `helm install`. The chart validates the presence of database and cache secrets at template time and fails with a descriptive error if any are missing.
 
-!!! tip "Production: bring your own secrets"
-    To use specific credentials (e.g., managed databases, password policies), create the secrets before install and reference them via Helm values. The chart skips auto-generation when an existing secret is found.
+#### PostgreSQL + DataStorage (consolidated secret)
 
-    | Chart Value | Auto-generated Secret | Required Keys |
-    |---|---|---|
-    | `postgresql.auth.existingSecret` | `postgresql-secret` | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` |
-    | `datastorage.dbExistingSecret` | `datastorage-db-secret` | `db-secrets.yaml` (YAML with `username` and `password`) |
-    | `valkey.existingSecret` | `valkey-secret` | `valkey-secrets.yaml` (YAML with `password`) |
+PostgreSQL and DataStorage share a single secret. The `db-secrets.yaml` key must use the **same password** as `POSTGRES_PASSWORD` to avoid authentication mismatches.
 
-**LLM credentials** (required for AI analysis):
+```bash
+PG_PASSWORD=$(openssl rand -base64 24)
+kubectl create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+  --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+  -n kubernaut-system
+```
+
+#### Valkey
+
+```bash
+kubectl create secret generic valkey-secret \
+  --from-literal=valkey-secrets.yaml="$(printf 'password: %s' "$(openssl rand -base64 24)")" \
+  -n kubernaut-system
+```
+
+#### Required secrets summary
+
+| Secret Name | Required Keys | Consumed By |
+|---|---|---|
+| `postgresql-secret` | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `db-secrets.yaml` | PostgreSQL (env vars), DataStorage (file mount), migration hook |
+| `valkey-secret` | `valkey-secrets.yaml` | DataStorage (file mount) |
+| `llm-credentials` | Provider-specific (see [below](#llm-credentials-required-for-ai-analysis)) | HolmesGPT API |
+
+To use custom secret names for database/cache secrets, pass `--set postgresql.auth.existingSecret=<name>` and `--set valkey.existingSecret=<name>` at install time. For LLM credentials, use `--set holmesgptApi.llm.credentialsSecretName=<name>`.
+
+#### LLM credentials (required for AI analysis)
 
 === "OpenAI / Azure"
 
@@ -186,9 +209,7 @@ The chart **auto-generates** credentials for PostgreSQL, DataStorage, and Valkey
 |---|---|---|
 | `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `application_default_credentials.json` (file) |
 
-The LLM credentials secret **must** exist before installing the chart. Without valid credentials, AI analysis cannot function.
-
-**Notification credentials** (optional, only for Slack delivery):
+#### Notification credentials (optional, Slack only)
 
 ```bash
 kubectl create secret generic slack-webhook \
@@ -204,7 +225,7 @@ Only required when Slack delivery is configured. When using console-only routing
 
 ## Install
 
-The chart is distributed as an OCI artifact. With the namespace and LLM credentials provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
+The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
 ### Kind / Vanilla Kubernetes
 
@@ -262,7 +283,7 @@ To pin a specific chart version, add `--version <version>`. Omitting `--version`
     The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
-    The auto-generated SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
 
 ### Quickstart
 

@@ -46,12 +46,26 @@ helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
   --namespace monitoring --create-namespace \
   --wait --timeout 5m
 
-# 3. Install Kubernaut (secrets and policies are auto-generated)
+# 3. Create namespace and secrets
 kubectl create namespace kubernaut-system
+
+PG_PASSWORD=$(openssl rand -base64 24)
+kubectl create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=slm_user \
+  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+  --from-literal=POSTGRES_DB=action_history \
+  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+  -n kubernaut-system
+
+kubectl create secret generic valkey-secret \
+  --from-literal=valkey-secrets.yaml="$(printf 'password: %s' "$(openssl rand -base64 24)")" \
+  -n kubernaut-system
+
 kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=sk-... \
   -n kubernaut-system
 
+# 4. Install Kubernaut
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
   --set holmesgptApi.llm.provider=openai \
@@ -60,7 +74,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 ```
 
 !!! tip "What the chart handles automatically"
-    The v1.1 chart auto-generates PostgreSQL, DataStorage, and Valkey credentials; embeds default Rego policies for signal processing and AI analysis approval; and seeds demo ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default). The only secret you need to create is `llm-credentials`.
+    The chart embeds default Rego policies for signal processing and AI analysis approval, and seeds demo ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default).
 
 For advanced LLM configurations (Vertex AI, Azure, local models), see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md).
 

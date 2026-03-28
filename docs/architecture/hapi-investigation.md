@@ -50,12 +50,12 @@ flowchart LR
 | Phase | Purpose | Key Operations |
 |---|---|---|
 | **Phase 1: Investigate** | Root cause analysis using live cluster data | Kubernetes tool calls (logs, events, describe), root cause identification, signal name determination |
-| **Phase 2: Enrich** | Gather context and validate the remediation target | Call `get_namespaced_resource_context` or `get_cluster_resource_context` (owner chain resolution, spec hash, detected labels), call `get_remediation_history` for past outcomes, validate LLM-provided `remediationTarget` (BR-HAPI-261, BR-HAPI-212) |
+| **Phase 2: Enrich** | Gather context and validate the remediation target | Call `get_namespaced_resource_context` or `get_cluster_resource_context` (owner chain resolution, spec hash, detected labels, remediation history), validate LLM-provided `remediationTarget` (BR-HAPI-261, BR-HAPI-212) |
 | **Phase 3: Workflow Select** | Discover and select a workflow from the catalog | Three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`, parameter mapping, confidence scoring, structured JSON response |
 
 In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
 
-The dedicated `get_remediation_history` tool (BR-HAPI-260) replaces the previous inline history injection, providing tiered remediation history (24h by target resource, 90d by spec hash) as a separate tool call during Phase 2.
+Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (`get_remediation_history_context` API), providing tiered remediation history (24h by target resource, 90d by spec hash) as part of the resource context result during Phase 2.
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
@@ -199,7 +199,7 @@ The response contains two tiers of history, each using a different query strateg
 
 ## How Remediation History Influences the LLM
 
-The history returned by `get_remediation_history` (or bundled in the resource context tools) is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the Enrich phase prompt instructs: *"Use this to avoid repeating recently failed workflows."*
+The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the Enrich phase prompt instructs: *"Use this to avoid repeating recently failed workflows."*
 
 ### Three-Way Hash Comparison
 
@@ -590,9 +590,8 @@ Complete list of tools available during investigation:
 
 | Tool | Description | Parameters |
 |---|---|---|
-| `get_namespaced_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history for **namespaced** resources | `kind`, `name`, `namespace` |
+| `get_namespaced_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history (via internal DataStorage lookup) for **namespaced** resources | `kind`, `name`, `namespace` |
 | `get_cluster_resource_context` | Same as above for **cluster-scoped** resources (Nodes, PersistentVolumes) | `kind`, `name` |
-| `get_remediation_history` | Fetch tiered remediation history from DataStorage independently of resource context resolution | `kind`, `name`, `namespace` (optional) |
 
 ### Workflow Discovery (Custom)
 

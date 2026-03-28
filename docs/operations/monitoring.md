@@ -111,7 +111,7 @@ scrape_configs:
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `datastorage_write_duration_seconds` | Histogram | `table` | Write latency |
+| `datastorage_write_duration_seconds` | Histogram | `table` | Duration of write operations in seconds |
 | `datastorage_audit_lag_seconds` | Histogram | `service` | Lag between event occurrence and write |
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |

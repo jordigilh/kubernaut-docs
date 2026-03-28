@@ -92,8 +92,8 @@ Resolves the execution engine from the DS workflow catalog and creates a Kuberne
 
 ### Audit Events
 
-- `workflow.selection.completed` -- Emitted after spec validation
-- `execution.workflow.started` -- Emitted after execution resource creation
+- `workflowexecution.selection.completed` -- Emitted after spec validation
+- `workflowexecution.execution.started` -- Emitted after execution resource creation
 
 ## Running Phase
 

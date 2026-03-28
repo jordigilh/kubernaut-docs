@@ -3173,9 +3173,9 @@
 <td>Whether the investigation identified a concrete remediation action</td>
 </tr>
 <tr>
-<td><code>affected_resource</code></td>
+<td><code>remediation_target</code></td>
 <td>object</td>
-<td>Target resource (kind, name, namespace) after owner chain resolution</td>
+<td>Target resource (kind, name, namespace) — constructed by the AA controller from HAPI's <code>root_owner</code> tool result, not a direct HAPI response field</td>
 </tr>
 <tr>
 <td><code>detected_labels</code></td>

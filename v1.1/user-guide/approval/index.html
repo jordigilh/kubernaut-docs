@@ -3234,12 +3234,12 @@
 <p>The shipped <code>approval.rego</code> makes decisions based on <strong>environment</strong> and <strong>affected resource presence</strong>:</p>
 <ul>
 <li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>) — always require approval, regardless of confidence</li>
-<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>affected_resource</code> is present</li>
+<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>remediation_target</code> is present</li>
 <li><strong>Missing affected resource</strong> — always requires approval (default-deny safety per ADR-055)</li>
 </ul>
 <p>When approval is required, a <code>RemediationApprovalRequest</code> CRD is created and the remediation enters the <code>AwaitingApproval</code> phase.</p>
 <h3 id="custom-policies">Custom Policies<a class="headerlink" href="#custom-policies" title="Permanent link">&para;</a></h3>
-<p>The Rego policy receives a rich input context (see <a href="#rego-policy-evaluation">Rego Policy Evaluation</a> below), including <code>confidence</code>, <code>confidence_threshold</code>, <code>environment</code>, <code>detected_labels</code>, <code>affected_resource</code>, <code>custom_labels</code>, and <code>business_classification</code>. Operators can write policies that use any combination of these inputs -- for example, a confidence-gated policy that auto-approves high-confidence analyses in production.</p>
+<p>The Rego policy receives a rich input context (see <a href="#rego-policy-evaluation">Rego Policy Evaluation</a> below), including <code>confidence</code>, <code>confidence_threshold</code>, <code>environment</code>, <code>detected_labels</code>, <code>remediation_target</code>, <code>custom_labels</code>, and <code>business_classification</code>. Operators can write policies that use any combination of these inputs -- for example, a confidence-gated policy that auto-approves high-confidence analyses in production.</p>
 <p>The default policy defines an <code>is_high_confidence</code> helper but does not use it in its approval rules. This is a building block for custom policies.</p>
 <h2 id="confidence-thresholds">Confidence Thresholds<a class="headerlink" href="#confidence-thresholds" title="Permanent link">&para;</a></h2>
 <p>Kubernaut uses two confidence thresholds at different stages:</p>
@@ -3518,7 +3518,7 @@
 <td>Labels where detection failed</td>
 </tr>
 <tr>
-<td><code>affected_resource</code></td>
+<td><code>remediation_target</code></td>
 <td>AI Analysis RCA result</td>
 <td>Target resource <code>kind</code> and <code>name</code></td>
 </tr>
@@ -3532,7 +3532,7 @@
 <p>The built-in policy behavior:</p>
 <ul>
 <li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>): Always require approval, regardless of confidence</li>
-<li><strong>Non-production namespaces</strong>: Auto-approved unless critical safety conditions (missing <code>affected_resource</code>)</li>
+<li><strong>Non-production namespaces</strong>: Auto-approved unless critical safety conditions (missing <code>remediation_target</code>)</li>
 <li><strong>Missing affected resource</strong>: Always requires approval (default-deny safety)</li>
 </ul>
 <p>Operators can customize approval behavior by modifying the Rego policy in the <code>aianalysis-rego</code> ConfigMap.</p>

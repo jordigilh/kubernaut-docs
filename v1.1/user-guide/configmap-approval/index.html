@@ -3215,9 +3215,9 @@
 <td>Configurable threshold (default 0.8, via <code>aianalysis.rego.confidenceThreshold</code>)</td>
 </tr>
 <tr>
-<td><code>affected_resource</code></td>
+<td><code>remediation_target</code></td>
 <td>object</td>
-<td>LLM-identified affected resource (<code>kind</code>, <code>name</code>, <code>namespace</code>)</td>
+<td>LLM-identified remediation target (<code>kind</code>, <code>name</code>, <code>namespace</code>)</td>
 </tr>
 <tr>
 <td><code>target_resource</code></td>
@@ -3269,7 +3269,7 @@
 <ul>
 <li><strong>Production environments</strong>: Always require approval (controlled via <code>kubernaut.ai/environment=production</code> namespace label)</li>
 <li><strong>Sensitive resources</strong> (Node, StatefulSet): Always require approval regardless of environment</li>
-<li><strong>Missing affected resource</strong>: Always require approval (safety default)</li>
+<li><strong>Missing remediation target</strong>: Always require approval (safety default)</li>
 <li><strong>Non-production</strong>: Auto-approved unless critical safety conditions are met</li>
 </ul>
 <h2 id="risk-factors">Risk Factors<a class="headerlink" href="#risk-factors" title="Permanent link">&para;</a></h2>
@@ -3284,7 +3284,7 @@
 <tbody>
 <tr>
 <td>90</td>
-<td>Missing affected resource</td>
+<td>Missing remediation target</td>
 </tr>
 <tr>
 <td>85</td>
@@ -3323,11 +3323,11 @@
 <h3 id="crd-safety-gate">CRD Safety Gate<a class="headerlink" href="#crd-safety-gate" title="Permanent link">&para;</a></h3>
 <p>Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:</p>
 <div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">affected_resource</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>For GitOps-managed clusters, combine with <code>detected_labels</code> — see <a href="../policies/#crd-safety-policy">CRD Safety Policy</a> for the full pattern.</p>

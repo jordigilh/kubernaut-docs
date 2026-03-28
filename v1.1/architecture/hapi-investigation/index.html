@@ -4383,7 +4383,7 @@
     Confidence --&gt;|no| LowConf["Low Confidence&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
     Confidence --&gt;|yes| Rego["Rego Evaluation&lt;br/&gt;&lt;small&gt;Phase: Analyzing&lt;/small&gt;"]</code></pre>
 <h3 id="outcome-1-success-workflow-selected">Outcome 1: Success (Workflow Selected)<a class="headerlink" href="#outcome-1-success-workflow-selected" title="Permanent link">&para;</a></h3>
-<p>The LLM returns a <code>selected_workflow</code> with <code>workflow_id</code>, <code>confidence</code>, and <code>parameters</code>. HAPI then injects the three canonical <code>TARGET_RESOURCE_*</code> parameters and constructs <code>affectedResource</code> from the K8s-verified <code>root_owner</code> (resolved via <code>get_resource_context</code>). This is the only outcome that proceeds to Rego evaluation.</p>
+<p>The LLM returns a <code>selected_workflow</code> with <code>workflow_id</code>, <code>confidence</code>, and <code>parameters</code>. HAPI then injects the three canonical <code>TARGET_RESOURCE_*</code> parameters and constructs <code>remediationTarget</code> from the K8s-verified <code>root_owner</code> (resolved via <code>get_resource_context</code>). This is the only outcome that proceeds to Rego evaluation.</p>
 <p><strong>Fields:</strong> <code>needs_human_review=false</code>, <code>selected_workflow</code> present, <code>confidence &gt;= 0.7</code>
 <strong>Next:</strong> AA transitions to <code>Analyzing</code> phase → Rego evaluation</p>
 <h3 id="outcome-2-problem-self-resolved">Outcome 2: Problem Self-Resolved<a class="headerlink" href="#outcome-2-problem-self-resolved" title="Permanent link">&para;</a></h3>
@@ -4459,8 +4459,8 @@
 <td>Configurable threshold</td>
 </tr>
 <tr>
-<td><code>affected_resource</code></td>
-<td><code>RootCauseAnalysis.AffectedResource</code></td>
+<td><code>remediation_target</code></td>
+<td><code>RootCauseAnalysis.RemediationTarget</code></td>
 <td>LLM-identified target resource</td>
 </tr>
 <tr>
@@ -4489,13 +4489,13 @@
 <p>The default policy has two mandatory approval triggers:</p>
 <ol>
 <li>
-<p><strong>Missing affected resource</strong> -- If <code>affected_resource</code> is absent or has an empty <code>kind</code>, approval is always required. This is a safety net for incomplete RCA.</p>
+<p><strong>Missing remediation target</strong> -- If <code>remediation_target</code> is absent or has an empty <code>kind</code>, approval is always required. This is a safety net for incomplete RCA.</p>
 </li>
 <li>
 <p><strong>Production environment</strong> -- All production remediations require human approval, regardless of confidence. Operators control this by setting <code>kubernaut.ai/environment=production</code> on the namespace.</p>
 </li>
 </ol>
-<p>Non-production environments (development, staging, qa, test) auto-approve when <code>affected_resource</code> is present.</p>
+<p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present.</p>
 <h3 id="confidence-threshold">Confidence Threshold<a class="headerlink" href="#confidence-threshold" title="Permanent link">&para;</a></h3>
 <p>The default confidence threshold is <strong>0.8</strong> in the Rego policy, overridable via Helm:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">aianalysis</span><span class="p">:</span>
@@ -4515,7 +4515,7 @@
 <tbody>
 <tr>
 <td>90</td>
-<td>Missing affected resource</td>
+<td>Missing remediation target</td>
 </tr>
 <tr>
 <td>80</td>

@@ -3213,8 +3213,8 @@
 <p>The <strong>default shipped policy</strong> gates on environment and affected resource presence:</p>
 <ul>
 <li><strong>Production</strong> — always requires approval</li>
-<li><strong>Non-production</strong> — auto-approved when <code>affected_resource</code> is present</li>
-<li><strong>Missing <code>affected_resource</code></strong> — always requires approval (default-deny per ADR-055)</li>
+<li><strong>Non-production</strong> — auto-approved when <code>remediation_target</code> is present</li>
+<li><strong>Missing <code>remediation_target</code></strong> — always requires approval (default-deny per ADR-055)</li>
 </ul>
 <p>The policy also receives <code>confidence</code>, <code>confidence_threshold</code>, <code>detected_labels</code> (snake_case keys: <code>"stateful"</code>, <code>"pdb_protected"</code>, <code>"hpa_enabled"</code>), <code>failed_detections</code>, <code>custom_labels</code>, and <code>business_classification</code>. Operators can write custom policies that use any combination of these inputs -- for example, confidence-gated approval for production.</p>
 <p>The confidence threshold is configurable via Helm (<code>aianalysis.rego.confidenceThreshold</code>, default 0.8) and passed as <code>input.confidence_threshold</code>. The default policy defines <code>is_high_confidence</code> but does not use it in approval rules.</p>

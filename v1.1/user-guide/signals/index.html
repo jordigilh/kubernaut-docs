@@ -3260,7 +3260,7 @@
 <li><strong>Service labels</strong>: Names containing <code>prometheus</code>, <code>kube-state-metrics</code>, <code>alertmanager</code>, <code>grafana</code>, <code>thanos</code>, or <code>exporter</code>; names prefixed with <code>victoria</code>, <code>loki</code>, or <code>jaeger</code>; names ending with <code>-operator</code></li>
 <li><strong>Pod labels</strong>: Names containing <code>kube-state-metrics</code>, <code>prometheus-node-exporter</code>, <code>alertmanager-kube-prometheus</code>, or <code>prometheus-kube-prometheus</code>; names prefixed with <code>kube-prometheus-stack-*</code></li>
 </ul>
-<p>Filtered labels are skipped during target resource extraction. The LLM's <code>affectedResource</code> field provides a safety net for edge cases where the filter is too aggressive.</p>
+<p>Filtered labels are skipped during target resource extraction. The LLM's <code>remediationTarget</code> field provides a safety net for edge cases where the filter is too aggressive.</p>
 <h2 id="fingerprinting">Fingerprinting<a class="headerlink" href="#fingerprinting" title="Permanent link">&para;</a></h2>
 <p>Before creating a RemediationRequest, the Gateway computes a <strong>signal fingerprint</strong> — a SHA256 hash based on the top-level owning resource (e.g., <code>Deployment</code>), not the individual Pod. This ensures that alerts from different Pods in the same Deployment produce the same fingerprint, enabling accurate deduplication.</p>
 <p>The Gateway resolves the owner chain using a metadata-only informer cache. Two direct API fallback mechanisms handle race conditions during rollout restarts:</p>

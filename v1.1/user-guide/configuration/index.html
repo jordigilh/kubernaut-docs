@@ -4278,6 +4278,16 @@
 <td>Enable AlertManager integration</td>
 <td><code>false</code></td>
 </tr>
+<tr>
+<td><code>effectivenessmonitor.external.tlsCaFile</code></td>
+<td>Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with <code>ocpMonitoringRbac</code>, set to <code>/etc/ssl/em/service-ca.crt</code> (auto-mounted).</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor.external.ocpMonitoringRbac</code></td>
+<td>Create <code>cluster-monitoring-view</code> ClusterRoleBinding and (when <code>alertManagerEnabled</code>) a ClusterRole granting <code>monitoring.coreos.com/alertmanagers/api</code> access for OCP's <code>kube-rbac-proxy</code>. Also sets <code>IS_OPENSHIFT</code> env and auto-configures TLS CA trust via a service-CA ConfigMap.</td>
+<td><code>false</code></td>
+</tr>
 </tbody>
 </table>
 <h3 id="aianalysis">AIAnalysis<a class="headerlink" href="#aianalysis" title="Permanent link">&para;</a></h3>

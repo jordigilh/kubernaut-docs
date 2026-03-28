@@ -2014,6 +2014,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ocp-monitoring-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP Monitoring RBAC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#internal-service-communication" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3061,6 +3072,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ocp-monitoring-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP Monitoring RBAC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#internal-service-communication" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3266,9 +3288,9 @@
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
 </span></code></pre></div>
-<p>If you deploy a Kubernetes Event Exporter separately (see <a href="../../operations/event-exporter/">Event Exporter</a>), its ServiceAccount must also be registered as a signal source in the same <code>signalSources</code> list.</p>
+<p>If you deploy a Kubernetes Event Exporter separately (not included in the chart since v1.1), its ServiceAccount must also be registered as a signal source in the same <code>signalSources</code> list.</p>
 <p>Without the bearer token, the Gateway returns <code>401 Unauthorized</code>. Without the ClusterRoleBinding, the Gateway returns <code>403 Forbidden</code>.</p>
-<p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager configuration example. For Kubernetes event forwarding, see <a href="../../operations/event-exporter/">Event Exporter</a>.</p>
+<p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager configuration example.</p>
 <h2 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h2>
 <p>Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).</p>
 <p>Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
@@ -3437,6 +3459,36 @@
 <p class="admonition-title">Per-workflow scoped RBAC</p>
 <p>All workflows share the <code>kubernaut-workflow-runner</code> ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.2.</p>
 </div>
+<h2 id="ocp-monitoring-rbac">OCP Monitoring RBAC<a class="headerlink" href="#ocp-monitoring-rbac" title="Permanent link">&para;</a></h2>
+<p>When <code>effectivenessmonitor.external.ocpMonitoringRbac</code> is <code>true</code>, the chart creates additional RBAC resources for EM to access OCP's monitoring stack through <code>kube-rbac-proxy</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Kind</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>effectivenessmonitor-monitoring-view</code></td>
+<td>ClusterRoleBinding</td>
+<td>Binds EM ServiceAccount to the built-in <code>cluster-monitoring-view</code> ClusterRole for Prometheus API access</td>
+</tr>
+<tr>
+<td><code>kubernaut-alertmanager-view</code></td>
+<td>ClusterRole</td>
+<td>Grants <code>get</code> on <code>monitoring.coreos.com/alertmanagers/api</code> for AlertManager API access through <code>kube-rbac-proxy</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor-alertmanager-view</code></td>
+<td>ClusterRoleBinding</td>
+<td>Binds EM ServiceAccount to <code>kubernaut-alertmanager-view</code></td>
+</tr>
+</tbody>
+</table>
+<p>The AlertManager ClusterRole and ClusterRoleBinding are only created when <strong>both</strong> <code>ocpMonitoringRbac</code> and <code>alertManagerEnabled</code> are <code>true</code>.</p>
+<p>OCP's <code>kube-rbac-proxy</code> requires <strong>resource-level</strong> RBAC (<code>monitoring.coreos.com/alertmanagers/api</code>) rather than <code>nonResourceURLs</code> for AlertManager API access. Standard <code>nonResourceURLs</code> rules are silently ignored by <code>kube-rbac-proxy</code>, causing EM AlertManager queries to fail with <code>403 Forbidden</code>.</p>
 <h2 id="internal-service-communication">Internal Service Communication<a class="headerlink" href="#internal-service-communication" title="Permanent link">&para;</a></h2>
 <h3 id="datastorage-authentication">DataStorage Authentication<a class="headerlink" href="#datastorage-authentication" title="Permanent link">&para;</a></h3>
 <p>DataStorage uses the same TokenReview + SAR pattern as the Gateway. The <code>data-storage-auth-middleware</code> ClusterRole grants DataStorage permission to validate client tokens:</p>
@@ -3607,7 +3659,7 @@
 <p>Hook jobs only run during <code>helm install</code>, <code>helm upgrade</code>, and <code>helm delete</code>. They do not have long-lived pods.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager signal sources; for Kubernetes event forwarding see <a href="../../operations/event-exporter/">Event Exporter</a></li>
+<li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and other signal sources</li>
 <li><a href="../../user-guide/configuration/">Configuration Reference</a> -- Helm values for all services</li>
 <li><a href="../../operations/troubleshooting/">Troubleshooting</a> -- Diagnose RBAC-related issues</li>
 </ul>

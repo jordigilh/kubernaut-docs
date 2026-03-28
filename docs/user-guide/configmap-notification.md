@@ -35,7 +35,7 @@ helm install kubernaut charts/kubernaut/ \
 
 ### Default (no config provided)
 
-When neither option is set, the chart generates a console-only routing config:
+When neither option is set and `notification.slack.secretName` is empty, the chart generates a console-only routing config:
 
 ```yaml
 route:
@@ -45,6 +45,22 @@ receivers:
     consoleConfigs:
       - enabled: true
 ```
+
+When `notification.slack.secretName` is set (the Slack quickstart shortcut), the chart generates a catch-all `slack-and-console` config instead:
+
+```yaml
+route:
+  receiver: slack-and-console
+receivers:
+  - name: slack-and-console
+    consoleConfigs:
+      - enabled: true
+    slackConfigs:
+      - channel: "#kubernaut-alerts"
+        credentialRef: slack-webhook
+```
+
+The catch-all receiver routes all notification types to both channels. For type-specific routing (e.g., sending only failures to Slack), provide a custom `routing.content` or `routing.existingConfigMap`.
 
 ## Routing Schema
 

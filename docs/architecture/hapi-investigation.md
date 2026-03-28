@@ -193,6 +193,9 @@ The response contains two tiers of history, both filtered by spec hash match but
 - **Tier 1** provides full-detail recent history for the current configuration, giving the LLM visibility into the immediate remediation chain.
 - **Tier 2** extends the window to 90 days with reduced detail, surfacing older outcomes for the same configuration to help the LLM identify recurring patterns.
 
+!!! warning "Known issue: Tier 1 query strategy"
+    Both tiers are designed to filter by spec hash to ensure the LLM only reasons from remediations with an intact causal chain. A known issue ([kubernaut#586](https://github.com/jordigilh/kubernaut/issues/586)) exists where Tier 1 currently queries by target resource instead; this is tracked for fix in v1.2.
+
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 
 ## How Remediation History Influences the LLM

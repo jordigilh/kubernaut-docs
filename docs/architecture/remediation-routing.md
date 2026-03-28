@@ -202,7 +202,7 @@ When the AIAnalysis result has `NeedsHumanReview=true` AND `SelectedWorkflow=nil
 The Orchestrator still creates a `NotificationRequest` to inform the operator that human review is required. The 24-hour `NoActionRequiredDelayHours` suppression window is also applied (same as `NoActionRequired`), preventing duplicate RRs while the operator investigates.
 
 !!! note "Low confidence WITH a selected workflow"
-    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but with low confidence), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
+    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
 
 ## Timeout System
 

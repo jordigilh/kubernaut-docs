@@ -66,7 +66,7 @@ If you deploy a Kubernetes Event Exporter separately (not included in the chart 
 
 Without the bearer token, the Gateway returns `401 Unauthorized`. Without the ClusterRoleBinding, the Gateway returns `403 Forbidden`.
 
-See [Installation](../getting-started/installation.md#signal-source-authentication) for the complete AlertManager configuration example. For Kubernetes event forwarding, see [Event Exporter](../operations/event-exporter.md).
+See [Installation](../getting-started/installation.md#signal-source-authentication) for the complete AlertManager configuration example.
 
 ## CRD Controllers
 
@@ -116,8 +116,11 @@ When `effectivenessmonitor.external.ocpMonitoringRbac` is `true`, the chart crea
 
 | Resource | Kind | Purpose |
 |---|---|---|
-| `kubernaut-cluster-monitoring-view` | ClusterRoleBinding | Binds EM ServiceAccount to the built-in `cluster-monitoring-view` ClusterRole for Prometheus API access |
-| `kubernaut-alertmanager-view` | ClusterRole + ClusterRoleBinding | Grants EM `get` on `monitoring.coreos.com/alertmanagers/api` for AlertManager API access through `kube-rbac-proxy` |
+| `effectivenessmonitor-monitoring-view` | ClusterRoleBinding | Binds EM ServiceAccount to the built-in `cluster-monitoring-view` ClusterRole for Prometheus API access |
+| `kubernaut-alertmanager-view` | ClusterRole | Grants `get` on `monitoring.coreos.com/alertmanagers/api` for AlertManager API access through `kube-rbac-proxy` |
+| `effectivenessmonitor-alertmanager-view` | ClusterRoleBinding | Binds EM ServiceAccount to `kubernaut-alertmanager-view` |
+
+The AlertManager ClusterRole and ClusterRoleBinding are only created when **both** `ocpMonitoringRbac` and `alertManagerEnabled` are `true`.
 
 OCP's `kube-rbac-proxy` requires **resource-level** RBAC (`monitoring.coreos.com/alertmanagers/api`) rather than `nonResourceURLs` for AlertManager API access. Standard `nonResourceURLs` rules are silently ignored by `kube-rbac-proxy`, causing EM AlertManager queries to fail with `403 Forbidden`.
 

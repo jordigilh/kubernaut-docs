@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.1/operations/disconnected-install/">
       
       
-        <link rel="prev" href="../upgrading/1.0-to-1.1/">
+        <link rel="prev" href="../upgrading/">
       
       
         <link rel="next" href="../../user-guide/compliance/">
@@ -2493,89 +2493,15 @@
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../upgrading/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Upgrading
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Upgrading
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../upgrading/1.0-to-1.1/" class="md-nav__link">
+      <a href="../upgrading/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    v1.0 to v1.1
+    Upgrading
   
 
     
@@ -2584,14 +2510,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3739,28 +3657,29 @@
 <hr />
 <h2 id="step-4-install-the-kubernaut-helm-chart">Step 4: Install the Kubernaut Helm chart<a class="headerlink" href="#step-4-install-the-kubernaut-helm-chart" title="Permanent link">&para;</a></h2>
 <h3 id="4a-provision-secrets">4a. Provision secrets<a class="headerlink" href="#4a-provision-secrets" title="Permanent link">&para;</a></h3>
-<p>The chart auto-generates PostgreSQL, DataStorage, and Valkey credentials. For disconnected environments where you want explicit control over passwords, create them before install:</p>
+<p>All database, cache, and LLM credentials must be pre-created before install. The chart validates their presence at template time.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>&lt;password&gt;<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>datastorage-db-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s1">$&#39;username: slm_user\npassword: &lt;password&gt;&#39;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># PostgreSQL + DataStorage (consolidated secret)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="c1"># Valkey</span>
 </span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>valkey-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s1">$&#39;password: &lt;password&gt;&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;password: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 </span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
-</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>&lt;your-local-llm-key&gt;<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="c1"># LLM credentials</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>&lt;your-local-llm-key&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
-<p>See the <a href="../../getting-started/installation/#2-provision-secrets">secret provisioning</a> reference for details. If you prefer auto-generated credentials, omit the first three secrets — only <code>llm-credentials</code> is required.</p>
+<p>See the <a href="../../getting-started/installation/#2-provision-secrets">secret provisioning</a> reference for the full secret schema.</p>
 <h3 id="4b-edit-the-air-gap-overlay">4b. Edit the air-gap overlay<a class="headerlink" href="#4b-edit-the-air-gap-overlay" title="Permanent link">&para;</a></h3>
 <p>Replace every <code>&lt;mirror-registry&gt;</code> placeholder in <code>values-airgap.yaml</code> with your actual registry hostname:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;mirror-registry&gt;/mirror.corp.example.com:5000/g&#39;</span><span class="w"> </span><span class="se">\</span>
@@ -3857,10 +3776,9 @@
 </span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span>--set<span class="w"> </span>global.image.separator<span class="o">=</span>-<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">  </span>--set-file<span class="w"> </span>holmesgptApi.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml
 </span></code></pre></div>
-<p>If you created secrets manually in step 4a, add the corresponding <code>--set</code> flags:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>postgresql-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--set<span class="w"> </span>datastorage.dbExistingSecret<span class="o">=</span>datastorage-db-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>valkey-secret
+<p>If you used custom secret names in step 4a, add the corresponding <code>--set</code> flags:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>&lt;your-pg-secret-name&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>&lt;your-valkey-secret-name&gt;
 </span></code></pre></div>
 <hr />
 <h2 id="step-5-verify-the-installation">Step 5: Verify the installation<a class="headerlink" href="#step-5-verify-the-installation" title="Permanent link">&para;</a></h2>
@@ -3998,7 +3916,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../upgrading/1.0-to-1.1/" class="md-footer__link md-footer__link--prev" aria-label="Previous: v1.0 to v1.1">
+          <a href="../upgrading/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Upgrading">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -4008,7 +3926,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                v1.0 to v1.1
+                Upgrading
               </div>
             </div>
           </a>

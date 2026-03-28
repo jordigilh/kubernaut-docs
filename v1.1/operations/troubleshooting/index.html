@@ -2703,6 +2703,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#database-authentication-failure-sqlstate-28p01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Authentication Failure (SQLSTATE 28P01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#collecting-diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2739,89 +2750,15 @@
   
   
   
-    
-    
-      
-        
-          
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../upgrading/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Upgrading
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8_5">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    Upgrading
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
     <li class="md-nav__item">
-      <a href="../upgrading/1.0-to-1.1/" class="md-nav__link">
+      <a href="../upgrading/" class="md-nav__link">
         
   
   
   <span class="md-ellipsis">
     
   
-    v1.0 to v1.1
+    Upgrading
   
 
     
@@ -2830,14 +2767,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
     </li>
   
 
@@ -3229,6 +3158,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#database-authentication-failure-sqlstate-28p01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Authentication Failure (SQLSTATE 28P01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#collecting-diagnostics" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3547,16 +3487,59 @@
 </span></code></pre></div>
 </li>
 </ol>
+<h2 id="database-authentication-failure-sqlstate-28p01">Database Authentication Failure (SQLSTATE 28P01)<a class="headerlink" href="#database-authentication-failure-sqlstate-28p01" title="Permanent link">&para;</a></h2>
+<p>DataStorage or the migration hook fails with:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>FATAL: password authentication failed for user &quot;slm_user&quot; (SQLSTATE 28P01)
+</span></code></pre></div>
+<p><strong>Cause</strong>: The password in <code>postgresql-secret</code> does not match what PostgreSQL was initialized with, or the <code>db-secrets.yaml</code> key inside <code>postgresql-secret</code> contains a different password than <code>POSTGRES_PASSWORD</code>.</p>
+<p><strong>Check</strong>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.POSTGRES_PASSWORD}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.db-secrets\.yaml}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</span></code></pre></div>
+<p>Both passwords must be identical.</p>
+<p><strong>Fix 1 — Align the secret (non-destructive)</strong></p>
+<p>If PostgreSQL was already initialized and running, update the secret to match the password PostgreSQL is using rather than reinitializing:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Read the password PG was initialized with (from a running psql session or from your records)</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&quot;&lt;current-pg-password&gt;&quot;</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment<span class="w"> </span>datastorage<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p><strong>Fix 2 — Reinitialize PostgreSQL (destructive)</strong></p>
+<p>If you cannot recover the original password, recreate the secret with a new password and reinitialize PostgreSQL:</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This destroys all existing data in PostgreSQL (audit history, workflow catalog). Only use as a last resort.</p>
+</div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>statefulset<span class="w"> </span>postgresql<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <h2 id="collecting-diagnostics">Collecting Diagnostics<a class="headerlink" href="#collecting-diagnostics" title="Permanent link">&para;</a></h2>
 <p>Use the must-gather tool to collect a comprehensive diagnostic bundle:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>run<span class="w"> </span>must-gather<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--image<span class="o">=</span>quay.io/kubernaut-ai/must-gather:latest<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>--restart<span class="o">=</span>Never<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span>--<span class="w"> </span>collect
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="c1"># Copy the results</span>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a>kubectl<span class="w"> </span>cp<span class="w"> </span>kubernaut-system/must-gather:/output/must-gather.tar.gz<span class="w"> </span>./must-gather.tar.gz
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span>run<span class="w"> </span>must-gather<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--image<span class="o">=</span>quay.io/kubernaut-ai/must-gather:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--restart<span class="o">=</span>Never<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--<span class="w"> </span>collect
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Copy the results</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>kubectl<span class="w"> </span>cp<span class="w"> </span>kubernaut-system/must-gather:/output/must-gather.tar.gz<span class="w"> </span>./must-gather.tar.gz
 </span></code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
@@ -3615,13 +3598,13 @@
         
         
           
-          <a href="../upgrading/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrading Kubernaut">
+          <a href="../upgrading/" class="md-footer__link md-footer__link--next" aria-label="Next: Upgrading">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Upgrading Kubernaut
+                Upgrading
               </div>
             </div>
             <div class="md-footer__button md-icon">

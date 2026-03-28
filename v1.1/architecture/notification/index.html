@@ -2196,6 +2196,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#notification-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Enrichment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notification Enrichment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enrichment-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enrichment Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful Degradation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#audit-events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3531,6 +3581,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#notification-enrichment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Enrichment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Notification Enrichment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#enrichment-flow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enrichment Flow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-degradation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful Degradation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#extensibility" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Extensibility
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#audit-events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3984,6 +4084,19 @@
 <li><strong>Hot-reload</strong>: <code>fsnotify</code> watches the directory; cache is reloaded on file changes</li>
 <li><strong>Validation</strong>: <code>ValidateRefs(refs)</code> ensures all referenced credentials exist before delivery</li>
 </ul>
+<h2 id="notification-enrichment">Notification Enrichment<a class="headerlink" href="#notification-enrichment" title="Permanent link">&para;</a></h2>
+<p>Before delivery, the controller enriches notification bodies by resolving workflow UUIDs to human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.</p>
+<h3 id="enrichment-flow">Enrichment Flow<a class="headerlink" href="#enrichment-flow" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Extract the workflow UUID from <code>spec.context.workflow</code> (checks <code>WorkflowContext.WorkflowID</code> for completion notifications, then <code>WorkflowContext.SelectedWorkflow</code> for approval notifications)</li>
+<li>Call the DataStorage catalog API (<code>GET /api/v1/workflows/{id}</code>) to resolve the UUID to a workflow name</li>
+<li>Replace every occurrence of the UUID in <code>spec.Body</code> with the resolved name</li>
+<li>Pass the enriched notification to the delivery orchestrator</li>
+</ol>
+<h3 id="graceful-degradation">Graceful Degradation<a class="headerlink" href="#graceful-degradation" title="Permanent link">&para;</a></h3>
+<p>If the workflow UUID is absent from the workflow context, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.</p>
+<h3 id="extensibility">Extensibility<a class="headerlink" href="#extensibility" title="Permanent link">&para;</a></h3>
+<p>The enrichment layer uses a <code>WorkflowNameResolver</code> interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.</p>
 <h2 id="audit-events">Audit Events<a class="headerlink" href="#audit-events" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

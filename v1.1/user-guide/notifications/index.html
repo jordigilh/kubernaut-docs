@@ -3292,6 +3292,10 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition tip">
+<p class="admonition-title">Workflow name enrichment</p>
+<p>Notification bodies automatically resolve workflow UUIDs to human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID) when the workflow exists in the catalog. If resolution fails, the original UUID is preserved. See <a href="../../architecture/notification/#notification-enrichment">Architecture: Notification Enrichment</a> for details.</p>
+</div>
 <h2 id="routing-configuration">Routing Configuration<a class="headerlink" href="#routing-configuration" title="Permanent link">&para;</a></h2>
 <p>Notifications are routed using a ConfigMap with an AlertManager-style <code>route</code> + <code>receivers</code> structure.</p>
 <p><strong>ConfigMap:</strong> <code>notification-routing-config</code></p>
@@ -3349,6 +3353,10 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Match key naming</p>
+<p>Routing match keys use <strong>kebab-case</strong> (e.g., <code>review-source</code>) in the YAML routing configuration. The <a href="../../architecture/notification/#routing-attributes">architecture reference</a> documents the same attributes using their Go struct field names (e.g., <code>reviewSource</code>). Both refer to the same underlying attribute.</p>
+</div>
 <h3 id="routing-logic">Routing Logic<a class="headerlink" href="#routing-logic" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>First matching route wins</strong> (depth-first evaluation)</li>

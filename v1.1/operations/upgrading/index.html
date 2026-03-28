@@ -2919,7 +2919,10 @@
 </span></code></pre></div>
 <p>To upgrade to a specific version, add <code>--version &lt;new-version&gt;</code>.</p>
 <h3 id="crd-schema-changes">CRD Schema Changes<a class="headerlink" href="#crd-schema-changes" title="Permanent link">&para;</a></h3>
-<p>Helm does <strong>not</strong> upgrade CRDs on <code>helm upgrade</code>. When upgrading to a chart version with CRD schema changes, extract and apply the new CRDs before upgrading:</p>
+<p>Helm does <strong>not</strong> upgrade CRDs on <code>helm upgrade</code>. Starting with <strong>v1.1</strong>, the chart includes a <code>pre-upgrade</code> hook that automatically applies all CRD manifests via <code>kubectl apply --server-side --force-conflicts</code> before the upgrade proceeds. This ensures CRD schema changes (field additions, removals, default changes) take effect without manual intervention.</p>
+<div class="admonition note">
+<p class="admonition-title">Upgrading from chart versions before v1.1</p>
+<p>If you are upgrading from a chart version that does not include the pre-upgrade hook, you must manually apply the new CRDs first:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>helm<span class="w"> </span>pull<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>--untar
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>--server-side<span class="w"> </span>--force-conflicts<span class="w"> </span>-f<span class="w"> </span>kubernaut/crds/
@@ -2927,8 +2930,10 @@
 </span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--version<span class="w"> </span>&lt;new-version&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values
 </span></code></pre></div>
+</div>
 <h3 id="key-upgrade-behaviors">Key Upgrade Behaviors<a class="headerlink" href="#key-upgrade-behaviors" title="Permanent link">&para;</a></h3>
 <ul>
+<li><strong>CRD schemas</strong> are applied automatically via the pre-upgrade hook using server-side apply with force-conflicts.</li>
 <li><strong>TLS certificates</strong> (<code>tls.mode: hook</code>): Renewed automatically if expiring within 30 days. In <code>cert-manager</code> mode, cert-manager handles renewal.</li>
 <li><strong>Database migrations</strong> run automatically via the post-upgrade hook.</li>
 <li><strong>PVCs</strong> are not modified (immutable for bound claims).</li>

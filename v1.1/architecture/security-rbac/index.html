@@ -2000,6 +2000,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="CRD Controllers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#broad-read-access-via-view-clusterrole" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Broad Read Access via view ClusterRole
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2021,6 +2038,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="OCP Monitoring RBAC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ansible-credential-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible Credential Injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2979,6 +3013,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="CRD Controllers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#broad-read-access-via-view-clusterrole" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Broad Read Access via view ClusterRole
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3000,6 +3051,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="OCP Monitoring RBAC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ansible-credential-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible Credential Injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3277,6 +3345,9 @@
 </tr>
 </tbody>
 </table>
+<h3 id="broad-read-access-via-view-clusterrole">Broad Read Access via <code>view</code> ClusterRole<a class="headerlink" href="#broad-read-access-via-view-clusterrole" title="Permanent link">&para;</a></h3>
+<p>The RemediationOrchestrator and EffectivenessMonitor are additionally bound to the Kubernetes built-in <code>view</code> ClusterRole via <code>remediationorchestrator-view</code> and <code>effectivenessmonitor-view</code> ClusterRoleBindings. This provides broad read access to CRD types not individually enumerated in their dedicated ClusterRoles -- for example, cert-manager <code>Certificate</code> resources and Istio networking resources -- which is required for pre- and post-remediation hash capture (DD-EM-002).</p>
+<p>If the <code>view</code> ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), hash capture emits a <code>HashCaptureDegraded</code> Kubernetes event and the EffectivenessAssessment proceeds in <strong>degraded mode</strong> rather than failing the pipeline. In degraded mode, the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.</p>
 <h2 id="workflow-execution">Workflow Execution<a class="headerlink" href="#workflow-execution" title="Permanent link">&para;</a></h2>
 <p>Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the <code>kubernaut-workflows</code> namespace under the <code>kubernaut-workflow-runner</code> ServiceAccount. This is the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.</p>
 <table>
@@ -3373,8 +3444,33 @@
 <td>get, list, create, update, patch, delete</td>
 <td>Manage Istio networking resources</td>
 </tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>workflowexecutions</code></td>
+<td>get</td>
+<td>Ansible playbooks read WFE ownerReferences for RR correlation</td>
+</tr>
+<tr>
+<td><code>storage.k8s.io</code></td>
+<td><code>storageclasses</code></td>
+<td>get, list</td>
+<td>Discover default StorageClass for PVC migration</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>endpoints</code></td>
+<td>get, list</td>
+<td>Check service endpoint health</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code></td>
+<td>get, list, create, delete</td>
+<td>pg_dump/pg_restore Job lifecycle (disk-pressure-emptydir scenario)</td>
+</tr>
 </tbody>
 </table>
+<p>The last four rules were added for production Ansible playbooks (DD-WE-007). In v1.2, per-workflow SA scoping (<a href="https://github.com/jordigilh/kubernaut/issues/501">#501</a>) will replace the shared ClusterRole with schema-declared RBAC per execution.</p>
 <p>Additionally, a namespace-scoped <code>workflowexecution-dep-reader</code> Role grants <code>get</code>, <code>list</code>, <code>watch</code> on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.</p>
 <div class="admonition info">
 <p class="admonition-title">Per-workflow scoped RBAC</p>
@@ -3410,6 +3506,19 @@
 </table>
 <p>The AlertManager ClusterRole and ClusterRoleBinding are only created when <strong>both</strong> <code>ocpMonitoringRbac</code> and <code>alertManagerEnabled</code> are <code>true</code>.</p>
 <p>OCP's <code>kube-rbac-proxy</code> requires <strong>resource-level</strong> RBAC (<code>monitoring.coreos.com/alertmanagers/api</code>) rather than <code>nonResourceURLs</code> for AlertManager API access. Standard <code>nonResourceURLs</code> rules are silently ignored by <code>kube-rbac-proxy</code>, causing EM AlertManager queries to fail with <code>403 Forbidden</code>.</p>
+<h3 id="ansible-credential-injection">Ansible Credential Injection<a class="headerlink" href="#ansible-credential-injection" title="Permanent link">&para;</a></h3>
+<p>When the Ansible/AWX execution engine is enabled, the WorkflowExecution controller injects the cluster's Kubernetes API credentials into AWX Job Templates so that <code>kubernetes.core</code> Ansible modules can authenticate against the target cluster. The v2 custom credential type (<code>kubernaut-k8s-bearer-token-v2</code>) uses <strong>kubeconfig-file injection</strong> rather than environment variables, because in-cluster ServiceAccount config inside AAP execution environments takes precedence over <code>K8S_AUTH_*</code> env vars. If resolution picks a built-in or kind-matched type, the injector may differ.</p>
+<p>The credential type resolution follows a 6-step process:</p>
+<ol>
+<li>Look for the built-in AWX type ("OpenShift or Kubernetes API Bearer Token")</li>
+<li>Look up a credential type by kind (<code>FindCredentialTypeByKind("kubernetes", true)</code>)</li>
+<li>Fall back to <code>kubernaut-k8s-bearer-token</code> (custom type from earlier versions)</li>
+<li>Fall back to <code>kubernaut-k8s-bearer-token-v2</code> (kubeconfig-based type)</li>
+<li>If none exist, create the v2 type with a Jinja2 kubeconfig template that AWX renders at job launch</li>
+<li>Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate</li>
+</ol>
+<p>The v2 kubeconfig template conditionally includes <code>certificate-authority-data</code> when the cluster CA is available, or sets <code>insecure-skip-tls-verify: true</code> otherwise. AWX injects the rendered kubeconfig as a temp file and sets <code>K8S_AUTH_KUBECONFIG</code> to point to it, ensuring <code>kubernetes.core</code> modules use the injected credentials instead of in-cluster config.</p>
+<p>Ephemeral credentials are cleaned up after the AWX job completes. See <a href="https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md">BR-WE-017</a> for the full shared SA model and the planned v1.2 transition to per-workflow ServiceAccounts.</p>
 <h2 id="internal-service-communication">Internal Service Communication<a class="headerlink" href="#internal-service-communication" title="Permanent link">&para;</a></h2>
 <h3 id="datastorage-authentication">DataStorage Authentication<a class="headerlink" href="#datastorage-authentication" title="Permanent link">&para;</a></h3>
 <p>DataStorage uses the same TokenReview + SAR pattern as the Gateway. The <code>data-storage-auth-middleware</code> ClusterRole grants DataStorage permission to validate client tokens:</p>
@@ -3534,7 +3643,7 @@
 <h3 id="postgresql-and-valkey">PostgreSQL and Valkey<a class="headerlink" href="#postgresql-and-valkey" title="Permanent link">&para;</a></h3>
 <p>Both run with dedicated ServiceAccounts that have <code>automountServiceAccountToken: false</code>, preventing unnecessary API token mounting.</p>
 <h3 id="helm-hooks">Helm Hooks<a class="headerlink" href="#helm-hooks" title="Permanent link">&para;</a></h3>
-<p>The shared hook ServiceAccount (<code>kubernaut-hook-sa</code>) and its ClusterRole are used by TLS certificate generation jobs and the database migration job:</p>
+<p>The shared hook ServiceAccount (<code>kubernaut-hook-sa</code>) and its ClusterRole are used by TLS certificate generation jobs, the database migration job, and the CRD upgrade job:</p>
 <table>
 <thead>
 <tr>
@@ -3556,6 +3665,12 @@
 <td><code>mutatingwebhookconfigurations</code>, <code>validatingwebhookconfigurations</code></td>
 <td>get, patch</td>
 <td>Patch <code>caBundle</code> (hook mode only, see <a href="https://github.com/jordigilh/kubernaut/issues/334">#334</a>)</td>
+</tr>
+<tr>
+<td><code>apiextensions.k8s.io</code></td>
+<td><code>customresourcedefinitions</code></td>
+<td>get, list, create, update, patch</td>
+<td>CRD pre-upgrade server-side apply (<a href="https://github.com/jordigilh/kubernaut/issues/521">#521</a>)</td>
 </tr>
 <tr>
 <td>(core)</td>

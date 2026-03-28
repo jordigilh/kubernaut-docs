@@ -111,21 +111,10 @@ scrape_configs:
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `datastorage_write_duration_seconds` | Histogram | `table` | Write latency per table |
-| `datastorage_query_duration_seconds` | Histogram | `table`, `operation` | Query latency per table and operation |
+| `datastorage_write_duration_seconds` | Histogram | `table` | Duration of write operations in seconds |
 | `datastorage_audit_lag_seconds` | Histogram | `service` | Lag between event occurrence and write |
-| `datastorage_audit_ingestion_total` | Counter | `service`, `status` | Audit events ingested by source service and outcome |
-| `datastorage_dlq_depth` | Gauge | `stream` | Current dead-letter queue depth |
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |
-
-!!! tip "Discovering all metrics"
-    The tables above document the most operationally relevant metrics. Each service may expose additional metrics. To see the full set, scrape the `/metrics` endpoint directly:
-
-    ```bash
-    kubectl port-forward -n kubernaut-system svc/datastorage 9090:9090
-    curl -s http://localhost:9090/metrics | grep -v '^#' | head -50
-    ```
 
 ## AI Agent API Metrics
 

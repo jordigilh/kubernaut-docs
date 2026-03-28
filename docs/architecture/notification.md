@@ -241,14 +241,14 @@ Before delivery, the controller enriches notification bodies by resolving workfl
 
 ### Enrichment Flow
 
-1. Extract the workflow UUID from `spec.Metadata` (checks `workflowId` for completion notifications, then `selectedWorkflow` for approval notifications)
+1. Extract the workflow UUID from `spec.context.workflow` (checks `WorkflowContext.WorkflowID` for completion notifications, then `WorkflowContext.SelectedWorkflow` for approval notifications)
 2. Call the DataStorage catalog API (`GET /api/v1/workflows/{id}`) to resolve the UUID to a workflow name
 3. Replace every occurrence of the UUID in `spec.Body` with the resolved name
 4. Pass the enriched notification to the delivery orchestrator
 
 ### Graceful Degradation
 
-If the workflow UUID is absent from metadata, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.
+If the workflow UUID is absent from the workflow context, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.
 
 ### Extensibility
 

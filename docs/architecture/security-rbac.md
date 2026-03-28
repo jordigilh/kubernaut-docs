@@ -138,17 +138,18 @@ OCP's `kube-rbac-proxy` requires **resource-level** RBAC (`monitoring.coreos.com
 
 ### Ansible Credential Injection
 
-When the Ansible/AWX execution engine is enabled, the WorkflowExecution controller injects the cluster's Kubernetes API credentials into AWX Job Templates so that `kubernetes.core` Ansible modules can authenticate against the target cluster. The controller uses **kubeconfig-file injection** rather than environment variables, because in-cluster ServiceAccount config inside AAP execution environments takes precedence over `K8S_AUTH_*` env vars.
+When the Ansible/AWX execution engine is enabled, the WorkflowExecution controller injects the cluster's Kubernetes API credentials into AWX Job Templates so that `kubernetes.core` Ansible modules can authenticate against the target cluster. The v2 custom credential type (`kubernaut-k8s-bearer-token-v2`) uses **kubeconfig-file injection** rather than environment variables, because in-cluster ServiceAccount config inside AAP execution environments takes precedence over `K8S_AUTH_*` env vars. If resolution picks a built-in or kind-matched type, the injector may differ.
 
-The credential type resolution follows a 5-step process:
+The credential type resolution follows a 6-step process:
 
 1. Look for the built-in AWX type ("OpenShift or Kubernetes API Bearer Token")
-2. Fall back to `kubernaut-k8s-bearer-token` (custom type from earlier versions)
-3. Fall back to `kubernaut-k8s-bearer-token-v2` (kubeconfig-based type)
-4. If none exist, create the v2 type with a Jinja2 kubeconfig template that AWX renders at job launch
-5. Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate
+2. Look up a credential type by kind (`FindCredentialTypeByKind("kubernetes", true)`)
+3. Fall back to `kubernaut-k8s-bearer-token` (custom type from earlier versions)
+4. Fall back to `kubernaut-k8s-bearer-token-v2` (kubeconfig-based type)
+5. If none exist, create the v2 type with a Jinja2 kubeconfig template that AWX renders at job launch
+6. Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate
 
-The kubeconfig template conditionally includes `certificate-authority-data` when the cluster CA is available, or sets `insecure-skip-tls-verify: true` otherwise. AWX injects the rendered kubeconfig as a temp file and sets `K8S_AUTH_KUBECONFIG` to point to it, ensuring `kubernetes.core` modules use the injected credentials instead of in-cluster config.
+The v2 kubeconfig template conditionally includes `certificate-authority-data` when the cluster CA is available, or sets `insecure-skip-tls-verify: true` otherwise. AWX injects the rendered kubeconfig as a temp file and sets `K8S_AUTH_KUBECONFIG` to point to it, ensuring `kubernetes.core` modules use the injected credentials instead of in-cluster config.
 
 Ephemeral credentials are cleaned up after the AWX job completes. See [BR-WE-017](https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md) for the full shared SA model and the planned v1.2 transition to per-workflow ServiceAccounts.
 

@@ -26,27 +26,17 @@ Notifications are routed using a ConfigMap with an AlertManager-style `route` + 
 
 ```yaml
 route:
-  receiver: default-console
-  routes:
-    - match:
-        type: escalation
-      receiver: slack-alerts
-    - match:
-        type: approval_required
-      receiver: slack-alerts
-    - match:
-        type: failed
-      receiver: slack-alerts
-
+  receiver: slack-and-console
 receivers:
-  - name: default-console
+  - name: slack-and-console
     consoleConfigs:
       - enabled: true
-  - name: slack-alerts
     slackConfigs:
       - channel: "#kubernaut-alerts"
         credentialRef: slack-webhook
 ```
+
+The catch-all receiver routes **all** notification types to both Slack and console. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel.
 
 ### Match Fields
 

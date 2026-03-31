@@ -413,7 +413,9 @@ The LLM investigation can produce 8 distinct outcomes, each handled differently 
 ```mermaid
 flowchart TD
     HAPI["HAPI Response"] --> NHR{"needs_human_review?"}
-    NHR -->|true| HumanReview["Human Review<br/><small>Phase: Failed</small>"]
+    NHR -->|true| HasWFReview{"selected_workflow?"}
+    HasWFReview -->|present| HRFailed["Human Review + Workflow<br/><small>Phase: Failed</small>"]
+    HasWFReview -->|null| HRCompleted["Manual Review Required<br/><small>Phase: Completed</small>"]
     NHR -->|false| HasWF{"selected_workflow?"}
     HasWF -->|null| Resolved{"Problem resolved?"}
     HasWF -->|present| Confidence{"confidence >= 0.7?"}
@@ -475,7 +477,7 @@ The LLM selected a workflow that fails catalog validation (wrong ID, image misma
 The LLM returns a workflow with `confidence` below the investigation threshold (0.7). HAPI does not enforce this threshold -- it passes the confidence through. The AA controller's response processor detects the low confidence.
 
 **Fields:** `selected_workflow` present, `confidence < 0.7`
-**Next:** AA routes to human review via `handleLowConfidenceFailure`. Rego is never evaluated.
+**Next:** AA response processor rejects the low-confidence selection and routes to human review. Rego is never evaluated.
 
 ### Outcome 8: LLM Explicitly Requests Human Review
 

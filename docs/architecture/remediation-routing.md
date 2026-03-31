@@ -25,10 +25,10 @@ stateDiagram-v2
     Processing --> Analyzing : SP completed → Create AIAnalysis
     Processing --> Failed : SP failed
     Processing --> TimedOut : Phase timeout
-    Analyzing --> AwaitingApproval : Low confidence → Create RAR
+    Analyzing --> AwaitingApproval : Rego approval required → Create RAR
     Analyzing --> Executing : Auto-approved + post-analysis passes → Create WFE
     Analyzing --> Blocked : Post-analysis check fails
-    Analyzing --> Completed : No workflow needed / ManualReviewRequired
+    Analyzing --> Completed : NoActionRequired / ManualReviewRequired
     Analyzing --> Failed : AI analysis failed
     Analyzing --> TimedOut : Phase timeout
     AwaitingApproval --> Executing : Approved → Create WFE
@@ -97,14 +97,15 @@ Failed      → Blocked
 
 ### Analyzing → (multiple outcomes)
 
-The AI Analysis produces one of five outcomes:
+The AI Analysis produces one of six outcomes:
 
 | AA Outcome | RR Action |
 |---|---|
 | **Normal** (workflow selected, auto-approved) | Run post-analysis checks → create **WFE** → **Executing** |
-| **ApprovalRequired** (low confidence) | Create **RemediationApprovalRequest** → **AwaitingApproval** |
+| **ApprovalRequired** (Rego policy mandate) | Create **RemediationApprovalRequest** → **AwaitingApproval** |
 | **WorkflowNotNeeded** (issue already resolved) | Transition to **Completed** with `Outcome: NoActionRequired` |
-| **ManualReviewRequired** (no workflow, human review needed) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
+| **ManualReviewRequired** (no workflow, HAPI flagged human review) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
+| **HumanReviewWithWorkflow** (HAPI flagged review + workflow present) | Transition to **Failed** (see [ManualReviewRequired Outcome](#manualreviewrequired-outcome)) |
 | **Failed** (AI analysis error) | Transition to **Failed** |
 
 For the normal path, the Orchestrator runs **post-analysis routing checks** before creating the WFE. If blocked, the RR enters **Blocked** (returning to Analyzing when the block clears).
@@ -272,7 +273,8 @@ When a RR reaches a terminal phase:
 
 | Trigger | Escalation | Mechanism |
 |---|---|---|
-| Low AI confidence | Human approval | RemediationApprovalRequest CRD |
+| Rego policy requires approval (environment, sensitive kind, confidence) | Human approval | RemediationApprovalRequest CRD |
+| HAPI flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
 | Failure at any stage | Team notification | NotificationRequest with error context |
 | No matching workflow | Team notification with RCA | NotificationRequest |
 | Consecutive ineffective remediations | Manual review | `IneffectiveChain` block + `RequiresManualReview` |

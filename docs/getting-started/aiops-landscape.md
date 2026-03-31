@@ -36,7 +36,7 @@ Platforms like Dynatrace Davis and Datadog Watchdog build their intelligence fro
 
 Kubernaut's LLM investigates each incident as an open-ended question rather than a pattern match:
 
-1. The LLM receives the alert context, affected resource metadata, namespace labels, and remediation history.
+1. The LLM receives the alert context, remediation target metadata, namespace labels, and remediation history.
 2. It queries live cluster state via tool calls -- `kubectl get`, `kubectl describe`, `kubectl logs`, Prometheus queries.
 3. It reasons about the root cause, considering that the signal resource (e.g., a crashing Pod) may differ from the actual cause (e.g., a broken ConfigMap or an exhausted ResourceQuota).
 4. It selects a remediation workflow from the catalog based on the diagnosed cause, environmental context (GitOps-managed? production? stateful?), and confidence level.
@@ -54,7 +54,7 @@ Kubernaut's LLM investigates each incident as an open-ended question rather than
 - **Non-deterministic**: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.
 - **Latency**: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.
 - **Hallucination risk**: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.
-- **Per-token cost**: Each investigation consumes LLM API tokens. Workflow selection from the catalog is label-based (no LLM call), so cost scales with investigations, not catalog size. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.
+- **Per-token cost**: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.
 
 ## Predictive AI as a Knowledge-Based Agent
 

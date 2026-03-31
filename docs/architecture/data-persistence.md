@@ -147,7 +147,7 @@ The action type registry for workflow categorization.
 | `created_at` | `TIMESTAMPTZ` | Creation timestamp |
 | `updated_at` | `TIMESTAMPTZ` | Last update |
 
-The database deploys with a clean schema -- no pre-seeded rows. Action types are registered via `kubectl apply -f` on `ActionType` CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API. See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy) and [Installation: Action Types](../getting-started/installation.md#action-types).
+The database deploys with a clean schema -- no pre-seeded rows. Action types are registered via `kubectl apply -f` on `ActionType` CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API. See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy) and [Installation: Action Types](../getting-started/installation.md#action-types-and-workflows-demo-content).
 
 ### Other Tables
 

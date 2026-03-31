@@ -65,11 +65,41 @@ kubectl create secret generic llm-credentials \
   --from-literal=OPENAI_API_KEY=sk-... \
   -n kubernaut-system
 
-# 4. Install Kubernaut
+# 4. Configure AlertManager to forward alerts to the Gateway
+# The Gateway requires authenticated signal sources. Create a webhook receiver:
+kubectl apply -f - <<AMCFG
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: AlertmanagerConfig
+metadata:
+  name: kubernaut-webhook
+  namespace: monitoring
+spec:
+  route:
+    receiver: kubernaut
+    matchers:
+      - name: kubernaut_managed
+        value: "true"
+  receivers:
+    - name: kubernaut
+      webhookConfigs:
+        - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+          httpConfig:
+            authorization:
+              type: Bearer
+              credentials:
+                name: alertmanager-kubernaut-token
+                key: token
+AMCFG
+
+# 5. Install Kubernaut with signal source authentication
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
+  --version {{ chart_version }} \
   --set holmesgptApi.llm.provider=openai \
   --set holmesgptApi.llm.model=gpt-4o \
+  --set gateway.auth.signalSources[0].name=alertmanager \
+  --set gateway.auth.signalSources[0].namespace=monitoring \
+  --set gateway.auth.signalSources[0].serviceAccount=alertmanager-kube-prometheus-stack-alertmanager \
   --wait --timeout 10m
 ```
 

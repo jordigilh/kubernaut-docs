@@ -105,7 +105,7 @@ The `nonexistent-ca-secret` was then deleted to simulate the problem recurring. 
 
 ### History-Informed Decision Making
 
-When the LLM investigated the second incident, HAPI's `get_resource_context` tool
+When the LLM investigated the second incident, HAPI's resource context tools
 automatically queried DataStorage for the resource's remediation history. The HAPI logs
 confirmed:
 

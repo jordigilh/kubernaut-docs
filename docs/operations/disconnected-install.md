@@ -36,6 +36,8 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 | `quay.io/kubernaut-ai/effectivenessmonitor` | Post-remediation effectiveness verification |
 | `quay.io/kubernaut-ai/holmesgpt-api` | LLM integration service |
 | `quay.io/kubernaut-ai/authwebhook` | Admission controller for CRD authorization |
+| `quay.io/kubernaut-ai/db-migrate` | Database schema migration (pre-upgrade hook) |
+| `quay.io/kubernaut-ai/must-gather` | Diagnostic data collection for support |
 
 ### Infrastructure images
 
@@ -235,7 +237,7 @@ The `separator` field controls how the namespace is joined to the service name:
 
 ### 4c. Install with layered overlays
 
-The three value files must be layered in this order:
+The two overlay files must be layered on top of the base `values.yaml` in this order:
 
 | Order | File | Purpose |
 |-------|------|---------|

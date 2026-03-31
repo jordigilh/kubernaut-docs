@@ -93,7 +93,7 @@ receivers:
 
 | Key | Source | Example Values |
 |---|---|---|
-| `type` | Notification type | `escalation`, `approval_required`, `failed`, `manual-review`, `completion` |
+| `type` | Notification type | `escalation`, `simple`, `status-update`, `approval`, `manual-review`, `completion` |
 | `severity` | Signal severity | `critical`, `high`, `medium`, `low` |
 | `priority` | Signal priority | `P0`, `P1`, `P2`, `P3` (also accepts `critical`, `high`, `medium`, `low`) |
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |

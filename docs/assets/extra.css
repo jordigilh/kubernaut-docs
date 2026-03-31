@@ -1,0 +1,8 @@
+/* Mermaid diagrams: transparent background for dark mode compatibility */
+.mermaid {
+  background: transparent !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid {
+  filter: none;
+}

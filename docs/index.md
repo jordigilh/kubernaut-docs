@@ -80,18 +80,19 @@ graph LR
     D --> E[Effectiveness<br/>Monitoring]
     E --> F[Notification]
 
-    style A fill:#4051b5,color:#fff
-    style B fill:#4051b5,color:#fff
-    style C fill:#7c4dff,color:#fff
-    style D fill:#4051b5,color:#fff
-    style E fill:#00897b,color:#fff
-    style F fill:#00897b,color:#fff
+    classDef core fill:#4051b5,stroke:#3040a0,color:#fff
+    classDef ai fill:#7c4dff,stroke:#6030dd,color:#fff
+    classDef closing fill:#00897b,stroke:#006b60,color:#fff
+
+    class A,B,D core
+    class C ai
+    class E,F closing
 ```
 
 1. **Signal Detection** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a `RemediationRequest`.
 2. **Signal Processing** — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.
 3. **AI Analysis** — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.
-4. **Workflow Execution** — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP), with optional human approval gates.
+4. **Workflow Execution** — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).
 5. **Effectiveness Monitoring** — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.
 6. **Notification** — Notifies the team with the full remediation outcome, including the effectiveness assessment results.
 
@@ -104,7 +105,7 @@ graph LR
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
 | **AI-Powered Root Cause Analysis** | HolmesGPT with LLM providers (Vertex AI, OpenAI, LiteLLM), Kubernetes inspection tools, and configurable observability toolsets (Prometheus, Grafana Loki/Tempo, and more) |
 | **Workflow Catalog** | Searchable OCI-containerized workflows with label-based matching and confidence scoring |
-| **Flexible Execution** | Kubernetes Jobs (single-step), Tekton Pipelines (multi-step), or Ansible (AWX/AAP) with optional human approval gates |
+| **Flexible Execution** | Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP) |
 | **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |
 | **Safety-First Design** | Admission webhooks, human approval gates, configurable confidence thresholds, effectiveness tracking |
 | **SOC2 Alignment** | Full audit trails with 7-year retention, CRD reconstruction from audit events, operator attribution |

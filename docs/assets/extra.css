@@ -1,8 +1,26 @@
 /* Mermaid diagrams: transparent background for dark mode compatibility */
-.mermaid {
+.mermaid,
+.mermaid svg {
   background: transparent !important;
 }
 
-[data-md-color-scheme="slate"] .mermaid {
-  filter: none;
+/* Dark mode: force Mermaid label text and edges to be visible */
+[data-md-color-scheme="slate"] .mermaid .nodeLabel,
+[data-md-color-scheme="slate"] .mermaid .edgeLabel,
+[data-md-color-scheme="slate"] .mermaid .label {
+  color: #fff;
+}
+
+[data-md-color-scheme="slate"] .mermaid .edgePath .path,
+[data-md-color-scheme="slate"] .mermaid .flowchart-link {
+  stroke: #aaa !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .arrowheadPath,
+[data-md-color-scheme="slate"] .mermaid marker path {
+  fill: #aaa !important;
+}
+
+[data-md-color-scheme="slate"] .mermaid .edgeLabel {
+  background-color: transparent !important;
 }

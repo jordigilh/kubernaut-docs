@@ -87,6 +87,8 @@ graph LR
     class A,B,D core
     class C ai
     class E,F closing
+
+    linkStyle default stroke:#888,stroke-width:2px
 ```
 
 1. **Signal Detection** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a `RemediationRequest`.

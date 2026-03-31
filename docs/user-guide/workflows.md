@@ -308,7 +308,7 @@ Every workflow schema **must** declare these three parameters as `required: true
 
 These are **HAPI-injected** -- HAPI derives them from the K8s-verified `root_owner` (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into `selected_workflow.parameters` before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).
 
-If HAPI cannot determine the `root_owner` (e.g., `get_resource_context` was never called), the investigation is flagged `rca_incomplete` with `needs_human_review=true`.
+If HAPI cannot determine the `root_owner` (e.g., the resource context tools were never called), the investigation is flagged `rca_incomplete` with `needs_human_review=true`.
 
 Additionally, the WFE controller injects `TARGET_RESOURCE` (composite format `namespace/kind/name`) from `wfe.Spec.TargetResource` into every Job and Tekton PipelineRun as a system variable.
 
@@ -627,7 +627,7 @@ When `demoContent.enabled: true` (the default), the chart seeds the following de
 |---|---|
 | `crashloop-rollback-v1` | RollbackDeployment |
 | `crashloop-rollback-risk-v1` | RollbackDeployment |
-| `restart-pods-v1` | RollbackDeployment |
+| `restart-pod-v1` | RestartPod |
 | `rollback-deployment-v1` | RollbackDeployment |
 | `increase-memory-limits-v1` | IncreaseMemoryLimits |
 | `increase-memory-limits-gitops-v1` | IncreaseMemoryLimits |

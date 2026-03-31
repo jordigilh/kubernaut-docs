@@ -43,7 +43,7 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/v1/effectiveness/{correlation_id}` | Get effectiveness score for a remediation |
-| `GET` | `/api/v1/remediation-history/context` | Get remediation history for a target resource (used by HolmesGPT for LLM prompt enrichment) |
+| `GET` | `/api/v1/remediation-history/context` | Get remediation history for a target resource (called internally by HAPI resource-context tools during investigation; not LLM-callable directly) |
 
 ### Workflow Catalog
 

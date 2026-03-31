@@ -47,7 +47,7 @@ Routes match on notification attributes:
 
 | Match Key | Source | Example Values |
 |---|---|---|
-| `type` | Notification type | `escalation`, `approval_required`, `failed`, `manual-review`, `completion` |
+| `type` | Notification type | `escalation`, `simple`, `status-update`, `approval`, `manual-review`, `completion` |
 | `severity` | Signal severity | `critical`, `high`, `medium`, `low` |
 | `priority` | Signal priority | `P0`, `P1`, `P2`, `P3` (also accepts `critical`, `high`, `medium`, `low`) |
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |
@@ -128,7 +128,7 @@ delivery:
   "timestamp": "2026-03-04T12:34:56Z",
   "notification_name": "approval-required-rr-12345",
   "notification_namespace": "kubernaut-system",
-  "type": "approval_required",
+  "type": "approval",
   "priority": "critical",
   "subject": "Human approval required for OOMKilled remediation",
   "body": "...",
@@ -147,7 +147,7 @@ Slack delivery sends Block Kit messages via Incoming Webhooks.
 
 1. **Header block** -- Priority emoji + subject (e.g., `:rotating_light: Human approval required for OOMKilled remediation`)
 2. **Section block** -- Notification body (Markdown converted to Slack mrkdwn)
-3. **Context block** -- `*Priority:* critical | *Type:* approval_required`
+3. **Context block** -- `*Priority:* critical | *Type:* approval`
 
 Priority emojis: Critical = :rotating_light:, High = :warning:, Medium = :information_source:, Low = :speech_balloon:
 

@@ -9,7 +9,7 @@ After a remediation workflow completes, Kubernaut evaluates whether the fix actu
 
 When a remediation reaches a terminal phase, the Orchestrator creates an `EffectivenessAssessment` CRD. The Effectiveness Monitor then:
 
-1. **Waits for stabilization** — A configurable window (default: 5 minutes) allows the system to settle after the fix
+1. **Waits for stabilization** — Two configurable windows control timing: the Remediation Orchestrator waits **5 minutes** (`remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`) before creating the EA, and the Effectiveness Monitor waits **30 seconds** (`effectivenessmonitor.config.assessment.stabilizationWindow`) after EA creation before running assessments
 2. **Evaluates effectiveness** through multiple dimensions
 3. **Records the assessment** in the audit trail
 

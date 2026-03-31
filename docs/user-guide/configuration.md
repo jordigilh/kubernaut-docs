@@ -122,7 +122,12 @@ One of these two options **must** be provided; the chart will fail at install ti
 | `notification.routing.existingConfigMap` | Pre-existing ConfigMap name for routing config. Takes priority over `routing.content`. | `""` |
 | `notification.credentials` | Projected volume sources from K8s Secrets | `[]` |
 
-When neither `routing.content` nor `routing.existingConfigMap` is set, the chart generates a console-only default routing config. To enable Slack or other channels, provide a routing config:
+When neither `routing.content` nor `routing.existingConfigMap` is set, the chart generates a default routing config:
+
+- If `notification.slack.secretName` **is set**, the chart generates a **`slack-and-console`** catch-all receiver that routes all notification types to both Slack and console.
+- If `notification.slack.secretName` **is not set**, the chart generates a **console-only** default.
+
+To provide fully custom routing:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \

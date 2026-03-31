@@ -72,24 +72,7 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
 Kubernaut automates the entire incident response lifecycle through a six-stage pipeline:
 
-```mermaid
-graph LR
-    A[Signal Detection] --> B[Signal Processing]
-    B --> C[AI Analysis]
-    C --> D[Workflow Execution]
-    D --> E[Effectiveness<br/>Monitoring]
-    E --> F[Notification]
-
-    classDef core fill:#4051b5,stroke:#3040a0,color:#fff
-    classDef ai fill:#7c4dff,stroke:#6030dd,color:#fff
-    classDef closing fill:#00897b,stroke:#006b60,color:#fff
-
-    class A,B,D core
-    class C ai
-    class E,F closing
-
-    linkStyle default stroke:#888,stroke-width:2px
-```
+![Kubernaut Pipeline Overview](assets/images/pipeline-overview.png){ .pipeline-overview }
 
 1. **Signal Detection** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a `RemediationRequest`.
 2. **Signal Processing** — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.

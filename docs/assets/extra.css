@@ -1,3 +1,10 @@
+/* Pipeline overview image */
+.pipeline-overview {
+  display: block;
+  margin: 1.5rem auto;
+  max-width: 100%;
+}
+
 /* Mermaid: kill the white background rect that Mermaid injects into SVGs */
 .mermaid,
 .mermaid svg {

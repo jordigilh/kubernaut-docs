@@ -1246,17 +1246,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-validate-action-verify-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Validate-Action-Verify Pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#action-type-taxonomy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3443,17 +3432,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#the-validate-action-verify-pattern" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Validate-Action-Verify Pattern
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#action-type-taxonomy" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3797,12 +3775,6 @@
 </span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span><span class="nb">exit</span><span class="w"> </span><span class="m">1</span>
 </span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="k">fi</span>
 </span></code></pre></div>
-<p>This follows the <strong>Validate-Action-Verify</strong> pattern:</p>
-<ol>
-<li><strong>Validate</strong> -- Confirm the deployment exists</li>
-<li><strong>Action</strong> -- Perform the rolling restart</li>
-<li><strong>Verify</strong> -- Check that all replicas are ready</li>
-</ol>
 <h3 id="step-3-build-the-execution-bundle">Step 3: Build the Execution Bundle<a class="headerlink" href="#step-3-build-the-execution-bundle" title="Permanent link">&para;</a></h3>
 <p>Create <code>Dockerfile.exec</code>:</p>
 <div class="language-dockerfile highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">FROM</span><span class="w"> </span><span class="s">registry.access.redhat.com/ubi9/ubi-minimal:latest</span>
@@ -4175,14 +4147,6 @@
 </ul>
 <p><strong>Automatic K8s API credentials:</strong></p>
 <p>The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using <code>kubernetes.core</code> modules receive <code>K8S_AUTH_HOST</code>, <code>K8S_AUTH_API_KEY</code>, and <code>K8S_AUTH_SSL_CA_CERT</code> environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.</p>
-<h2 id="the-validate-action-verify-pattern">The Validate-Action-Verify Pattern<a class="headerlink" href="#the-validate-action-verify-pattern" title="Permanent link">&para;</a></h2>
-<p>Workflows should follow the <strong>Validate-Action-Verify</strong> (VAV) pattern:</p>
-<ol>
-<li><strong>Validate</strong> -- Confirm the issue exists and the fix is applicable (e.g., check the deployment exists, verify the resource is in the expected state)</li>
-<li><strong>Action</strong> -- Apply the remediation (patch deployment, scale resources, restart pods)</li>
-<li><strong>Verify</strong> -- Check that the fix was applied correctly (e.g., rollout status, health check)</li>
-</ol>
-<p>This ensures workflows are <strong>idempotent</strong> and <strong>safe to retry</strong>. If the validate step fails, the workflow exits early without making changes. If the verify step fails, the Effectiveness Monitor will detect the failure.</p>
 <h2 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h2>
 <p>Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, <code>preconditions</code>) that the LLM reads during the <code>list_available_actions</code> step.</p>
 <h3 id="demo-action-types">Demo Action Types<a class="headerlink" href="#demo-action-types" title="Permanent link">&para;</a></h3>

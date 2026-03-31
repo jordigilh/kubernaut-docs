@@ -43,7 +43,7 @@ Each service has a single responsibility:
 | **Gateway** | Signal ingestion, authentication, scope checking, deduplication, RR creation | [Gateway](gateway.md) |
 | **Signal Processing** | Kubernetes context enrichment, Rego-based classification (environment, severity, priority, signal mode), business categorization | [Signal Processing](signal-processing.md) |
 | **AI Analysis** | Orchestrates HolmesGPT investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
-| **HolmesGPT API** | LLM-driven investigation with K8s tools, infrastructure label detection, remediation history, three-step workflow discovery | [Investigation Pipeline](hapi-investigation.md) |
+| **HolmesGPT API** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](hapi-investigation.md) |
 | **Remediation Orchestrator** | Lifecycle coordination, routing engine, timeout enforcement, child CRD management | [Remediation Routing](remediation-routing.md) |
 | **Workflow Execution** | Dependency resolution, Job/Tekton execution, cooldown, deterministic locking | [Workflow Execution](workflow-execution.md) |
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |
@@ -150,7 +150,7 @@ An internal admission webhook validates and audits:
 - **DataStorage** -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
 - **Gateway** -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see [Security & RBAC](security-rbac.md#signal-ingestion))
 - **NetworkPolicies** -- Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
-- **TLS** -- Not configured for internal service-to-service traffic in v1.0
+- **TLS** -- Not configured for internal service-to-service traffic in v1.1
 
 ## Error Handling Patterns
 

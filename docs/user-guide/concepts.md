@@ -45,11 +45,13 @@ Created after a RemediationRequest is accepted. The Signal Processing controller
 
 Created after signal enrichment completes. The AI Analysis controller:
 
-1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for live root cause investigation
-2. HolmesGPT investigates using Kubernetes inspection tools (pod logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki/Tempo, and other configured observability toolsets
-3. Resolves the target resource's owner chain, computes a spec hash, fetches **remediation history** (past outcomes and effectiveness scores), and detects **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB) — giving the LLM full context before workflow selection
-4. Searches the **workflow catalog** for a matching remediation based on enriched signal labels, detected infrastructure, and historical outcomes
-5. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
+1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for a three-phase LLM investigation:
+    - **Phase 1: Investigate** — Root cause analysis using live cluster data (logs, events, resource state, metrics)
+    - **Phase 2: Enrich** — Resolves the target resource's owner chain, computes a spec hash, fetches **remediation history** (past outcomes and effectiveness scores via DataStorage), and detects **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
+    - **Phase 3: Workflow Select** — The LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection
+2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
+
+See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full three-phase architecture.
 
 ### RemediationApprovalRequest
 
@@ -94,8 +96,8 @@ A `RemediationRequest` progresses through these phases:
 | **Executing** | Workflow is running the remediation |
 | **Verifying** | Workflow succeeded; effectiveness assessment in progress |
 | **Blocked** | Routing engine prevents progress; automatically retried after cooldown (see below) |
-| **Completed** | Remediation finished successfully |
-| **Failed** | Remediation failed at any stage (including human rejection) |
+| **Completed** | Remediation finished successfully, or `NoActionRequired` / `ManualReviewRequired` outcome |
+| **Failed** | Remediation failed at any stage (including human rejection, or HAPI flagged human review with a selected workflow) |
 | **TimedOut** | Phase timeout expired |
 | **Skipped** | Remediation skipped (e.g., resource busy) |
 | **Cancelled** | Remediation cancelled |

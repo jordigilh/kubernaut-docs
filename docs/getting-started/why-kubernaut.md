@@ -39,11 +39,11 @@ The AIOps remediation landscape has three distinct approaches. Kubernaut uses ge
 | **Learning from failure** | None — repeats the same action | Adjusts baselines over time | Effectiveness scores feed into future investigations |
 | **Cold start** | None — works immediately | Weeks/months of baseline data required | None — useful from day one |
 | **Latency** | Milliseconds | Seconds (pre-computed models) | 10-30s (LLM investigation) |
-| **Token cost** | None | Vendor license | Per-investigation (workflow selection is label-based, no extra LLM call) |
+| **Token cost** | None | Vendor license | Per-investigation (includes LLM-driven workflow selection in the same session) |
 | **Auditability** | Deterministic, easy to trace | Deterministic, vendor-specific dashboards | Full audit trail with 7-year retention (SOC2-aligned); LLM reasoning is probabilistic |
 | **Vendor coupling** | Low | High — deep integration with vendor telemetry stack | Low — works with any monitoring stack |
 
-**Where rule-based tools win**: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut's workflow catalog uses label-based scoring for selection (no LLM invocation) -- but the LLM investigation always runs first to diagnose the root cause.
+**Where rule-based tools win**: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut's workflow catalog uses label-based scoring to rank candidates, but the LLM drives the final selection decision in a dedicated Phase 3 session -- investigation, enrichment, and workflow selection all happen in one agent session.
 
 **Where predictive AI fits**: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as **knowledge-based agents** that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See [AIOps Remediation Landscape](aiops-landscape.md) for the full integration architecture.
 

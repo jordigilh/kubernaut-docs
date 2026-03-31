@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -3181,12 +3183,15 @@
 <h3 id="aianalysis">AIAnalysis<a class="headerlink" href="#aianalysis" title="Permanent link">&para;</a></h3>
 <p>Created after signal enrichment completes. The AI Analysis controller:</p>
 <ol>
-<li>Submits the enriched signal to <strong>HolmesGPT</strong> (via the HolmesGPT API service) for live root cause investigation</li>
-<li>HolmesGPT investigates using Kubernetes inspection tools (pod logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki/Tempo, and other configured observability toolsets</li>
-<li>Resolves the target resource's owner chain, computes a spec hash, fetches <strong>remediation history</strong> (past outcomes and effectiveness scores), and detects <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB) — giving the LLM full context before workflow selection</li>
-<li>Searches the <strong>workflow catalog</strong> for a matching remediation based on enriched signal labels, detected infrastructure, and historical outcomes</li>
+<li>Submits the enriched signal to <strong>HolmesGPT</strong> (via the HolmesGPT API service) for a three-phase LLM investigation:<ul>
+<li><strong>Phase 1: Investigate</strong> — Root cause analysis using live cluster data (logs, events, resource state, metrics)</li>
+<li><strong>Phase 2: Enrich</strong> — Resolves the target resource's owner chain, computes a spec hash, fetches <strong>remediation history</strong> (past outcomes and effectiveness scores via DataStorage), and detects <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
+<li><strong>Phase 3: Workflow Select</strong> — The LLM discovers and selects a workflow from the catalog via a three-step protocol (<code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>); DataStorage applies label-based ranking but the LLM drives the final selection</li>
+</ul>
+</li>
 <li>Evaluates whether auto-approval is safe via a <strong>Rego policy</strong> (configurable confidence threshold)</li>
 </ol>
+<p>See <a href="../../architecture/hapi-investigation/">Investigation Pipeline</a> for the full three-phase architecture.</p>
 <h3 id="remediationapprovalrequest">RemediationApprovalRequest<a class="headerlink" href="#remediationapprovalrequest" title="Permanent link">&para;</a></h3>
 <p>Created when the AI Analysis confidence is below the approval threshold, or when the Rego policy requires human review. A human operator approves or rejects the remediation.</p>
 <h3 id="workflowexecution">WorkflowExecution<a class="headerlink" href="#workflowexecution" title="Permanent link">&para;</a></h3>
@@ -3252,11 +3257,11 @@
 </tr>
 <tr>
 <td><strong>Completed</strong></td>
-<td>Remediation finished successfully</td>
+<td>Remediation finished successfully, or <code>NoActionRequired</code> / <code>ManualReviewRequired</code> outcome</td>
 </tr>
 <tr>
 <td><strong>Failed</strong></td>
-<td>Remediation failed at any stage (including human rejection)</td>
+<td>Remediation failed at any stage (including human rejection, or HAPI flagged human review with a selected workflow)</td>
 </tr>
 <tr>
 <td><strong>TimedOut</strong></td>

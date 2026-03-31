@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -3195,7 +3197,7 @@
 <li><strong>Reads the enriched signal</strong> — Alert details, target resource, namespace context</li>
 <li><strong>Investigates using K8s tools</strong> — Inspects pod logs, events, resource state, and live metrics via <code>kubectl</code>; optionally queries Prometheus, Grafana Loki/Tempo, and other configured toolsets</li>
 <li><strong>Produces a root cause analysis</strong> — Structured explanation of what went wrong</li>
-<li><strong>Resolves the target resource</strong> — Calls <code>get_resource_context</code> to resolve the owner chain, compute a spec hash, fetch <strong>remediation history</strong> (past outcomes and effectiveness scores from DataStorage), and detect <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
+<li><strong>Resolves the target resource</strong> — Calls <code>get_namespaced_resource_context</code> (or <code>get_cluster_resource_context</code> for cluster-scoped resources) to resolve the owner chain, compute a spec hash, fetch <strong>remediation history</strong> (past outcomes and effectiveness scores via internal DataStorage lookup), and detect <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
 <li><strong>Discovers workflows via DataStorage</strong> — The LLM uses a three-step protocol: <code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).</li>
 <li><strong>LLM selects a workflow</strong> — Based on workflow descriptions (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>), detected infrastructure context, and remediation history</li>
 <li><strong>Returns <code>actionable</code> flag</strong> — Indicates whether the investigation identified a concrete remediation action. Propagated to the <code>AIAnalysis</code> CRD status and used downstream for audit and decision filtering.</li>
@@ -3213,7 +3215,7 @@
 <p>Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because <code>hasSubstantiveRCA</code> would return <code>true</code>, preventing the <code>WorkflowNotNeeded</code> completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.</p>
 <h3 id="approval-gate-rego-policy-user-replaceable">Approval Gate (Rego policy, user-replaceable)<a class="headerlink" href="#approval-gate-rego-policy-user-replaceable" title="Permanent link">&para;</a></h3>
 <p>The Analyzing handler evaluates a <strong>user-replaceable Rego policy</strong> (<code>approval.rego</code>) to determine whether the remediation requires human approval. The policy receives the full analysis context as input and returns <code>require_approval</code> (boolean) and <code>reason</code> (string).</p>
-<p>The <strong>default shipped policy</strong> gates on environment and affected resource presence:</p>
+<p>The <strong>default shipped policy</strong> gates on environment and remediation target presence:</p>
 <ul>
 <li><strong>Production</strong> — always requires approval</li>
 <li><strong>Non-production</strong> — auto-approved when <code>remediation_target</code> is present</li>

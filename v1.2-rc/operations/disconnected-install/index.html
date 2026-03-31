@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -3549,6 +3551,14 @@
 <td><code>quay.io/kubernaut-ai/authwebhook</code></td>
 <td>Admission controller for CRD authorization</td>
 </tr>
+<tr>
+<td><code>quay.io/kubernaut-ai/db-migrate</code></td>
+<td>Database schema migration (pre-upgrade hook)</td>
+</tr>
+<tr>
+<td><code>quay.io/kubernaut-ai/must-gather</code></td>
+<td>Diagnostic data collection for support</td>
+</tr>
 </tbody>
 </table>
 <h3 id="infrastructure-images">Infrastructure images<a class="headerlink" href="#infrastructure-images" title="Permanent link">&para;</a></h3>
@@ -3729,7 +3739,7 @@
 </tbody>
 </table>
 <h3 id="4c-install-with-layered-overlays">4c. Install with layered overlays<a class="headerlink" href="#4c-install-with-layered-overlays" title="Permanent link">&para;</a></h3>
-<p>The three value files must be layered in this order:</p>
+<p>The two overlay files must be layered on top of the base <code>values.yaml</code> in this order:</p>
 <table>
 <thead>
 <tr>

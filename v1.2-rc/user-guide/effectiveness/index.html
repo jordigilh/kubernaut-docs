@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -2990,7 +2992,7 @@
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When a remediation reaches a terminal phase, the Orchestrator creates an <code>EffectivenessAssessment</code> CRD. The Effectiveness Monitor then:</p>
 <ol>
-<li><strong>Waits for stabilization</strong> — A configurable window (default: 5 minutes) allows the system to settle after the fix</li>
+<li><strong>Waits for stabilization</strong> — Two configurable windows control timing: the Remediation Orchestrator waits <strong>5 minutes</strong> (<code>remediationorchestrator.config.effectivenessAssessment.stabilizationWindow</code>) before creating the EA, and the Effectiveness Monitor waits <strong>30 seconds</strong> (<code>effectivenessmonitor.config.assessment.stabilizationWindow</code>) after EA creation before running assessments</li>
 <li><strong>Evaluates effectiveness</strong> through multiple dimensions</li>
 <li><strong>Records the assessment</strong> in the audit trail</li>
 </ol>

@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -4011,7 +4013,7 @@
 </tbody>
 </table>
 <p>These are <strong>HAPI-injected</strong> -- HAPI derives them from the K8s-verified <code>root_owner</code> (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into <code>selected_workflow.parameters</code> before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).</p>
-<p>If HAPI cannot determine the <code>root_owner</code> (e.g., <code>get_resource_context</code> was never called), the investigation is flagged <code>rca_incomplete</code> with <code>needs_human_review=true</code>.</p>
+<p>If HAPI cannot determine the <code>root_owner</code> (e.g., the resource context tools were never called), the investigation is flagged <code>rca_incomplete</code> with <code>needs_human_review=true</code>.</p>
 <p>Additionally, the WFE controller injects <code>TARGET_RESOURCE</code> (composite format <code>namespace/kind/name</code>) from <code>wfe.Spec.TargetResource</code> into every Job and Tekton PipelineRun as a system variable.</p>
 <p>Workflows may also declare additional <strong>operational parameters</strong> (e.g., <code>TARGET_DEPLOYMENT</code>, <code>GRACE_PERIOD_SECONDS</code>) that the LLM populates from its investigation findings.</p>
 <h4 id="ansible-auto-injected-variables">Ansible auto-injected variables<a class="headerlink" href="#ansible-auto-injected-variables" title="Permanent link">&para;</a></h4>
@@ -4536,8 +4538,8 @@
 <td>RollbackDeployment</td>
 </tr>
 <tr>
-<td><code>restart-pods-v1</code></td>
-<td>RollbackDeployment</td>
+<td><code>restart-pod-v1</code></td>
+<td>RestartPod</td>
 </tr>
 <tr>
 <td><code>rollback-deployment-v1</code></td>

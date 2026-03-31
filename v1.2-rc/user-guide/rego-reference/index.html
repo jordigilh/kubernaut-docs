@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -4240,8 +4242,8 @@
 </tr>
 <tr>
 <td><strong>Priority</strong></td>
-<td><code>input.signal.*</code>, <code>input.*</code></td>
-<td><code>signal.severity</code>, <code>signal.source</code>, <code>environment</code>, <code>namespace_labels</code>, <code>workload_labels</code></td>
+<td><code>input.signal.*</code>, <code>input.namespace.*</code>, <code>input.workload.*</code></td>
+<td><code>signal.severity</code>, <code>signal.source</code>, <code>namespace.labels</code>, <code>workload.labels</code></td>
 </tr>
 <tr>
 <td><strong>Business</strong></td>
@@ -4250,8 +4252,8 @@
 </tr>
 <tr>
 <td><strong>Custom Labels</strong></td>
-<td><code>input.kubernetes.*</code>, <code>input.signal.*</code></td>
-<td><code>kubernetes.namespace.name/labels/annotations</code>, <code>kubernetes.workload.kind/name/labels/annotations</code>, <code>kubernetes.ownerChain</code>, <code>signal.type/severity/source</code></td>
+<td><code>input.namespace.*</code>, <code>input.workload.*</code>, <code>input.signal.*</code></td>
+<td><code>namespace.name/labels/annotations</code>, <code>workload.kind/name/labels/annotations</code>, <code>workload.ownerChain</code>, <code>signal.type/severity/source</code></td>
 </tr>
 </tbody>
 </table>
@@ -4308,40 +4310,36 @@
 </thead>
 <tbody>
 <tr>
-<td>Severity classifier</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/severity.go"><code>pkg/signalprocessing/classifier/severity.go</code></a></td>
+<td>SP unified evaluator</td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/evaluator/evaluator.go"><code>pkg/signalprocessing/evaluator/evaluator.go</code></a></td>
 </tr>
 <tr>
-<td>Priority classifier</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/priority.go"><code>pkg/signalprocessing/classifier/priority.go</code></a></td>
+<td>SP policy input types</td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/evaluator/types.go"><code>pkg/signalprocessing/evaluator/types.go</code></a></td>
 </tr>
 <tr>
-<td>Environment classifier</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/environment.go"><code>pkg/signalprocessing/classifier/environment.go</code></a></td>
+<td>SP signal mode classifier</td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/classifier/signalmode.go"><code>pkg/signalprocessing/classifier/signalmode.go</code></a></td>
 </tr>
 <tr>
-<td>Business classifier</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/business.go"><code>pkg/signalprocessing/classifier/business.go</code></a></td>
+<td>SP example policy</td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/charts/kubernaut/examples/signalprocessing-policy.rego"><code>charts/kubernaut/examples/signalprocessing-policy.rego</code></a></td>
 </tr>
 <tr>
-<td>Custom labels engine</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/rego/engine.go"><code>pkg/signalprocessing/rego/engine.go</code></a></td>
+<td>SP deploy policies</td>
+<td><a href="https://github.com/jordigilh/kubernaut/tree/v1.1.0/deploy/signalprocessing/policies"><code>deploy/signalprocessing/policies/</code></a></td>
 </tr>
 <tr>
 <td>AA approval evaluator</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/aianalysis/rego/evaluator.go"><code>pkg/aianalysis/rego/evaluator.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/aianalysis/rego/evaluator.go"><code>pkg/aianalysis/rego/evaluator.go</code></a></td>
 </tr>
 <tr>
 <td>AA input builder</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/pkg/aianalysis/handlers/analyzing.go"><code>pkg/aianalysis/handlers/analyzing.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/aianalysis/handlers/analyzing.go"><code>pkg/aianalysis/handlers/analyzing.go</code></a></td>
 </tr>
 <tr>
-<td>Default approval policy</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/main/config/rego/aianalysis/approval.rego"><code>config/rego/aianalysis/approval.rego</code></a></td>
-</tr>
-<tr>
-<td>Default SP policies</td>
-<td><a href="https://github.com/jordigilh/kubernaut/tree/main/deploy/signalprocessing/policies"><code>deploy/signalprocessing/policies/</code></a></td>
+<td>AA approval policy (test)</td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.1.0/test/unit/aianalysis/testdata/policies/approval.rego"><code>test/unit/aianalysis/testdata/policies/approval.rego</code></a></td>
 </tr>
 </tbody>
 </table>

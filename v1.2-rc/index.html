@@ -53,6 +53,8 @@
       
     
     
+      <link rel="stylesheet" href="assets/extra.css">
+    
     <script>__md_scope=new URL(".",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -2934,17 +2936,18 @@
     D --&gt; E[Effectiveness&lt;br/&gt;Monitoring]
     E --&gt; F[Notification]
 
-    style A fill:#4051b5,color:#fff
-    style B fill:#4051b5,color:#fff
-    style C fill:#7c4dff,color:#fff
-    style D fill:#4051b5,color:#fff
-    style E fill:#00897b,color:#fff
-    style F fill:#00897b,color:#fff</code></pre>
+    classDef core fill:#4051b5,stroke:#3040a0,color:#fff
+    classDef ai fill:#7c4dff,stroke:#6030dd,color:#fff
+    classDef closing fill:#00897b,stroke:#006b60,color:#fff
+
+    class A,B,D core
+    class C ai
+    class E,F closing</code></pre>
 <ol>
 <li><strong>Signal Detection</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a <code>RemediationRequest</code>.</li>
 <li><strong>Signal Processing</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
 <li><strong>AI Analysis</strong> — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
-<li><strong>Workflow Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP), with optional human approval gates.</li>
+<li><strong>Workflow Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).</li>
 <li><strong>Effectiveness Monitoring</strong> — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.</li>
 <li><strong>Notification</strong> — Notifies the team with the full remediation outcome, including the effectiveness assessment results.</li>
 </ol>
@@ -2972,7 +2975,7 @@
 </tr>
 <tr>
 <td><strong>Flexible Execution</strong></td>
-<td>Kubernetes Jobs (single-step), Tekton Pipelines (multi-step), or Ansible (AWX/AAP) with optional human approval gates</td>
+<td>Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP)</td>
 </tr>
 <tr>
 <td><strong>Resource Scope Management</strong></td>

@@ -55,6 +55,8 @@
       
     
     
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
     <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -4065,7 +4067,12 @@
 </tr>
 </tbody>
 </table>
-<p>When neither <code>routing.content</code> nor <code>routing.existingConfigMap</code> is set, the chart generates a console-only default routing config. To enable Slack or other channels, provide a routing config:</p>
+<p>When neither <code>routing.content</code> nor <code>routing.existingConfigMap</code> is set, the chart generates a default routing config:</p>
+<ul>
+<li>If <code>notification.slack.secretName</code> <strong>is set</strong>, the chart generates a <strong><code>slack-and-console</code></strong> catch-all receiver that routes all notification types to both Slack and console.</li>
+<li>If <code>notification.slack.secretName</code> <strong>is not set</strong>, the chart generates a <strong>console-only</strong> default.</li>
+</ul>
+<p>To provide fully custom routing:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--set-file<span class="w"> </span>notification.routing.content<span class="o">=</span>my-routing.yaml<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>...

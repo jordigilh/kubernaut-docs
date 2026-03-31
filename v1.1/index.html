@@ -2928,12 +2928,12 @@
 <p>Kubernaut automates the entire incident response lifecycle through a six-stage pipeline:</p>
 <p><img alt="Kubernaut Pipeline Overview" class="pipeline-overview" src="assets/images/pipeline-overview.svg" /></p>
 <ol>
-<li><strong>Signal Detection</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a <code>RemediationRequest</code>.</li>
-<li><strong>Signal Processing</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
-<li><strong>AI Analysis</strong> — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
-<li><strong>Workflow Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).</li>
-<li><strong>Effectiveness Monitoring</strong> — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.</li>
-<li><strong>Notification</strong> — Notifies the team with the full remediation outcome, including the effectiveness assessment results.</li>
+<li><strong>Signal Deduplication</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, deduplicates and suppresses noise, and creates a <code>RemediationRequest</code>.</li>
+<li><strong>Signal Categorization</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
+<li><strong>LLM Investigation</strong> — HolmesGPT investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
+<li><strong>Remediation Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).</li>
+<li><strong>Effectiveness Assessment</strong> — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.</li>
+<li><strong>Multichannel Notification</strong> — Notifies the team with the full remediation outcome, including the effectiveness assessment results.</li>
 </ol>
 <hr />
 <h2 id="key-capabilities">Key Capabilities<a class="headerlink" href="#key-capabilities" title="Permanent link">&para;</a></h2>

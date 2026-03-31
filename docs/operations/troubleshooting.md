@@ -149,8 +149,11 @@ AI Analysis completes but no workflow is selected.
 # List available workflows
 curl http://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
 
-# Check workflow labels match the signal
-kubectl get aianalysis <name> -n kubernaut-system -o yaml | grep -A 20 analysisResult
+# Check AI analysis results — selected workflow, phase, and human review reason
+kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.phase}{"\n"}{.status.selectedWorkflow}{"\n"}{.status.humanReviewReason}{"\n"}'
+
+# Check the root cause analysis and remediation target
+kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCauseAnalysis}'
 ```
 
 **Common causes**: No workflow registered for this alert type, label mismatch, DataStorage not running.

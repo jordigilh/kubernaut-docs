@@ -5,7 +5,7 @@
   max-width: 100%;
 }
 
-/* Mermaid: kill the white background rect that Mermaid injects into SVGs */
+/* Mermaid: transparent background for any remaining diagrams */
 .mermaid,
 .mermaid svg {
   background: transparent !important;
@@ -15,7 +15,6 @@
   fill: transparent !important;
 }
 
-/* Dark mode: visible edges, arrows, and labels */
 [data-md-color-scheme="slate"] .mermaid .edgePath .path,
 [data-md-color-scheme="slate"] .mermaid .flowchart-link {
   stroke: #aaa !important;

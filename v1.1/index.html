@@ -2926,7 +2926,7 @@
 <hr />
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>Kubernaut automates the entire incident response lifecycle through a six-stage pipeline:</p>
-<p><img alt="Kubernaut Pipeline Overview" class="pipeline-overview" src="assets/images/pipeline-overview.png" /></p>
+<p><img alt="Kubernaut Pipeline Overview" class="pipeline-overview" src="assets/images/pipeline-overview.svg" /></p>
 <ol>
 <li><strong>Signal Detection</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, and creates a <code>RemediationRequest</code>.</li>
 <li><strong>Signal Processing</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
@@ -3096,8 +3096,6 @@
     
     
       <script src="assets/javascripts/bundle.79ae519e.min.js"></script>
-      
-        <script src="assets/extra.js"></script>
       
     
   </body>

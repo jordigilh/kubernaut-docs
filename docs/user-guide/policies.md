@@ -181,13 +181,15 @@ The approval policy runs after HAPI returns a successful workflow selection. It 
 
 ### Approval Rules
 
-Two mandatory triggers:
+Three mandatory triggers:
 
 1. **Missing remediation target** -- If `remediation_target` is absent or has an empty `kind`, approval is always required. Safety net for incomplete RCA.
 
 2. **Production environment** -- All production remediations require human approval, regardless of confidence. Controlled by setting `kubernaut.ai/environment=production` on the namespace.
 
-Non-production environments (development, staging, qa, test) auto-approve when `remediation_target` is present.
+3. **Sensitive resource kinds** -- Remediations targeting `Node` or `StatefulSet` resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.
+
+Non-production environments (development, staging, qa, test) auto-approve when `remediation_target` is present and the resource kind is not sensitive.
 
 ### Confidence Threshold
 

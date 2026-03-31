@@ -44,7 +44,7 @@ The approval policy receives this input from the AIAnalysis controller:
 | `confidence_threshold` | float | Configurable threshold (default 0.8, via `aianalysis.rego.confidenceThreshold`) |
 | `remediation_target` | object | LLM-identified remediation target (`kind`, `name`, `namespace`) |
 | `target_resource` | object | Original alert target resource |
-| `detected_labels` | map | Detected workload labels (`stateful`, `gitOpsManaged`, `pdbProtected`) |
+| `detected_labels` | map | Detected workload labels (snake_case keys: `stateful`, `git_ops_managed`, `pdb_protected`, `hpa_enabled`, `helm_managed`, `network_isolated`, `service_mesh`) |
 | `failed_detections` | array | Detection fields that failed (e.g., `["gitOpsManaged"]`) |
 | `warnings` | array | Investigation warnings |
 

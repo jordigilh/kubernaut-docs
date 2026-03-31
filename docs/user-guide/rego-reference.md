@@ -536,9 +536,9 @@ reason := f.reason if { some f in risk_factors; f.score == max_risk_score }
 |---|---|---|
 | **Severity** | `input.signal.*` | `severity`, `type`, `source` |
 | **Environment** | `input.namespace.*`, `input.signal.*` | `namespace.name`, `namespace.labels`, `signal.labels` |
-| **Priority** | `input.signal.*`, `input.*` | `signal.severity`, `signal.source`, `environment`, `namespace_labels`, `workload_labels` |
+| **Priority** | `input.signal.*`, `input.namespace.*`, `input.workload.*` | `signal.severity`, `signal.source`, `namespace.labels`, `workload.labels` |
 | **Business** | `input.namespace.*`, `input.workload.*`, `input.*` | `namespace.name/labels/annotations`, `workload.kind/name/labels/annotations`, `environment` |
-| **Custom Labels** | `input.kubernetes.*`, `input.signal.*` | `kubernetes.namespace.name/labels/annotations`, `kubernetes.workload.kind/name/labels/annotations`, `kubernetes.ownerChain`, `signal.type/severity/source` |
+| **Custom Labels** | `input.namespace.*`, `input.workload.*`, `input.signal.*` | `namespace.name/labels/annotations`, `workload.kind/name/labels/annotations`, `workload.ownerChain`, `signal.type/severity/source` |
 
 ### AI Analysis Approval
 
@@ -557,12 +557,11 @@ reason := f.reason if { some f in risk_factors; f.score == max_risk_score }
 
 | Component | Source File |
 |---|---|
-| Severity classifier | [`pkg/signalprocessing/classifier/severity.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/severity.go) |
-| Priority classifier | [`pkg/signalprocessing/classifier/priority.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/priority.go) |
-| Environment classifier | [`pkg/signalprocessing/classifier/environment.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/environment.go) |
-| Business classifier | [`pkg/signalprocessing/classifier/business.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/classifier/business.go) |
-| Custom labels engine | [`pkg/signalprocessing/rego/engine.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/signalprocessing/rego/engine.go) |
-| AA approval evaluator | [`pkg/aianalysis/rego/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/aianalysis/rego/evaluator.go) |
-| AA input builder | [`pkg/aianalysis/handlers/analyzing.go`](https://github.com/jordigilh/kubernaut/blob/main/pkg/aianalysis/handlers/analyzing.go) |
-| Default approval policy | [`config/rego/aianalysis/approval.rego`](https://github.com/jordigilh/kubernaut/blob/main/config/rego/aianalysis/approval.rego) |
-| Default SP policies | [`deploy/signalprocessing/policies/`](https://github.com/jordigilh/kubernaut/tree/main/deploy/signalprocessing/policies) |
+| SP unified evaluator | [`pkg/signalprocessing/evaluator/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/evaluator/evaluator.go) |
+| SP policy input types | [`pkg/signalprocessing/evaluator/types.go`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/evaluator/types.go) |
+| SP signal mode classifier | [`pkg/signalprocessing/classifier/signalmode.go`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/signalprocessing/classifier/signalmode.go) |
+| SP example policy | [`charts/kubernaut/examples/signalprocessing-policy.rego`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/charts/kubernaut/examples/signalprocessing-policy.rego) |
+| SP deploy policies | [`deploy/signalprocessing/policies/`](https://github.com/jordigilh/kubernaut/tree/v1.1.0/deploy/signalprocessing/policies) |
+| AA approval evaluator | [`pkg/aianalysis/rego/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/aianalysis/rego/evaluator.go) |
+| AA input builder | [`pkg/aianalysis/handlers/analyzing.go`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/pkg/aianalysis/handlers/analyzing.go) |
+| AA approval policy (test) | [`test/unit/aianalysis/testdata/policies/approval.rego`](https://github.com/jordigilh/kubernaut/blob/v1.1.0/test/unit/aianalysis/testdata/policies/approval.rego) |

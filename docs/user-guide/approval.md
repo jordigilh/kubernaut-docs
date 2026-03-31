@@ -7,15 +7,16 @@ Kubernaut supports human-in-the-loop approval gates to ensure that remediations 
 
 ## When Approval Is Required
 
-Approval is determined by a **user-replaceable Rego policy** evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the `aianalysis-rego` ConfigMap -- the policy is not hardcoded.
+Approval is determined by a **user-replaceable Rego policy** evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the `aianalysis-policies` ConfigMap -- the policy is not hardcoded.
 
 ### Default Policy Behavior
 
-The shipped `approval.rego` makes decisions based on **environment** and **affected resource presence**:
+The shipped `approval.rego` makes decisions based on **environment**, **remediation target presence**, and **sensitive resource kinds**:
 
 - **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence
-- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present
-- **Missing affected resource** — always requires approval (default-deny safety per ADR-055)
+- **Sensitive resource kinds** (Node, StatefulSet) — always require approval, regardless of environment
+- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present and the resource kind is not sensitive
+- **Missing remediation target** — always requires approval (default-deny safety per ADR-055)
 
 When approval is required, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.
 
@@ -266,7 +267,7 @@ The built-in policy behavior:
 - **Non-production namespaces**: Auto-approved unless critical safety conditions (missing `remediation_target`)
 - **Missing affected resource**: Always requires approval (default-deny safety)
 
-Operators can customize approval behavior by modifying the Rego policy in the `aianalysis-rego` ConfigMap.
+Operators can customize approval behavior by modifying the Rego policy in the `aianalysis-policies` ConfigMap.
 
 ## Approval Context
 

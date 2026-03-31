@@ -3219,7 +3219,7 @@
 <h2 id="how-generative-ai-works-kubernaut">How Generative AI Works (Kubernaut)<a class="headerlink" href="#how-generative-ai-works-kubernaut" title="Permanent link">&para;</a></h2>
 <p>Kubernaut's LLM investigates each incident as an open-ended question rather than a pattern match:</p>
 <ol>
-<li>The LLM receives the alert context, affected resource metadata, namespace labels, and remediation history.</li>
+<li>The LLM receives the alert context, remediation target metadata, namespace labels, and remediation history.</li>
 <li>It queries live cluster state via tool calls -- <code>kubectl get</code>, <code>kubectl describe</code>, <code>kubectl logs</code>, Prometheus queries.</li>
 <li>It reasons about the root cause, considering that the signal resource (e.g., a crashing Pod) may differ from the actual cause (e.g., a broken ConfigMap or an exhausted ResourceQuota).</li>
 <li>It selects a remediation workflow from the catalog based on the diagnosed cause, environmental context (GitOps-managed? production? stateful?), and confidence level.</li>
@@ -3237,7 +3237,7 @@
 <li><strong>Non-deterministic</strong>: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.</li>
 <li><strong>Latency</strong>: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.</li>
 <li><strong>Hallucination risk</strong>: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.</li>
-<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Workflow selection from the catalog is label-based (no LLM call), so cost scales with investigations, not catalog size. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.</li>
+<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.</li>
 </ul>
 <h2 id="predictive-ai-as-a-knowledge-based-agent">Predictive AI as a Knowledge-Based Agent<a class="headerlink" href="#predictive-ai-as-a-knowledge-based-agent" title="Permanent link">&para;</a></h2>
 <p>The key architectural insight is that predictive AI and generative AI are not competing approaches. They operate at different layers, and the most effective architecture <strong>composes</strong> them: predictive AI as a tool the LLM calls during investigation, alongside <code>kubectl</code>, Prometheus, and logs.</p>

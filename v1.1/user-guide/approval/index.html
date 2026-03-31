@@ -3231,13 +3231,14 @@
 <p>For the complete RemediationApprovalRequest CRD specification, see <a href="../../api-reference/crds/#remediationapprovalrequest">API Reference: CRDs</a>.</p>
 </div>
 <h2 id="when-approval-is-required">When Approval Is Required<a class="headerlink" href="#when-approval-is-required" title="Permanent link">&para;</a></h2>
-<p>Approval is determined by a <strong>user-replaceable Rego policy</strong> evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the <code>aianalysis-rego</code> ConfigMap -- the policy is not hardcoded.</p>
+<p>Approval is determined by a <strong>user-replaceable Rego policy</strong> evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the <code>aianalysis-policies</code> ConfigMap -- the policy is not hardcoded.</p>
 <h3 id="default-policy-behavior">Default Policy Behavior<a class="headerlink" href="#default-policy-behavior" title="Permanent link">&para;</a></h3>
-<p>The shipped <code>approval.rego</code> makes decisions based on <strong>environment</strong> and <strong>affected resource presence</strong>:</p>
+<p>The shipped <code>approval.rego</code> makes decisions based on <strong>environment</strong>, <strong>remediation target presence</strong>, and <strong>sensitive resource kinds</strong>:</p>
 <ul>
 <li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>) — always require approval, regardless of confidence</li>
-<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>remediation_target</code> is present</li>
-<li><strong>Missing affected resource</strong> — always requires approval (default-deny safety per ADR-055)</li>
+<li><strong>Sensitive resource kinds</strong> (Node, StatefulSet) — always require approval, regardless of environment</li>
+<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>remediation_target</code> is present and the resource kind is not sensitive</li>
+<li><strong>Missing remediation target</strong> — always requires approval (default-deny safety per ADR-055)</li>
 </ul>
 <p>When approval is required, a <code>RemediationApprovalRequest</code> CRD is created and the remediation enters the <code>AwaitingApproval</code> phase.</p>
 <h3 id="custom-policies">Custom Policies<a class="headerlink" href="#custom-policies" title="Permanent link">&para;</a></h3>
@@ -3537,7 +3538,7 @@
 <li><strong>Non-production namespaces</strong>: Auto-approved unless critical safety conditions (missing <code>remediation_target</code>)</li>
 <li><strong>Missing affected resource</strong>: Always requires approval (default-deny safety)</li>
 </ul>
-<p>Operators can customize approval behavior by modifying the Rego policy in the <code>aianalysis-rego</code> ConfigMap.</p>
+<p>Operators can customize approval behavior by modifying the Rego policy in the <code>aianalysis-policies</code> ConfigMap.</p>
 <h2 id="approval-context">Approval Context<a class="headerlink" href="#approval-context" title="Permanent link">&para;</a></h2>
 <p>When a <code>RemediationApprovalRequest</code> is created, it includes rich context to help the operator decide:</p>
 <ul>

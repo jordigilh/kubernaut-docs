@@ -4369,7 +4369,9 @@
 <p>The LLM investigation can produce 8 distinct outcomes, each handled differently by the system:</p>
 <pre class="mermaid"><code>flowchart TD
     HAPI["HAPI Response"] --&gt; NHR{"needs_human_review?"}
-    NHR --&gt;|true| HumanReview["Human Review&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
+    NHR --&gt;|true| HasWFReview{"selected_workflow?"}
+    HasWFReview --&gt;|present| HRFailed["Human Review + Workflow&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
+    HasWFReview --&gt;|null| HRCompleted["Manual Review Required&lt;br/&gt;&lt;small&gt;Phase: Completed&lt;/small&gt;"]
     NHR --&gt;|false| HasWF{"selected_workflow?"}
     HasWF --&gt;|null| Resolved{"Problem resolved?"}
     HasWF --&gt;|present| Confidence{"confidence &gt;= 0.7?"}
@@ -4409,7 +4411,7 @@
 <h3 id="outcome-7-low-confidence">Outcome 7: Low Confidence<a class="headerlink" href="#outcome-7-low-confidence" title="Permanent link">&para;</a></h3>
 <p>The LLM returns a workflow with <code>confidence</code> below the investigation threshold (0.7). HAPI does not enforce this threshold -- it passes the confidence through. The AA controller's response processor detects the low confidence.</p>
 <p><strong>Fields:</strong> <code>selected_workflow</code> present, <code>confidence &lt; 0.7</code>
-<strong>Next:</strong> AA routes to human review via <code>handleLowConfidenceFailure</code>. Rego is never evaluated.</p>
+<strong>Next:</strong> AA response processor rejects the low-confidence selection and routes to human review. Rego is never evaluated.</p>
 <h3 id="outcome-8-llm-explicitly-requests-human-review">Outcome 8: LLM Explicitly Requests Human Review<a class="headerlink" href="#outcome-8-llm-explicitly-requests-human-review" title="Permanent link">&para;</a></h3>
 <p>The LLM itself determines that the situation requires human judgment and sets <code>needs_human_review=true</code> or provides a <code>human_review_reason</code>. HAPI preserves these values.</p>
 <p><strong>Next:</strong> Routed to human review.</p>

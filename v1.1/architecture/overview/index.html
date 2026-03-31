@@ -3188,7 +3188,7 @@
 </tr>
 <tr>
 <td><strong>HolmesGPT API</strong></td>
-<td>LLM-driven investigation with K8s tools, infrastructure label detection, remediation history, three-step workflow discovery</td>
+<td>LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery</td>
 <td><a href="../hapi-investigation/">Investigation Pipeline</a></td>
 </tr>
 <tr>
@@ -3354,7 +3354,7 @@
 <li><strong>DataStorage</strong> -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)</li>
 <li><strong>Gateway</strong> -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see <a href="../security-rbac/#signal-ingestion">Security &amp; RBAC</a>)</li>
 <li><strong>NetworkPolicies</strong> -- Not included in Helm chart (<a href="https://github.com/jordigilh/kubernaut/issues/285">GitHub #285</a>); recommended for production deployments</li>
-<li><strong>TLS</strong> -- Not configured for internal service-to-service traffic in v1.0</li>
+<li><strong>TLS</strong> -- Not configured for internal service-to-service traffic in v1.1</li>
 </ul>
 <h2 id="error-handling-patterns">Error Handling Patterns<a class="headerlink" href="#error-handling-patterns" title="Permanent link">&para;</a></h2>
 <p>All controllers share common error handling patterns:</p>

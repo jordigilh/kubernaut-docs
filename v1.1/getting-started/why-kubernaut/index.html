@@ -3009,7 +3009,7 @@
 <td><strong>Token cost</strong></td>
 <td>None</td>
 <td>Vendor license</td>
-<td>Per-investigation (workflow selection is label-based, no extra LLM call)</td>
+<td>Per-investigation (includes LLM-driven workflow selection in the same session)</td>
 </tr>
 <tr>
 <td><strong>Auditability</strong></td>
@@ -3025,7 +3025,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Where rule-based tools win</strong>: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut's workflow catalog uses label-based scoring for selection (no LLM invocation) -- but the LLM investigation always runs first to diagnose the root cause.</p>
+<p><strong>Where rule-based tools win</strong>: speed, zero token cost, deterministic auditability, and simplicity for well-understood single-action problems. Kubernaut's workflow catalog uses label-based scoring to rank candidates, but the LLM drives the final selection decision in a dedicated Phase 3 session -- investigation, enrichment, and workflow selection all happen in one agent session.</p>
 <p><strong>Where predictive AI fits</strong>: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as <strong>knowledge-based agents</strong> that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See <a href="../aiops-landscape/">AIOps Remediation Landscape</a> for the full integration architecture.</p>
 <p><strong>Where Kubernaut wins</strong>: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter. When integrated with predictive AI, Kubernaut can cross-validate its root cause analysis against statistical correlations — increasing confidence when they agree, and flagging discrepancies when they don't.</p>
 <p>For a detailed comparison against specific products and platforms in the agentic remediation space, see <a href="../market-comparison/">Agentic Remediation Market Comparison</a>.</p>

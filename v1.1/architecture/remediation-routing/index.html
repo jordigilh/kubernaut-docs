@@ -3540,10 +3540,10 @@
     Processing --&gt; Analyzing : SP completed → Create AIAnalysis
     Processing --&gt; Failed : SP failed
     Processing --&gt; TimedOut : Phase timeout
-    Analyzing --&gt; AwaitingApproval : Low confidence → Create RAR
+    Analyzing --&gt; AwaitingApproval : Rego approval required → Create RAR
     Analyzing --&gt; Executing : Auto-approved + post-analysis passes → Create WFE
     Analyzing --&gt; Blocked : Post-analysis check fails
-    Analyzing --&gt; Completed : No workflow needed / ManualReviewRequired
+    Analyzing --&gt; Completed : NoActionRequired / ManualReviewRequired
     Analyzing --&gt; Failed : AI analysis failed
     Analyzing --&gt; TimedOut : Phase timeout
     AwaitingApproval --&gt; Executing : Approved → Create WFE
@@ -3660,7 +3660,7 @@
 <li>If SP <code>Failed</code> → transition to <strong>Failed</strong> with SP error details</li>
 </ol>
 <h3 id="analyzing-multiple-outcomes">Analyzing → (multiple outcomes)<a class="headerlink" href="#analyzing-multiple-outcomes" title="Permanent link">&para;</a></h3>
-<p>The AI Analysis produces one of five outcomes:</p>
+<p>The AI Analysis produces one of six outcomes:</p>
 <table>
 <thead>
 <tr>
@@ -3674,7 +3674,7 @@
 <td>Run post-analysis checks → create <strong>WFE</strong> → <strong>Executing</strong></td>
 </tr>
 <tr>
-<td><strong>ApprovalRequired</strong> (low confidence)</td>
+<td><strong>ApprovalRequired</strong> (Rego policy mandate)</td>
 <td>Create <strong>RemediationApprovalRequest</strong> → <strong>AwaitingApproval</strong></td>
 </tr>
 <tr>
@@ -3682,8 +3682,12 @@
 <td>Transition to <strong>Completed</strong> with <code>Outcome: NoActionRequired</code></td>
 </tr>
 <tr>
-<td><strong>ManualReviewRequired</strong> (no workflow, human review needed)</td>
+<td><strong>ManualReviewRequired</strong> (no workflow, HAPI flagged human review)</td>
 <td>Transition to <strong>Completed</strong> with <code>Outcome: ManualReviewRequired</code></td>
+</tr>
+<tr>
+<td><strong>HumanReviewWithWorkflow</strong> (HAPI flagged review + workflow present)</td>
+<td>Transition to <strong>Failed</strong> (see <a href="#manualreviewrequired-outcome">ManualReviewRequired Outcome</a>)</td>
 </tr>
 <tr>
 <td><strong>Failed</strong> (AI analysis error)</td>
@@ -4027,9 +4031,14 @@
 </thead>
 <tbody>
 <tr>
-<td>Low AI confidence</td>
+<td>Rego policy requires approval (environment, sensitive kind, confidence)</td>
 <td>Human approval</td>
 <td>RemediationApprovalRequest CRD</td>
+</tr>
+<tr>
+<td>HAPI flags human review with selected workflow</td>
+<td>Notification + Failed</td>
+<td>NotificationRequest with rejected recommendation</td>
 </tr>
 <tr>
 <td>Failure at any stage</td>

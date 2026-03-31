@@ -3484,7 +3484,7 @@
 </tbody>
 </table>
 <h3 id="approval-rules">Approval Rules<a class="headerlink" href="#approval-rules" title="Permanent link">&para;</a></h3>
-<p>Two mandatory triggers:</p>
+<p>Three mandatory triggers:</p>
 <ol>
 <li>
 <p><strong>Missing remediation target</strong> -- If <code>remediation_target</code> is absent or has an empty <code>kind</code>, approval is always required. Safety net for incomplete RCA.</p>
@@ -3492,8 +3492,11 @@
 <li>
 <p><strong>Production environment</strong> -- All production remediations require human approval, regardless of confidence. Controlled by setting <code>kubernaut.ai/environment=production</code> on the namespace.</p>
 </li>
+<li>
+<p><strong>Sensitive resource kinds</strong> -- Remediations targeting <code>Node</code> or <code>StatefulSet</code> resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.</p>
+</li>
 </ol>
-<p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present.</p>
+<p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present and the resource kind is not sensitive.</p>
 <h3 id="confidence-threshold">Confidence Threshold<a class="headerlink" href="#confidence-threshold" title="Permanent link">&para;</a></h3>
 <div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">default</span><span class="w"> </span><span class="n">confidence_threshold</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="m">0.8</span>
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>

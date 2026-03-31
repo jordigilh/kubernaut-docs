@@ -117,12 +117,6 @@ else
 fi
 ```
 
-This follows the **Validate-Action-Verify** pattern:
-
-1. **Validate** -- Confirm the deployment exists
-2. **Action** -- Perform the rolling restart
-3. **Verify** -- Check that all replicas are ready
-
 ### Step 3: Build the Execution Bundle
 
 Create `Dockerfile.exec`:
@@ -429,16 +423,6 @@ The Workflow Execution controller launches the AWX job template, passes paramete
 **Automatic K8s API credentials:**
 
 The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using `kubernetes.core` modules receive `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
-
-## The Validate-Action-Verify Pattern
-
-Workflows should follow the **Validate-Action-Verify** (VAV) pattern:
-
-1. **Validate** -- Confirm the issue exists and the fix is applicable (e.g., check the deployment exists, verify the resource is in the expected state)
-2. **Action** -- Apply the remediation (patch deployment, scale resources, restart pods)
-3. **Verify** -- Check that the fix was applied correctly (e.g., rollout status, health check)
-
-This ensures workflows are **idempotent** and **safe to retry**. If the validate step fails, the workflow exits early without making changes. If the verify step fails, the Effectiveness Monitor will detect the failure.
 
 ## Action Type Taxonomy
 

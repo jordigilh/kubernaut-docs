@@ -38,7 +38,7 @@ stateDiagram-v2
 | **Pending** | CRD just created, set `StartTime` | 100ms |
 | **Enriching** | Gather Kubernetes context and custom labels | 100ms |
 | **Classifying** | Evaluate Rego policies for environment, priority, severity, signal mode | 100ms |
-| **Categorizing** | Business classification from namespace labels and Rego | None |
+| **Categorizing** | Business classification from namespace labels + environment mapping | None |
 | **Completed** | All results stored in status, `Ready=True` | None |
 | **Failed** | Terminal -- severity policy error or unrecoverable failure | None |
 
@@ -50,7 +50,7 @@ The enrichment phase gathers Kubernetes context about the target resource.
 
 ### Owner Chain Resolution
 
-The `OwnerChainBuilder` follows `controller: true` owner references up to a depth of **5** to find the top-level controlling resource:
+The owner chain builder (`ownerchain.NewBuilder`) follows `controller: true` owner references up to a depth of **5** to find the top-level controlling resource:
 
 ```
 Pod → ReplicaSet → Deployment
@@ -122,24 +122,24 @@ The classification phase evaluates four classifiers in sequence. A failure in se
 
 ### 1. Environment Classifier (Rego)
 
-- **Query**: `data.signalprocessing.environment.result`
-- **Input**: `{namespace: {name, labels}, signal: {labels}}`
+- **Query**: `data.signalprocessing.environment`
+- **Input**: `{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}`
 - **Output**: `{environment, source}`
 - **Values**: `production`, `staging`, `development`, `test`
 - **Source tracking**: `namespace-labels`, `rego-inference`, or `default`
 
 ### 2. Priority Engine (Rego)
 
-- **Query**: `data.signalprocessing.priority.result`
-- **Input**: `{signal: {severity, source}, environment, namespace_labels, workload_labels}`
+- **Query**: `data.signalprocessing.priority`
+- **Input**: `{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}`
 - **Output**: `{priority, policy_name}`
 - **Values**: `P0`, `P1`, `P2`, `P3`
 - **Timeout**: 100ms
 
 ### 3. Severity Classifier (Rego)
 
-- **Query**: `data.signalprocessing.severity.determine_severity`
-- **Input**: `{signal: {severity, type, source}}`
+- **Query**: `data.signalprocessing.severity`
+- **Input**: `{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}`
 - **Output**: Normalized severity string
 - **Values**: `critical`, `high`, `medium`, `low`, `unknown`
 - **Fatal on failure**: A severity policy error transitions the CRD to `Failed` with `RegoEvaluationError`
@@ -171,31 +171,30 @@ On success, the status is updated with:
 
 ## Phase 3: Categorizing
 
-The categorization phase assigns business classification using a tiered resolution strategy:
+The categorization phase assigns business classification using pure Go logic — no Rego evaluation.
 
-### Resolution Priority
+### `classifyBusiness`
 
-1. **Namespace labels** (highest confidence: 1.0):
-    - `kubernaut.ai/business-unit` → BusinessUnit
-    - `kubernaut.ai/team` → BusinessUnit fallback
-    - `kubernaut.ai/service-owner` → ServiceOwner
+The function reads namespace labels directly:
 
-2. **Pattern matching** (confidence: 0.8): Splits namespace name by `-`, uses the first segment as business unit
+| Namespace Label | Field |
+|---|---|
+| `kubernaut.ai/business-unit` | `BusinessUnit` |
+| `kubernaut.ai/team` | `BusinessUnit` (fallback when `business-unit` is absent) |
+| `kubernaut.ai/service-owner` | `ServiceOwner` |
 
-3. **Rego policy** (confidence: 0.6):
-    - **Query**: `data.signalprocessing.business.result`
-    - **Input**: `{namespace, workload, environment}`
-    - **Timeout**: 200ms
+If a label is absent, the corresponding field is left as an **empty string** (not `"unknown"`).
 
-4. **Environment-based defaults** (confidence: 0.4):
+### Environment-to-Criticality/SLA Mapping
 
-    | Environment | Criticality | SLA |
-    |---|---|---|
-    | `production`, `prod` | high | gold |
-    | `staging`, `stage` | medium | silver |
-    | `development`, `dev` | low | bronze |
+After label extraction, the classifier maps the environment (determined in Phase 2) to criticality and SLA:
 
-5. **System defaults**: BusinessUnit=`unknown`, ServiceOwner=`unknown`, Criticality=`medium`, SLA=`bronze`
+| Environment | Criticality | SLA |
+|---|---|---|
+| `production`, `prod` | high | gold |
+| `staging`, `stage` | medium | silver |
+| `development`, `dev` | low | bronze |
+| (other) | medium | bronze |
 
 On completion, `Phase=Completed`, `CompletionTime` is set, `ObservedGeneration` is updated, and `Ready=True`.
 
@@ -203,9 +202,9 @@ On completion, `Phase=Completed`, `CompletionTime` is set, `ObservedGeneration` 
 
 ### Transient Errors
 
-Transient errors trigger exponential backoff with the DD-SHARED-001 pattern:
+Transient errors trigger exponential backoff with the DD-SHARED-001 pattern. Rego evaluation errors are **not** transient — they are treated as permanent failures.
 
-- **Detection**: `IsTimeout`, `IsServerTimeout`, `IsTooManyRequests`, `IsServiceUnavailable`, `context.DeadlineExceeded`, `context.Canceled`
+- **Detection**: `IsTimeout`, `IsServerTimeout`, `IsTooManyRequests`, `IsServiceUnavailable`, `context.DeadlineExceeded`, `context.Canceled` (Kubernetes API errors only)
 - **Backoff**: Base 30s, multiplier 2x, max 5m, ±10% jitter
 - **Formula**: `BasePeriod × (Multiplier ^ (failures - 1))` ± jitter
 - **Tracking**: `ConsecutiveFailures` incremented, `LastFailureTime` updated
@@ -220,7 +219,7 @@ Transient errors trigger exponential backoff with the DD-SHARED-001 pattern:
 
 All Rego policies support hot-reload via `FileWatcher` (DD-INFRA-001):
 
-- **Mechanism**: `fsnotify` watches the policy directory
+- **Mechanism**: `fsnotify` watches the policy file path
 - **Debounce**: 200ms to coalesce rapid ConfigMap mount updates
 - **Reload**: Recompile Rego, swap prepared query under a mutex
 - **Hash**: SHA256 of new policy stored for audit traceability
@@ -251,7 +250,7 @@ sequenceDiagram
     SP->>OPA: Severity policy
     SP->>SP: Signal mode (YAML lookup)
     Note over SP: Phase: Classifying → Categorizing
-    SP->>SP: Business classification (labels → pattern → Rego → defaults)
+    SP->>SP: Business classification (namespace labels + environment mapping)
     Note over SP: Phase: Categorizing → Completed
     SP->>DS: Audit events
     RO->>RO: Detect SP Completed → create AIAnalysis

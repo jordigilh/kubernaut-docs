@@ -49,7 +49,7 @@ sequenceDiagram
     Note over AA: Phase: Analyzing
 ```
 
-This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (`RequeueAfter`) while the LLM investigation runs. The controller polls at a **constant 15-second interval** (configurable from 1s to 5m via `--session-poll-interval` flag or `WithSessionPollInterval` option).
+This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (`RequeueAfter`) while the LLM investigation runs. The controller polls at a **constant 15-second interval** (configurable from 1s to 5m via the `holmesgpt.sessionPollInterval` YAML config field).
 
 ### Session Recovery
 
@@ -105,19 +105,26 @@ When HolmesGPT reports `investigation_outcome=resolved`, it appends a "Problem s
 
 Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because `hasSubstantiveRCA` would return `true`, preventing the `WorkflowNotNeeded` completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.
 
-### Approval Gate (Rego policy, user-replaceable)
+### Approval Gate (Rego policy, operator-provided)
 
-The Analyzing handler evaluates a **user-replaceable Rego policy** (`approval.rego`) to determine whether the remediation requires human approval. The policy receives the full analysis context as input and returns `require_approval` (boolean) and `reason` (string).
+The Analyzing handler evaluates a Rego policy to determine whether the remediation requires human approval:
 
-The **default shipped policy** gates on environment and remediation target presence:
+- **Query**: `data.aianalysis.approval`
+- **Input**: Full analysis context (see below)
+- **Output**: `require_approval` (boolean) and `reason` (string)
+
+**When no policy is mounted**, the controller auto-approves all remediations. Operators provide their own `approval.rego` to enforce custom gates.
+
+The **default shipped policy** (bundled for reference) gates on:
 
 - **Production** — always requires approval
 - **Non-production** — auto-approved when `remediation_target` is present
 - **Missing `remediation_target`** — always requires approval (default-deny per ADR-055)
+- **Sensitive resource kinds** — requires approval for Deployments, StatefulSets, DaemonSets in production
 
-The policy also receives `confidence`, `confidence_threshold`, `detected_labels` (snake_case keys: `"stateful"`, `"pdb_protected"`, `"hpa_enabled"`), `failed_detections`, `custom_labels`, and `business_classification`. Operators can write custom policies that use any combination of these inputs -- for example, confidence-gated approval for production.
+The policy receives `confidence`, `confidence_threshold`, `detected_labels` (snake_case keys: `"stateful"`, `"pdb_protected"`, `"hpa_enabled"`), `failed_detections`, `custom_labels`, and `business_classification`. Operators can write custom policies that use any combination of these inputs — for example, confidence-gated approval for production.
 
-The confidence threshold is configurable via Helm (`aianalysis.rego.confidenceThreshold`, default 0.8) and passed as `input.confidence_threshold`. The default policy defines `is_high_confidence` but does not use it in approval rules.
+The confidence threshold is configurable via Helm (`aianalysis.rego.confidenceThreshold`, default 0.8) and passed as `input.confidence_threshold`.
 
 See [Human Approval](../user-guide/approval.md) for the full approval flow and policy customization details.
 

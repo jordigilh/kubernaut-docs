@@ -3313,8 +3313,8 @@
 <p>The Gateway is the entry point for all signals into Kubernaut. It accepts alerts from Prometheus AlertManager and Kubernetes Event Exporter, authenticates the source, validates scope, deduplicates against in-flight remediations, and creates <code>RemediationRequest</code> CRDs to initiate the remediation pipeline.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR
-    AM["AlertManager"] --&gt;|POST /signals/prometheus| GW["Gateway"]
-    EE["Event Exporter"] --&gt;|POST /signals/kubernetes-event| GW
+    AM["AlertManager"] --&gt;|"POST /api/v1/signals/prometheus"| GW["Gateway"]
+    EE["Event Exporter"] --&gt;|"POST /api/v1/signals/kubernetes-event"| GW
     GW --&gt;|"Auth (SAR)"| K8s["Kubernetes API"]
     GW --&gt;|"Scope check"| K8s
     GW --&gt;|"Create RR"| K8s
@@ -3367,7 +3367,7 @@
 <h3 id="prometheus-adapter">Prometheus Adapter<a class="headerlink" href="#prometheus-adapter" title="Permanent link">&para;</a></h3>
 <p>Parses the AlertManager webhook format (<code>alerts[]</code>, <code>commonLabels</code>, <code>commonAnnotations</code>):</p>
 <ol>
-<li><strong>Parse</strong> -- Takes the first alert from the <code>alerts[]</code> array. Extracts the target resource from labels using a priority list: HPA &gt; PDB &gt; PVC &gt; Deployment &gt; StatefulSet &gt; DaemonSet &gt; Node &gt; Service &gt; Job &gt; CronJob &gt; Pod. Before extraction, a <strong>monitoring metadata filter</strong> strips <code>service</code> and <code>pod</code> labels that refer to monitoring infrastructure (kube-state-metrics, prometheus-node-exporter, alertmanager, grafana, etc.) to prevent Kubernaut from targeting its own monitoring stack. Merges alert-level and common labels.</li>
+<li><strong>Parse</strong> -- Takes the first alert from the <code>alerts[]</code> array. Extracts the target resource from labels using a priority list: HPA &gt; PDB &gt; PVC &gt; Deployment &gt; StatefulSet &gt; DaemonSet &gt; ReplicaSet &gt; Node &gt; Service &gt; Job (<code>job_name</code>) &gt; CronJob &gt; Pod. Before extraction, a <strong>monitoring metadata filter</strong> strips <code>service</code> and <code>pod</code> labels that refer to monitoring infrastructure (kube-state-metrics, prometheus-node-exporter, alertmanager, grafana, etc.) to prevent Kubernaut from targeting its own monitoring stack. Merges alert-level and common labels.</li>
 <li><strong>Fingerprint</strong> -- Resolves the owner chain (Pod -&gt; ReplicaSet -&gt; Deployment) and computes <code>SHA256(namespace:kind:name)</code> of the top-level owner. The alert name is excluded from the fingerprint (Issue #63) so that different alerts for the same resource deduplicate correctly.</li>
 <li><strong>Severity</strong> -- Pass-through from <code>labels["severity"]</code>. Signal Processing normalizes it later via Rego policy.</li>
 <li><strong>Validate</strong> -- Requires non-empty <code>Fingerprint</code>, <code>SignalName</code>, and <code>Severity</code>.</li>
@@ -3434,7 +3434,11 @@
 </tr>
 <tr>
 <td><code>SourceType</code></td>
-<td><code>prometheus</code> or <code>kubernetes-event</code></td>
+<td>Always <code>"alert"</code> for all adapters</td>
+</tr>
+<tr>
+<td><code>Source</code></td>
+<td><code>"prometheus"</code> or <code>"kubernetes-events"</code> (identifies the adapter)</td>
 </tr>
 <tr>
 <td><code>RawPayload</code></td>

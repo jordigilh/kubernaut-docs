@@ -6,8 +6,8 @@ The Gateway is the entry point for all signals into Kubernaut. It accepts alerts
 
 ```mermaid
 flowchart LR
-    AM["AlertManager"] -->|POST /signals/prometheus| GW["Gateway"]
-    EE["Event Exporter"] -->|POST /signals/kubernetes-event| GW
+    AM["AlertManager"] -->|"POST /api/v1/signals/prometheus"| GW["Gateway"]
+    EE["Event Exporter"] -->|"POST /api/v1/signals/kubernetes-event"| GW
     GW -->|"Auth (SAR)"| K8s["Kubernetes API"]
     GW -->|"Scope check"| K8s
     GW -->|"Create RR"| K8s
@@ -32,7 +32,7 @@ Each signal source uses a dedicated **adapter** that parses the source-specific 
 
 Parses the AlertManager webhook format (`alerts[]`, `commonLabels`, `commonAnnotations`):
 
-1. **Parse** -- Takes the first alert from the `alerts[]` array. Extracts the target resource from labels using a priority list: HPA > PDB > PVC > Deployment > StatefulSet > DaemonSet > Node > Service > Job > CronJob > Pod. Before extraction, a **monitoring metadata filter** strips `service` and `pod` labels that refer to monitoring infrastructure (kube-state-metrics, prometheus-node-exporter, alertmanager, grafana, etc.) to prevent Kubernaut from targeting its own monitoring stack. Merges alert-level and common labels.
+1. **Parse** -- Takes the first alert from the `alerts[]` array. Extracts the target resource from labels using a priority list: HPA > PDB > PVC > Deployment > StatefulSet > DaemonSet > ReplicaSet > Node > Service > Job (`job_name`) > CronJob > Pod. Before extraction, a **monitoring metadata filter** strips `service` and `pod` labels that refer to monitoring infrastructure (kube-state-metrics, prometheus-node-exporter, alertmanager, grafana, etc.) to prevent Kubernaut from targeting its own monitoring stack. Merges alert-level and common labels.
 2. **Fingerprint** -- Resolves the owner chain (Pod -> ReplicaSet -> Deployment) and computes `SHA256(namespace:kind:name)` of the top-level owner. The alert name is excluded from the fingerprint (Issue #63) so that different alerts for the same resource deduplicate correctly.
 3. **Severity** -- Pass-through from `labels["severity"]`. Signal Processing normalizes it later via Rego policy.
 4. **Validate** -- Requires non-empty `Fingerprint`, `SignalName`, and `Severity`.
@@ -68,7 +68,8 @@ Both adapters produce a common `NormalizedSignal`:
 | `Annotations` | Source annotations |
 | `FiringTime` | When the alert started firing |
 | `ReceivedTime` | When the Gateway received it |
-| `SourceType` | `prometheus` or `kubernetes-event` |
+| `SourceType` | Always `"alert"` for all adapters |
+| `Source` | `"prometheus"` or `"kubernetes-events"` (identifies the adapter) |
 | `RawPayload` | Original payload for audit reconstruction |
 
 ## Authentication

@@ -144,6 +144,8 @@ An internal admission webhook validates and audits:
 - RemediationApprovalRequest mutations (approval/rejection)
 - RemediationRequest status mutations (timeout configuration)
 - NotificationRequest deletions (attribution)
+- RemediationWorkflow mutations (schema validation via `/validate-remediationworkflow`)
+- ActionType mutations (schema validation via `/validate-actiontype`)
 
 ### Authentication
 

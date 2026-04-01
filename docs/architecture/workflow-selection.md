@@ -107,7 +107,7 @@ Business classification labels (`businessUnit`, `serviceOwner`, `criticality`, `
 4. **Rego policy connection** -- Signal Processing Rego policies determine severity, environment, and priority, which directly feed into Layer 1. Business classification feeds into Layer 2 scoring as a refinement signal, not a hard gate.
 
 !!! note "`signalName` is not a matching label"
-    `signalName` is optional metadata in the workflow schema (DD-WORKFLOW-016). It is **not** used for filtering or matching. The LLM selects workflows by `actionType`, not by `signalName`.
+    `signalName` is optional metadata in the workflow schema (DD-WORKFLOW-016). It is **not** used for filtering or matching — only for the final result ordering tiebreaker (`ORDER BY final_score DESC, workflow_id ASC`). The LLM selects workflows by `actionType`, not by `signalName`.
 
 ## Layer 2: Semantic Scoring
 
@@ -147,7 +147,7 @@ final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_pen
 
 ### Custom Label Boost
 
-Custom labels from Signal Processing's Rego policy output contribute additional scoring (DD-WORKFLOW-004 v2.1):
+Custom labels from Signal Processing's Rego policy output contribute additional scoring (DD-WORKFLOW-004 v1.5):
 
 - **Exact match**: +0.15 per key
 - **Wildcard match**: +0.075 per key

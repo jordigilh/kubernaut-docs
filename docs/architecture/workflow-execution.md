@@ -37,7 +37,7 @@ For the complete field specification, see [WorkflowExecution in the CRD Referenc
 ```mermaid
 stateDiagram-v2
     [*] --> Pending
-    Pending --> Running : Spec valid + cooldown clear + deps resolved + exec created
+    Pending --> Running : Spec valid + engine resolved + cooldown clear + deps resolved + exec created
     Pending --> Failed : Validation / dependency / cooldown failure
     Running --> Completed : Job/PipelineRun succeeded
     Running --> Failed : Job/PipelineRun failed
@@ -45,7 +45,7 @@ stateDiagram-v2
 
 | Phase | Terminal | Description |
 |---|---|---|
-| **Pending** | No | Spec validation, cooldown check, dependency resolution, execution creation |
+| **Pending** | No | Spec validation, engine resolution, cooldown check, dependency resolution, execution creation |
 | **Running** | No | Job or PipelineRun is active, polled every 10 seconds |
 | **Completed** | Yes | Execution succeeded |
 | **Failed** | Yes | Execution failed (pre-execution or runtime) |
@@ -63,7 +63,13 @@ Validates required fields:
 
 Failure → `MarkFailed` with `ConfigurationError`.
 
-### 2. Cooldown Check
+### 2. Engine Resolution
+
+`resolveExecutionEngine` queries the workflow catalog in DataStorage to determine the execution engine (`tekton`, `job`, or `ansible`). This runs immediately after validation, before cooldown check.
+
+Failure → `MarkFailed` with `ConfigurationError`.
+
+### 3. Cooldown Check
 
 Before creating a new execution, the controller checks for recently completed WFEs on the same target resource:
 
@@ -73,7 +79,11 @@ Before creating a new execution, the controller checks for recently completed WF
 
 **Default cooldown**: 1 minute (configurable via `workflowexecution.config.execution.cooldownPeriod`). Prevents rapid re-execution of the same workflow on the same target.
 
-### 3. Dependency Resolution
+### Audit: `workflowexecution.selection.completed`
+
+Emitted after validation + engine resolution + cooldown check pass, **before** dependency resolution and execution creation.
+
+### 4. Dependency Resolution
 
 Fetches workflow dependencies from DataStorage and validates them in the execution namespace:
 
@@ -83,17 +93,16 @@ Fetches workflow dependencies from DataStorage and validates them in the executi
     - DataStorage fetch failure → non-fatal, continue without dependency data
     - Dependency validation failure → `MarkFailed` with `ConfigurationError`
 
-### 4. Execution Creation
+### 5. Execution Creation
 
-Resolves the execution engine from the DS workflow catalog and creates a Kubernetes Job, Tekton PipelineRun, or AWX Job accordingly:
+Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job using the engine resolved in Step 2:
 
-- The executor registry dispatches to the appropriate engine (`tekton`, `job`, or `ansible`)
+- The executor registry dispatches to the appropriate engine
 - **AlreadyExists handling** (Job/Tekton only): If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as `Failed` (race condition).
 
-### Audit Events
+### Audit: `workflowexecution.execution.started`
 
-- `workflowexecution.selection.completed` -- Emitted after spec validation
-- `workflowexecution.execution.started` -- Emitted after execution resource creation
+Emitted after execution resource creation succeeds.
 
 ## Running Phase
 
@@ -109,7 +118,9 @@ The Running phase polls the executor status every **10 seconds**:
 After reaching `Completed` or `Failed`, the controller does not immediately clean up:
 
 1. **Wait for cooldown** (default 1m) after `CompletionTime`
-2. **Cleanup** -- `exec.Cleanup(ctx, wfe, namespace)` deletes the Job or PipelineRun
+2. **Cleanup** -- `exec.Cleanup(ctx, wfe, namespace)`:
+    - **Job/Tekton**: Deletes the Job or PipelineRun
+    - **Ansible**: Deletes ephemeral AWX credentials via `cleanupEphemeralCredentials` and cancels the AWX job if still running
 3. **Emit** `LockReleased` Kubernetes event
 
 The cooldown period serves two purposes:

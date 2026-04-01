@@ -39,7 +39,7 @@ stateDiagram-v2
     Executing --> Skipped : Resource busy
     Executing --> TimedOut : Phase timeout
     Verifying --> Completed : EA completed
-    Verifying --> Failed : Verification timeout
+    Verifying --> Completed : Verification timeout (VerificationTimedOut)
     Blocked --> Pending : UnmanagedResource re-scoped
     Blocked --> Pending : DuplicateInProgress resolved
     Blocked --> Analyzing : ResourceBusy cleared
@@ -72,10 +72,13 @@ Processing  → Analyzing, Failed, TimedOut
 Analyzing   → AwaitingApproval, Executing, Completed, Failed, TimedOut, Blocked
 AwaitingApproval → Executing, Failed, TimedOut
 Executing   → Verifying, Failed, TimedOut, Skipped
-Verifying   → Completed
+Verifying   → Completed (includes VerificationTimedOut)
 Blocked     → Failed, Analyzing, Pending
 Failed      → Blocked
 ```
+
+!!! note "Source code `ValidTransitions` map"
+    The `ValidTransitions` map in the source code omits `Pending → Blocked` and `Analyzing → Blocked`. The reconciler performs these transitions via direct status updates (routing engine sets the Blocked phase), bypassing the map check.
 
 ## Phase Handlers
 
@@ -136,6 +139,7 @@ For the normal path, the Orchestrator runs **post-analysis routing checks** befo
 The Blocked phase behaves differently based on the block type:
 
 - **Time-based blocks** (ConsecutiveFailures, RecentlyRemediated, ExponentialBackoff): Check `BlockedUntil`. When expired → transition to **Failed** (terminal). Future RRs for the same signal can then proceed.
+- **IneffectiveChain**: Uses `RequeueAfter` only (no `BlockedUntil`). The `handleBlockedPhase` auto-expiry never fires for this condition — the block remains until a new RR arrives after the requeue interval, at which point it transitions to **Failed** with `RequiresManualReview`.
 - **Event-based blocks**:
     - **UnmanagedResource**: Target gains `kubernaut.ai/managed=true` → **Pending**
     - **DuplicateInProgress**: Original RR reaches terminal → **Pending**

@@ -2004,6 +2004,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ocp-monitoring-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP Monitoring RBAC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3162,6 +3173,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#ocp-monitoring-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP Monitoring RBAC
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3405,7 +3427,7 @@
 <ol>
 <li><strong>Pre-remediation hash</strong>: From <code>EA.Spec.PreRemediationSpecHash</code> (captured by RO before execution) or queried from DataStorage</li>
 <li><strong>Post-remediation hash</strong>: Computed live via <code>CanonicalSpecHash(target.Spec)</code></li>
-<li><strong>Comparison</strong>: <code>postHash == preHash</code> → <code>Match=true</code> (no drift, remediation didn't change the spec)</li>
+<li><strong>Comparison</strong>: <code>postHash == preHash</code> → <code>Match=true</code> (spec unchanged). <code>postHash != preHash</code> can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed <em>after</em> the stabilization window began.</li>
 </ol>
 <h4 id="canonical-hash-algorithm">Canonical Hash Algorithm<a class="headerlink" href="#canonical-hash-algorithm" title="Permanent link">&para;</a></h4>
 <ul>
@@ -3416,7 +3438,7 @@
 </ul>
 <h4 id="hash-deferral">Hash Deferral<a class="headerlink" href="#hash-deferral" title="Permanent link">&para;</a></h4>
 <p>When <code>HashComputeDelay</code> is set (async targets), the hash is not computed until the propagation delay elapses. The controller enters <code>WaitingForPropagation</code> and requeues with the remaining duration.</p>
-<p>If spec drift is detected (<code>postHash != preHash</code>), DataStorage short-circuits the weighted score to <strong>0.0</strong> regardless of other component results.</p>
+<p>If spec drift is detected (<code>assessment_status == "spec_drift"</code> — the spec changed <em>during</em> the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to <strong>0.0</strong> regardless of other component results. Note: <code>postHash != preHash</code> alone is <strong>normal</strong> for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.</p>
 <h2 id="weighted-scoring">Weighted Scoring<a class="headerlink" href="#weighted-scoring" title="Permanent link">&para;</a></h2>
 <p>DataStorage computes a weighted overall score when the EA results are stored:</p>
 <table>
@@ -3453,6 +3475,8 @@
 <li><strong>Decision influence</strong> -- The LLM uses history to avoid repeating ineffective workflows and prefer historically successful ones</li>
 </ol>
 <p>See <a href="../hapi-investigation/">Investigation Pipeline: Remediation History</a> for details on how the three-way hash comparison and formatted warnings work.</p>
+<h2 id="ocp-monitoring-rbac">OCP Monitoring RBAC<a class="headerlink" href="#ocp-monitoring-rbac" title="Permanent link">&para;</a></h2>
+<p>On OpenShift clusters with <code>effectivenessmonitor.external.ocpMonitoringRbac: true</code>, the Helm chart creates additional RBAC resources to allow the Effectiveness Monitor to query the cluster monitoring stack through <code>kube-rbac-proxy</code>. See <a href="../security-rbac/#ocp-monitoring-rbac">Security &amp; RBAC: OCP Monitoring RBAC</a> for details.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../async-propagation/">Async Propagation</a> -- The propagation delay model in detail</li>

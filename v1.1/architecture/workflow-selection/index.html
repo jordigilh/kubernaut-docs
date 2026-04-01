@@ -3496,7 +3496,7 @@
 </ol>
 <div class="admonition note">
 <p class="admonition-title"><code>signalName</code> is not a matching label</p>
-<p><code>signalName</code> is optional metadata in the workflow schema (DD-WORKFLOW-016). It is <strong>not</strong> used for filtering or matching. The LLM selects workflows by <code>actionType</code>, not by <code>signalName</code>.</p>
+<p><code>signalName</code> is optional metadata in the workflow schema (DD-WORKFLOW-016). It is <strong>not</strong> used for filtering or matching — only for the final result ordering tiebreaker (<code>ORDER BY final_score DESC, workflow_id ASC</code>). The LLM selects workflows by <code>actionType</code>, not by <code>signalName</code>.</p>
 </div>
 <h2 id="layer-2-semantic-scoring">Layer 2: Semantic Scoring<a class="headerlink" href="#layer-2-semantic-scoring" title="Permanent link">&para;</a></h2>
 <p>DataStorage computes a <code>final_score</code> for each candidate to <strong>order</strong> results (DD-WORKFLOW-004 v1.5). Scores are used only for ordering and are stripped before reaching the LLM.</p>
@@ -3569,7 +3569,7 @@
 <li><strong>Query has wildcard</strong> (<code>"*"</code>): Half weight</li>
 </ul>
 <h3 id="custom-label-boost">Custom Label Boost<a class="headerlink" href="#custom-label-boost" title="Permanent link">&para;</a></h3>
-<p>Custom labels from Signal Processing's Rego policy output contribute additional scoring (DD-WORKFLOW-004 v2.1):</p>
+<p>Custom labels from Signal Processing's Rego policy output contribute additional scoring (DD-WORKFLOW-004 v1.5):</p>
 <ul>
 <li><strong>Exact match</strong>: +0.15 per key</li>
 <li><strong>Wildcard match</strong>: +0.075 per key</li>

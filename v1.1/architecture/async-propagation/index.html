@@ -3057,13 +3057,13 @@
 <tbody>
 <tr>
 <td><strong>GitOps-managed</strong></td>
-<td><code>gitOpsManaged=true</code> detected label</td>
+<td><code>PostRCAContext.DetectedLabels.GitOpsManaged=true</code> (JSON field from HAPI response, not a Kubernetes object label)</td>
 <td>HAPI <code>LabelDetector</code> during post-RCA analysis</td>
 </tr>
 <tr>
-<td><strong>Operator-managed CR</strong></td>
-<td>Target resource is a custom resource (CR) with a controlling operator</td>
-<td>Kubernetes API resource discovery</td>
+<td><strong>Custom Resource (CRD)</strong></td>
+<td>Target resource belongs to a non-built-in API group (detected via <code>IsBuiltInGroup(group)</code> allowlist — non-built-in groups are treated as CRDs)</td>
+<td>API group check, no operator/controller detection</td>
 </tr>
 </tbody>
 </table>
@@ -3112,7 +3112,7 @@
 </thead>
 <tbody>
 <tr>
-<td><strong>Sync target</strong> (direct patch)</td>
+<td><strong>Sync target</strong> (direct patch, built-in API group)</td>
 <td>0</td>
 <td><code>stabilizationWindow</code></td>
 </tr>
@@ -3122,12 +3122,12 @@
 <td><code>gitOpsSyncDelay</code> + <code>stabilizationWindow</code></td>
 </tr>
 <tr>
-<td><strong>Operator-managed CR</strong></td>
+<td><strong>Custom Resource (non-built-in API group)</strong></td>
 <td><code>operatorReconcileDelay</code></td>
 <td><code>operatorReconcileDelay</code> + <code>stabilizationWindow</code></td>
 </tr>
 <tr>
-<td><strong>GitOps + operator CR</strong> (both)</td>
+<td><strong>GitOps + CRD</strong> (both)</td>
 <td><code>gitOpsSyncDelay</code> + <code>operatorReconcileDelay</code></td>
 <td>Both delays + <code>stabilizationWindow</code></td>
 </tr>

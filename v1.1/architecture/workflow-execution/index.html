@@ -1882,10 +1882,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-cooldown-check" class="md-nav__link">
+  <a href="#2-engine-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Cooldown Check
+        2. Engine Resolution
       
     </span>
   </a>
@@ -1893,10 +1893,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-dependency-resolution" class="md-nav__link">
+  <a href="#3-cooldown-check" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Dependency Resolution
+        3. Cooldown Check
       
     </span>
   </a>
@@ -1904,10 +1904,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-execution-creation" class="md-nav__link">
+  <a href="#audit-workflowexecutionselectioncompleted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Execution Creation
+        Audit: workflowexecution.selection.completed
       
     </span>
   </a>
@@ -1915,10 +1915,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#audit-events" class="md-nav__link">
+  <a href="#4-dependency-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Audit Events
+        4. Dependency Resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-execution-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Execution Creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-workflowexecutionexecutionstarted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit: workflowexecution.execution.started
       
     </span>
   </a>
@@ -3195,10 +3217,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#2-cooldown-check" class="md-nav__link">
+  <a href="#2-engine-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        2. Cooldown Check
+        2. Engine Resolution
       
     </span>
   </a>
@@ -3206,10 +3228,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#3-dependency-resolution" class="md-nav__link">
+  <a href="#3-cooldown-check" class="md-nav__link">
     <span class="md-ellipsis">
       
-        3. Dependency Resolution
+        3. Cooldown Check
       
     </span>
   </a>
@@ -3217,10 +3239,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-execution-creation" class="md-nav__link">
+  <a href="#audit-workflowexecutionselectioncompleted" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Execution Creation
+        Audit: workflowexecution.selection.completed
       
     </span>
   </a>
@@ -3228,10 +3250,32 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#audit-events" class="md-nav__link">
+  <a href="#4-dependency-resolution" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Audit Events
+        4. Dependency Resolution
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-execution-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Execution Creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit-workflowexecutionexecutionstarted" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit: workflowexecution.execution.started
       
     </span>
   </a>
@@ -3502,7 +3546,7 @@
 <h2 id="phase-state-machine">Phase State Machine<a class="headerlink" href="#phase-state-machine" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>stateDiagram-v2
     [*] --&gt; Pending
-    Pending --&gt; Running : Spec valid + cooldown clear + deps resolved + exec created
+    Pending --&gt; Running : Spec valid + engine resolved + cooldown clear + deps resolved + exec created
     Pending --&gt; Failed : Validation / dependency / cooldown failure
     Running --&gt; Completed : Job/PipelineRun succeeded
     Running --&gt; Failed : Job/PipelineRun failed</code></pre>
@@ -3518,7 +3562,7 @@
 <tr>
 <td><strong>Pending</strong></td>
 <td>No</td>
-<td>Spec validation, cooldown check, dependency resolution, execution creation</td>
+<td>Spec validation, engine resolution, cooldown check, dependency resolution, execution creation</td>
 </tr>
 <tr>
 <td><strong>Running</strong></td>
@@ -3546,7 +3590,10 @@
 <li><code>TargetResource</code> matches the expected format (<code>namespace/kind/name</code> or <code>kind/name</code>)</li>
 </ul>
 <p>Failure → <code>MarkFailed</code> with <code>ConfigurationError</code>.</p>
-<h3 id="2-cooldown-check">2. Cooldown Check<a class="headerlink" href="#2-cooldown-check" title="Permanent link">&para;</a></h3>
+<h3 id="2-engine-resolution">2. Engine Resolution<a class="headerlink" href="#2-engine-resolution" title="Permanent link">&para;</a></h3>
+<p><code>resolveExecutionEngine</code> queries the workflow catalog in DataStorage to determine the execution engine (<code>tekton</code>, <code>job</code>, or <code>ansible</code>). This runs immediately after validation, before cooldown check.</p>
+<p>Failure → <code>MarkFailed</code> with <code>ConfigurationError</code>.</p>
+<h3 id="3-cooldown-check">3. Cooldown Check<a class="headerlink" href="#3-cooldown-check" title="Permanent link">&para;</a></h3>
 <p>Before creating a new execution, the controller checks for recently completed WFEs on the same target resource:</p>
 <ul>
 <li>Lists WFEs using a field index on <code>spec.targetResource</code></li>
@@ -3554,7 +3601,9 @@
 <li>Returns the remaining cooldown time for requeue</li>
 </ul>
 <p><strong>Default cooldown</strong>: 1 minute (configurable via <code>workflowexecution.config.execution.cooldownPeriod</code>). Prevents rapid re-execution of the same workflow on the same target.</p>
-<h3 id="3-dependency-resolution">3. Dependency Resolution<a class="headerlink" href="#3-dependency-resolution" title="Permanent link">&para;</a></h3>
+<h3 id="audit-workflowexecutionselectioncompleted">Audit: <code>workflowexecution.selection.completed</code><a class="headerlink" href="#audit-workflowexecutionselectioncompleted" title="Permanent link">&para;</a></h3>
+<p>Emitted after validation + engine resolution + cooldown check pass, <strong>before</strong> dependency resolution and execution creation.</p>
+<h3 id="4-dependency-resolution">4. Dependency Resolution<a class="headerlink" href="#4-dependency-resolution" title="Permanent link">&para;</a></h3>
 <p>Fetches workflow dependencies from DataStorage and validates them in the execution namespace:</p>
 <ol>
 <li><strong>Query DataStorage</strong> via <code>WorkflowQuerier.GetWorkflowDependencies(ctx, workflowID)</code> for declared Secrets and ConfigMaps</li>
@@ -3565,17 +3614,14 @@
 </ul>
 </li>
 </ol>
-<h3 id="4-execution-creation">4. Execution Creation<a class="headerlink" href="#4-execution-creation" title="Permanent link">&para;</a></h3>
-<p>Resolves the execution engine from the DS workflow catalog and creates a Kubernetes Job, Tekton PipelineRun, or AWX Job accordingly:</p>
+<h3 id="5-execution-creation">5. Execution Creation<a class="headerlink" href="#5-execution-creation" title="Permanent link">&para;</a></h3>
+<p>Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job using the engine resolved in Step 2:</p>
 <ul>
-<li>The executor registry dispatches to the appropriate engine (<code>tekton</code>, <code>job</code>, or <code>ansible</code>)</li>
+<li>The executor registry dispatches to the appropriate engine</li>
 <li><strong>AlreadyExists handling</strong> (Job/Tekton only): If the resource already exists and belongs to this WFE, adopt it (idempotent). If it belongs to another WFE, mark as <code>Failed</code> (race condition).</li>
 </ul>
-<h3 id="audit-events">Audit Events<a class="headerlink" href="#audit-events" title="Permanent link">&para;</a></h3>
-<ul>
-<li><code>workflowexecution.selection.completed</code> -- Emitted after spec validation</li>
-<li><code>workflowexecution.execution.started</code> -- Emitted after execution resource creation</li>
-</ul>
+<h3 id="audit-workflowexecutionexecutionstarted">Audit: <code>workflowexecution.execution.started</code><a class="headerlink" href="#audit-workflowexecutionexecutionstarted" title="Permanent link">&para;</a></h3>
+<p>Emitted after execution resource creation succeeds.</p>
 <h2 id="running-phase">Running Phase<a class="headerlink" href="#running-phase" title="Permanent link">&para;</a></h2>
 <p>The Running phase polls the executor status every <strong>10 seconds</strong>:</p>
 <ol>
@@ -3588,7 +3634,11 @@
 <p>After reaching <code>Completed</code> or <code>Failed</code>, the controller does not immediately clean up:</p>
 <ol>
 <li><strong>Wait for cooldown</strong> (default 1m) after <code>CompletionTime</code></li>
-<li><strong>Cleanup</strong> -- <code>exec.Cleanup(ctx, wfe, namespace)</code> deletes the Job or PipelineRun</li>
+<li><strong>Cleanup</strong> -- <code>exec.Cleanup(ctx, wfe, namespace)</code>:<ul>
+<li><strong>Job/Tekton</strong>: Deletes the Job or PipelineRun</li>
+<li><strong>Ansible</strong>: Deletes ephemeral AWX credentials via <code>cleanupEphemeralCredentials</code> and cancels the AWX job if still running</li>
+</ul>
+</li>
 <li><strong>Emit</strong> <code>LockReleased</code> Kubernetes event</li>
 </ol>
 <p>The cooldown period serves two purposes:</p>

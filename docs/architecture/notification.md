@@ -86,8 +86,8 @@ Attributes are extracted from the notification spec and used for route matching:
 | `priority` | `spec.Priority` |
 | `environment` | `spec.Metadata["environment"]` |
 | `namespace` | `spec.Metadata["namespace"]` |
-| `skipReason` | `spec.Metadata["skipReason"]` |
-| `investigationOutcome` | `spec.Metadata["investigationOutcome"]` |
+| `skip-reason` | `spec.Metadata["skip-reason"]` |
+| `investigation-outcome` | `spec.Metadata["investigation-outcome"]` |
 
 ### Route Matching
 
@@ -98,7 +98,6 @@ The routing configuration follows an AlertManager-style tree:
 3. Each route's `Match` map must match **all** specified attributes (AND logic)
 4. First matching route identifies the **receiver**
 5. The receiver declares which channels to use
-6. If `Continue: true`, matching continues for multi-channel fanout (BR-NOT-068)
 
 ### Fallback
 
@@ -241,7 +240,7 @@ Before delivery, the controller enriches notification bodies by resolving workfl
 
 ### Enrichment Flow
 
-1. Extract the workflow UUID from `spec.context.workflow` (checks `WorkflowContext.WorkflowID` for completion notifications, then `WorkflowContext.SelectedWorkflow` for approval notifications)
+1. Extract the workflow UUID from `spec.metadata["workflowId"]` with fallback to `spec.metadata["selectedWorkflow"]` (the former is set for completion notifications, the latter for approval notifications)
 2. Call the DataStorage catalog API (`GET /api/v1/workflows/{id}`) to resolve the UUID to a workflow name
 3. Replace every occurrence of the UUID in `spec.Body` with the resolved name
 4. Pass the enriched notification to the delivery orchestrator

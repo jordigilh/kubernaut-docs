@@ -147,7 +147,7 @@ Compares the resource specification before and after remediation to detect drift
 
 1. **Pre-remediation hash**: From `EA.Spec.PreRemediationSpecHash` (captured by RO before execution) or queried from DataStorage
 2. **Post-remediation hash**: Computed live via `CanonicalSpecHash(target.Spec)`
-3. **Comparison**: `postHash == preHash` → `Match=true` (no drift, remediation didn't change the spec)
+3. **Comparison**: `postHash == preHash` → `Match=true` (spec unchanged). `postHash != preHash` can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed *after* the stabilization window began.
 
 #### Canonical Hash Algorithm
 
@@ -160,7 +160,7 @@ Compares the resource specification before and after remediation to detect drift
 
 When `HashComputeDelay` is set (async targets), the hash is not computed until the propagation delay elapses. The controller enters `WaitingForPropagation` and requeues with the remaining duration.
 
-If spec drift is detected (`postHash != preHash`), DataStorage short-circuits the weighted score to **0.0** regardless of other component results.
+If spec drift is detected (`assessment_status == "spec_drift"` — the spec changed *during* the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to **0.0** regardless of other component results. Note: `postHash != preHash` alone is **normal** for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.
 
 ## Weighted Scoring
 
@@ -187,6 +187,10 @@ EA results feed back into the remediation pipeline through the [Investigation Pi
 5. **Decision influence** -- The LLM uses history to avoid repeating ineffective workflows and prefer historically successful ones
 
 See [Investigation Pipeline: Remediation History](hapi-investigation.md) for details on how the three-way hash comparison and formatted warnings work.
+
+## OCP Monitoring RBAC
+
+On OpenShift clusters with `effectivenessmonitor.external.ocpMonitoringRbac: true`, the Helm chart creates additional RBAC resources to allow the Effectiveness Monitor to query the cluster monitoring stack through `kube-rbac-proxy`. See [Security & RBAC: OCP Monitoring RBAC](security-rbac.md#ocp-monitoring-rbac) for details.
 
 ## Next Steps
 

@@ -88,7 +88,7 @@ Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, Effect
 
 The RemediationOrchestrator and EffectivenessMonitor are additionally bound to the Kubernetes built-in `view` ClusterRole via `remediationorchestrator-view` and `effectivenessmonitor-view` ClusterRoleBindings. This provides broad read access to CRD types not individually enumerated in their dedicated ClusterRoles -- for example, cert-manager `Certificate` resources and Istio networking resources -- which is required for pre- and post-remediation hash capture (DD-EM-002).
 
-If the `view` ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), hash capture emits a `HashCaptureDegraded` Kubernetes event and the EffectivenessAssessment proceeds in **degraded mode** rather than failing the pipeline. In degraded mode, the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.
+If the `view` ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), the **Remediation Orchestrator** emits a `HashCaptureDegraded` Kubernetes event on the `RemediationRequest` when `CapturePreRemediationHash` returns a degraded reason. The EffectivenessAssessment then proceeds in **degraded mode** — the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.
 
 ## Workflow Execution
 

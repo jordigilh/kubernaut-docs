@@ -3557,7 +3557,7 @@
     Executing --&gt; Skipped : Resource busy
     Executing --&gt; TimedOut : Phase timeout
     Verifying --&gt; Completed : EA completed
-    Verifying --&gt; Failed : Verification timeout
+    Verifying --&gt; Completed : Verification timeout (VerificationTimedOut)
     Blocked --&gt; Pending : UnmanagedResource re-scoped
     Blocked --&gt; Pending : DuplicateInProgress resolved
     Blocked --&gt; Analyzing : ResourceBusy cleared
@@ -3641,10 +3641,14 @@
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Analyzing   → AwaitingApproval, Executing, Completed, Failed, TimedOut, Blocked
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>AwaitingApproval → Executing, Failed, TimedOut
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>Executing   → Verifying, Failed, TimedOut, Skipped
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Verifying   → Completed
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>Verifying   → Completed (includes VerificationTimedOut)
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>Blocked     → Failed, Analyzing, Pending
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>Failed      → Blocked
 </span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Source code <code>ValidTransitions</code> map</p>
+<p>The <code>ValidTransitions</code> map in the source code omits <code>Pending → Blocked</code> and <code>Analyzing → Blocked</code>. The reconciler performs these transitions via direct status updates (routing engine sets the Blocked phase), bypassing the map check.</p>
+</div>
 <h2 id="phase-handlers">Phase Handlers<a class="headerlink" href="#phase-handlers" title="Permanent link">&para;</a></h2>
 <h3 id="pending-processing">Pending → Processing<a class="headerlink" href="#pending-processing" title="Permanent link">&para;</a></h3>
 <ol>
@@ -3724,6 +3728,7 @@
 <p>The Blocked phase behaves differently based on the block type:</p>
 <ul>
 <li><strong>Time-based blocks</strong> (ConsecutiveFailures, RecentlyRemediated, ExponentialBackoff): Check <code>BlockedUntil</code>. When expired → transition to <strong>Failed</strong> (terminal). Future RRs for the same signal can then proceed.</li>
+<li><strong>IneffectiveChain</strong>: Uses <code>RequeueAfter</code> only (no <code>BlockedUntil</code>). The <code>handleBlockedPhase</code> auto-expiry never fires for this condition — the block remains until a new RR arrives after the requeue interval, at which point it transitions to <strong>Failed</strong> with <code>RequiresManualReview</code>.</li>
 <li><strong>Event-based blocks</strong>:<ul>
 <li><strong>UnmanagedResource</strong>: Target gains <code>kubernaut.ai/managed=true</code> → <strong>Pending</strong></li>
 <li><strong>DuplicateInProgress</strong>: Original RR reaches terminal → <strong>Pending</strong></li>

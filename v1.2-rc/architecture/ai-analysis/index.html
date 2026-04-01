@@ -1801,10 +1801,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#approval-gate-rego-policy-user-replaceable" class="md-nav__link">
+  <a href="#approval-gate-rego-policy-operator-provided" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Approval Gate (Rego policy, user-replaceable)
+        Approval Gate (Rego policy, operator-provided)
       
     </span>
   </a>
@@ -3049,10 +3049,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#approval-gate-rego-policy-user-replaceable" class="md-nav__link">
+  <a href="#approval-gate-rego-policy-operator-provided" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Approval Gate (Rego policy, user-replaceable)
+        Approval Gate (Rego policy, operator-provided)
       
     </span>
   </a>
@@ -3133,7 +3133,7 @@
     AA-&gt;&gt;HAPI: GET /session/{id}/result
     HAPI--&gt;&gt;AA: IncidentResponse
     Note over AA: Phase: Analyzing</code></pre>
-<p>This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (<code>RequeueAfter</code>) while the LLM investigation runs. The controller polls at a <strong>constant 15-second interval</strong> (configurable from 1s to 5m via <code>--session-poll-interval</code> flag or <code>WithSessionPollInterval</code> option).</p>
+<p>This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (<code>RequeueAfter</code>) while the LLM investigation runs. The controller polls at a <strong>constant 15-second interval</strong> (configurable from 1s to 5m via the <code>holmesgpt.sessionPollInterval</code> YAML config field).</p>
 <h3 id="session-recovery">Session Recovery<a class="headerlink" href="#session-recovery" title="Permanent link">&para;</a></h3>
 <p>If HolmesGPT API restarts and returns <code>404</code> for a session, the controller regenerates the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).</p>
 <h2 id="timeout-configuration">Timeout Configuration<a class="headerlink" href="#timeout-configuration" title="Permanent link">&para;</a></h2>
@@ -3213,16 +3213,23 @@
 <h4 id="problem-self-resolved-bypass-301">Problem Self-Resolved Bypass (#301)<a class="headerlink" href="#problem-self-resolved-bypass-301" title="Permanent link">&para;</a></h4>
 <p>When HolmesGPT reports <code>investigation_outcome=resolved</code>, it appends a "Problem self-resolved" warning to the response. The response processor detects this signal and bypasses the substantive RCA check -- even if the LLM produced a root cause analysis with contributing factors, the RCA is treated as documenting a <strong>transient condition</strong> (e.g., a pod that recovered on its own) rather than an active problem.</p>
 <p>Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because <code>hasSubstantiveRCA</code> would return <code>true</code>, preventing the <code>WorkflowNotNeeded</code> completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.</p>
-<h3 id="approval-gate-rego-policy-user-replaceable">Approval Gate (Rego policy, user-replaceable)<a class="headerlink" href="#approval-gate-rego-policy-user-replaceable" title="Permanent link">&para;</a></h3>
-<p>The Analyzing handler evaluates a <strong>user-replaceable Rego policy</strong> (<code>approval.rego</code>) to determine whether the remediation requires human approval. The policy receives the full analysis context as input and returns <code>require_approval</code> (boolean) and <code>reason</code> (string).</p>
-<p>The <strong>default shipped policy</strong> gates on environment and remediation target presence:</p>
+<h3 id="approval-gate-rego-policy-operator-provided">Approval Gate (Rego policy, operator-provided)<a class="headerlink" href="#approval-gate-rego-policy-operator-provided" title="Permanent link">&para;</a></h3>
+<p>The Analyzing handler evaluates a Rego policy to determine whether the remediation requires human approval:</p>
+<ul>
+<li><strong>Query</strong>: <code>data.aianalysis.approval</code></li>
+<li><strong>Input</strong>: Full analysis context (see below)</li>
+<li><strong>Output</strong>: <code>require_approval</code> (boolean) and <code>reason</code> (string)</li>
+</ul>
+<p><strong>When no policy is mounted</strong>, the controller auto-approves all remediations. Operators provide their own <code>approval.rego</code> to enforce custom gates.</p>
+<p>The <strong>default shipped policy</strong> (bundled for reference) gates on:</p>
 <ul>
 <li><strong>Production</strong> — always requires approval</li>
 <li><strong>Non-production</strong> — auto-approved when <code>remediation_target</code> is present</li>
 <li><strong>Missing <code>remediation_target</code></strong> — always requires approval (default-deny per ADR-055)</li>
+<li><strong>Sensitive resource kinds</strong> — requires approval for Deployments, StatefulSets, DaemonSets in production</li>
 </ul>
-<p>The policy also receives <code>confidence</code>, <code>confidence_threshold</code>, <code>detected_labels</code> (snake_case keys: <code>"stateful"</code>, <code>"pdb_protected"</code>, <code>"hpa_enabled"</code>), <code>failed_detections</code>, <code>custom_labels</code>, and <code>business_classification</code>. Operators can write custom policies that use any combination of these inputs -- for example, confidence-gated approval for production.</p>
-<p>The confidence threshold is configurable via Helm (<code>aianalysis.rego.confidenceThreshold</code>, default 0.8) and passed as <code>input.confidence_threshold</code>. The default policy defines <code>is_high_confidence</code> but does not use it in approval rules.</p>
+<p>The policy receives <code>confidence</code>, <code>confidence_threshold</code>, <code>detected_labels</code> (snake_case keys: <code>"stateful"</code>, <code>"pdb_protected"</code>, <code>"hpa_enabled"</code>), <code>failed_detections</code>, <code>custom_labels</code>, and <code>business_classification</code>. Operators can write custom policies that use any combination of these inputs — for example, confidence-gated approval for production.</p>
+<p>The confidence threshold is configurable via Helm (<code>aianalysis.rego.confidenceThreshold</code>, default 0.8) and passed as <code>input.confidence_threshold</code>.</p>
 <p>See <a href="../../user-guide/approval/">Human Approval</a> for the full approval flow and policy customization details.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>

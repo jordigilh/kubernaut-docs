@@ -3329,7 +3329,7 @@
 <tr>
 <td><code>type</code></td>
 <td>Notification type</td>
-<td><code>escalation</code>, <code>approval_required</code>, <code>failed</code>, <code>manual-review</code>, <code>completion</code></td>
+<td><code>escalation</code>, <code>simple</code>, <code>status-update</code>, <code>approval</code>, <code>manual-review</code>, <code>completion</code></td>
 </tr>
 <tr>
 <td><code>severity</code></td>
@@ -3409,7 +3409,7 @@
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T12:34:56Z&quot;</span><span class="p">,</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;notification_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval-required-rr-12345&quot;</span><span class="p">,</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;notification_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kubernaut-system&quot;</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval_required&quot;</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval&quot;</span><span class="p">,</span>
 </span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="p">,</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human approval required for OOMKilled remediation&quot;</span><span class="p">,</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
@@ -3424,7 +3424,7 @@
 <ol>
 <li><strong>Header block</strong> -- Priority emoji + subject (e.g., <code>:rotating_light: Human approval required for OOMKilled remediation</code>)</li>
 <li><strong>Section block</strong> -- Notification body (Markdown converted to Slack mrkdwn)</li>
-<li><strong>Context block</strong> -- <code>*Priority:* critical | *Type:* approval_required</code></li>
+<li><strong>Context block</strong> -- <code>*Priority:* critical | *Type:* approval</code></li>
 </ol>
 <p>Priority emojis: Critical = <img alt="🚨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f6a8.svg" title=":rotating_light:" />, High = <img alt="⚠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/26a0.svg" title=":warning:" />, Medium = <img alt="ℹ" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/2139.svg" title=":information_source:" />, Low = <img alt="💬" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f4ac.svg" title=":speech_balloon:" /></p>
 <p><strong>Routing receiver:</strong></p>

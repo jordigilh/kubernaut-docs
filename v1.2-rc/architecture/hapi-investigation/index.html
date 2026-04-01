@@ -2082,6 +2082,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#outcome-9-alert-not-actionable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outcome 9: Alert Not Actionable
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3711,6 +3722,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#outcome-9-alert-not-actionable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Outcome 9: Alert Not Actionable
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4119,13 +4141,13 @@
 </span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  &amp;targetNamespace=production
 </span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  &amp;currentSpecHash=sha256:abc123...
 </span></code></pre></div>
-<p>The response contains two tiers of history, both filtered by spec hash match but with different time windows and detail levels:</p>
+<p>The response contains two tiers of history with different query strategies, time windows, and detail levels:</p>
 <table>
 <thead>
 <tr>
 <th>Tier</th>
 <th>Window</th>
-<th>Query Filter</th>
+<th>Query Strategy</th>
 <th>Detail Level</th>
 </tr>
 </thead>
@@ -4133,24 +4155,24 @@
 <tr>
 <td><strong>Tier 1</strong></td>
 <td>Last 24 hours</td>
-<td>By spec hash</td>
+<td>By <code>target_resource</code> via <code>QueryROEventsByTarget</code>, then hash match computed post-query via <code>CorrelateTier1Chain</code> / <code>ComputeHashMatch</code></td>
 <td>Full: effectiveness score, health checks, metric deltas, hash match</td>
 </tr>
 <tr>
 <td><strong>Tier 2</strong></td>
 <td>24 hours – 90 days</td>
-<td>By spec hash</td>
+<td>By <code>spec_hash</code> via <code>QueryROEventsBySpecHash</code></td>
 <td>Summary: effectiveness score, hash match, assessment reason</td>
 </tr>
 </tbody>
 </table>
 <ul>
-<li><strong>Tier 1</strong> provides full-detail recent history for the current configuration, giving the LLM visibility into the immediate remediation chain.</li>
-<li><strong>Tier 2</strong> extends the window to 90 days with reduced detail, surfacing older outcomes for the same configuration to help the LLM identify recurring patterns.</li>
+<li><strong>Tier 1</strong> queries by target resource and time window first, then correlates results by computing hash match in-memory. This captures the full recent remediation chain for the target resource regardless of spec hash, giving the LLM visibility into the immediate history.</li>
+<li><strong>Tier 2</strong> queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.</li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Known issue: Tier 1 query strategy</p>
-<p>Both tiers are designed to filter by spec hash to ensure the LLM only reasons from remediations with an intact causal chain. A known issue (<a href="https://github.com/jordigilh/kubernaut/issues/586">kubernaut#586</a>) exists where Tier 1 currently queries by target resource instead; this is tracked for fix in v1.2.</p>
+<p>Tier 1 queries by target resource rather than spec hash by design at v1.1 — the hash match is computed post-query by <code>CorrelateTier1Chain</code>. A known issue (<a href="https://github.com/jordigilh/kubernaut/issues/586">kubernaut#586</a>) tracks tightening this to filter by spec hash at the query level in v1.2.</p>
 </div>
 <p><strong>How the chain is visible:</strong> Every entry in both tiers carries <code>preRemediationSpecHash</code> and <code>postRemediationSpecHash</code>. DataStorage annotates each entry with a <code>hashMatch</code> field by comparing the caller's <code>currentSpecHash</code> against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.</p>
 <h2 id="how-remediation-history-influences-the-llm">How Remediation History Influences the LLM<a class="headerlink" href="#how-remediation-history-influences-the-llm" title="Permanent link">&para;</a></h2>
@@ -4282,7 +4304,7 @@
 <p>The LLM sees: <em>"45 days ago, this exact configuration was remediated with <code>RollbackDeployment</code> and it worked well (0.92, signal resolved). This is a regression to a known-bad config. <code>RollbackDeployment</code> is a strong candidate."</em></p>
 <p>Without Tier 2, this historical insight would be invisible -- the LLM would have no context and might try less effective approaches first.</p>
 <h3 id="formatted-history-warnings">Formatted History Warnings<a class="headerlink" href="#formatted-history-warnings" title="Permanent link">&para;</a></h3>
-<p>HAPI includes a <code>build_remediation_history_section()</code> module that converts raw history into structured warnings and reasoning guidance when history context is injected into the system prompt:</p>
+<p>The HolmesGPT Python codebase (not the kubernaut Go repository) includes a <code>build_remediation_history_section()</code> module that converts raw history into structured warnings and reasoning guidance when history context is injected into the system prompt:</p>
 <table>
 <thead>
 <tr>
@@ -4369,11 +4391,11 @@
 </ol>
 <p>DataStorage's scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.</p>
 <h2 id="investigation-outcomes">Investigation Outcomes<a class="headerlink" href="#investigation-outcomes" title="Permanent link">&para;</a></h2>
-<p>The LLM investigation can produce 8 distinct outcomes, each handled differently by the system:</p>
+<p>The LLM investigation can produce 9 distinct outcomes, each handled differently by the system:</p>
 <pre class="mermaid"><code>flowchart TD
     HAPI["HAPI Response"] --&gt; NHR{"needs_human_review?"}
     NHR --&gt;|true| HasWFReview{"selected_workflow?"}
-    HasWFReview --&gt;|present| HRFailed["Human Review + Workflow&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
+    HasWFReview --&gt;|present| HRFailed["Human Review + Workflow&lt;br/&gt;&lt;small&gt;Phase: Failed (any review scenario)&lt;/small&gt;"]
     HasWFReview --&gt;|null| HRCompleted["Manual Review Required&lt;br/&gt;&lt;small&gt;Phase: Completed&lt;/small&gt;"]
     NHR --&gt;|false| HasWF{"selected_workflow?"}
     HasWF --&gt;|null| Resolved{"Problem resolved?"}
@@ -4387,7 +4409,7 @@
 <p><strong>Fields:</strong> <code>needs_human_review=false</code>, <code>selected_workflow</code> present, <code>confidence &gt;= 0.7</code>
 <strong>Next:</strong> AA transitions to <code>Analyzing</code> phase → Rego evaluation</p>
 <h3 id="outcome-2-problem-self-resolved">Outcome 2: Problem Self-Resolved<a class="headerlink" href="#outcome-2-problem-self-resolved" title="Permanent link">&para;</a></h3>
-<p>The LLM determines the issue is no longer occurring -- the resource is healthy, no active errors. Sets <code>investigation_outcome=resolved</code> with high confidence but no workflow.</p>
+<p>The LLM determines the issue is no longer occurring — the resource is healthy, no active errors. Detection relies on HAPI appending a "problem self-resolved" warning to the response when <code>investigation_outcome=resolved</code>. The AA response processor detects this warning string to identify the self-resolved state.</p>
 <p><strong>Fields:</strong> <code>selected_workflow=null</code>, <code>confidence &gt;= 0.7</code>, no warning signals, no substantive RCA
 <strong>Next:</strong> AA sets <code>Reason=WorkflowNotNeeded</code>, <code>Outcome=NoActionRequired</code>. No workflow execution, no approval. Rego is never evaluated.</p>
 <p><strong>Defense-in-depth:</strong> Two checks prevent false "resolved" classification:</p>
@@ -4412,15 +4434,19 @@
 <p><strong>Fields:</strong> <code>needs_human_review=true</code>, <code>human_review_reason</code> from the validation error (<code>workflow_not_found</code>, <code>image_mismatch</code>, or <code>parameter_validation_failed</code>)
 <strong>Next:</strong> Routed to human review. The <code>validation_attempts_history</code> field contains the full retry record.</p>
 <h3 id="outcome-7-low-confidence">Outcome 7: Low Confidence<a class="headerlink" href="#outcome-7-low-confidence" title="Permanent link">&para;</a></h3>
-<p>The LLM returns a workflow with <code>confidence</code> below the investigation threshold (0.7). HAPI does not enforce this threshold -- it passes the confidence through. The AA controller's response processor detects the low confidence.</p>
+<p>The LLM returns a workflow with <code>confidence</code> below the investigation threshold (0.7). HAPI does not enforce this threshold — it passes the confidence through. The AA controller's <code>handleLowConfidenceFailure</code> handler detects the low confidence and transitions the AIAnalysis to <code>Failed</code>.</p>
 <p><strong>Fields:</strong> <code>selected_workflow</code> present, <code>confidence &lt; 0.7</code>
-<strong>Next:</strong> AA response processor rejects the low-confidence selection and routes to human review. Rego is never evaluated.</p>
+<strong>Next:</strong> AA controller rejects the low-confidence selection via <code>handleLowConfidenceFailure</code>, transitions to <code>Failed</code>, and the Orchestrator routes to human review. Rego is never evaluated.</p>
 <h3 id="outcome-8-llm-explicitly-requests-human-review">Outcome 8: LLM Explicitly Requests Human Review<a class="headerlink" href="#outcome-8-llm-explicitly-requests-human-review" title="Permanent link">&para;</a></h3>
 <p>The LLM itself determines that the situation requires human judgment and sets <code>needs_human_review=true</code> or provides a <code>human_review_reason</code>. HAPI preserves these values.</p>
 <p><strong>Next:</strong> Routed to human review.</p>
+<h3 id="outcome-9-alert-not-actionable">Outcome 9: Alert Not Actionable<a class="headerlink" href="#outcome-9-alert-not-actionable" title="Permanent link">&para;</a></h3>
+<p>The LLM investigates and determines the alert is not actionable — for example, a transient resource pressure that does not warrant remediation. Distinct from Outcome 2 (self-resolved): the problem may still exist but does not meet the threshold for automated action.</p>
+<p><strong>Fields:</strong> <code>selected_workflow=null</code>, <code>Outcome=WorkflowNotNeeded</code>, <code>SubReason=NotActionable</code>
+<strong>Next:</strong> AA sets <code>Outcome=NoActionRequired</code>. No workflow execution. Rego is never evaluated.</p>
 <div class="admonition note">
 <p class="admonition-title">Only Outcome 1 reaches Rego</p>
-<p>Outcomes 2–8 are all handled by the AA controller's response processor <strong>before</strong> Rego evaluation. The Rego approval policy only runs when the LLM successfully selects a workflow with <code>needs_human_review=false</code> and <code>confidence &gt;= 0.7</code>.</p>
+<p>Outcomes 2–9 are all handled by the AA controller's response processor <strong>before</strong> Rego evaluation. The Rego approval policy only runs when the LLM successfully selects a workflow with <code>needs_human_review=false</code> and <code>confidence &gt;= 0.7</code>.</p>
 </div>
 <h2 id="approval-gate-aa-rego-evaluation">Approval Gate: AA Rego Evaluation<a class="headerlink" href="#approval-gate-aa-rego-evaluation" title="Permanent link">&para;</a></h2>
 <p>When the LLM successfully selects a workflow (Outcome 1), the AA controller transitions to the <code>Analyzing</code> phase and evaluates whether human approval is required using a Rego policy.</p>

@@ -3238,8 +3238,8 @@
 </ol>
 <h3 id="retry-logic">Retry Logic<a class="headerlink" href="#retry-logic" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Max retries</strong>: 3 per batch</li>
-<li><strong>Backoff</strong>: 1s, 4s, 9s (quadratic)</li>
+<li><strong>Max retries</strong>: 3 per batch (3 total attempts, 2 backoff waits)</li>
+<li><strong>Backoff</strong>: 1s, 4s (quadratic: <code>n²</code> seconds). A third backoff (9s) would only occur if <code>MaxRetries</code> is increased beyond 3.</li>
 <li><strong>4xx errors</strong>: No retry (permanent failure)</li>
 <li><strong>5xx / network errors</strong>: Retry with backoff</li>
 </ul>
@@ -3260,8 +3260,8 @@
 </tr>
 <tr>
 <td><code>BatchSize</code></td>
-<td>1,000</td>
-<td>1,000</td>
+<td>1,000 (library default; Gateway chart overrides to 100)</td>
+<td>100–1,000</td>
 </tr>
 <tr>
 <td><code>FlushInterval</code></td>
@@ -3276,40 +3276,33 @@
 </tbody>
 </table>
 <h3 id="observability">Observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h3>
-<p>The buffered store exposes Prometheus metrics:</p>
+<p>The buffered store exposes one registered Prometheus metric:</p>
 <table>
 <thead>
 <tr>
 <th>Metric</th>
+<th>Type</th>
+<th>Labels</th>
 <th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>buffered_count</code></td>
-<td>Events currently in the buffer</td>
-</tr>
-<tr>
-<td><code>dropped_count</code></td>
+<td><code>audit_events_dropped_total</code></td>
+<td>CounterVec</td>
+<td><code>service</code></td>
 <td>Events dropped due to full buffer</td>
-</tr>
-<tr>
-<td><code>written_count</code></td>
-<td>Events successfully written</td>
-</tr>
-<tr>
-<td><code>failed_batch_count</code></td>
-<td>Batches that failed after all retries</td>
 </tr>
 </tbody>
 </table>
+<p>Additionally, internal atomic counters (<code>buffered_count</code>, <code>written_count</code>, <code>failed_batch_count</code>) are tracked for debug logging but are <strong>not</strong> registered as Prometheus metrics.</p>
 <h2 id="event-flow">Event Flow<a class="headerlink" href="#event-flow" title="Permanent link">&para;</a></h2>
 <ol>
 <li>A handler or reconciler calls <code>auditStore.StoreAudit(ctx, event)</code> with a structured <code>AuditEvent</code></li>
 <li>The buffered store enqueues the event into an in-memory channel (non-blocking)</li>
 <li>A background goroutine batches events and sends them via <code>POST /api/v1/audit/events/batch</code> to DataStorage</li>
 <li>DataStorage validates, converts, and inserts the batch into the <code>audit_events</code> PostgreSQL table within a transaction</li>
-<li>On PostgreSQL failure, the batch is enqueued to the Valkey DLQ for retry</li>
+<li>On PostgreSQL failure, the batch endpoint returns HTTP 500 — the caller's retry logic handles re-delivery. The batch handler does <strong>not</strong> use the Valkey DLQ (this is a known gap; see GAP-10 in the DataStorage source).</li>
 <li>On shutdown, <code>auditStore.Close()</code> flushes remaining events</li>
 </ol>
 <h2 id="event-structure">Event Structure<a class="headerlink" href="#event-structure" title="Permanent link">&para;</a></h2>
@@ -3428,7 +3421,7 @@
 <li><strong>Cross-service tracing</strong> -- Follow a remediation across all services</li>
 </ul>
 <h2 id="emitting-services">Emitting Services<a class="headerlink" href="#emitting-services" title="Permanent link">&para;</a></h2>
-<p>All 7 Go services, the auth webhook, and HolmesGPT API emit audit events:</p>
+<p>All 9 Go binaries (<code>cmd/*/main.go</code>: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage) and HolmesGPT API (Python) emit audit events:</p>
 <table>
 <thead>
 <tr>

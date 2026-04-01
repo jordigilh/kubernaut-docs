@@ -3861,12 +3861,12 @@
 <td><code>spec.Metadata["namespace"]</code></td>
 </tr>
 <tr>
-<td><code>skipReason</code></td>
-<td><code>spec.Metadata["skipReason"]</code></td>
+<td><code>skip-reason</code></td>
+<td><code>spec.Metadata["skip-reason"]</code></td>
 </tr>
 <tr>
-<td><code>investigationOutcome</code></td>
-<td><code>spec.Metadata["investigationOutcome"]</code></td>
+<td><code>investigation-outcome</code></td>
+<td><code>spec.Metadata["investigation-outcome"]</code></td>
 </tr>
 </tbody>
 </table>
@@ -3878,7 +3878,6 @@
 <li>Each route's <code>Match</code> map must match <strong>all</strong> specified attributes (AND logic)</li>
 <li>First matching route identifies the <strong>receiver</strong></li>
 <li>The receiver declares which channels to use</li>
-<li>If <code>Continue: true</code>, matching continues for multi-channel fanout (BR-NOT-068)</li>
 </ol>
 <h3 id="fallback">Fallback<a class="headerlink" href="#fallback" title="Permanent link">&para;</a></h3>
 <p>If no route matches, the notification falls back to the <code>console</code> channel. This ensures every notification is delivered somewhere.</p>
@@ -4093,7 +4092,7 @@
 <p>Before delivery, the controller enriches notification bodies by resolving workflow UUIDs to human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.</p>
 <h3 id="enrichment-flow">Enrichment Flow<a class="headerlink" href="#enrichment-flow" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Extract the workflow UUID from <code>spec.context.workflow</code> (checks <code>WorkflowContext.WorkflowID</code> for completion notifications, then <code>WorkflowContext.SelectedWorkflow</code> for approval notifications)</li>
+<li>Extract the workflow UUID from <code>spec.metadata["workflowId"]</code> with fallback to <code>spec.metadata["selectedWorkflow"]</code> (the former is set for completion notifications, the latter for approval notifications)</li>
 <li>Call the DataStorage catalog API (<code>GET /api/v1/workflows/{id}</code>) to resolve the UUID to a workflow name</li>
 <li>Replace every occurrence of the UUID in <code>spec.Body</code> with the resolved name</li>
 <li>Pass the enriched notification to the delivery orchestrator</li>

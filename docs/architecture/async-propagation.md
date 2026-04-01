@@ -19,8 +19,8 @@ The Remediation Orchestrator detects whether the remediation target requires pro
 
 | Characteristic | Detection Method | Source |
 |---|---|---|
-| **GitOps-managed** | `gitOpsManaged=true` detected label | HAPI `LabelDetector` during post-RCA analysis |
-| **Operator-managed CR** | Target resource is a custom resource (CR) with a controlling operator | Kubernetes API resource discovery |
+| **GitOps-managed** | `PostRCAContext.DetectedLabels.GitOpsManaged=true` (JSON field from HAPI response, not a Kubernetes object label) | HAPI `LabelDetector` during post-RCA analysis |
+| **Custom Resource (CRD)** | Target resource belongs to a non-built-in API group (detected via `IsBuiltInGroup(group)` allowlist — non-built-in groups are treated as CRDs) | API group check, no operator/controller detection |
 
 These flags are set during the AI Analysis phase and propagated to the EffectivenessAssessment CRD spec.
 
@@ -40,10 +40,10 @@ The propagation delay is computed from two independent flags (`isGitOps`, `isCRD
 
 | Target Type | Propagation Delay | Total Wait Before Assessment |
 |---|---|---|
-| **Sync target** (direct patch) | 0 | `stabilizationWindow` |
+| **Sync target** (direct patch, built-in API group) | 0 | `stabilizationWindow` |
 | **GitOps-managed** | `gitOpsSyncDelay` | `gitOpsSyncDelay` + `stabilizationWindow` |
-| **Operator-managed CR** | `operatorReconcileDelay` | `operatorReconcileDelay` + `stabilizationWindow` |
-| **GitOps + operator CR** (both) | `gitOpsSyncDelay` + `operatorReconcileDelay` | Both delays + `stabilizationWindow` |
+| **Custom Resource (non-built-in API group)** | `operatorReconcileDelay` | `operatorReconcileDelay` + `stabilizationWindow` |
+| **GitOps + CRD** (both) | `gitOpsSyncDelay` + `operatorReconcileDelay` | Both delays + `stabilizationWindow` |
 
 The delays are additive -- if a target is both GitOps-managed and an operator CR, both delays compound. Setting either delay to `0` disables that stage.
 

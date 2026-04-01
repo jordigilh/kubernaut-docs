@@ -49,8 +49,8 @@ Events are flushed in three scenarios:
 
 ### Retry Logic
 
-- **Max retries**: 3 per batch
-- **Backoff**: 1s, 4s, 9s (quadratic)
+- **Max retries**: 3 per batch (3 total attempts, 2 backoff waits)
+- **Backoff**: 1s, 4s (quadratic: `n²` seconds). A third backoff (9s) would only occur if `MaxRetries` is increased beyond 3.
 - **4xx errors**: No retry (permanent failure)
 - **5xx / network errors**: Retry with backoff
 
@@ -59,20 +59,19 @@ Events are flushed in three scenarios:
 | Parameter | Default | Recommendation |
 |---|---|---|
 | `BufferSize` | 10,000 | 10k--50k (DD-AUDIT-004) |
-| `BatchSize` | 1,000 | 1,000 |
+| `BatchSize` | 1,000 (library default; Gateway chart overrides to 100) | 100–1,000 |
 | `FlushInterval` | 1 second | 1s |
 | `MaxRetries` | 3 | 3 |
 
 ### Observability
 
-The buffered store exposes Prometheus metrics:
+The buffered store exposes one registered Prometheus metric:
 
-| Metric | Description |
-|---|---|
-| `buffered_count` | Events currently in the buffer |
-| `dropped_count` | Events dropped due to full buffer |
-| `written_count` | Events successfully written |
-| `failed_batch_count` | Batches that failed after all retries |
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `audit_events_dropped_total` | CounterVec | `service` | Events dropped due to full buffer |
+
+Additionally, internal atomic counters (`buffered_count`, `written_count`, `failed_batch_count`) are tracked for debug logging but are **not** registered as Prometheus metrics.
 
 ## Event Flow
 
@@ -80,7 +79,7 @@ The buffered store exposes Prometheus metrics:
 2. The buffered store enqueues the event into an in-memory channel (non-blocking)
 3. A background goroutine batches events and sends them via `POST /api/v1/audit/events/batch` to DataStorage
 4. DataStorage validates, converts, and inserts the batch into the `audit_events` PostgreSQL table within a transaction
-5. On PostgreSQL failure, the batch is enqueued to the Valkey DLQ for retry
+5. On PostgreSQL failure, the batch endpoint returns HTTP 500 — the caller's retry logic handles re-delivery. The batch handler does **not** use the Valkey DLQ (this is a known gap; see GAP-10 in the DataStorage source).
 6. On shutdown, `auditStore.Close()` flushes remaining events
 
 ## Event Structure
@@ -128,7 +127,7 @@ All audit events for a single remediation share a `correlation_id` set to the `R
 
 ## Emitting Services
 
-All 7 Go services, the auth webhook, and HolmesGPT API emit audit events:
+All 9 Go binaries (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage) and HolmesGPT API (Python) emit audit events:
 
 | Service | Event Prefix | Key Events |
 |---|---|---|

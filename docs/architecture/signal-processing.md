@@ -37,7 +37,7 @@ stateDiagram-v2
 |---|---|---|
 | **Pending** | CRD just created, set `StartTime` | 100ms |
 | **Enriching** | Gather Kubernetes context and custom labels | 100ms |
-| **Classifying** | Evaluate Rego policies for environment, priority, severity, signal mode | 100ms |
+| **Classifying** | Evaluate Rego policies for environment, priority, severity; determine signal mode via YAML lookup | 100ms |
 | **Categorizing** | Business classification from namespace labels + environment mapping | None |
 | **Completed** | All results stored in status, `Ready=True` | None |
 | **Failed** | Terminal -- severity policy error or unrecoverable failure | None |
@@ -213,7 +213,7 @@ Transient errors trigger exponential backoff with the DD-SHARED-001 pattern. Reg
 ### Permanent Errors
 
 - **Severity policy failure**: Transitions directly to `Failed` with `RegoEvaluationError`. No requeue.
-- **Other policy failures**: Enrichment and priority failures are retried (treated as transient).
+- **Kubernetes API errors during enrichment or classification**: Network timeouts, API server errors, and context cancellation during K8s API calls are retried (treated as transient). Rego evaluation errors are never retried.
 
 ## Hot-Reload
 

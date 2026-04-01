@@ -417,9 +417,9 @@ flowchart TD
     HasWFReview -->|present| HRFailed["Human Review + Workflow<br/><small>Phase: Failed (any review scenario)</small>"]
     HasWFReview -->|null| HRCompleted["Manual Review Required<br/><small>Phase: Completed</small>"]
     NHR -->|false| HasWF{"selected_workflow?"}
-    HasWF -->|null| Resolved{"Problem resolved?"}
+    HasWF -->|null| Resolved{"Resolved or<br/>not actionable?"}
     HasWF -->|present| Confidence{"confidence >= 0.7?"}
-    Resolved -->|yes| NoAction["No Action Required<br/><small>Phase: Completed</small>"]
+    Resolved -->|"resolved / not actionable"| NoAction["No Action Required<br/><small>Phase: Completed<br/>(Outcome 2 or 9)</small>"]
     Resolved -->|no| NoWFFailure["No Workflow Found<br/><small>Phase: Failed</small>"]
     Confidence -->|no| LowConf["Low Confidence<br/><small>Phase: Failed</small>"]
     Confidence -->|yes| Rego["Rego Evaluation<br/><small>Phase: Analyzing</small>"]

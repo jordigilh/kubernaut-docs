@@ -1853,10 +1853,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#resolution-priority" class="md-nav__link">
+  <a href="#classifybusiness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resolution Priority
+        classifyBusiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-to-criticalitysla-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment-to-Criticality/SLA Mapping
       
     </span>
   </a>
@@ -3295,10 +3306,21 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#resolution-priority" class="md-nav__link">
+  <a href="#classifybusiness" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Resolution Priority
+        classifyBusiness
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#environment-to-criticalitysla-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Environment-to-Criticality/SLA Mapping
       
     </span>
   </a>
@@ -3502,7 +3524,7 @@
 </tr>
 <tr>
 <td><strong>Categorizing</strong></td>
-<td>Business classification from namespace labels and Rego</td>
+<td>Business classification from namespace labels + environment mapping</td>
 <td>None</td>
 </tr>
 <tr>
@@ -3521,7 +3543,7 @@
 <h2 id="phase-1-enriching">Phase 1: Enriching<a class="headerlink" href="#phase-1-enriching" title="Permanent link">&para;</a></h2>
 <p>The enrichment phase gathers Kubernetes context about the target resource.</p>
 <h3 id="owner-chain-resolution">Owner Chain Resolution<a class="headerlink" href="#owner-chain-resolution" title="Permanent link">&para;</a></h3>
-<p>The <code>OwnerChainBuilder</code> follows <code>controller: true</code> owner references up to a depth of <strong>5</strong> to find the top-level controlling resource:</p>
+<p>The owner chain builder (<code>ownerchain.NewBuilder</code>) follows <code>controller: true</code> owner references up to a depth of <strong>5</strong> to find the top-level controlling resource:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Pod → ReplicaSet → Deployment
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Pod → StatefulSet
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Pod → DaemonSet
@@ -3630,24 +3652,24 @@
 <p>The classification phase evaluates four classifiers in sequence. A failure in severity classification is <strong>fatal</strong> -- the CRD transitions to <code>Failed</code> and is not requeued.</p>
 <h3 id="1-environment-classifier-rego">1. Environment Classifier (Rego)<a class="headerlink" href="#1-environment-classifier-rego" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Query</strong>: <code>data.signalprocessing.environment.result</code></li>
-<li><strong>Input</strong>: <code>{namespace: {name, labels}, signal: {labels}}</code></li>
+<li><strong>Query</strong>: <code>data.signalprocessing.environment</code></li>
+<li><strong>Input</strong>: <code>{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}</code></li>
 <li><strong>Output</strong>: <code>{environment, source}</code></li>
 <li><strong>Values</strong>: <code>production</code>, <code>staging</code>, <code>development</code>, <code>test</code></li>
 <li><strong>Source tracking</strong>: <code>namespace-labels</code>, <code>rego-inference</code>, or <code>default</code></li>
 </ul>
 <h3 id="2-priority-engine-rego">2. Priority Engine (Rego)<a class="headerlink" href="#2-priority-engine-rego" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Query</strong>: <code>data.signalprocessing.priority.result</code></li>
-<li><strong>Input</strong>: <code>{signal: {severity, source}, environment, namespace_labels, workload_labels}</code></li>
+<li><strong>Query</strong>: <code>data.signalprocessing.priority</code></li>
+<li><strong>Input</strong>: <code>{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}</code></li>
 <li><strong>Output</strong>: <code>{priority, policy_name}</code></li>
 <li><strong>Values</strong>: <code>P0</code>, <code>P1</code>, <code>P2</code>, <code>P3</code></li>
 <li><strong>Timeout</strong>: 100ms</li>
 </ul>
 <h3 id="3-severity-classifier-rego">3. Severity Classifier (Rego)<a class="headerlink" href="#3-severity-classifier-rego" title="Permanent link">&para;</a></h3>
 <ul>
-<li><strong>Query</strong>: <code>data.signalprocessing.severity.determine_severity</code></li>
-<li><strong>Input</strong>: <code>{signal: {severity, type, source}}</code></li>
+<li><strong>Query</strong>: <code>data.signalprocessing.severity</code></li>
+<li><strong>Input</strong>: <code>{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}</code></li>
 <li><strong>Output</strong>: Normalized severity string</li>
 <li><strong>Values</strong>: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>, <code>unknown</code></li>
 <li><strong>Fatal on failure</strong>: A severity policy error transitions the CRD to <code>Failed</code> with <code>RegoEvaluationError</code></li>
@@ -3691,30 +3713,34 @@
 <li><code>SignalMode</code> and <code>SignalName</code> / <code>SourceSignalName</code></li>
 </ul>
 <h2 id="phase-3-categorizing">Phase 3: Categorizing<a class="headerlink" href="#phase-3-categorizing" title="Permanent link">&para;</a></h2>
-<p>The categorization phase assigns business classification using a tiered resolution strategy:</p>
-<h3 id="resolution-priority">Resolution Priority<a class="headerlink" href="#resolution-priority" title="Permanent link">&para;</a></h3>
-<ol>
-<li>
-<p><strong>Namespace labels</strong> (highest confidence: 1.0):</p>
-<ul>
-<li><code>kubernaut.ai/business-unit</code> → BusinessUnit</li>
-<li><code>kubernaut.ai/team</code> → BusinessUnit fallback</li>
-<li><code>kubernaut.ai/service-owner</code> → ServiceOwner</li>
-</ul>
-</li>
-<li>
-<p><strong>Pattern matching</strong> (confidence: 0.8): Splits namespace name by <code>-</code>, uses the first segment as business unit</p>
-</li>
-<li>
-<p><strong>Rego policy</strong> (confidence: 0.6):</p>
-<ul>
-<li><strong>Query</strong>: <code>data.signalprocessing.business.result</code></li>
-<li><strong>Input</strong>: <code>{namespace, workload, environment}</code></li>
-<li><strong>Timeout</strong>: 200ms</li>
-</ul>
-</li>
-<li>
-<p><strong>Environment-based defaults</strong> (confidence: 0.4):</p>
+<p>The categorization phase assigns business classification using pure Go logic — no Rego evaluation.</p>
+<h3 id="classifybusiness"><code>classifyBusiness</code><a class="headerlink" href="#classifybusiness" title="Permanent link">&para;</a></h3>
+<p>The function reads namespace labels directly:</p>
+<table>
+<thead>
+<tr>
+<th>Namespace Label</th>
+<th>Field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut.ai/business-unit</code></td>
+<td><code>BusinessUnit</code></td>
+</tr>
+<tr>
+<td><code>kubernaut.ai/team</code></td>
+<td><code>BusinessUnit</code> (fallback when <code>business-unit</code> is absent)</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai/service-owner</code></td>
+<td><code>ServiceOwner</code></td>
+</tr>
+</tbody>
+</table>
+<p>If a label is absent, the corresponding field is left as an <strong>empty string</strong> (not <code>"unknown"</code>).</p>
+<h3 id="environment-to-criticalitysla-mapping">Environment-to-Criticality/SLA Mapping<a class="headerlink" href="#environment-to-criticalitysla-mapping" title="Permanent link">&para;</a></h3>
+<p>After label extraction, the classifier maps the environment (determined in Phase 2) to criticality and SLA:</p>
 <table>
 <thead>
 <tr>
@@ -3739,19 +3765,19 @@
 <td>low</td>
 <td>bronze</td>
 </tr>
+<tr>
+<td>(other)</td>
+<td>medium</td>
+<td>bronze</td>
+</tr>
 </tbody>
 </table>
-</li>
-<li>
-<p><strong>System defaults</strong>: BusinessUnit=<code>unknown</code>, ServiceOwner=<code>unknown</code>, Criticality=<code>medium</code>, SLA=<code>bronze</code></p>
-</li>
-</ol>
 <p>On completion, <code>Phase=Completed</code>, <code>CompletionTime</code> is set, <code>ObservedGeneration</code> is updated, and <code>Ready=True</code>.</p>
 <h2 id="error-handling">Error Handling<a class="headerlink" href="#error-handling" title="Permanent link">&para;</a></h2>
 <h3 id="transient-errors">Transient Errors<a class="headerlink" href="#transient-errors" title="Permanent link">&para;</a></h3>
-<p>Transient errors trigger exponential backoff with the DD-SHARED-001 pattern:</p>
+<p>Transient errors trigger exponential backoff with the DD-SHARED-001 pattern. Rego evaluation errors are <strong>not</strong> transient — they are treated as permanent failures.</p>
 <ul>
-<li><strong>Detection</strong>: <code>IsTimeout</code>, <code>IsServerTimeout</code>, <code>IsTooManyRequests</code>, <code>IsServiceUnavailable</code>, <code>context.DeadlineExceeded</code>, <code>context.Canceled</code></li>
+<li><strong>Detection</strong>: <code>IsTimeout</code>, <code>IsServerTimeout</code>, <code>IsTooManyRequests</code>, <code>IsServiceUnavailable</code>, <code>context.DeadlineExceeded</code>, <code>context.Canceled</code> (Kubernetes API errors only)</li>
 <li><strong>Backoff</strong>: Base 30s, multiplier 2x, max 5m, ±10% jitter</li>
 <li><strong>Formula</strong>: <code>BasePeriod × (Multiplier ^ (failures - 1))</code> ± jitter</li>
 <li><strong>Tracking</strong>: <code>ConsecutiveFailures</code> incremented, <code>LastFailureTime</code> updated</li>
@@ -3765,7 +3791,7 @@
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>All Rego policies support hot-reload via <code>FileWatcher</code> (DD-INFRA-001):</p>
 <ul>
-<li><strong>Mechanism</strong>: <code>fsnotify</code> watches the policy directory</li>
+<li><strong>Mechanism</strong>: <code>fsnotify</code> watches the policy file path</li>
 <li><strong>Debounce</strong>: 200ms to coalesce rapid ConfigMap mount updates</li>
 <li><strong>Reload</strong>: Recompile Rego, swap prepared query under a mutex</li>
 <li><strong>Hash</strong>: SHA256 of new policy stored for audit traceability</li>
@@ -3792,7 +3818,7 @@
     SP-&gt;&gt;OPA: Severity policy
     SP-&gt;&gt;SP: Signal mode (YAML lookup)
     Note over SP: Phase: Classifying → Categorizing
-    SP-&gt;&gt;SP: Business classification (labels → pattern → Rego → defaults)
+    SP-&gt;&gt;SP: Business classification (namespace labels + environment mapping)
     Note over SP: Phase: Categorizing → Completed
     SP-&gt;&gt;DS: Audit events
     RO-&gt;&gt;RO: Detect SP Completed → create AIAnalysis</code></pre>

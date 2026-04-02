@@ -3519,7 +3519,7 @@
 </tr>
 <tr>
 <td><strong>Classifying</strong></td>
-<td>Evaluate Rego policies for environment, priority, severity, signal mode</td>
+<td>Evaluate Rego policies for environment, priority, severity; determine signal mode via YAML lookup</td>
 <td>100ms</td>
 </tr>
 <tr>
@@ -3786,7 +3786,7 @@
 <h3 id="permanent-errors">Permanent Errors<a class="headerlink" href="#permanent-errors" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Severity policy failure</strong>: Transitions directly to <code>Failed</code> with <code>RegoEvaluationError</code>. No requeue.</li>
-<li><strong>Other policy failures</strong>: Enrichment and priority failures are retried (treated as transient).</li>
+<li><strong>Kubernetes API errors during enrichment or classification</strong>: Network timeouts, API server errors, and context cancellation during K8s API calls are retried (treated as transient). Rego evaluation errors are never retried.</li>
 </ul>
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>All Rego policies support hot-reload via <code>FileWatcher</code> (DD-INFRA-001):</p>

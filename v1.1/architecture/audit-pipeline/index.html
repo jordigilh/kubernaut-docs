@@ -3191,7 +3191,7 @@
     end
 
     DS[DataStorage&lt;br/&gt;REST API] --&gt; PG[(PostgreSQL&lt;br/&gt;audit_events)]
-    DS --&gt; RD[(Valkey&lt;br/&gt;DLQ)]</code></pre>
+    DS -.-&gt;|"single-event paths only"| RD[(Valkey&lt;br/&gt;DLQ)]</code></pre>
 <h3 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Fire-and-forget</strong> -- Audit failures never block remediation (DD-AUDIT-002)</li>
@@ -3226,7 +3226,7 @@
 </tbody>
 </table>
 <h3 id="flush-triggers">Flush Triggers<a class="headerlink" href="#flush-triggers" title="Permanent link">&para;</a></h3>
-<p>Events are flushed in three scenarios:</p>
+<p>Events are flushed in four scenarios:</p>
 <ol>
 <li><strong>Batch full</strong> -- When the in-memory batch reaches <code>BatchSize</code>, it is sent immediately</li>
 <li><strong>Timer</strong> -- Every <code>FlushInterval</code>, the current batch is sent regardless of size</li>
@@ -3540,7 +3540,7 @@
 </table>
 <p>This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II readiness.</p>
 <h2 id="dead-letter-queue">Dead Letter Queue<a class="headerlink" href="#dead-letter-queue" title="Permanent link">&para;</a></h2>
-<p>When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Valkey streams for retry:</p>
+<p>DataStorage uses Valkey streams as a dead letter queue for <strong>single-event write paths</strong> (e.g., notification audit events). The <strong>batch endpoint</strong> (<code>POST /api/v1/audit/events/batch</code>) does <strong>not</strong> use the DLQ — it returns HTTP 500 on PostgreSQL failure and relies on the caller's retry logic (see GAP-10 in the source).</p>
 <table>
 <thead>
 <tr>

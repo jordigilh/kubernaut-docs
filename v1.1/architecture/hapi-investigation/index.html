@@ -4395,9 +4395,9 @@
     HasWFReview --&gt;|present| HRFailed["Human Review + Workflow&lt;br/&gt;&lt;small&gt;Phase: Failed (any review scenario)&lt;/small&gt;"]
     HasWFReview --&gt;|null| HRCompleted["Manual Review Required&lt;br/&gt;&lt;small&gt;Phase: Completed&lt;/small&gt;"]
     NHR --&gt;|false| HasWF{"selected_workflow?"}
-    HasWF --&gt;|null| Resolved{"Problem resolved?"}
+    HasWF --&gt;|null| Resolved{"Resolved or&lt;br/&gt;not actionable?"}
     HasWF --&gt;|present| Confidence{"confidence &gt;= 0.7?"}
-    Resolved --&gt;|yes| NoAction["No Action Required&lt;br/&gt;&lt;small&gt;Phase: Completed&lt;/small&gt;"]
+    Resolved --&gt;|"resolved / not actionable"| NoAction["No Action Required&lt;br/&gt;&lt;small&gt;Phase: Completed&lt;br/&gt;(Outcome 2 or 9)&lt;/small&gt;"]
     Resolved --&gt;|no| NoWFFailure["No Workflow Found&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
     Confidence --&gt;|no| LowConf["Low Confidence&lt;br/&gt;&lt;small&gt;Phase: Failed&lt;/small&gt;"]
     Confidence --&gt;|yes| Rego["Rego Evaluation&lt;br/&gt;&lt;small&gt;Phase: Analyzing&lt;/small&gt;"]</code></pre>

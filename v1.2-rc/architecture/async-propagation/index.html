@@ -3092,7 +3092,7 @@
 <tr>
 <td><code>operatorReconcileDelay</code></td>
 <td>1 minute</td>
-<td>Target is an operator-managed CR</td>
+<td>Target belongs to a non-built-in API group (CRD)</td>
 <td><code>remediationorchestrator.config.asyncPropagation.operatorReconcileDelay</code></td>
 </tr>
 <tr>
@@ -3136,7 +3136,7 @@
 </tr>
 </tbody>
 </table>
-<p>The delays are additive -- if a target is both GitOps-managed and an operator CR, both delays compound. Setting either delay to <code>0</code> disables that stage.</p>
+<p>The delays are additive — if a target is both GitOps-managed and belongs to a non-built-in API group, both delays compound. Setting either delay to <code>0</code> disables that stage.</p>
 <h2 id="integration-with-effectiveness-assessment">Integration with Effectiveness Assessment<a class="headerlink" href="#integration-with-effectiveness-assessment" title="Permanent link">&para;</a></h2>
 <p>The propagation delay directly controls when the Effectiveness Monitor computes the spec hash and begins its assessment:</p>
 <pre class="mermaid"><code>sequenceDiagram

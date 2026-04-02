@@ -3456,7 +3456,7 @@
     participant GW as Gateway
     participant K8s as Kubernetes API
 
-    Source-&gt;&gt;GW: POST /signals/prometheus (Bearer token)
+    Source-&gt;&gt;GW: POST /api/v1/signals/prometheus (Bearer token)
     GW-&gt;&gt;K8s: TokenReview (validate token)
     K8s--&gt;&gt;GW: User identity
     GW-&gt;&gt;K8s: SubjectAccessReview (create services/gateway-service)

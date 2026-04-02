@@ -31,7 +31,7 @@ Kubernaut uses configurable propagation delays that are **additive based on dete
 | Parameter | Default | Applies When | Configurable Via |
 |---|---|---|---|
 | `gitOpsSyncDelay` | 3 minutes | Target is GitOps-managed (ArgoCD/Flux) | `remediationorchestrator.config.asyncPropagation.gitOpsSyncDelay` |
-| `operatorReconcileDelay` | 1 minute | Target is an operator-managed CR | `remediationorchestrator.config.asyncPropagation.operatorReconcileDelay` |
+| `operatorReconcileDelay` | 1 minute | Target belongs to a non-built-in API group (CRD) | `remediationorchestrator.config.asyncPropagation.operatorReconcileDelay` |
 | `stabilizationWindow` | 5 minutes | Always (all targets) | `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow` |
 
 ## When Delays Apply
@@ -45,7 +45,7 @@ The propagation delay is computed from two independent flags (`isGitOps`, `isCRD
 | **Custom Resource (non-built-in API group)** | `operatorReconcileDelay` | `operatorReconcileDelay` + `stabilizationWindow` |
 | **GitOps + CRD** (both) | `gitOpsSyncDelay` + `operatorReconcileDelay` | Both delays + `stabilizationWindow` |
 
-The delays are additive -- if a target is both GitOps-managed and an operator CR, both delays compound. Setting either delay to `0` disables that stage.
+The delays are additive — if a target is both GitOps-managed and belongs to a non-built-in API group, both delays compound. Setting either delay to `0` disables that stage.
 
 ## Integration with Effectiveness Assessment
 

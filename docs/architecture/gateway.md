@@ -82,7 +82,7 @@ sequenceDiagram
     participant GW as Gateway
     participant K8s as Kubernetes API
 
-    Source->>GW: POST /signals/prometheus (Bearer token)
+    Source->>GW: POST /api/v1/signals/prometheus (Bearer token)
     GW->>K8s: TokenReview (validate token)
     K8s-->>GW: User identity
     GW->>K8s: SubjectAccessReview (create services/gateway-service)

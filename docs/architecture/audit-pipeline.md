@@ -15,7 +15,7 @@ graph LR
     end
 
     DS[DataStorage<br/>REST API] --> PG[(PostgreSQL<br/>audit_events)]
-    DS --> RD[(Valkey<br/>DLQ)]
+    DS -.->|"single-event paths only"| RD[(Valkey<br/>DLQ)]
 ```
 
 ### Design Principles
@@ -40,7 +40,7 @@ Every Go service instantiates a `BufferedAuditStore` from `pkg/audit/store.go`:
 
 ### Flush Triggers
 
-Events are flushed in three scenarios:
+Events are flushed in four scenarios:
 
 1. **Batch full** -- When the in-memory batch reaches `BatchSize`, it is sent immediately
 2. **Timer** -- Every `FlushInterval`, the current batch is sent regardless of size
@@ -162,7 +162,7 @@ This ensures every human action has a recorded identity, timestamp, and context 
 
 ## Dead Letter Queue
 
-When DataStorage cannot write to PostgreSQL, failed batches are enqueued to Valkey streams for retry:
+DataStorage uses Valkey streams as a dead letter queue for **single-event write paths** (e.g., notification audit events). The **batch endpoint** (`POST /api/v1/audit/events/batch`) does **not** use the DLQ — it returns HTTP 500 on PostgreSQL failure and relies on the caller's retry logic (see GAP-10 in the source).
 
 | Stream | Purpose |
 |---|---|

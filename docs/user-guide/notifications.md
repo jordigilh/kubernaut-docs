@@ -5,6 +5,8 @@
 
 Kubernaut sends notifications at key points in the remediation lifecycle: when human approval is required, when a remediation fails, when manual review is needed, and when a remediation completes. Notifications are routed through configurable channels using an AlertManager-style routing configuration.
 
+**Cluster context:** Message bodies include the cluster display name and UUID near the top (`Cluster: <name> (<uuid>)`) on every channel, including timeout notifications.
+
 ## Channel Overview
 
 | Channel | Status | Description |
@@ -47,9 +49,9 @@ Routes match on notification attributes:
 
 | Match Key | Source | Example Values |
 |---|---|---|
-| `type` | Notification type | `escalation`, `simple`, `status-update`, `approval`, `manual-review`, `completion` |
-| `severity` | Signal severity | `critical`, `high`, `medium`, `low` |
-| `priority` | Signal priority | `P0`, `P1`, `P2`, `P3` (also accepts `critical`, `high`, `medium`, `low`) |
+| `type` | Notification type | `Escalation`, `Simple`, `StatusUpdate`, `Approval`, `ManualReview`, `Completion` |
+| `severity` | Signal severity | `Critical`, `High`, `Medium`, `Low` |
+| `priority` | Signal priority | `P0`, `P1`, `P2`, `P3` (also accepts `Critical`, `High`, `Medium`, `Low`) |
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |
 | `environment` | Namespace environment | `production`, `staging`, `development` |
 | `review-source` | Why review was triggered | `WorkflowResolutionFailed`, `ExhaustedRetries` |
@@ -128,8 +130,8 @@ delivery:
   "timestamp": "2026-03-04T12:34:56Z",
   "notification_name": "approval-required-rr-12345",
   "notification_namespace": "kubernaut-system",
-  "type": "approval",
-  "priority": "critical",
+  "type": "Approval",
+  "priority": "Critical",
   "subject": "Human approval required for OOMKilled remediation",
   "body": "...",
   "metadata": {"environment": "production"},
@@ -147,7 +149,7 @@ Slack delivery sends Block Kit messages via Incoming Webhooks.
 
 1. **Header block** -- Priority emoji + subject (e.g., `:rotating_light: Human approval required for OOMKilled remediation`)
 2. **Section block** -- Notification body (Markdown converted to Slack mrkdwn)
-3. **Context block** -- `*Priority:* critical | *Type:* approval`
+3. **Context block** -- `*Priority:* Critical | *Type:* Approval`
 
 Priority emojis: Critical = :rotating_light:, High = :warning:, Medium = :information_source:, Low = :speech_balloon:
 

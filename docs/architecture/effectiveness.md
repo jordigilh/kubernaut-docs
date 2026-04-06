@@ -20,7 +20,7 @@ stateDiagram-v2
     Pending --> WaitingForPropagation : HashComputeDelay set
     Pending --> Stabilizing : No propagation delay
     Pending --> Assessing : Direct (edge case)
-    Pending --> Failed : Target not found
+    Pending --> Failed : Terminal failure
     WaitingForPropagation --> Stabilizing : Propagation delay elapsed
     WaitingForPropagation --> Failed : Error
     Stabilizing --> Assessing : Stabilization window elapsed
@@ -36,7 +36,29 @@ stateDiagram-v2
 | **Stabilizing** | Waiting for the stabilization window. Derived timing fields (`ValidityDeadline`, `PrometheusCheckAfter`, `AlertManagerCheckAfter`) are computed and persisted. |
 | **Assessing** | Actively running component scorers (health, hash, alerts, metrics) |
 | **Completed** | Assessment complete, results stored in status |
-| **Failed** | Assessment could not be completed (e.g., target not found) |
+| **Failed** | Terminal failure: the assessment could not be completed. Examples include the target resource no longer existing, unrecoverable errors during reconciliation, or dependencies such as Prometheus remaining unavailable after the configured retry budget. |
+
+On relevant phase transitions, the Effectiveness Monitor emits an `assessment.scheduled` event so operators and automation can observe when the next assessment step is expected.
+
+### EM controller assessment tuning
+
+The EM controller exposes two assessment reconciliation knobs:
+
+| Parameter | Purpose |
+|---|---|
+| `requeueInterval` | How long to wait before requeuing when the assessment must be deferred (e.g., waiting for propagation, stabilization, or backoff). |
+| `maxRetries` | Maximum retries for transient failures (e.g., Prometheus or API errors) before marking the assessment as failed. |
+
+### Assessment paths
+
+Each completed assessment is classified into one of four paths, reflecting how fully the EM could run the configured scorers within the validity window:
+
+| Path | Meaning |
+|---|---|
+| `no_execution` | No meaningful assessment run (e.g., prerequisites not met). |
+| `partial` | Some components assessed; others skipped or incomplete before the deadline. |
+| `full` | All applicable components assessed successfully within the window. |
+| `timed-out` | The validity window expired before all components could be assessed. |
 
 ## Timing Model
 
@@ -141,6 +163,8 @@ Compares pre-remediation and post-remediation metrics from Prometheus:
 
 Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 10m) for the query range.
 
+**Reliability (v1.2+)**: The interaction between `ValidityWindow` and alert duration was corrected so metrics windows align with the assessment timeline. Metrics scoring is now reliable when both are configured.
+
 ### Spec Hash Comparison (DD-EM-002)
 
 Compares the resource specification before and after remediation to detect drift:
@@ -148,6 +172,8 @@ Compares the resource specification before and after remediation to detect drift
 1. **Pre-remediation hash**: From `EA.Spec.PreRemediationSpecHash` (captured by RO before execution) or queried from DataStorage
 2. **Post-remediation hash**: Computed live via `CanonicalSpecHash(target.Spec)`
 3. **Comparison**: `postHash == preHash` → `Match=true` (spec unchanged). `postHash != preHash` can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed *after* the stabilization window began.
+
+**ConfigMap content (v1.2+)**: The RO and EM spec hash includes content from mounted ConfigMaps — specifically `.data` and `.binaryData` — while excluding Secret material. If a referenced ConfigMap changes between pre-capture and post-capture, the hash will differ, which is expected for effectiveness comparisons that include configuration mounted from ConfigMaps.
 
 #### Canonical Hash Algorithm
 

@@ -6925,7 +6925,7 @@ replacing the former unstructured Metadata map[string]string.</p>
 <p><em>Appears in:</em>
 - <a href="#notificationrequestspec">NotificationRequestSpec</a></p>
 <p><em>Validation:</em>
-- Enum: [critical high medium low]</p>
+- Enum: [Critical High Medium Low]</p>
 <table>
 <thead>
 <tr>
@@ -6935,19 +6935,19 @@ replacing the former unstructured Metadata map[string]string.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>critical</code></td>
+<td><code>Critical</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>high</code></td>
+<td><code>High</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>medium</code></td>
+<td><code>Medium</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>low</code></td>
+<td><code>Low</code></td>
 <td></td>
 </tr>
 </tbody>
@@ -7196,7 +7196,7 @@ perfect audit trail.</p>
 <p><em>Appears in:</em>
 - <a href="#notificationrequestspec">NotificationRequestSpec</a></p>
 <p><em>Validation:</em>
-- Enum: [escalation simple status-update approval manual-review completion]</p>
+- Enum: [Escalation Simple StatusUpdate Approval ManualReview Completion]</p>
 <table>
 <thead>
 <tr>
@@ -7206,27 +7206,27 @@ perfect audit trail.</p>
 </thead>
 <tbody>
 <tr>
-<td><code>escalation</code></td>
+<td><code>Escalation</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>simple</code></td>
+<td><code>Simple</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>status-update</code></td>
+<td><code>StatusUpdate</code></td>
 <td></td>
 </tr>
 <tr>
-<td><code>approval</code></td>
+<td><code>Approval</code></td>
 <td>NotificationTypeApproval is used for approval request notifications <br />Added Dec 2025 per RO team request for explicit approval workflow support</td>
 </tr>
 <tr>
-<td><code>manual-review</code></td>
+<td><code>ManualReview</code></td>
 <td>NotificationTypeManualReview is used for manual intervention required notifications <br />Added Dec 2025 for ExhaustedRetries/PreviousExecutionFailed scenarios requiring operator action<br />Distinct from 'escalation' to enable spec-field-based routing rules</td>
 </tr>
 <tr>
-<td><code>completion</code></td>
+<td><code>Completion</code></td>
 <td>NotificationTypeCompletion is used for successful remediation completion notifications <br />Created when WorkflowExecution completes successfully and RR transitions to Completed phase<br />Enables operators to track successful autonomous remediations</td>
 </tr>
 </tbody>

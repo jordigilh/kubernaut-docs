@@ -5,6 +5,9 @@ HolmesGPT is a **Python FastAPI** service that wraps LLM calls with live Kuberne
 !!! note "OpenAPI Spec"
     The full OpenAPI 3.1.0 specification is available at [`holmesgpt-api/api/openapi.json`](https://github.com/jordigilh/kubernaut/blob/main/holmesgpt-api/api/openapi.json) in the main repository. The Go client (`pkg/holmesgpt/client/`) uses the generated ogen client for all endpoints, including session management (DD-HAPI-003).
 
+!!! note "OpenAPI enum values (PascalCase)"
+    Where the OpenAPI schema defines enums, values follow **PascalCase** to stay consistent with typed enums elsewhere in the platform.
+
 ## Base URL
 
 ```
@@ -107,6 +110,10 @@ Key response fields:
 | `detected_labels` | object | Infrastructure labels detected during investigation |
 
 **Response**: `409 Conflict` — Session not yet complete
+
+### Audit: investigation completion
+
+Audit events of type `aiagent.response.complete` include LLM token totals on the payload: **`total_prompt_tokens`** and **`total_completion_tokens`**, for cost and usage tracking in the audit trail.
 
 ### Health
 

@@ -5,6 +5,12 @@ The DataStorage service provides a REST API for audit events, workflow catalog m
 !!! note "OpenAPI Spec"
     The full OpenAPI specification is available at [`api/openapi/data-storage-v1.yaml`](https://github.com/jordigilh/kubernaut/blob/main/api/openapi/data-storage-v1.yaml) in the main repository.
 
+!!! note "OpenAPI enum values (PascalCase)"
+    Catalog and OpenAPI **enum** values align with the CRD typed-enum convention and use **PascalCase** (for example, `active` → `Active`, `deprecated` → `Deprecated`). API clients and queries should use these PascalCase values.
+
+!!! note "Deterministic catalog IDs"
+    IDs returned by workflow and action-type **catalog** endpoints are **deterministic UUIDs** (UUIDv5). They remain **stable across PVC wipes** for unchanged workflow or action-type specifications.
+
 ## Base URL
 
 ```

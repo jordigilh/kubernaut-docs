@@ -10,6 +10,8 @@ The Orchestrator hasn't picked up the request.
 
 **Check**:
 
+As of v1.2, `kubectl get remediationrequest` / `rr` lists **ALERT**, **CONFIDENCE**, composite **TARGET**, **WORKFLOW** (display name, not raw UUID), and phase-specific **REASON**; `kubectl get rr -owide` adds **NAMESPACE** and a wider column layout.
+
 ```bash
 # Is the Orchestrator running?
 kubectl get pods -n kubernaut-system -l app=remediationorchestrator-controller
@@ -116,11 +118,15 @@ kubectl get rr -n kubernaut-system
 
 ```bash
 $ kubectl get rr -n kubernaut-system
-NAME                       PHASE     OUTCOME   AGE
-rr-b157a3a9e42f-1c2b5576   Failed              18m
-rr-b157a3a9e42f-1fad7b25   Failed              20m
-rr-b157a3a9e42f-e40b4d97   Blocked             14m
-rr-b157a3a9e42f-efe8bb6b   Failed              16m
+NAME                       PHASE     ALERT              CONFIDENCE   TARGET                           WORKFLOW                         REASON
+rr-b157a3a9e42f-1c2b5576   Failed    KubeNodeNotReady   0.88         Node/worker-1/default            Cordon unhealthy node            Execution failed: job timeout
+rr-b157a3a9e42f-1fad7b25   Failed    KubeNodeNotReady   0.85         Node/worker-1/default            Cordon unhealthy node            Workflow image pull error
+rr-b157a3a9e42f-e40b4d97   Blocked   KubeNodeNotReady   —            Node/worker-1/default            Cordon unhealthy node            Consecutive failures cooldown active
+rr-b157a3a9e42f-efe8bb6b   Failed    KubeNodeNotReady   0.90         Node/worker-1/default            Cordon unhealthy node            Approval window expired
+
+$ kubectl get rr -n kubernaut-system -owide
+NAME                       NAMESPACE        PHASE     ALERT              CONFIDENCE   TARGET                           WORKFLOW                         REASON
+rr-b157a3a9e42f-e40b4d97   kubernaut-system Blocked   KubeNodeNotReady   —            Node/worker-1/default            Cordon unhealthy node            Consecutive failures cooldown active
 ```
 
 Inspecting the blocked RR:
@@ -162,8 +168,15 @@ kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCaus
 
 **Check**:
 
+As of v1.2, `kubectl get notificationrequest` shows **TYPE** and **PRIORITY** in **PascalCase** (for example `Slack`, `High`).
+
 ```bash
-# Check NotificationRequest status
+# Tabular status (v1.2 column layout)
+kubectl get notificationrequests -n kubernaut-system
+# NAME                        TYPE    PRIORITY   PHASE       CHANNEL   AGE
+# nr-sample-7d9f2             Slack   High       Delivered   slack     3m
+
+# Full resource YAML
 kubectl get notificationrequests -n kubernaut-system -o yaml
 
 # Check Notification controller logs

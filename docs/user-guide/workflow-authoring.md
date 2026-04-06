@@ -218,6 +218,22 @@ Custom label matches add to the raw score (before normalization to 0-1). See [Wo
 
 This is a **tiebreaker/ordering influence**, not an override. It won't overcome a strong semantic mismatch in descriptions -- if the LLM strongly prefers a lower-ranked workflow based on its `whenToUse`, it will still pick it.
 
+## Per-Workflow ServiceAccount
+
+The optional `spec.serviceAccountName` field on a `RemediationWorkflow` lets each workflow run with its own least-privilege ServiceAccount instead of the shared `kubernaut-workflow-runner`. When set, the WE controller creates a short-lived token via the Kubernetes TokenRequest API and injects it into the Job, PipelineRun, or AWX credential.
+
+```yaml
+spec:
+  serviceAccountName: my-workflow-sa
+  execution:
+    engine: job
+    bundle: registry.example.com/workflows/my-workflow@sha256:...
+```
+
+The ServiceAccount must exist in the `kubernaut-workflows` namespace (or the configured execution namespace) with only the RBAC permissions required by the workflow. If `serviceAccountName` is omitted, the shared `kubernaut-workflow-runner` SA is used.
+
+See [Security & RBAC -- Per-Workflow ServiceAccount](../architecture/security-rbac.md#per-workflow-serviceaccount-v12) for the TokenRequest flow, TTL validation, and fallback behavior.
+
 ## Standard Resource Parameters
 
 Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **HAPI (HolmesGPT API)** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
@@ -318,6 +334,7 @@ spec:
     priority: "*"
   customLabels:
     risk_tolerance: "high"
+  serviceAccountName: restart-pods-sa
   execution:
     engine: job
     bundle: registry.example.com/workflows/restart-pods@sha256:abc123...

@@ -45,8 +45,8 @@ theme:
     - toc.follow
 
 extra:
-  chart_version: "1.2.0-rc"
-  image_tag: "v1.2.0-rc"
+  chart_version: "1.2.0"
+  image_tag: "v1.2.0"
   version:
     provider: mike
     default: latest
@@ -151,7 +151,9 @@ nav:
       - Monitoring: operations/monitoring.md
       - Event Exporter: operations/event-exporter.md
       - Troubleshooting: operations/troubleshooting.md
-      - Upgrading: operations/upgrading/index.md
+      - Upgrading:
+          - operations/upgrading/index.md
+          - v1.1 to v1.2: operations/upgrading/1.1-to-1.2.md
       - Disconnected Install: operations/disconnected-install.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md

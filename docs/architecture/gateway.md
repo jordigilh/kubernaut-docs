@@ -26,6 +26,33 @@ flowchart LR
 
 Each signal source uses a dedicated **adapter** that parses the source-specific payload format into a common `NormalizedSignal` structure. Adapters are registered at startup via `RegisterAdapter()`.
 
+## Expected Signal Labels
+
+### AlertManager Label Contract
+
+The Prometheus adapter expects alerts to carry standard Kubernetes labels for resource identification. The Gateway uses these labels to resolve the target resource:
+
+| Label | Required | Description |
+|---|---|---|
+| `namespace` | Yes (namespaced resources) | Target resource namespace |
+| `severity` | Yes | Alert severity (normalized by SP Rego) |
+| `alertname` | Yes | Alert name (becomes `SignalName`) |
+| One of: `deployment`, `statefulset`, `daemonset`, `replicaset`, `node`, `service`, `job_name`, `cronjob`, `pod` | Yes | Target resource identity |
+
+The adapter uses a priority list to select the resource label: HPA > PDB > PVC > Deployment > StatefulSet > DaemonSet > ReplicaSet > Node > Service > Job (`job_name`) > CronJob > Pod.
+
+### Kubernetes Event Exporter Label Contract
+
+The Kubernetes Event adapter expects the Event Exporter to forward events with these fields:
+
+| Field | Required | Description |
+|---|---|---|
+| `involvedObject.kind` | Yes | Resource kind |
+| `involvedObject.name` | Yes | Resource name |
+| `involvedObject.namespace` | Recommended | Resource namespace |
+| `reason` | Yes | Event reason (becomes `SignalName`) |
+| `type` | Yes | `Warning` or `Error` (`Normal` events are filtered out) |
+
 ## Signal Adapters
 
 ### Prometheus Adapter

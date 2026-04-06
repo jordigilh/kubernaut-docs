@@ -59,6 +59,12 @@ Remediation history is automatically included by the resource-context tools via 
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
+!!! warning "Mandatory JSON mode"
+    HAPI requires the LLM provider to support JSON mode (`ChatOptions{JSONMode: true}`). This ensures the LLM returns structured responses that HAPI can parse reliably. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively. Providers without JSON mode support will produce unparseable responses.
+
+!!! note "LLM model-dependent escalation behavior"
+    Escalation behavior (e.g., when the LLM decides to switch from a failing workflow to human review) depends on the specific LLM model's reasoning capabilities. Different models may make different escalation decisions given the same remediation history context. In v1.2, HAPI's Pydantic validation schema was fixed to properly validate escalation responses on cycle 2+ (#624), ensuring consistent behavior across retry attempts.
+
 ## Pre-RCA: Prompt Construction
 
 Before any tools are called, HAPI assembles the initial prompt from the enriched signal. This context frames the entire investigation:
@@ -163,6 +169,12 @@ Probes the cluster to detect infrastructure characteristics of the root owner:
 | `stateful` | Resource is StatefulSet or has PersistentVolumeClaims |
 | `networkIsolated` | NetworkPolicy exists in the namespace |
 | `serviceMesh` | Istio/Linkerd sidecar annotations |
+| `resourceQuotaConstrained` | Namespace has an active `ResourceQuota` |
+
+When `resourceQuotaConstrained` is detected, the `LabelDetector` also surfaces `quota_details` as a top-level field in the resource context response, containing the namespace's `ResourceQuota` spec (limits, requests, and used values). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.
+
+!!! note "LimitRange detection"
+    LimitRange detection is not implemented in v1.2. Only ResourceQuota constraints are surfaced.
 
 These labels are stored in `session_state` and automatically injected into all subsequent workflow discovery queries. They serve two purposes:
 
@@ -192,9 +204,6 @@ The response contains two tiers of history with different query strategies, time
 
 - **Tier 1** queries by target resource and time window first, then correlates results by computing hash match in-memory. This captures the full recent remediation chain for the target resource regardless of spec hash, giving the LLM visibility into the immediate history.
 - **Tier 2** queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.
-
-!!! warning "Known issue: Tier 1 query strategy"
-    Tier 1 queries by target resource rather than spec hash by design at v1.1 — the hash match is computed post-query by `CorrelateTier1Chain`. A known issue ([kubernaut#586](https://github.com/jordigilh/kubernaut/issues/586)) tracks tightening this to filter by spec hash at the query level in v1.2.
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 
@@ -358,6 +367,17 @@ flowchart LR
 
 This is Kubernaut's "learning" mechanism -- not model fine-tuning, but contextual memory via the audit trail. The more remediations a resource undergoes, the richer the context available to the LLM for future decisions.
 
+### IneffectiveChain Guardrails (v1.2)
+
+To prevent unbounded remediation loops, the Remediation Orchestrator enforces two configurable thresholds:
+
+| Config Key | Default | Description |
+|---|---|---|
+| `remediationorchestrator.config.ineffectiveChainThreshold` | 3 | Maximum consecutive "completed but still broken" remediations (matching pre- and post-remediation spec hashes) before the RR is blocked with `IneffectiveChain` |
+| `remediationorchestrator.config.recurrenceCountThreshold` | 5 | Maximum recurrence count (re-firing signals for the same fingerprint) before the RR is blocked |
+
+When either threshold is exceeded, the Orchestrator blocks the RemediationRequest and emits a notification directing operators to investigate manually. The dual-hash query semantics (matching both `pre_remediation_spec_hash` and `post_remediation_spec_hash`) enable accurate chain detection via DataStorage.
+
 ## Workflow Selection: Three-Step Discovery
 
 After resource context is gathered (Phase 2: Enrich), the LLM enters the Workflow Select phase. The `session_state["detected_labels"]` from the previous phase are automatically injected into all DataStorage queries as context filters.
@@ -491,6 +511,9 @@ The LLM investigates and determines the alert is not actionable — for example,
 
 **Fields:** `selected_workflow=null`, `Outcome=WorkflowNotNeeded`, `SubReason=NotActionable`
 **Next:** AA sets `Outcome=NoActionRequired`. No workflow execution. Rego is never evaluated.
+
+!!! note "Confidence floor for not-actionable responses"
+    When the LLM returns `actionable=false` with a confidence below 0.8, HAPI floors the confidence to 0.8. This prevents the AA controller from misclassifying a deliberate "not actionable" determination as a low-confidence failure (Outcome 7).
 
 !!! note "Only Outcome 1 reaches Rego"
     Outcomes 2–9 are all handled by the AA controller's response processor **before** Rego evaluation. The Rego approval policy only runs when the LLM successfully selects a workflow with `needs_human_review=false` and `confidence >= 0.7`.

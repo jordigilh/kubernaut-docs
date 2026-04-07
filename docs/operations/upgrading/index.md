@@ -52,4 +52,6 @@ See the [installation guide](../../getting-started/installation.md#2-provision-s
 
 ## Version-Specific Notes
 
-No active version-specific migration guides. v1.0 is end-of-life and no longer documented.
+- [**v1.1 to v1.2**](1.1-to-1.2.md) — CRD schema hardening (typed enums, `metav1.Duration`), storm detection removal, PascalCase enum migration, per-workflow ServiceAccount, database migrations 002-004.
+
+v1.0 is end-of-life and no longer documented.

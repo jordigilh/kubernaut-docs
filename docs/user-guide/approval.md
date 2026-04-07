@@ -13,9 +13,9 @@ Approval is determined by a **user-replaceable Rego policy** evaluated during th
 
 The shipped `approval.rego` makes decisions based on **environment**, **remediation target presence**, and **sensitive resource kinds**:
 
-- **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence
+- **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence. Environment matching is **case-insensitive** (e.g., `Production`, `production`, `PRODUCTION` all match).
 - **Sensitive resource kinds** (Node, StatefulSet) — always require approval, regardless of environment
-- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present and the resource kind is not sensitive
+- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present and the resource kind is not sensitive. Environment matching is case-insensitive.
 - **Missing remediation target** — always requires approval (default-deny safety per ADR-055)
 
 When approval is required, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.

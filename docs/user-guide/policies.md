@@ -4,6 +4,12 @@ Kubernaut uses [OPA Rego](https://www.openpolicyagent.org/docs/latest/policy-lan
 
 All policies are deployed as ConfigMaps and can be customized. See [SignalProcessing Rego Policies](configmap-policies.md) for provisioning details.
 
+!!! info "Case-insensitive matching (v1.2)"
+    Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is **case-insensitive**. For example, `Production`, `production`, and `PRODUCTION` all match equivalently. The default policies use `lower()` for comparisons. Custom policies should follow the same pattern.
+
+!!! info "Embedded default SP Rego (v1.2)"
+    Starting with v1.2, the Helm chart ships a default `signalprocessing-policy.rego` so installations work without `--set-file`. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.
+
 ## Policy Overview
 
 | Policy File | Service | Purpose | Hot-Reload |

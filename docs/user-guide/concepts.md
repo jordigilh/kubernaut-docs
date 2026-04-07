@@ -138,13 +138,13 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 ## Workflow Catalog
 
-Remediation workflows are packaged as **OCI images** containing a `workflow-schema.yaml` and stored in the **DataStorage** service as a searchable catalog. Each workflow has:
+Remediation workflows are defined as declarative **`RemediationWorkflow` CRDs** and registered in **DataStorage** as a searchable catalog via the Auth Webhook admission path. Each workflow has:
 
 - **Identity** — Name (`metadata.name`), version, and structured description (what, whenToUse, whenNotToUse, preconditions) under `spec`
 - **Action type** — Taxonomy type (e.g., `RestartPod`, `RollbackDeployment`, `IncreaseMemoryLimits`)
 - **Labels** — Signal name, severity, environment, component, priority (with wildcard and multi-value support)
 - **Parameters** — Typed inputs injected at runtime as environment variables (`UPPER_SNAKE_CASE`)
-- **Execution config** — Engine (`job` or `tekton`) and OCI bundle reference with digest
+- **Execution config** — Engine (`job`, `tekton`, or `ansible`) plus engine-specific execution settings. Tekton workflows may reference OCI bundles for pipeline execution artifacts
 
 During investigation, the LLM selects a workflow through a three-step discovery protocol:
 

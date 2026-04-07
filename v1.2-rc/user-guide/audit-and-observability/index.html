@@ -1269,6 +1269,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Audit Event Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llm-token-usage-aiagentresponsecomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM token usage (aiagent.response.complete)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-call-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool call attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2931,6 +2959,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Audit Event Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#llm-token-usage-aiagentresponsecomplete" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM token usage (aiagent.response.complete)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tool-call-attribution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool call attribution
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3098,6 +3154,10 @@
 </table>
 <h2 id="audit-event-structure">Audit Event Structure<a class="headerlink" href="#audit-event-structure" title="Permanent link">&para;</a></h2>
 <p>Each event contains core fields: <code>event_id</code>, <code>event_timestamp</code>, <code>event_type</code>, <code>event_category</code>, <code>event_action</code>, <code>event_outcome</code>, <code>actor_type</code>/<code>actor_id</code>, <code>resource_type</code>/<code>resource_id</code>, <code>correlation_id</code>, <code>namespace</code>, and <code>event_data</code>. See <a href="../../architecture/audit-pipeline/#event-structure">Architecture: Audit Pipeline</a> for the complete event structure and field definitions.</p>
+<h3 id="llm-token-usage-aiagentresponsecomplete">LLM token usage (<code>aiagent.response.complete</code>)<a class="headerlink" href="#llm-token-usage-aiagentresponsecomplete" title="Permanent link">&para;</a></h3>
+<p>Events with type <code>aiagent.response.complete</code> include <strong><code>total_prompt_tokens</code></strong> and <strong><code>total_completion_tokens</code></strong> in the payload for token accounting and cost analysis.</p>
+<h3 id="tool-call-attribution">Tool call attribution<a class="headerlink" href="#tool-call-attribution" title="Permanent link">&para;</a></h3>
+<p>For tool-invocation audit events, <strong><code>tool_name</code></strong> is populated with the actual tool name. In v1.1 this field was incorrectly recorded as <code>unknown</code> in some paths; <strong>v1.2</strong> records it correctly.</p>
 <h2 id="operator-attribution">Operator Attribution<a class="headerlink" href="#operator-attribution" title="Permanent link">&para;</a></h2>
 <p>The <strong>Auth Webhook</strong> captures human actions through Kubernetes admission control:</p>
 <ul>

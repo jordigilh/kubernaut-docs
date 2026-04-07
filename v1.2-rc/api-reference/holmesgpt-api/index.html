@@ -2279,6 +2279,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#audit-investigation-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit: investigation completion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#health" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3004,6 +3015,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#audit-investigation-completion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit: investigation completion
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#health" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3085,6 +3107,10 @@
 <div class="admonition note">
 <p class="admonition-title">OpenAPI Spec</p>
 <p>The full OpenAPI 3.1.0 specification is available at <a href="https://github.com/jordigilh/kubernaut/blob/main/holmesgpt-api/api/openapi.json"><code>holmesgpt-api/api/openapi.json</code></a> in the main repository. The Go client (<code>pkg/holmesgpt/client/</code>) uses the generated ogen client for all endpoints, including session management (DD-HAPI-003).</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">OpenAPI enum values</p>
+<p>HolmesGPT API enums are defined per schema and include lowercase and snake_case values in v1.2. Always follow the enum values declared in <code>holmesgpt-api/api/openapi.json</code> for each field.</p>
 </div>
 <h2 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>http://holmesgpt-api.kubernaut-system.svc.cluster.local:8080
@@ -3190,6 +3216,8 @@
 </tbody>
 </table>
 <p><strong>Response</strong>: <code>409 Conflict</code> — Session not yet complete</p>
+<h3 id="audit-investigation-completion">Audit: investigation completion<a class="headerlink" href="#audit-investigation-completion" title="Permanent link">&para;</a></h3>
+<p>Audit events of type <code>aiagent.response.complete</code> include LLM token totals on the payload: <strong><code>total_prompt_tokens</code></strong> and <strong><code>total_completion_tokens</code></strong>, for cost and usage tracking in the audit trail.</p>
 <h3 id="health">Health<a class="headerlink" href="#health" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

@@ -59,7 +59,7 @@ toolsets: {}             # Optional: HolmesGPT data source toolsets
 mcp_servers: {}          # Optional: Model Context Protocol servers
 ```
 
-## Toolset Optimization (pre-v1.2)
+## Toolset Optimization
 
 Each enabled toolset injects its full tool schema into every LLM context turn. When a toolset is enabled but never called during an investigation, those schema tokens are pure overhead — they consume budget and can bias the LLM toward irrelevant investigation paths.
 
@@ -97,7 +97,7 @@ toolsets:
 ```
 
 !!! note "v1.2: Automatic toolset selection"
-    v1.2 will introduce [two-phase toolkit selection](https://github.com/jordigilh/kubernaut/issues/434) that automatically loads only the toolsets relevant to each investigation. This section will be updated when that feature ships.
+    v1.2 introduces [two-phase toolkit selection](https://github.com/jordigilh/kubernaut/issues/434) that automatically loads only the toolsets relevant to each investigation.
 
 ## Provider Examples
 

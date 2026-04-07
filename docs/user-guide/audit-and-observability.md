@@ -53,6 +53,14 @@ Every stage of the remediation lifecycle emits audit events:
 
 Each event contains core fields: `event_id`, `event_timestamp`, `event_type`, `event_category`, `event_action`, `event_outcome`, `actor_type`/`actor_id`, `resource_type`/`resource_id`, `correlation_id`, `namespace`, and `event_data`. See [Architecture: Audit Pipeline](../architecture/audit-pipeline.md#event-structure) for the complete event structure and field definitions.
 
+### LLM token usage (`aiagent.response.complete`)
+
+Events with type `aiagent.response.complete` include **`total_prompt_tokens`** and **`total_completion_tokens`** in the payload for token accounting and cost analysis.
+
+### Tool call attribution
+
+For tool-invocation audit events, **`tool_name`** is populated with the actual tool name. In v1.1 this field was incorrectly recorded as `unknown` in some paths; **v1.2** records it correctly.
+
 ## Operator Attribution
 
 The **Auth Webhook** captures human actions through Kubernetes admission control:

@@ -87,6 +87,7 @@ The primary audit table, partitioned by month. This is the largest table in the 
 | `idx_audit_events_event_type` | `event_type, event_timestamp DESC` | Event type filtering |
 | `idx_audit_events_event_data_gin` | `event_data USING GIN` | JSONB payload queries |
 | `idx_audit_events_pre_remediation_spec_hash` | `(event_data->>'pre_remediation_spec_hash'), event_timestamp DESC` | Spec hash history lookups |
+| `idx_audit_events_post_remediation_spec_hash` | `(event_data->>'post_remediation_spec_hash'), event_timestamp DESC` | Post-remediation spec hash lookups (migration `004`) |
 
 ### Partitioning
 
@@ -149,6 +150,14 @@ The action type registry for workflow categorization.
 
 The database deploys with a clean schema -- no pre-seeded rows. Action types are registered via `kubectl apply -f` on `ActionType` CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API. See [Workflow Selection: Action Type Taxonomy](workflow-selection.md#action-type-taxonomy) and [Installation: Action Types](../getting-started/installation.md#action-types-and-workflows-demo-content).
 
+### Deterministic catalog IDs (UUIDv5)
+
+`RemediationWorkflow` resources use **deterministic UUIDs** (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across **PVC wipes** and database replays as long as the spec is unchanged. `ActionType` entries are keyed by their `actionType` identifier string.
+
+### Auth Webhook startup reconciliation
+
+On startup, the Auth Webhook runs a **Runnable** that lists cluster `ActionType` objects, then `RemediationWorkflow` objects, and **reconciles** them with DataStorage through **idempotent creates**. This repopulates the catalog after storage loss or drift without duplicating rows.
+
 ### Other Tables
 
 | Table | Purpose |
@@ -159,6 +168,17 @@ The database deploys with a clean schema -- no pre-seeded rows. Action types are
 | `oscillation_detections` | Detected oscillation instances |
 | `action_effectiveness_metrics` | Effectiveness scoring per workflow/incident type |
 | `retention_operations` | Retention operation tracking and scheduling |
+
+## Database migrations
+
+Schema changes use an **append-only** migration chain managed by [**goose**](https://github.com/pressly/goose). The strategy is:
+
+- **Append-only chain** -- migrations are never rewritten in place; history stays linear.
+- **Per-major baselines** -- each major release can ship a squashed baseline for **fresh installs**, while upgrades follow the incremental chain from their installed version.
+- **Minor release squash** -- development incrementals are typically **squashed per minor** at release time to keep the chain maintainable.
+- **`db-migrate` migration job** -- runs via Helm hook (`post-install,post-upgrade`) and distinguishes **fresh install** vs **upgrade** using the `goose_db_version` table so the correct migration path applies.
+
+Migrations `002`--`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index.
 
 ## RemediationRequest Reconstruction
 

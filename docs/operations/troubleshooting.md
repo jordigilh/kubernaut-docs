@@ -10,6 +10,8 @@ The Orchestrator hasn't picked up the request.
 
 **Check**:
 
+As of v1.2, `kubectl get remediationrequest` / `rr` lists **Phase**, **Outcome**, **Alert**, **RCA Target**, **Workflow**, and **Confidence** by default. `kubectl get rr -owide` adds **Source**, **Signal NS**, **Signal Target**, and **RCA NS**.
+
 ```bash
 # Is the Orchestrator running?
 kubectl get pods -n kubernaut-system -l app=remediationorchestrator-controller
@@ -116,11 +118,15 @@ kubectl get rr -n kubernaut-system
 
 ```bash
 $ kubectl get rr -n kubernaut-system
-NAME                       PHASE     OUTCOME   AGE
-rr-b157a3a9e42f-1c2b5576   Failed              18m
-rr-b157a3a9e42f-1fad7b25   Failed              20m
-rr-b157a3a9e42f-e40b4d97   Blocked             14m
-rr-b157a3a9e42f-efe8bb6b   Failed              16m
+NAME                       PHASE     OUTCOME   ALERT              RCA TARGET                 WORKFLOW                 CONFIDENCE   AGE
+rr-b157a3a9e42f-1c2b5576   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.88         18m
+rr-b157a3a9e42f-1fad7b25   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.85         14m
+rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    —            9m
+rr-b157a3a9e42f-efe8bb6b   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.90         4m
+
+$ kubectl get rr -n kubernaut-system -owide
+NAME                       PHASE     OUTCOME   ALERT              RCA TARGET      WORKFLOW               CONFIDENCE   AGE   SOURCE      SIGNAL NS   SIGNAL TARGET       RCA NS
+rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1   Cordon unhealthy node  —            9m    prometheus  default     Node/worker-1       default
 ```
 
 Inspecting the blocked RR:
@@ -162,8 +168,15 @@ kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCaus
 
 **Check**:
 
+As of v1.2, `kubectl get notificationrequest` shows **TYPE** and **PRIORITY** in **PascalCase** (for example `Completion`, `High`).
+
 ```bash
-# Check NotificationRequest status
+# Tabular status (v1.2 column layout)
+kubectl get notificationrequests -n kubernaut-system
+# NAME                        TYPE         PRIORITY   PHASE   ATTEMPTS   AGE
+# nr-sample-7d9f2             Completion   High       Sent    1          3m
+
+# Full resource YAML
 kubectl get notificationrequests -n kubernaut-system -o yaml
 
 # Check Notification controller logs

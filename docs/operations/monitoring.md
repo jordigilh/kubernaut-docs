@@ -2,6 +2,8 @@
 
 All Kubernaut services expose Prometheus-compatible metrics and standard health check endpoints. This page provides a complete metrics reference for building Grafana dashboards and alerting rules.
 
+In **v1.2**, **Effectiveness Monitor** and **Notification** metric names and semantics were **stabilized** (fewer breaking renames between patch releases).
+
 ## Health Checks
 
 Services expose health endpoints at different paths depending on their framework:
@@ -124,7 +126,9 @@ scrape_configs:
 | `aiagent_api_investigations_duration_seconds` | Histogram | -- | End-to-end investigation duration |
 | `aiagent_api_llm_calls_total` | Counter | `provider`, `model`, `status` | LLM API calls by provider and outcome |
 | `aiagent_api_llm_call_duration_seconds` | Histogram | `provider`, `model` | LLM call latency |
-| `aiagent_api_llm_token_usage_total` | Counter | `provider`, `model`, `type` | Token consumption (prompt, completion) |
+| `aiagent_api_llm_token_usage_total` | Counter | `provider`, `model`, `type` | LLM token consumption; use label `type` to distinguish **prompt** vs **completion** tokens (increments on each completed LLM call) |
+
+HolmesGPT exposes **prompt** and **completion** token counts as **counters** via `aiagent_api_llm_token_usage_total` (see [LLM Token Cost Tracking](#llm-token-cost-tracking) for example PromQL).
 
 ## Audit Pipeline Metrics
 

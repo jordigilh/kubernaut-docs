@@ -38,16 +38,17 @@ stateDiagram-v2
 | **Completed** | Assessment complete, results stored in status |
 | **Failed** | Terminal failure: the assessment could not be completed. Examples include the target resource no longer existing, unrecoverable errors during reconciliation, or dependencies such as Prometheus remaining unavailable after the configured retry budget. |
 
-On relevant phase transitions, the Effectiveness Monitor emits an `assessment.scheduled` event so operators and automation can observe when the next assessment step is expected.
+On relevant phase transitions, the Effectiveness Monitor emits an `effectiveness.assessment.scheduled` audit event so operators and automation can observe when the next assessment step is expected.
 
 ### EM controller assessment tuning
 
-The EM controller exposes two assessment reconciliation knobs:
+The EM controller exposes assessment timing and concurrency knobs:
 
 | Parameter | Purpose |
 |---|---|
-| `requeueInterval` | How long to wait before requeuing when the assessment must be deferred (e.g., waiting for propagation, stabilization, or backoff). |
-| `maxRetries` | Maximum retries for transient failures (e.g., Prometheus or API errors) before marking the assessment as failed. |
+| `stabilizationWindow` | Wait time before starting assessment scorers after EA creation. |
+| `validityWindow` | Total window before the assessment expires. |
+| `maxConcurrentReconciles` | Maximum number of EA reconciliations processed in parallel by the controller. |
 
 ### Assessment paths
 
@@ -58,7 +59,7 @@ Each completed assessment is classified into one of four paths, reflecting how f
 | `no_execution` | No meaningful assessment run (e.g., prerequisites not met). |
 | `partial` | Some components assessed; others skipped or incomplete before the deadline. |
 | `full` | All applicable components assessed successfully within the window. |
-| `timed-out` | The validity window expired before all components could be assessed. |
+| `metrics_timed_out` / `alert_decay_timeout` / `expired` | Assessment deadline paths where the validity window expired before full convergence. |
 
 ## Timing Model
 
@@ -161,7 +162,7 @@ Compares pre-remediation and post-remediation metrics from Prometheus:
 - Clamped to [0.0, 1.0]
 - Overall score: average of per-metric improvements
 
-Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 10m) for the query range.
+Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 30m) for the query range.
 
 **Reliability (v1.2+)**: The interaction between `ValidityWindow` and alert duration was corrected so metrics windows align with the assessment timeline. Metrics scoring is now reliable when both are configured.
 

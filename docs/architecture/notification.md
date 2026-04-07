@@ -16,7 +16,7 @@ For the complete field specification, see [NotificationRequest in the CRD Refere
 
 ### Notification Types
 
-API values use **PascalCase** enum strings (e.g. `Completion`, `StatusUpdate`). Routing `match` keys compare against these values.
+API values use **PascalCase** enum strings for `type`/`priority` (e.g. `Completion`, `StatusUpdate`, `Critical`). Routing `match` keys compare against these values for those fields. `severity` remains source/signal-derived (typically lowercase from Signal Processing normalization).
 
 | Type | Description |
 |---|---|
@@ -261,7 +261,7 @@ The enrichment layer uses a `WorkflowNameResolver` interface, allowing alternati
 
 ### Effectiveness assessment in completion messages
 
-For **completion** notifications, `buildCompletionBody` loads the effectiveness assessment using `RemediationRequest.Status.EffectivenessAssessmentRef`. The body includes the assessment reason, per-component scores (health, alerts, metrics, hash), and hash comparison details so operators can see outcome and evidence in one place.
+For **completion** notifications, the Remediation Orchestrator loads the effectiveness assessment via `RemediationRequest.Status.EffectivenessAssessmentRef` before building the message body. The notification includes assessment reason, per-component scores (health, alerts, metrics, hash), and hash comparison details so operators can see outcome and evidence in one place.
 
 ### Hash-capture degradation
 
@@ -277,7 +277,7 @@ Notifications include the **RemediationRequest** resource name. Body fields are 
 
 ### Workflow not needed (NoAction)
 
-When `handleWorkflowNotNeeded` runs (remediation not required), the pipeline emits a **`StatusUpdate`** notification so operators still get a lifecycle update.
+When `handleWorkflowNotNeeded` runs (remediation not required), the pipeline emits a **`StatusUpdate`** notification when self-resolved notifications are enabled, so operators still get a lifecycle update.
 
 ## Audit Events
 

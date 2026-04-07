@@ -9,7 +9,7 @@ After a remediation workflow completes, Kubernaut evaluates whether the fix actu
 
 Assessments normally progress through pending, propagation, stabilization, and active scoring to **Completed**. If the EM cannot finish — for example the target resource was deleted, or Prometheus stays unavailable after retries — the CRD moves to a terminal **`Failed`** phase. See [Architecture: Phase State Machine](../architecture/effectiveness.md#phase-state-machine).
 
-Helm values under `effectivenessmonitor.config.assessment` include **`requeueInterval`** (how long to wait before requeuing deferred work) and **`maxRetries`** (retry budget for transient dependency failures before failing the assessment). See [Configuration Reference](configuration.md#effectivenessmonitor).
+Helm values under `effectivenessmonitor.config.assessment` include `stabilizationWindow`, `validityWindow`, and `maxConcurrentReconciles`. Requeue cadence during in-progress assessment follows controller timing derived from scrape windows. See [Configuration Reference](configuration.md#effectivenessmonitor).
 
 The remediation orchestrator and effectiveness monitor include **mounted ConfigMap `.data` / `.binaryData`** in the canonical spec hash (Secrets are excluded). If a referenced ConfigMap changes between pre- and post-capture, hashes will differ — treat that as a real configuration change for effectiveness comparison.
 

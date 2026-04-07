@@ -174,9 +174,8 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | Parameter | Description | Default |
 |---|---|---|
 | `effectivenessmonitor.config.assessment.stabilizationWindow` | Wait time after remediation before assessment | `30s` |
-| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `120s` |
-| `effectivenessmonitor.config.assessment.requeueInterval` | Interval for requeuing when assessment work is deferred (propagation, stabilization, backoff) | See `values.yaml` |
-| `effectivenessmonitor.config.assessment.maxRetries` | Maximum retries for transient failures (e.g. Prometheus/API) before terminal failure | See `values.yaml` |
+| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `300s` |
+| `effectivenessmonitor.config.assessment.maxConcurrentReconciles` | Maximum concurrent EA reconciliations | `5` |
 | `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
 | `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |

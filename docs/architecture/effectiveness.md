@@ -20,7 +20,7 @@ stateDiagram-v2
     Pending --> WaitingForPropagation : HashComputeDelay set
     Pending --> Stabilizing : No propagation delay
     Pending --> Assessing : Direct (edge case)
-    Pending --> Failed : Target not found
+    Pending --> Failed : Terminal failure
     WaitingForPropagation --> Stabilizing : Propagation delay elapsed
     WaitingForPropagation --> Failed : Error
     Stabilizing --> Assessing : Stabilization window elapsed
@@ -36,7 +36,30 @@ stateDiagram-v2
 | **Stabilizing** | Waiting for the stabilization window. Derived timing fields (`ValidityDeadline`, `PrometheusCheckAfter`, `AlertManagerCheckAfter`) are computed and persisted. |
 | **Assessing** | Actively running component scorers (health, hash, alerts, metrics) |
 | **Completed** | Assessment complete, results stored in status |
-| **Failed** | Assessment could not be completed (e.g., target not found) |
+| **Failed** | Terminal failure: the assessment could not be completed. Examples include the target resource no longer existing, unrecoverable errors during reconciliation, or dependencies such as Prometheus remaining unavailable after the configured retry budget. |
+
+On relevant phase transitions, the Effectiveness Monitor emits an `effectiveness.assessment.scheduled` audit event so operators and automation can observe when the next assessment step is expected.
+
+### EM controller assessment tuning
+
+The EM controller exposes assessment timing and concurrency knobs:
+
+| Parameter | Purpose |
+|---|---|
+| `stabilizationWindow` | Wait time before starting assessment scorers after EA creation. |
+| `validityWindow` | Total window before the assessment expires. |
+| `maxConcurrentReconciles` | Maximum number of EA reconciliations processed in parallel by the controller. |
+
+### Assessment paths
+
+Each completed assessment is classified into one of four paths, reflecting how fully the EM could run the configured scorers within the validity window:
+
+| Path | Meaning |
+|---|---|
+| `no_execution` | No meaningful assessment run (e.g., prerequisites not met). |
+| `partial` | Some components assessed; others skipped or incomplete before the deadline. |
+| `full` | All applicable components assessed successfully within the window. |
+| `metrics_timed_out` / `alert_decay_timeout` / `expired` | Assessment deadline paths where the validity window expired before full convergence. |
 
 ## Timing Model
 
@@ -139,7 +162,9 @@ Compares pre-remediation and post-remediation metrics from Prometheus:
 - Clamped to [0.0, 1.0]
 - Overall score: average of per-metric improvements
 
-Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 10m) for the query range.
+Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 30m) for the query range.
+
+**Reliability (v1.2+)**: The interaction between `ValidityWindow` and alert duration was corrected so metrics windows align with the assessment timeline. Metrics scoring is now reliable when both are configured.
 
 ### Spec Hash Comparison (DD-EM-002)
 
@@ -148,6 +173,8 @@ Compares the resource specification before and after remediation to detect drift
 1. **Pre-remediation hash**: From `EA.Spec.PreRemediationSpecHash` (captured by RO before execution) or queried from DataStorage
 2. **Post-remediation hash**: Computed live via `CanonicalSpecHash(target.Spec)`
 3. **Comparison**: `postHash == preHash` → `Match=true` (spec unchanged). `postHash != preHash` can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed *after* the stabilization window began.
+
+**ConfigMap content (v1.2+)**: The RO and EM spec hash includes content from mounted ConfigMaps — specifically `.data` and `.binaryData` — while excluding Secret material. If a referenced ConfigMap changes between pre-capture and post-capture, the hash will differ, which is expected for effectiveness comparisons that include configuration mounted from ConfigMaps.
 
 #### Canonical Hash Algorithm
 

@@ -16,14 +16,18 @@ For the complete field specification, see [NotificationRequest in the CRD Refere
 
 ### Notification Types
 
+API values use **PascalCase** enum strings for `type`/`priority` (e.g. `Completion`, `StatusUpdate`, `Critical`). Routing `match` keys compare against these values for those fields. `severity` remains source/signal-derived (typically lowercase from Signal Processing normalization).
+
 | Type | Description |
 |---|---|
-| `escalation` | Escalation to human review |
-| `simple` | Basic status notification |
-| `status-update` | Phase change update |
-| `approval` | Approval request |
-| `manual-review` | Manual review required |
-| `completion` | Remediation outcome (success or failure) |
+| `Escalation` | Escalation to human review |
+| `Simple` | Basic status notification |
+| `StatusUpdate` | Phase change update |
+| `Approval` | Approval request |
+| `ManualReview` | Manual review required |
+| `Completion` | Remediation outcome (success or failure) |
+
+**Notification priority** (when used on the request) uses PascalCase: `Critical`, `High`, `Medium`, `Low`.
 
 ### Status
 
@@ -252,6 +256,28 @@ If the workflow UUID is absent from the workflow context, the DataStorage lookup
 ### Extensibility
 
 The enrichment layer uses a `WorkflowNameResolver` interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.
+
+## Completion and status notification content
+
+### Effectiveness assessment in completion messages
+
+For **completion** notifications, the Remediation Orchestrator loads the effectiveness assessment via `RemediationRequest.Status.EffectivenessAssessmentRef` before building the message body. The notification includes assessment reason, per-component scores (health, alerts, metrics, hash), and hash comparison details so operators can see outcome and evidence in one place.
+
+### Hash-capture degradation
+
+When pre- or post-remediation hash capture fails in a non-fatal (soft-fail) path, completion notifications indicate **EA degraded**, with the reason and guidance — for example, verifying RBAC for the view `ClusterRole` if the EM cannot read mounted ConfigMaps or related resources.
+
+### Cluster identification
+
+Every notification body begins with cluster context: **`Cluster: <name> (<uuid>)`**, across console, log, file, and Slack channels. **Timeout** notifications also include the cluster identifier so multi-cluster operators can route quickly.
+
+### RemediationRequest name and body layout
+
+Notifications include the **RemediationRequest** resource name. Body fields are **reordered** for faster triage (high-signal context first).
+
+### Workflow not needed (NoAction)
+
+When `handleWorkflowNotNeeded` runs (remediation not required), the pipeline emits a **`StatusUpdate`** notification when self-resolved notifications are enabled, so operators still get a lifecycle update.
 
 ## Audit Events
 

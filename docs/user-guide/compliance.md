@@ -150,8 +150,8 @@ Kubernaut defines auditable events per service in [DD-AUDIT-003]. Seven services
 - The hash chain provides a cryptographic integrity guarantee that is independent of database access controls ([ADR-034]).
 - Legal hold support (`legal_hold`, `legal_hold_reason`, `legal_hold_set_at`, `legal_hold_set_by`) is available at the event level to prevent retention-based deletion of specific events.
 
-!!! note "CLI verification tools (v1.2)"
-    Client-side hash chain verification and digital signature verification CLI tools are **available in v1.2**. Server-side integrity verification remains available through the DataStorage API.
+!!! note "CLI verification tools"
+    Client-side hash chain verification and digital signature verification CLI tooling is **not shipped in v1.2**. Server-side integrity verification remains available through the DataStorage API.
 
 ---
 

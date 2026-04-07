@@ -152,7 +152,7 @@ The database deploys with a clean schema -- no pre-seeded rows. Action types are
 
 ### Deterministic catalog IDs (UUIDv5)
 
-`ActionType` and `RemediationWorkflow` resources use **deterministic UUIDs** (UUIDv5 derived from a content hash of the spec). The same workflow or action-type specification always yields the same UUID, so catalog rows and cross-references stay stable across **PVC wipes** and database replays as long as the spec is unchanged.
+`RemediationWorkflow` resources use **deterministic UUIDs** (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across **PVC wipes** and database replays as long as the spec is unchanged. `ActionType` entries are keyed by their `actionType` identifier string.
 
 ### Auth Webhook startup reconciliation
 
@@ -176,9 +176,9 @@ Schema changes use an **append-only** migration chain managed by [**goose**](htt
 - **Append-only chain** -- migrations are never rewritten in place; history stays linear.
 - **Per-major baselines** -- each major release can ship a squashed baseline for **fresh installs**, while upgrades follow the incremental chain from their installed version.
 - **Minor release squash** -- development incrementals are typically **squashed per minor** at release time to keep the chain maintainable.
-- **`db-migrate` init container** -- runs before DataStorage starts; distinguishes **fresh install** vs **upgrade** using the `goose_db_version` table so the correct migration path applies.
+- **`db-migrate` migration job** -- runs via Helm hook (`post-install,post-upgrade`) and distinguishes **fresh install** vs **upgrade** using the `goose_db_version` table so the correct migration path applies.
 
-Migrations `002`--`004` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries (see the **Indexes** table under [audit_events](#audit_events) above).
+Migrations `002`--`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index.
 
 ## RemediationRequest Reconstruction
 

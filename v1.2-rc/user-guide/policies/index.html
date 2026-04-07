@@ -3230,6 +3230,14 @@
 <h1 id="rego-policies">Rego Policies<a class="headerlink" href="#rego-policies" title="Permanent link">&para;</a></h1>
 <p>Kubernaut uses <a href="https://www.openpolicyagent.org/docs/latest/policy-language/">OPA Rego</a> policies for two critical decision points: <strong>Signal Processing classification</strong> (severity, priority, environment, custom labels) and <strong>AI Analysis approval gates</strong> (whether human approval is required before execution).</p>
 <p>All policies are deployed as ConfigMaps and can be customized. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for provisioning details.</p>
+<div class="admonition info">
+<p class="admonition-title">Case-insensitive matching (v1.2)</p>
+<p>Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is <strong>case-insensitive</strong>. For example, <code>Production</code>, <code>production</code>, and <code>PRODUCTION</code> all match equivalently. The default policies use <code>lower()</code> for comparisons. Custom policies should follow the same pattern.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">Embedded default SP Rego (v1.2)</p>
+<p>Starting with v1.2, the Helm chart ships a default <code>signalprocessing-policy.rego</code> so installations work without <code>--set-file</code>. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.</p>
+</div>
 <h2 id="policy-overview">Policy Overview<a class="headerlink" href="#policy-overview" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

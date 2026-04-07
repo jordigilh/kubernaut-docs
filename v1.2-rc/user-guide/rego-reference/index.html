@@ -3558,6 +3558,10 @@
 <p class="admonition-title">Writing custom policies</p>
 <p>Every <code>input.*</code> field listed below is available in your Rego rules. The default policies shipped with Kubernaut use only a subset -- you can reference any field to build richer logic tailored to your organization.</p>
 </div>
+<div class="admonition info">
+<p class="admonition-title">Case-insensitive matching (v1.2)</p>
+<p>Starting with v1.2, environment and severity matching in both workflow discovery filters and approval policies is case-insensitive. The default policies use <code>lower()</code> for all comparisons. Custom policies should follow the same pattern to ensure consistent behavior — e.g., <code>lower(input.environment) == "production"</code> instead of <code>input.environment == "production"</code>.</p>
+</div>
 <hr />
 <h2 id="signal-processing-policy">Signal Processing Policy<a class="headerlink" href="#signal-processing-policy" title="Permanent link">&para;</a></h2>
 <p>All SP classification rules live in a single <code>policy.rego</code> file under <code>package signalprocessing</code> (<a href="https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md">ADR-060</a>). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.</p>

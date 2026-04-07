@@ -35,9 +35,9 @@ The Prometheus adapter expects alerts to carry standard Kubernetes labels for re
 | Label | Required | Description |
 |---|---|---|
 | `namespace` | Yes (namespaced resources) | Target resource namespace |
-| `severity` | Yes | Alert severity (normalized by SP Rego) |
+| `severity` | Recommended | Alert severity (normalized by SP Rego; defaults to `unknown` when absent) |
 | `alertname` | Yes | Alert name (becomes `SignalName`) |
-| One of: `deployment`, `statefulset`, `daemonset`, `replicaset`, `node`, `service`, `job_name`, `cronjob`, `pod` | Yes | Target resource identity |
+| One of: `horizontalpodautoscaler`, `poddisruptionbudget`, `persistentvolumeclaim`, `deployment`, `statefulset`, `daemonset`, `replicaset`, `node`, `service`, `job_name`, `cronjob`, `pod` | Yes | Target resource identity |
 
 The adapter uses a priority list to select the resource label: HPA > PDB > PVC > Deployment > StatefulSet > DaemonSet > ReplicaSet > Node > Service > Job (`job_name`) > CronJob > Pod.
 

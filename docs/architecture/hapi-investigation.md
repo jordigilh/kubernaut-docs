@@ -59,11 +59,11 @@ Remediation history is automatically included by the resource-context tools via 
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
 
-!!! warning "Mandatory JSON mode"
-    HAPI requires the LLM provider to support JSON mode (`ChatOptions{JSONMode: true}`). This ensures the LLM returns structured responses that HAPI can parse reliably. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively. Providers without JSON mode support will produce unparseable responses.
+!!! warning "Mandatory structured JSON responses"
+    HAPI requires the LLM provider/runtime to support schema-constrained JSON responses. This ensures the LLM returns structured payloads that HAPI can parse reliably. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively.
 
 !!! note "LLM model-dependent escalation behavior"
-    Escalation behavior (e.g., when the LLM decides to switch from a failing workflow to human review) depends on the specific LLM model's reasoning capabilities. Different models may make different escalation decisions given the same remediation history context. In v1.2, HAPI's Pydantic validation schema was fixed to properly validate escalation responses on cycle 2+ (#624), ensuring consistent behavior across retry attempts.
+    Escalation behavior (e.g., when the LLM decides to switch from a failing workflow to human review) depends on the specific LLM model's reasoning capabilities. Different models may make different escalation decisions given the same remediation history context. In v1.2, HAPI's structured response parsing/validation path was hardened (#624), improving reliability of repeated analysis cycles.
 
 ## Pre-RCA: Prompt Construction
 
@@ -199,10 +199,10 @@ The response contains two tiers of history with different query strategies, time
 
 | Tier | Window | Query Strategy | Detail Level |
 |---|---|---|---|
-| **Tier 1** | Last 24 hours | By `target_resource` via `QueryROEventsByTarget`, then hash match computed post-query via `CorrelateTier1Chain` / `ComputeHashMatch` | Full: effectiveness score, health checks, metric deltas, hash match |
+| **Tier 1** | Last 24 hours | By `spec_hash` via `QueryROEventsBySpecHash` | Full: effectiveness score, health checks, metric deltas, hash match |
 | **Tier 2** | 24 hours – 90 days | By `spec_hash` via `QueryROEventsBySpecHash` | Summary: effectiveness score, hash match, assessment reason |
 
-- **Tier 1** queries by target resource and time window first, then correlates results by computing hash match in-memory. This captures the full recent remediation chain for the target resource regardless of spec hash, giving the LLM visibility into the immediate history.
+- **Tier 1** queries directly by spec hash for the last 24h, returning high-detail recent entries for the same configuration.
 - **Tier 2** queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
@@ -232,7 +232,7 @@ Consider a Deployment `my-app` in production that has been failing repeatedly in
 3. **Third attempt**: Config now at `BBB`, `RollbackDeployment` was tried, scored 0.20 (poor), config changed to `CCC`
 4. **GitOps reverted the rollback**, pushing config back to `AAA` -- triggering this new investigation
 
-Tier 1 returns all three entries because they all target the same resource in the last 24 hours:
+Tier 1 returns entries in the last 24 hours that match the current spec-hash correlation criteria:
 
 ```json
 {
@@ -373,8 +373,8 @@ To prevent unbounded remediation loops, the Remediation Orchestrator enforces tw
 
 | Config Key | Default | Description |
 |---|---|---|
-| `remediationorchestrator.config.ineffectiveChainThreshold` | 3 | Maximum consecutive "completed but still broken" remediations (matching pre- and post-remediation spec hashes) before the RR is blocked with `IneffectiveChain` |
-| `remediationorchestrator.config.recurrenceCountThreshold` | 5 | Maximum recurrence count (re-firing signals for the same fingerprint) before the RR is blocked |
+| `remediationorchestrator.config.routing.ineffectiveChainThreshold` | 3 | Maximum ineffective remediation-chain depth before the RR is blocked with `IneffectiveChain` |
+| `remediationorchestrator.config.routing.recurrenceCountThreshold` | 5 | Safety-net cap on ineffective-chain remediation entries within the routing lookback window |
 
 When either threshold is exceeded, the Orchestrator blocks the RemediationRequest and emits a notification directing operators to investigate manually. The dual-hash query semantics (matching both `pre_remediation_spec_hash` and `post_remediation_spec_hash`) enable accurate chain detection via DataStorage.
 

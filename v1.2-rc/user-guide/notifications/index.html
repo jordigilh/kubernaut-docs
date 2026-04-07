@@ -3245,6 +3245,7 @@
 <p>For the CRD specification, delivery orchestration, and retry internals, see <a href="../../architecture/notification/">Architecture: Notification Pipeline</a>.</p>
 </div>
 <p>Kubernaut sends notifications at key points in the remediation lifecycle: when human approval is required, when a remediation fails, when manual review is needed, and when a remediation completes. Notifications are routed through configurable channels using an AlertManager-style routing configuration.</p>
+<p><strong>Cluster context:</strong> Message bodies include the cluster display name and UUID near the top (<code>Cluster: &lt;name&gt; (&lt;uuid&gt;)</code>) on every channel, including timeout notifications.</p>
 <h2 id="channel-overview">Channel Overview<a class="headerlink" href="#channel-overview" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
@@ -3329,7 +3330,7 @@
 <tr>
 <td><code>type</code></td>
 <td>Notification type</td>
-<td><code>escalation</code>, <code>simple</code>, <code>status-update</code>, <code>approval</code>, <code>manual-review</code>, <code>completion</code></td>
+<td><code>Escalation</code>, <code>Simple</code>, <code>StatusUpdate</code>, <code>Approval</code>, <code>ManualReview</code>, <code>Completion</code></td>
 </tr>
 <tr>
 <td><code>severity</code></td>
@@ -3338,8 +3339,8 @@
 </tr>
 <tr>
 <td><code>priority</code></td>
-<td>Signal priority</td>
-<td><code>P0</code>, <code>P1</code>, <code>P2</code>, <code>P3</code> (also accepts <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>)</td>
+<td>Notification priority</td>
+<td><code>Critical</code>, <code>High</code>, <code>Medium</code>, <code>Low</code></td>
 </tr>
 <tr>
 <td><code>phase</code></td>
@@ -3409,8 +3410,8 @@
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T12:34:56Z&quot;</span><span class="p">,</span>
 </span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;notification_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval-required-rr-12345&quot;</span><span class="p">,</span>
 </span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;notification_namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kubernaut-system&quot;</span><span class="p">,</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approval&quot;</span><span class="p">,</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Approval&quot;</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Critical&quot;</span><span class="p">,</span>
 </span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">&quot;subject&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Human approval required for OOMKilled remediation&quot;</span><span class="p">,</span>
 </span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">  </span><span class="nt">&quot;body&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
 </span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="nt">&quot;metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">},</span>
@@ -3424,7 +3425,7 @@
 <ol>
 <li><strong>Header block</strong> -- Priority emoji + subject (e.g., <code>:rotating_light: Human approval required for OOMKilled remediation</code>)</li>
 <li><strong>Section block</strong> -- Notification body (Markdown converted to Slack mrkdwn)</li>
-<li><strong>Context block</strong> -- <code>*Priority:* critical | *Type:* approval</code></li>
+<li><strong>Context block</strong> -- <code>*Priority:* Critical | *Type:* Approval</code></li>
 </ol>
 <p>Priority emojis: Critical = <img alt="🚨" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f6a8.svg" title=":rotating_light:" />, High = <img alt="⚠" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/26a0.svg" title=":warning:" />, Medium = <img alt="ℹ" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/2139.svg" title=":information_source:" />, Low = <img alt="💬" class="twemoji" src="https://cdn.jsdelivr.net/gh/jdecked/twemoji@16.0.1/assets/svg/1f4ac.svg" title=":speech_balloon:" /></p>
 <p><strong>Routing receiver:</strong></p>

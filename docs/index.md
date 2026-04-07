@@ -89,7 +89,7 @@ Kubernaut automates the entire incident response lifecycle through a six-stage p
 |---|---|
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
 | **AI-Powered Root Cause Analysis** | HolmesGPT with LLM providers (Vertex AI, OpenAI, LiteLLM), Kubernetes inspection tools, and configurable observability toolsets (Prometheus, Grafana Loki/Tempo, and more) |
-| **Workflow Catalog** | Searchable OCI-containerized workflows with label-based matching and confidence scoring |
+| **Workflow Catalog** | Searchable declarative `RemediationWorkflow` CRDs with category and label-based matching plus confidence scoring |
 | **Flexible Execution** | Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP) |
 | **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |
 | **Safety-First Design** | Admission webhooks, human approval gates, configurable confidence thresholds, effectiveness tracking |

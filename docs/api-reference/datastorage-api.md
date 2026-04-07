@@ -55,7 +55,7 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 
 | Method | Path | Description |
 |---|---|---|
-| `POST` | `/api/v1/workflows` | Register a workflow (called by Auth Webhook on `RemediationWorkflow` CRD admission; also supports direct registration from OCI schema image via `{"schemaImage": "<oci-ref>"}`) |
+| `POST` | `/api/v1/workflows` | Register a workflow (called by Auth Webhook on `RemediationWorkflow` CRD admission) |
 | `GET` | `/api/v1/workflows` | List workflows (filter by `status`, `environment`, `priority`, `component`, `workflow_name`) |
 | `GET` | `/api/v1/workflows/{workflow_id}` | Get a specific workflow |
 | `PATCH` | `/api/v1/workflows/{workflow_id}` | Update a workflow |

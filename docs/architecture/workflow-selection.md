@@ -237,7 +237,7 @@ After selection, the confidence score determines the next step:
 | `GET /api/v1/workflows/actions/{action_type}` | GET | Step 2: Scored candidates for action type |
 | `GET /api/v1/workflows/{workflow_id}` | GET | Step 3: Full schema with security gate |
 | `GET /api/v1/workflows` | GET | Catalog listing (no scoring) |
-| `POST /api/v1/workflows` | POST | Create from OCI schema |
+| `POST /api/v1/workflows` | POST | Register workflow catalog entry (Auth Webhook/CRD admission path) |
 | `PATCH /api/v1/workflows/{id}/disable` | PATCH | Disable workflow |
 | `PATCH /api/v1/workflows/{id}/enable` | PATCH | Enable workflow |
 | `PATCH /api/v1/workflows/{id}/deprecate` | PATCH | Deprecate workflow |

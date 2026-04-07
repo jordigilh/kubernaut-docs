@@ -220,19 +220,22 @@ This is a **tiebreaker/ordering influence**, not an override. It won't overcome 
 
 ## Per-Workflow ServiceAccount
 
-The optional `spec.serviceAccountName` field on a `RemediationWorkflow` lets each workflow run with its own least-privilege ServiceAccount instead of the shared `kubernaut-workflow-runner`. When set, the WE controller creates a short-lived token via the Kubernetes TokenRequest API and injects it into the Job, PipelineRun, or AWX credential.
+The optional `spec.execution.serviceAccountName` field on a `RemediationWorkflow` lets each workflow run with its own least-privilege ServiceAccount instead of the execution namespace default.
 
 ```yaml
 spec:
-  serviceAccountName: my-workflow-sa
   execution:
+    serviceAccountName: my-workflow-sa
     engine: job
     bundle: registry.example.com/workflows/my-workflow@sha256:...
 ```
 
-The ServiceAccount must exist in the `kubernaut-workflows` namespace (or the configured execution namespace) with only the RBAC permissions required by the workflow. If `serviceAccountName` is omitted, the shared `kubernaut-workflow-runner` SA is used.
+The ServiceAccount must exist in the `kubernaut-workflows` namespace (or the configured execution namespace) with only the RBAC permissions required by the workflow. If `serviceAccountName` is omitted:
 
-See [Security & RBAC -- Per-Workflow ServiceAccount](../architecture/security-rbac.md#per-workflow-serviceaccount-v12) for the TokenRequest flow, TTL validation, and fallback behavior.
+- Job/Tekton use the execution namespace default ServiceAccount.
+- Ansible falls back to controller in-cluster credentials unless `WorkflowExecution.spec.serviceAccountName` is set.
+
+TokenRequest is used by the Ansible path for AWX credential injection when the workflow specifies a service account. See [Security & RBAC -- Per-Workflow ServiceAccount](../architecture/security-rbac.md#per-workflow-serviceaccount-v12) for scope, TTL validation, and fallback behavior.
 
 ## Standard Resource Parameters
 

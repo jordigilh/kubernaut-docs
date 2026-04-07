@@ -122,7 +122,7 @@ Each CRD has its own phase state machine. The Orchestrator monitors child CRD st
 
 ## Namespace Model
 
-All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace. By default, executions use the shared `kubernaut-workflow-runner` ServiceAccount. Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.serviceAccountName` on the `RemediationWorkflow` CRD, enabling per-workflow least-privilege RBAC. See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details.
+All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace. By default, executions use the execution namespace default ServiceAccount (commonly configured as `kubernaut-workflow-runner` in shared-SA deployments). Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`), enabling per-workflow least-privilege RBAC. See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details.
 
 ## Configuration
 

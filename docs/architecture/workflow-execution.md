@@ -233,9 +233,14 @@ When a WFE spec omits `engineConfig`, the controller resolves it from the workfl
 
 ## Execution Namespace and RBAC
 
-All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. By default they use the shared `kubernaut-workflow-runner` ServiceAccount. See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to this ServiceAccount.
+All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. By default they use the execution namespace default ServiceAccount (commonly configured as `kubernaut-workflow-runner` in shared-SA deployments). See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to the shared execution role.
 
-Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.serviceAccountName` on the `RemediationWorkflow` CRD. When set, the WE controller creates a short-lived token via the Kubernetes TokenRequest API and injects it into the Job, PipelineRun, or AWX credential instead of the shared SA token. This enables least-privilege RBAC per workflow. See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details on the TokenRequest flow, TTL validation, and fallback behavior.
+Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`). This enables least-privilege RBAC per workflow.
+
+- Job/Tekton: the service account name is set directly on the created Job/PipelineRun.
+- Ansible: the controller requests a short-lived token via the Kubernetes TokenRequest API for AWX credential injection.
+
+See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details on TokenRequest scope, TTL validation, and fallback behavior.
 
 ## Parameter Injection
 

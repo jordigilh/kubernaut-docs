@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2794,7 +2792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3415,13 +3413,13 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
 </span></code></pre></div>
 <h2 id="workflow-catalog">Workflow Catalog<a class="headerlink" href="#workflow-catalog" title="Permanent link">&para;</a></h2>
-<p>Remediation workflows are defined as declarative <strong><code>RemediationWorkflow</code> CRDs</strong> and registered in <strong>DataStorage</strong> as a searchable catalog via the Auth Webhook admission path. Each workflow has:</p>
+<p>Remediation workflows are packaged as <strong>OCI images</strong> containing a <code>workflow-schema.yaml</code> and stored in the <strong>DataStorage</strong> service as a searchable catalog. Each workflow has:</p>
 <ul>
 <li><strong>Identity</strong> — Name (<code>metadata.name</code>), version, and structured description (what, whenToUse, whenNotToUse, preconditions) under <code>spec</code></li>
 <li><strong>Action type</strong> — Taxonomy type (e.g., <code>RestartPod</code>, <code>RollbackDeployment</code>, <code>IncreaseMemoryLimits</code>)</li>
 <li><strong>Labels</strong> — Signal name, severity, environment, component, priority (with wildcard and multi-value support)</li>
 <li><strong>Parameters</strong> — Typed inputs injected at runtime as environment variables (<code>UPPER_SNAKE_CASE</code>)</li>
-<li><strong>Execution config</strong> — Engine (<code>job</code>, <code>tekton</code>, or <code>ansible</code>) plus engine-specific execution settings. Tekton workflows may reference OCI bundles for pipeline execution artifacts</li>
+<li><strong>Execution config</strong> — Engine (<code>job</code> or <code>tekton</code>) and OCI bundle reference with digest</li>
 </ul>
 <p>During investigation, the LLM selects a workflow through a three-step discovery protocol:</p>
 <ol>

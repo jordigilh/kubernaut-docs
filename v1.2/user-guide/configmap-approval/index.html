@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2794,7 +2792,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3346,9 +3344,9 @@
 </tbody>
 </table>
 <h2 id="default-behavior">Default Behavior<a class="headerlink" href="#default-behavior" title="Permanent link">&para;</a></h2>
-<p>The reference policy (<code>charts/kubernaut/files/defaults/approval.rego</code>) implements:</p>
+<p>The reference policy (<code>charts/kubernaut/examples/approval.rego</code>) implements:</p>
 <ul>
-<li><strong>Production environments</strong>: Always require approval (controlled via <code>kubernaut.ai/environment=production</code> namespace label). Environment matching is <strong>case-insensitive</strong> — <code>Production</code>, <code>production</code>, <code>PRODUCTION</code> all match.</li>
+<li><strong>Production environments</strong>: Always require approval (controlled via <code>kubernaut.ai/environment=production</code> namespace label)</li>
 <li><strong>Sensitive resources</strong> (Node, StatefulSet): Always require approval regardless of environment</li>
 <li><strong>Missing remediation target</strong>: Always require approval (safety default)</li>
 <li><strong>Non-production</strong>: Auto-approved unless critical safety conditions are met</li>
@@ -3397,7 +3395,7 @@
 </span></code></pre></div>
 <h3 id="environment-specific-thresholds">Environment-Specific Thresholds<a class="headerlink" href="#environment-specific-thresholds" title="Permanent link">&para;</a></h3>
 <div class="language-rego highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.9</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
 </span></code></pre></div>
@@ -3415,7 +3413,7 @@
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). If the new policy has a syntax error, the previous policy is kept and an error is logged.</p>
 <h2 id="reference-file">Reference File<a class="headerlink" href="#reference-file" title="Permanent link">&para;</a></h2>
-<p>A complete reference policy is available in the chart: <code>charts/kubernaut/files/defaults/approval.rego</code></p>
+<p>A complete reference policy is available in the chart: <code>charts/kubernaut/examples/approval.rego</code></p>
 
 
 

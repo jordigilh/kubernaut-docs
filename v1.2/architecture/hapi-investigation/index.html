@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -1913,17 +1911,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#ineffectivechain-guardrails-v12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        IneffectiveChain Guardrails (v1.2)
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -3195,7 +3182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3637,17 +3624,6 @@
     <span class="md-ellipsis">
       
         The Feedback Loop
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#ineffectivechain-guardrails-v12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        IneffectiveChain Guardrails (v1.2)
       
     </span>
   </a>
@@ -4114,14 +4090,6 @@
 <p>In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.</p>
 <p>Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (<code>get_remediation_history_context</code> API), providing tiered remediation history based on spec hash matching (24h with full detail, 90d with summary detail) as part of the resource context result during Phase 2.</p>
 <p>The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.</p>
-<div class="admonition warning">
-<p class="admonition-title">Mandatory structured JSON responses</p>
-<p>HAPI requires the LLM provider/runtime to support schema-constrained JSON responses. This ensures the LLM returns structured payloads that HAPI can parse reliably. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">LLM model-dependent escalation behavior</p>
-<p>Escalation behavior (e.g., when the LLM decides to switch from a failing workflow to human review) depends on the specific LLM model's reasoning capabilities. Different models may make different escalation decisions given the same remediation history context. In v1.2, HAPI's structured response parsing/validation path was hardened (#624), improving reliability of repeated analysis cycles.</p>
-</div>
 <h2 id="pre-rca-prompt-construction">Pre-RCA: Prompt Construction<a class="headerlink" href="#pre-rca-prompt-construction" title="Permanent link">&para;</a></h2>
 <p>Before any tools are called, HAPI assembles the initial prompt from the enriched signal. This context frames the entire investigation:</p>
 <p><strong>Signal metadata:</strong></p>
@@ -4231,17 +4199,8 @@
 <td><code>serviceMesh</code></td>
 <td>Istio/Linkerd sidecar annotations</td>
 </tr>
-<tr>
-<td><code>resourceQuotaConstrained</code></td>
-<td>Namespace has an active <code>ResourceQuota</code></td>
-</tr>
 </tbody>
 </table>
-<p>When <code>resourceQuotaConstrained</code> is detected, the <code>LabelDetector</code> also surfaces <code>quota_details</code> as a top-level field in the resource context response, containing the namespace's <code>ResourceQuota</code> spec (limits, requests, and used values). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.</p>
-<div class="admonition note">
-<p class="admonition-title">LimitRange detection</p>
-<p>LimitRange detection is not implemented in v1.2. Only ResourceQuota constraints are surfaced.</p>
-</div>
 <p>These labels are stored in <code>session_state</code> and automatically injected into all subsequent workflow discovery queries. They serve two purposes:</p>
 <ol>
 <li><strong>Workflow scoring</strong> -- DataStorage uses detected labels for semantic scoring (see <a href="../workflow-selection/">Workflow Selection</a>)</li>
@@ -4270,7 +4229,7 @@
 <tr>
 <td><strong>Tier 1</strong></td>
 <td>Last 24 hours</td>
-<td>By <code>spec_hash</code> via <code>QueryROEventsBySpecHash</code></td>
+<td>By <code>target_resource</code> via <code>QueryROEventsByTarget</code>, then hash match computed post-query via <code>CorrelateTier1Chain</code> / <code>ComputeHashMatch</code></td>
 <td>Full: effectiveness score, health checks, metric deltas, hash match</td>
 </tr>
 <tr>
@@ -4282,9 +4241,13 @@
 </tbody>
 </table>
 <ul>
-<li><strong>Tier 1</strong> queries directly by spec hash for the last 24h, returning high-detail recent entries for the same configuration.</li>
+<li><strong>Tier 1</strong> queries by target resource and time window first, then correlates results by computing hash match in-memory. This captures the full recent remediation chain for the target resource regardless of spec hash, giving the LLM visibility into the immediate history.</li>
 <li><strong>Tier 2</strong> queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.</li>
 </ul>
+<div class="admonition warning">
+<p class="admonition-title">Known issue: Tier 1 query strategy</p>
+<p>Tier 1 queries by target resource rather than spec hash by design at v1.1 — the hash match is computed post-query by <code>CorrelateTier1Chain</code>. A known issue (<a href="https://github.com/jordigilh/kubernaut/issues/586">kubernaut#586</a>) tracks tightening this to filter by spec hash at the query level in v1.2.</p>
+</div>
 <p><strong>How the chain is visible:</strong> Every entry in both tiers carries <code>preRemediationSpecHash</code> and <code>postRemediationSpecHash</code>. DataStorage annotates each entry with a <code>hashMatch</code> field by comparing the caller's <code>currentSpecHash</code> against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.</p>
 <h2 id="how-remediation-history-influences-the-llm">How Remediation History Influences the LLM<a class="headerlink" href="#how-remediation-history-influences-the-llm" title="Permanent link">&para;</a></h2>
 <p>The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full <code>RemediationHistoryContext</code> as part of the tool result, and the Enrich phase prompt instructs: <em>"Use this to avoid repeating recently failed workflows."</em></p>
@@ -4325,7 +4288,7 @@
 <li><strong>Third attempt</strong>: Config now at <code>BBB</code>, <code>RollbackDeployment</code> was tried, scored 0.20 (poor), config changed to <code>CCC</code></li>
 <li><strong>GitOps reverted the rollback</strong>, pushing config back to <code>AAA</code> -- triggering this new investigation</li>
 </ol>
-<p>Tier 1 returns entries in the last 24 hours that match the current spec-hash correlation criteria:</p>
+<p>Tier 1 returns all three entries because they all target the same resource in the last 24 hours:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;targetResource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production/Deployment/my-app&quot;</span><span class="p">,</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;currentSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:AAA&quot;</span><span class="p">,</span>
@@ -4470,30 +4433,6 @@
 <li><strong>LLM</strong> uses the history to avoid repeating failed approaches and favor effective ones</li>
 </ol>
 <p>This is Kubernaut's "learning" mechanism -- not model fine-tuning, but contextual memory via the audit trail. The more remediations a resource undergoes, the richer the context available to the LLM for future decisions.</p>
-<h3 id="ineffectivechain-guardrails-v12">IneffectiveChain Guardrails (v1.2)<a class="headerlink" href="#ineffectivechain-guardrails-v12" title="Permanent link">&para;</a></h3>
-<p>To prevent unbounded remediation loops, the Remediation Orchestrator enforces two configurable thresholds:</p>
-<table>
-<thead>
-<tr>
-<th>Config Key</th>
-<th>Default</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>remediationorchestrator.config.routing.ineffectiveChainThreshold</code></td>
-<td>3</td>
-<td>Maximum ineffective remediation-chain depth before the RR is blocked with <code>IneffectiveChain</code></td>
-</tr>
-<tr>
-<td><code>remediationorchestrator.config.routing.recurrenceCountThreshold</code></td>
-<td>5</td>
-<td>Safety-net cap on ineffective-chain remediation entries within the routing lookback window</td>
-</tr>
-</tbody>
-</table>
-<p>When either threshold is exceeded, the Orchestrator blocks the RemediationRequest and emits a notification directing operators to investigate manually. The dual-hash query semantics (matching both <code>pre_remediation_spec_hash</code> and <code>post_remediation_spec_hash</code>) enable accurate chain detection via DataStorage.</p>
 <h2 id="workflow-selection-three-step-discovery">Workflow Selection: Three-Step Discovery<a class="headerlink" href="#workflow-selection-three-step-discovery" title="Permanent link">&para;</a></h2>
 <p>After resource context is gathered (Phase 2: Enrich), the LLM enters the Workflow Select phase. The <code>session_state["detected_labels"]</code> from the previous phase are automatically injected into all DataStorage queries as context filters.</p>
 <h3 id="step-1-list-available-actions">Step 1: List Available Actions<a class="headerlink" href="#step-1-list-available-actions" title="Permanent link">&para;</a></h3>
@@ -4579,10 +4518,6 @@
 <p>The LLM investigates and determines the alert is not actionable — for example, a transient resource pressure that does not warrant remediation. Distinct from Outcome 2 (self-resolved): the problem may still exist but does not meet the threshold for automated action.</p>
 <p><strong>Fields:</strong> <code>selected_workflow=null</code>, <code>Outcome=WorkflowNotNeeded</code>, <code>SubReason=NotActionable</code>
 <strong>Next:</strong> AA sets <code>Outcome=NoActionRequired</code>. No workflow execution. Rego is never evaluated.</p>
-<div class="admonition note">
-<p class="admonition-title">Confidence floor for not-actionable responses</p>
-<p>When the LLM returns <code>actionable=false</code> with a confidence below 0.8, HAPI floors the confidence to 0.8. This prevents the AA controller from misclassifying a deliberate "not actionable" determination as a low-confidence failure (Outcome 7).</p>
-</div>
 <div class="admonition note">
 <p class="admonition-title">Only Outcome 1 reaches Rego</p>
 <p>Outcomes 2–9 are all handled by the AA controller's response processor <strong>before</strong> Rego evaluation. The Rego approval policy only runs when the LLM successfully selects a workflow with <code>needs_human_review=false</code> and <code>confidence &gt;= 0.7</code>.</p>

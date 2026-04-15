@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2752,7 +2750,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3150,14 +3148,6 @@
 <p class="admonition-title">OpenAPI Spec</p>
 <p>The full OpenAPI specification is available at <a href="https://github.com/jordigilh/kubernaut/blob/main/api/openapi/data-storage-v1.yaml"><code>api/openapi/data-storage-v1.yaml</code></a> in the main repository.</p>
 </div>
-<div class="admonition note">
-<p class="admonition-title">OpenAPI enum values</p>
-<p>Catalog status enums align with the CRD typed-enum convention and use <strong>PascalCase</strong> (for example, <code>active</code> → <code>Active</code>, <code>deprecated</code> → <code>Deprecated</code>). Other fields (such as severity filters) may remain lowercase depending on the schema. API clients should follow each endpoint's declared enum values.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Deterministic catalog IDs</p>
-<p>Workflow catalog IDs (<code>workflowId</code>) are <strong>deterministic UUIDs</strong> (UUIDv5) and remain stable across PVC wipes for unchanged workflow specifications. Action types are keyed by their <code>actionType</code> identifier string.</p>
-</div>
 <h2 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 </span></code></pre></div>
@@ -3283,7 +3273,7 @@
 <tr>
 <td><code>POST</code></td>
 <td><code>/api/v1/workflows</code></td>
-<td>Register a workflow (called by Auth Webhook on <code>RemediationWorkflow</code> CRD admission)</td>
+<td>Register a workflow (called by Auth Webhook on <code>RemediationWorkflow</code> CRD admission; also supports direct registration from OCI schema image via <code>{"schemaImage": "&lt;oci-ref&gt;"}</code>)</td>
 </tr>
 <tr>
 <td><code>GET</code></td>

@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2898,7 +2896,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3435,7 +3433,6 @@
 
 <h1 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h1>
 <p>All Kubernaut services expose Prometheus-compatible metrics and standard health check endpoints. This page provides a complete metrics reference for building Grafana dashboards and alerting rules.</p>
-<p>In <strong>v1.2</strong>, <strong>Effectiveness Monitor</strong> and <strong>Notification</strong> metric names and semantics were <strong>stabilized</strong> (fewer breaking renames between patch releases).</p>
 <h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h2>
 <p>Services expose health endpoints at different paths depending on their framework:</p>
 <table>
@@ -3876,11 +3873,10 @@
 <td><code>aiagent_api_llm_token_usage_total</code></td>
 <td>Counter</td>
 <td><code>provider</code>, <code>model</code>, <code>type</code></td>
-<td>LLM token consumption; use label <code>type</code> to distinguish <strong>prompt</strong> vs <strong>completion</strong> tokens (increments on each completed LLM call)</td>
+<td>Token consumption (prompt, completion)</td>
 </tr>
 </tbody>
 </table>
-<p>HolmesGPT exposes <strong>prompt</strong> and <strong>completion</strong> token counts as <strong>counters</strong> via <code>aiagent_api_llm_token_usage_total</code> (see <a href="#llm-token-cost-tracking">LLM Token Cost Tracking</a> for example PromQL).</p>
 <h2 id="audit-pipeline-metrics">Audit Pipeline Metrics<a class="headerlink" href="#audit-pipeline-metrics" title="Permanent link">&para;</a></h2>
 <p>These metrics are shared across all Go services via the buffered audit store:</p>
 <table>

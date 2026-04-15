@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2833,7 +2831,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3314,9 +3312,9 @@
 <h3 id="default-policy-behavior">Default Policy Behavior<a class="headerlink" href="#default-policy-behavior" title="Permanent link">&para;</a></h3>
 <p>The shipped <code>approval.rego</code> makes decisions based on <strong>environment</strong>, <strong>remediation target presence</strong>, and <strong>sensitive resource kinds</strong>:</p>
 <ul>
-<li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>) — always require approval, regardless of confidence. Environment matching is <strong>case-insensitive</strong> (e.g., <code>Production</code>, <code>production</code>, <code>PRODUCTION</code> all match).</li>
+<li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>) — always require approval, regardless of confidence</li>
 <li><strong>Sensitive resource kinds</strong> (Node, StatefulSet) — always require approval, regardless of environment</li>
-<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>remediation_target</code> is present and the resource kind is not sensitive. Environment matching is case-insensitive.</li>
+<li><strong>Non-production namespaces</strong> (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>) — auto-approved when <code>remediation_target</code> is present and the resource kind is not sensitive</li>
 <li><strong>Missing remediation target</strong> — always requires approval (default-deny safety per ADR-055)</li>
 </ul>
 <p>When approval is required, a <code>RemediationApprovalRequest</code> CRD is created and the remediation enters the <code>AwaitingApproval</code> phase.</p>

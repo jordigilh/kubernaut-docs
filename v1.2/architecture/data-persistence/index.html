@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2005,28 +2003,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#deterministic-catalog-ids-uuidv5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deterministic catalog IDs (UUIDv5)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#auth-webhook-startup-reconciliation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Auth Webhook startup reconciliation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#other-tables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2039,17 +2015,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#database-migrations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database migrations
-      
-    </span>
-  </a>
   
 </li>
       
@@ -2885,7 +2850,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3201,28 +3166,6 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#deterministic-catalog-ids-uuidv5" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deterministic catalog IDs (UUIDv5)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#auth-webhook-startup-reconciliation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Auth Webhook startup reconciliation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#other-tables" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3235,17 +3178,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#database-migrations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Database migrations
-      
-    </span>
-  </a>
   
 </li>
       
@@ -3645,11 +3577,6 @@
 <td><code>(event_data-&gt;&gt;'pre_remediation_spec_hash'), event_timestamp DESC</code></td>
 <td>Spec hash history lookups</td>
 </tr>
-<tr>
-<td><code>idx_audit_events_post_remediation_spec_hash</code></td>
-<td><code>(event_data-&gt;&gt;'post_remediation_spec_hash'), event_timestamp DESC</code></td>
-<td>Post-remediation spec hash lookups (migration <code>004</code>)</td>
-</tr>
 </tbody>
 </table>
 <h3 id="partitioning">Partitioning<a class="headerlink" href="#partitioning" title="Permanent link">&para;</a></h3>
@@ -3818,10 +3745,6 @@
 </tbody>
 </table>
 <p>The database deploys with a clean schema -- no pre-seeded rows. Action types are registered via <code>kubectl apply -f</code> on <code>ActionType</code> CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API. See <a href="../workflow-selection/#action-type-taxonomy">Workflow Selection: Action Type Taxonomy</a> and <a href="../../getting-started/installation/#action-types-and-workflows-demo-content">Installation: Action Types</a>.</p>
-<h3 id="deterministic-catalog-ids-uuidv5">Deterministic catalog IDs (UUIDv5)<a class="headerlink" href="#deterministic-catalog-ids-uuidv5" title="Permanent link">&para;</a></h3>
-<p><code>RemediationWorkflow</code> resources use <strong>deterministic UUIDs</strong> (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across <strong>PVC wipes</strong> and database replays as long as the spec is unchanged. <code>ActionType</code> entries are keyed by their <code>actionType</code> identifier string.</p>
-<h3 id="auth-webhook-startup-reconciliation">Auth Webhook startup reconciliation<a class="headerlink" href="#auth-webhook-startup-reconciliation" title="Permanent link">&para;</a></h3>
-<p>On startup, the Auth Webhook runs a <strong>Runnable</strong> that lists cluster <code>ActionType</code> objects, then <code>RemediationWorkflow</code> objects, and <strong>reconciles</strong> them with DataStorage through <strong>idempotent creates</strong>. This repopulates the catalog after storage loss or drift without duplicating rows.</p>
 <h3 id="other-tables">Other Tables<a class="headerlink" href="#other-tables" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3857,15 +3780,6 @@
 </tr>
 </tbody>
 </table>
-<h2 id="database-migrations">Database migrations<a class="headerlink" href="#database-migrations" title="Permanent link">&para;</a></h2>
-<p>Schema changes use an <strong>append-only</strong> migration chain managed by <a href="https://github.com/pressly/goose"><strong>goose</strong></a>. The strategy is:</p>
-<ul>
-<li><strong>Append-only chain</strong> -- migrations are never rewritten in place; history stays linear.</li>
-<li><strong>Per-major baselines</strong> -- each major release can ship a squashed baseline for <strong>fresh installs</strong>, while upgrades follow the incremental chain from their installed version.</li>
-<li><strong>Minor release squash</strong> -- development incrementals are typically <strong>squashed per minor</strong> at release time to keep the chain maintainable.</li>
-<li><strong><code>db-migrate</code> migration job</strong> -- runs via Helm hook (<code>post-install,post-upgrade</code>) and distinguishes <strong>fresh install</strong> vs <strong>upgrade</strong> using the <code>goose_db_version</code> table so the correct migration path applies.</li>
-</ul>
-<p>Migrations <code>002</code>--<code>005</code> are part of this chain; <strong><code>004</code> adds</strong> an index on <code>post_remediation_spec_hash</code> in <code>event_data</code> for audit queries, and <strong><code>005</code> adds</strong> an effectiveness correlation index.</p>
 <h2 id="remediationrequest-reconstruction">RemediationRequest Reconstruction<a class="headerlink" href="#remediationrequest-reconstruction" title="Permanent link">&para;</a></h2>
 <p>The DataStorage service can rebuild a complete <code>RemediationRequest</code> from audit events -- even after the CRD has been removed from the cluster.</p>
 <h3 id="endpoint">Endpoint<a class="headerlink" href="#endpoint" title="Permanent link">&para;</a></h3>

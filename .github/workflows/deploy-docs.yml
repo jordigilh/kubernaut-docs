@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Version label to deploy (e.g., v1.1)"
+        description: "Version label to deploy (e.g., v1.2)"
         required: false
         default: ""
 
@@ -49,6 +49,11 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
-            VERSION="v1.1"
+            VERSION="v1.2"
           fi
-          mike deploy --push --update-aliases "$VERSION" latest
+
+          if [ "$VERSION" = "v1.2" ]; then
+            mike deploy --push --update-aliases "$VERSION" latest
+          else
+            mike deploy --push "$VERSION"
+          fi

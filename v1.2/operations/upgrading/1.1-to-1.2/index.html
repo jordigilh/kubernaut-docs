@@ -12,31 +12,31 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.2/user-guide/configmap-policies/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.2/operations/upgrading/1.1-to-1.2/">
       
       
-        <link rel="prev" href="../configmap-holmesgpt/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../configmap-approval/">
+        <link rel="next" href="../../disconnected-install/">
       
       
         
       
       
-      <link rel="icon" href="../../assets/images/logo.svg">
+      <link rel="icon" href="../../../assets/images/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
-        <title>SignalProcessing Rego Policies - Kubernaut</title>
+        <title>v1.1 to v1.2 - Kubernaut</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +55,9 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/extra.css">
+      <link rel="stylesheet" href="../../../assets/extra.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#signalprocessing-rego-policies" class="md-skip">
+        <a href="#upgrading-from-v11-to-v12" class="md-skip">
           Skip to content
         </a>
       
@@ -98,13 +98,13 @@
               
   
     You're not viewing the latest version.
-    <a href="../../..">
+    <a href="../../../..">
       <strong>Click here to go to latest.</strong>
     </a>
   
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -114,9 +114,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href="../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../../assets/images/logo.svg" alt="logo">
+  <img src="../../../assets/images/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -133,7 +133,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              SignalProcessing Rego Policies
+              v1.1 to v1.2
             
           </span>
         </div>
@@ -246,7 +246,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../.." class="md-tabs__link">
+      <a href="../../.." class="md-tabs__link">
         
   
   
@@ -267,7 +267,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../getting-started/" class="md-tabs__link">
+        <a href="../../../getting-started/" class="md-tabs__link">
           
   
   
@@ -285,13 +285,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="../" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../../user-guide/" class="md-tabs__link">
           
   
   
@@ -313,7 +311,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../architecture/" class="md-tabs__link">
+        <a href="../../../architecture/" class="md-tabs__link">
           
   
   
@@ -335,7 +333,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../design-decisions/" class="md-tabs__link">
+        <a href="../../../design-decisions/" class="md-tabs__link">
           
   
   
@@ -357,7 +355,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../api-reference/" class="md-tabs__link">
+        <a href="../../../api-reference/" class="md-tabs__link">
           
   
   
@@ -379,7 +377,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../use-cases/" class="md-tabs__link">
+        <a href="../../../use-cases/" class="md-tabs__link">
           
   
   
@@ -397,11 +395,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../../operations/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
           
   
   
@@ -423,7 +423,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../compliance/" class="md-tabs__link">
+        <a href="../../../user-guide/compliance/" class="md-tabs__link">
           
   
   
@@ -443,7 +443,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../faq/" class="md-tabs__link">
+      <a href="../../../faq/" class="md-tabs__link">
         
   
   
@@ -462,7 +462,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../../contributing/" class="md-tabs__link">
+      <a href="../../../contributing/" class="md-tabs__link">
         
   
   
@@ -497,9 +497,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href="../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../../assets/images/logo.svg" alt="logo">
+  <img src="../../../assets/images/logo.svg" alt="logo">
 
     </a>
     Kubernaut
@@ -526,7 +526,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href="../../.." class="md-nav__link">
         
   
   
@@ -590,7 +590,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../getting-started/" class="md-nav__link ">
+            <a href="../../../getting-started/" class="md-nav__link ">
               
   
   
@@ -634,7 +634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
+      <a href="../../../getting-started/why-kubernaut/" class="md-nav__link">
         
   
   
@@ -662,7 +662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/aiops-landscape/" class="md-nav__link">
+      <a href="../../../getting-started/aiops-landscape/" class="md-nav__link">
         
   
   
@@ -690,7 +690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/market-comparison/" class="md-nav__link">
+      <a href="../../../getting-started/market-comparison/" class="md-nav__link">
         
   
   
@@ -718,7 +718,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/installation/" class="md-nav__link">
+      <a href="../../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -746,7 +746,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -774,7 +774,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
+      <a href="../../../getting-started/architecture-overview/" class="md-nav__link">
         
   
   
@@ -806,8 +806,6 @@
       
   
   
-    
-  
   
   
     
@@ -847,23 +845,22 @@
     
     
       
-        
-        
-      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../" class="md-nav__link ">
+            <a href="../../../user-guide/" class="md-nav__link ">
               
   
   
@@ -881,13 +878,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
@@ -907,7 +904,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../concepts/" class="md-nav__link">
+      <a href="../../../user-guide/concepts/" class="md-nav__link">
         
   
   
@@ -935,7 +932,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../signals/" class="md-nav__link">
+      <a href="../../../user-guide/signals/" class="md-nav__link">
         
   
   
@@ -963,7 +960,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflows/" class="md-nav__link">
+      <a href="../../../user-guide/workflows/" class="md-nav__link">
         
   
   
@@ -991,7 +988,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../workflow-authoring/" class="md-nav__link">
+      <a href="../../../user-guide/workflow-authoring/" class="md-nav__link">
         
   
   
@@ -1019,7 +1016,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../policies/" class="md-nav__link">
+      <a href="../../../user-guide/policies/" class="md-nav__link">
         
   
   
@@ -1047,7 +1044,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../rego-reference/" class="md-nav__link">
+      <a href="../../../user-guide/rego-reference/" class="md-nav__link">
         
   
   
@@ -1075,7 +1072,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../notifications/" class="md-nav__link">
+      <a href="../../../user-guide/notifications/" class="md-nav__link">
         
   
   
@@ -1103,7 +1100,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../approval/" class="md-nav__link">
+      <a href="../../../user-guide/approval/" class="md-nav__link">
         
   
   
@@ -1131,7 +1128,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../effectiveness/" class="md-nav__link">
+      <a href="../../../user-guide/effectiveness/" class="md-nav__link">
         
   
   
@@ -1159,7 +1156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../audit-and-observability/" class="md-nav__link">
+      <a href="../../../user-guide/audit-and-observability/" class="md-nav__link">
         
   
   
@@ -1187,7 +1184,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../data-lifecycle/" class="md-nav__link">
+      <a href="../../../user-guide/data-lifecycle/" class="md-nav__link">
         
   
   
@@ -1215,7 +1212,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration/" class="md-nav__link">
+      <a href="../../../user-guide/configuration/" class="md-nav__link">
         
   
   
@@ -1240,10 +1237,8 @@
                 
   
   
-    
   
   
-  
     
     
       
@@ -1260,21 +1255,20 @@
     
       
       
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
         
           
-          
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_14" checked>
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_14" >
         
           
-          <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_14" id="__nav_3_14_label" tabindex="0">
             
   
   
@@ -1292,7 +1286,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_14_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3_14">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1310,7 +1304,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configmap-holmesgpt/" class="md-nav__link">
+      <a href="../../../user-guide/configmap-holmesgpt/" class="md-nav__link">
         
   
   
@@ -1335,37 +1329,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    SignalProcessing Rego Policies
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../../../user-guide/configmap-policies/" class="md-nav__link">
         
   
   
@@ -1381,148 +1348,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#provisioning" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Provisioning
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Provisioning">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#option-a-inject-via-set-file-recommended" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option A: Inject via --set-file (recommended)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#option-b-pre-existing-configmap" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Option B: Pre-existing ConfigMap
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#policy-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Policy Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Policy Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Input Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cross-rule-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cross-rule References
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proactive-signal-mappings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proactive Signal Mappings
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#hot-reload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hot-Reload
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reference-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference File
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -1535,7 +1360,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configmap-approval/" class="md-nav__link">
+      <a href="../../../user-guide/configmap-approval/" class="md-nav__link">
         
   
   
@@ -1563,7 +1388,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configmap-notification/" class="md-nav__link">
+      <a href="../../../user-guide/configmap-notification/" class="md-nav__link">
         
   
   
@@ -1659,7 +1484,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../architecture/" class="md-nav__link ">
+            <a href="../../../architecture/" class="md-nav__link ">
               
   
   
@@ -1703,7 +1528,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/overview/" class="md-nav__link">
+      <a href="../../../architecture/overview/" class="md-nav__link">
         
   
   
@@ -1731,7 +1556,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/gateway/" class="md-nav__link">
+      <a href="../../../architecture/gateway/" class="md-nav__link">
         
   
   
@@ -1759,7 +1584,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/signal-processing/" class="md-nav__link">
+      <a href="../../../architecture/signal-processing/" class="md-nav__link">
         
   
   
@@ -1787,7 +1612,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/ai-analysis/" class="md-nav__link">
+      <a href="../../../architecture/ai-analysis/" class="md-nav__link">
         
   
   
@@ -1815,7 +1640,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/hapi-investigation/" class="md-nav__link">
+      <a href="../../../architecture/hapi-investigation/" class="md-nav__link">
         
   
   
@@ -1843,7 +1668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/remediation-routing/" class="md-nav__link">
+      <a href="../../../architecture/remediation-routing/" class="md-nav__link">
         
   
   
@@ -1871,7 +1696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/workflow-selection/" class="md-nav__link">
+      <a href="../../../architecture/workflow-selection/" class="md-nav__link">
         
   
   
@@ -1899,7 +1724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/workflow-execution/" class="md-nav__link">
+      <a href="../../../architecture/workflow-execution/" class="md-nav__link">
         
   
   
@@ -1927,7 +1752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/effectiveness/" class="md-nav__link">
+      <a href="../../../architecture/effectiveness/" class="md-nav__link">
         
   
   
@@ -1955,7 +1780,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/notification/" class="md-nav__link">
+      <a href="../../../architecture/notification/" class="md-nav__link">
         
   
   
@@ -1983,7 +1808,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/async-propagation/" class="md-nav__link">
+      <a href="../../../architecture/async-propagation/" class="md-nav__link">
         
   
   
@@ -2011,7 +1836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/audit-pipeline/" class="md-nav__link">
+      <a href="../../../architecture/audit-pipeline/" class="md-nav__link">
         
   
   
@@ -2039,7 +1864,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/data-persistence/" class="md-nav__link">
+      <a href="../../../architecture/data-persistence/" class="md-nav__link">
         
   
   
@@ -2067,7 +1892,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../architecture/security-rbac/" class="md-nav__link">
+      <a href="../../../architecture/security-rbac/" class="md-nav__link">
         
   
   
@@ -2127,7 +1952,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../design-decisions/" class="md-nav__link ">
+            <a href="../../../design-decisions/" class="md-nav__link ">
               
   
   
@@ -2204,7 +2029,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../api-reference/" class="md-nav__link ">
+            <a href="../../../api-reference/" class="md-nav__link ">
               
   
   
@@ -2248,7 +2073,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/crds/" class="md-nav__link">
+      <a href="../../../api-reference/crds/" class="md-nav__link">
         
   
   
@@ -2276,7 +2101,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/datastorage-api/" class="md-nav__link">
+      <a href="../../../api-reference/datastorage-api/" class="md-nav__link">
         
   
   
@@ -2304,7 +2129,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../api-reference/holmesgpt-api/" class="md-nav__link">
+      <a href="../../../api-reference/holmesgpt-api/" class="md-nav__link">
         
   
   
@@ -2370,7 +2195,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../use-cases/" class="md-nav__link ">
+            <a href="../../../use-cases/" class="md-nav__link ">
               
   
   
@@ -2414,7 +2239,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../use-cases/multi-path-remediation/" class="md-nav__link">
+      <a href="../../../use-cases/multi-path-remediation/" class="md-nav__link">
         
   
   
@@ -2442,7 +2267,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../use-cases/remediation-history-feedback/" class="md-nav__link">
+      <a href="../../../use-cases/remediation-history-feedback/" class="md-nav__link">
         
   
   
@@ -2470,7 +2295,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
+      <a href="../../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
         
   
   
@@ -2502,6 +2327,8 @@
       
   
   
+    
+  
   
   
     
@@ -2525,22 +2352,23 @@
     
     
       
+        
+        
+      
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../operations/" class="md-nav__link ">
+            <a href="../../" class="md-nav__link ">
               
   
   
@@ -2558,13 +2386,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2584,7 +2412,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/monitoring/" class="md-nav__link">
+      <a href="../../monitoring/" class="md-nav__link">
         
   
   
@@ -2612,7 +2440,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/event-exporter/" class="md-nav__link">
+      <a href="../../event-exporter/" class="md-nav__link">
         
   
   
@@ -2640,7 +2468,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/troubleshooting/" class="md-nav__link">
+      <a href="../../troubleshooting/" class="md-nav__link">
         
   
   
@@ -2665,6 +2493,8 @@
                 
   
   
+    
+  
   
   
     
@@ -2682,20 +2512,21 @@
       
       
         
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
+          
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8_5" >
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8_5" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../../operations/upgrading/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -2713,13 +2544,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_8_5" id="__nav_8_5_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_8_5_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_8_5">
             <span class="md-nav__icon md-icon"></span>
             
@@ -2736,10 +2567,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    v1.1 to v1.2
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2755,6 +2613,153 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prerequisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#upgrade-command" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Upgrade Command
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-storm-detection-removed-448" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Storm Detection Removed (#448)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-crd-typed-enums-453-455-459" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. CRD Typed Enums (#453, #455, #459)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-metav1duration-fields-455" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. metav1.Duration Fields (#455)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-pascalcase-enum-migration-453-459-483-640" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PascalCase Enum Migration (#453, #459, #483, #640)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-per-workflow-serviceaccount-481-501" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Per-Workflow ServiceAccount (#481, #501)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-database-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Database Migrations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#new-features-no-action-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        New Features (No Action Required)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2775,7 +2780,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/disconnected-install/" class="md-nav__link">
+      <a href="../../disconnected-install/" class="md-nav__link">
         
   
   
@@ -2868,7 +2873,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../compliance/" class="md-nav__link">
+      <a href="../../../user-guide/compliance/" class="md-nav__link">
         
   
   
@@ -2903,7 +2908,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../faq/" class="md-nav__link">
+      <a href="../../../faq/" class="md-nav__link">
         
   
   
@@ -2930,7 +2935,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../contributing/" class="md-nav__link">
+      <a href="../../../contributing/" class="md-nav__link">
         
   
   
@@ -2977,10 +2982,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#overview" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Overview
+        Prerequisites
       
     </span>
   </a>
@@ -2988,22 +2993,33 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#provisioning" class="md-nav__link">
+  <a href="#upgrade-command" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Provisioning
+        Upgrade Command
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Provisioning">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#breaking-changes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Breaking Changes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Breaking Changes">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#option-a-inject-via-set-file-recommended" class="md-nav__link">
+  <a href="#1-storm-detection-removed-448" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option A: Inject via --set-file (recommended)
+        1. Storm Detection Removed (#448)
       
     </span>
   </a>
@@ -3011,10 +3027,54 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#option-b-pre-existing-configmap" class="md-nav__link">
+  <a href="#2-crd-typed-enums-453-455-459" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Option B: Pre-existing ConfigMap
+        2. CRD Typed Enums (#453, #455, #459)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-metav1duration-fields-455" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. metav1.Duration Fields (#455)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-pascalcase-enum-migration-453-459-483-640" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PascalCase Enum Migration (#453, #459, #483, #640)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-per-workflow-serviceaccount-481-501" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Per-Workflow ServiceAccount (#481, #501)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-database-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Database Migrations
       
     </span>
   </a>
@@ -3027,49 +3087,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#policy-structure" class="md-nav__link">
+  <a href="#new-features-no-action-required" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Policy Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Policy Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input-schema" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Input Schema
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cross-rule-references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cross-rule References
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#proactive-signal-mappings" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Proactive Signal Mappings
+        New Features (No Action Required)
       
     </span>
   </a>
@@ -3077,21 +3098,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#hot-reload" class="md-nav__link">
+  <a href="#verification" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Hot-Reload
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#reference-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reference File
+        Verification
       
     </span>
   </a>
@@ -3115,166 +3125,144 @@
 
 
 
-<h1 id="signalprocessing-rego-policies">SignalProcessing Rego Policies<a class="headerlink" href="#signalprocessing-rego-policies" title="Permanent link">&para;</a></h1>
-<p>The SignalProcessing controller uses a single Rego policy file (<code>policy.rego</code>) for all signal classification: environment, priority, severity, and custom labels. Proactive signal mappings are separate YAML configuration.</p>
-<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<h1 id="upgrading-from-v11-to-v12">Upgrading from v1.1 to v1.2<a class="headerlink" href="#upgrading-from-v11-to-v12" title="Permanent link">&para;</a></h1>
+<p>This guide covers breaking changes and required actions when upgrading Kubernaut from <strong>v1.1.x</strong> to <strong>v1.2.0</strong>.</p>
+<h2 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Kubernaut v1.1.x running and healthy</li>
+<li><code>helm</code> v3.12+ and <code>kubectl</code> access to the cluster</li>
+</ul>
+<h2 id="upgrade-command">Upgrade Command<a class="headerlink" href="#upgrade-command" title="Permanent link">&para;</a></h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--version<span class="w"> </span><span class="m">1</span>.2.0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--reuse-values
+</span></code></pre></div>
+<p>The chart runs two separate upgrade hooks:</p>
+<ul>
+<li><strong>CRD upgrade job (<code>pre-upgrade</code>)</strong> applies updated CRD schemas automatically.</li>
+<li><strong>Migration job (<code>post-install,post-upgrade</code>)</strong> runs database migrations automatically.</li>
+</ul>
+<p>No manual migration action is required.</p>
+<hr />
+<h2 id="breaking-changes">Breaking Changes<a class="headerlink" href="#breaking-changes" title="Permanent link">&para;</a></h2>
+<h3 id="1-storm-detection-removed-448">1. Storm Detection Removed (#448)<a class="headerlink" href="#1-storm-detection-removed-448" title="Permanent link">&para;</a></h3>
+<p>All storm detection functionality has been removed per DD-GATEWAY-015. The v1.2 changelog highlights <code>stormCorrelationId</code> and <code>stormWindowId</code> removal at the API contract level, and the following <code>RemediationRequest</code> spec fields were removed from the CRD:</p>
 <table>
 <thead>
 <tr>
-<th>Property</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>ConfigMap name</td>
-<td><code>signalprocessing-policy</code> (Rego) + <code>signalprocessing-proactive-signal-mappings</code> (optional, YAML)</td>
-</tr>
-<tr>
-<td>Mount path</td>
-<td><code>/etc/signalprocessing/policy.rego</code> (Rego) + <code>/etc/signalprocessing/proactive-signal-mappings.yaml</code> (mappings)</td>
-</tr>
-<tr>
-<td>Required</td>
-<td>Yes -- chart fails at install if neither <code>signalprocessing.policy</code> nor <code>signalprocessing.existingPolicyConfigMap</code> is set</td>
-</tr>
-</tbody>
-</table>
-<h2 id="provisioning">Provisioning<a class="headerlink" href="#provisioning" title="Permanent link">&para;</a></h2>
-<h3 id="option-a-inject-via-set-file-recommended">Option A: Inject via --set-file (recommended)<a class="headerlink" href="#option-a-inject-via-set-file-recommended" title="Permanent link">&para;</a></h3>
-<p>Provide a single <code>.rego</code> file directly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>...
-</span></code></pre></div>
-<h3 id="option-b-pre-existing-configmap">Option B: Pre-existing ConfigMap<a class="headerlink" href="#option-b-pre-existing-configmap" title="Permanent link">&para;</a></h3>
-<p>Create the ConfigMap yourself and reference it:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--from-file<span class="o">=</span>policy.rego<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--set<span class="w"> </span>signalprocessing.existingPolicyConfigMap<span class="o">=</span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>...
-</span></code></pre></div>
-<h2 id="policy-structure">Policy Structure<a class="headerlink" href="#policy-structure" title="Permanent link">&para;</a></h2>
-<p>The policy file must use <code>package signalprocessing</code> and export 4 named rules:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">signalprocessing</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># ========== Environment ==========</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Returns: {&quot;environment&quot;: string, &quot;source&quot;: string}</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">default</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace-labels&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;env&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># ========== Severity ==========</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Returns: string (critical/high/medium/low/unknown)</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">default</span><span class="w"> </span><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># ========== Priority ==========</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="c1"># Returns: {&quot;priority&quot;: string, &quot;policy_name&quot;: string}</span>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="c1"># Can reference `environment` and `severity` directly</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">default</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P3&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">}</span>
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="c1"># ========== Custom Labels ==========</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="c1"># Returns: map[string][]string</span>
-</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="k">default</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{}</span>
-</span></code></pre></div>
-<h3 id="input-schema">Input Schema<a class="headerlink" href="#input-schema" title="Permanent link">&para;</a></h3>
-<p>The Go controller sends a typed struct as Rego input:</p>
-<table>
-<thead>
-<tr>
-<th>Path</th>
+<th>Removed field</th>
 <th>Type</th>
-<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>input.namespace.name</code></td>
-<td>string</td>
-<td>Namespace name</td>
+<td><code>spec.isStorm</code></td>
+<td><code>bool</code></td>
 </tr>
 <tr>
-<td><code>input.namespace.labels</code></td>
-<td>map</td>
-<td>Namespace labels</td>
+<td><code>spec.stormType</code></td>
+<td><code>string</code></td>
 </tr>
 <tr>
-<td><code>input.namespace.annotations</code></td>
-<td>map</td>
-<td>Namespace annotations</td>
+<td><code>spec.stormWindow</code></td>
+<td><code>string</code></td>
 </tr>
 <tr>
-<td><code>input.signal.severity</code></td>
-<td>string</td>
-<td>External severity from alert source</td>
+<td><code>spec.stormAlertCount</code></td>
+<td><code>int</code></td>
 </tr>
 <tr>
-<td><code>input.signal.type</code></td>
-<td>string</td>
-<td>Signal type (e.g., <code>PodCrashLoop</code>)</td>
-</tr>
-<tr>
-<td><code>input.signal.source</code></td>
-<td>string</td>
-<td>Gateway adapter that ingested signal</td>
-</tr>
-<tr>
-<td><code>input.signal.labels</code></td>
-<td>map</td>
-<td>Signal labels</td>
-</tr>
-<tr>
-<td><code>input.workload.kind</code></td>
-<td>string</td>
-<td>Target resource kind (e.g., <code>Deployment</code>)</td>
-</tr>
-<tr>
-<td><code>input.workload.name</code></td>
-<td>string</td>
-<td>Target resource name</td>
-</tr>
-<tr>
-<td><code>input.workload.labels</code></td>
-<td>map</td>
-<td>Target resource labels</td>
+<td><code>spec.affectedResources</code></td>
+<td><code>[]string</code></td>
 </tr>
 </tbody>
 </table>
-<h3 id="cross-rule-references">Cross-rule References<a class="headerlink" href="#cross-rule-references" title="Permanent link">&para;</a></h3>
-<p>Priority rules can reference <code>environment</code> and <code>severity</code> directly within the policy. Rego resolves these declaratively without requiring explicit Go-level sequencing:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="w">   </span><span class="c1"># references the environment rule</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w">                     </span><span class="c1"># references the severity rule</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">}</span>
+<p><strong>Action required:</strong> If you have any custom tooling, scripts, or Rego policies that reference these fields, remove those references before upgrading. The CRD validation will reject any manifests that include these fields after the upgrade.</p>
+<p>Gateway and HAPI storm-related prompts and internal state have also been removed. No Helm values reference storm detection, so no <code>values.yaml</code> changes are needed.</p>
+<h3 id="2-crd-typed-enums-453-455-459">2. CRD Typed Enums (#453, #455, #459)<a class="headerlink" href="#2-crd-typed-enums-453-455-459" title="Permanent link">&para;</a></h3>
+<p>String fields on several CRDs have been replaced with <strong>typed enums</strong>. After the upgrade, the CRD OpenAPI schema validates enum values strictly — any existing CR with a free-form string value that does not match the enum set will fail validation on the next update.</p>
+<p>Affected CRDs:</p>
+<ul>
+<li><strong>NotificationRequest</strong> (#453): <code>spec.type</code> and <code>spec.priority</code> are typed enums; structured fields replace unstructured string maps</li>
+<li><strong>WorkflowExecution</strong> (#455): <code>status.phase</code> is a typed enum (<code>Pending</code>, <code>Running</code>, <code>Completed</code>, <code>Failed</code>) and <code>status.executionStatus</code> is now a typed object with enum-backed status details</li>
+<li><strong>RemediationWorkflow / ActionType</strong> (#459): <code>status.catalogStatus</code> is now a typed enum</li>
+</ul>
+<p><strong>Action required:</strong> If you create or patch these CRs programmatically, verify your values match the documented enum sets in the <a href="../../../api-reference/crds/">CRD reference</a>.</p>
+<h3 id="3-metav1duration-fields-455">3. <code>metav1.Duration</code> Fields (#455)<a class="headerlink" href="#3-metav1duration-fields-455" title="Permanent link">&para;</a></h3>
+<p>WorkflowExecution duration fields now use Go's <code>metav1.Duration</code> format instead of plain strings. Values should be expressed as Go duration strings (e.g., <code>30s</code>, <code>5m</code>, <code>1h</code>).</p>
+<p><strong>Action required:</strong> If you set duration fields on WorkflowExecution CRs manually or via tooling, ensure they use the Go duration format. Note: the CRD schema stores duration as a string; invalid values are rejected during controller/runtime processing.</p>
+<h3 id="4-pascalcase-enum-migration-453-459-483-640">4. PascalCase Enum Migration (#453, #459, #483, #640)<a class="headerlink" href="#4-pascalcase-enum-migration-453-459-483-640" title="Permanent link">&para;</a></h3>
+<p><code>NotificationType</code> and <code>NotificationPriority</code> enum values have been migrated from lowercase to PascalCase. The OpenAPI/catalog enum values exposed through the DataStorage API have also been aligned.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Old values</th>
+<th>New values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>NotificationType</code></td>
+<td><code>escalation</code>, <code>simple</code>, <code>status-update</code>, <code>approval</code>, <code>manual-review</code>, <code>completion</code></td>
+<td><code>Escalation</code>, <code>Simple</code>, <code>StatusUpdate</code>, <code>Approval</code>, <code>ManualReview</code>, <code>Completion</code></td>
+</tr>
+<tr>
+<td><code>NotificationPriority</code></td>
+<td><code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
+<td><code>Critical</code>, <code>High</code>, <code>Medium</code>, <code>Low</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Action required:</strong></p>
+<ul>
+<li>Update <strong>notification routing ConfigMaps</strong> that use <code>match</code> fields filtering on notification type or priority. See <a href="../../../user-guide/configmap-notification/">Notification Routing</a> for the updated syntax.</li>
+<li>Update any <strong>API consumers</strong> that filter or match on DataStorage/catalog enum values (e.g., <code>catalogStatus</code>).</li>
+</ul>
+<h3 id="5-per-workflow-serviceaccount-481-501">5. Per-Workflow ServiceAccount (#481, #501)<a class="headerlink" href="#5-per-workflow-serviceaccount-481-501" title="Permanent link">&para;</a></h3>
+<p>Two related changes were introduced:</p>
+<ul>
+<li><strong>RemediationWorkflow</strong>: new optional <code>spec.execution.serviceAccountName</code> field for workflow-level service account declaration.</li>
+<li><strong>WorkflowExecution</strong>: <code>serviceAccountName</code> moved from <code>spec.executionConfig.serviceAccountName</code> to top-level <code>spec.serviceAccountName</code>.</li>
+</ul>
+<p><strong>Action required:</strong> If you patch <code>WorkflowExecution</code> resources directly and previously used <code>spec.executionConfig.serviceAccountName</code>, move it to <code>spec.serviceAccountName</code>. For workflow catalog definitions, declare service accounts under <code>spec.execution.serviceAccountName</code>.</p>
+<h3 id="6-database-migrations">6. Database Migrations<a class="headerlink" href="#6-database-migrations" title="Permanent link">&para;</a></h3>
+<p>Migrations <strong>002</strong> through <strong>005</strong> are applied automatically by the Helm migration job:</p>
+<ul>
+<li><strong>002</strong>: Adds <code>service_account_name</code> to workflow catalog schema</li>
+<li><strong>003</strong>: Capitalizes catalog status values (PascalCase migration)</li>
+<li><strong>004</strong>: Adds index on <code>post_remediation_spec_hash</code> for IneffectiveChain query performance</li>
+<li><strong>005</strong>: Adds effectiveness correlation index improvements</li>
+</ul>
+<p><strong>Action required:</strong> None. Migrations run automatically. Ensure the Helm migration job has network access to PostgreSQL.</p>
+<hr />
+<h2 id="new-features-no-action-required">New Features (No Action Required)<a class="headerlink" href="#new-features-no-action-required" title="Permanent link">&para;</a></h2>
+<p>These features are additive and do not require migration steps:</p>
+<ul>
+<li><strong>Per-workflow ServiceAccount with TokenRequest</strong> (#481, #501): Workflows can specify a dedicated SA. For the Ansible path, the WE controller creates short-lived tokens via the Kubernetes TokenRequest API.</li>
+<li><strong>ResourceQuota detection</strong> (#366): HAPI now detects namespace <code>ResourceQuota</code> constraints and surfaces them to the LLM during investigation.</li>
+<li><strong>Effectiveness Monitor improvements</strong> (#573): New <code>Failed</code> phase, scheduled assessment events, and additional config knobs.</li>
+<li><strong>Notification enrichment</strong> (#318, #546, #615, #626): Completion notifications include EA verification results, hash-capture degradation indicators, cluster name/UUID, and RemediationRequest name.</li>
+<li><strong>IneffectiveChain guardrails</strong> (#616): New <code>ineffectiveChainThreshold</code> and <code>recurrenceCountThreshold</code> config knobs on the RemediationOrchestrator.</li>
+<li><strong>Case-insensitive matching</strong> (#595, #604): Workflow discovery filters and approval Rego policies now match environment and severity fields case-insensitively.</li>
+<li><strong>Deterministic UUIDs</strong> (#548): ActionType and RemediationWorkflow IDs are now deterministic (UUIDv5 from content hash) for PVC-wipe resilience.</li>
+<li><strong>Embedded default SP Rego</strong> (#604): The Helm chart ships a default <code>signalprocessing-policy.rego</code>, so installs work without <code>--set-file</code>.</li>
+<li><strong>ConfigMap content in spec hash</strong> (#396): RO/EM spec hash computation now includes mounted ConfigMap content (excluding Secrets).</li>
+<li><strong>LLM token usage in audit</strong> (#435): Audit traces and Prometheus metrics now include LLM token consumption data.</li>
+<li><strong>Mandatory structured JSON responses</strong> (#98): LLM providers must support schema-constrained JSON responses. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively.</li>
+</ul>
+<hr />
+<h2 id="verification">Verification<a class="headerlink" href="#verification" title="Permanent link">&para;</a></h2>
+<p>After upgrading, verify the deployment is healthy:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>helm<span class="w"> </span>status<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
 </span></code></pre></div>
-<h2 id="proactive-signal-mappings">Proactive Signal Mappings<a class="headerlink" href="#proactive-signal-mappings" title="Permanent link">&para;</a></h2>
-<p>Proactive signal mappings are YAML (not Rego) and injected separately. They map proactive alert names to their reactive counterparts for deduplication.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.proactiveSignalMappings.content<span class="o">=</span>mappings.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>...
+<p>Check that CRD schemas are updated:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span>remediationrequests.kubernaut.ai<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.versions[0].schema.openAPIV3Schema.properties.spec.properties}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-m<span class="w"> </span>json.tool<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-c<span class="w"> </span>stormType
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># Expected: 0 (storm fields removed)</span>
 </span></code></pre></div>
-<p>Example content:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">proactive_signal_mappings</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">PredictedOOMKill</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OOMKilled</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">PredictedCPUThrottling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPUThrottling</span>
-</span></code></pre></div>
-<p>If no proactive signals are used, this is optional (omit both fields).</p>
-<h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
-<p>Policy changes are detected via <code>fsnotify</code> (~60s kubelet sync delay for ConfigMap updates). If the new policy has a syntax error, the previous policy is kept active and an error is logged.</p>
-<p>Since all rules share one file, any edit triggers a full reload. Structure your policy with clear section headers to make partial edits manageable.</p>
-<h2 id="reference-file">Reference File<a class="headerlink" href="#reference-file" title="Permanent link">&para;</a></h2>
-<p>A complete example policy is available in the chart: <code>charts/kubernaut/examples/signalprocessing-policy.rego</code></p>
-<p>See also: <a href="../policies/">Rego Policies</a> for the Rego language reference.</p>
 
 
 
@@ -3310,7 +3298,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../configmap-holmesgpt/" class="md-footer__link md-footer__link--prev" aria-label="Previous: HolmesGPT SDK Config">
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: Upgrading Kubernaut">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3320,20 +3308,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                HolmesGPT SDK Config
+                Upgrading Kubernaut
               </div>
             </div>
           </a>
         
         
           
-          <a href="../configmap-approval/" class="md-footer__link md-footer__link--next" aria-label="Next: AIAnalysis Approval Policy">
+          <a href="../../disconnected-install/" class="md-footer__link md-footer__link--next" aria-label="Next: Disconnected Install">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                AIAnalysis Approval Policy
+                Disconnected Install
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3390,10 +3378,10 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
     
   </body>

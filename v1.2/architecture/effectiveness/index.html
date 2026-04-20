@@ -96,10 +96,12 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  You're not viewing the latest version.
-  <a href="../../..">
-    <strong>Click here to go to latest.</strong>
-  </a>
+  
+    You're not viewing the latest version.
+    <a href="../../..">
+      <strong>Click here to go to latest.</strong>
+    </a>
+  
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -1832,6 +1834,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Phase State Machine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#em-controller-assessment-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EM controller assessment tuning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assessment-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assessment paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2823,7 +2853,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
         
   
   
@@ -3080,6 +3110,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Phase State Machine">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#em-controller-assessment-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EM controller assessment tuning
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#assessment-paths" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assessment paths
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3306,7 +3364,7 @@
     Pending --&gt; WaitingForPropagation : HashComputeDelay set
     Pending --&gt; Stabilizing : No propagation delay
     Pending --&gt; Assessing : Direct (edge case)
-    Pending --&gt; Failed : Target not found
+    Pending --&gt; Failed : Terminal failure
     WaitingForPropagation --&gt; Stabilizing : Propagation delay elapsed
     WaitingForPropagation --&gt; Failed : Error
     Stabilizing --&gt; Assessing : Stabilization window elapsed
@@ -3343,7 +3401,60 @@
 </tr>
 <tr>
 <td><strong>Failed</strong></td>
-<td>Assessment could not be completed (e.g., target not found)</td>
+<td>Terminal failure: the assessment could not be completed. Examples include the target resource no longer existing, unrecoverable errors during reconciliation, or dependencies such as Prometheus remaining unavailable after the configured retry budget.</td>
+</tr>
+</tbody>
+</table>
+<p>On relevant phase transitions, the Effectiveness Monitor emits an <code>effectiveness.assessment.scheduled</code> audit event so operators and automation can observe when the next assessment step is expected.</p>
+<h3 id="em-controller-assessment-tuning">EM controller assessment tuning<a class="headerlink" href="#em-controller-assessment-tuning" title="Permanent link">&para;</a></h3>
+<p>The EM controller exposes assessment timing and concurrency knobs:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stabilizationWindow</code></td>
+<td>Wait time before starting assessment scorers after EA creation.</td>
+</tr>
+<tr>
+<td><code>validityWindow</code></td>
+<td>Total window before the assessment expires.</td>
+</tr>
+<tr>
+<td><code>maxConcurrentReconciles</code></td>
+<td>Maximum number of EA reconciliations processed in parallel by the controller.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="assessment-paths">Assessment paths<a class="headerlink" href="#assessment-paths" title="Permanent link">&para;</a></h3>
+<p>Each completed assessment is classified into one of four paths, reflecting how fully the EM could run the configured scorers within the validity window:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>no_execution</code></td>
+<td>No meaningful assessment run (e.g., prerequisites not met).</td>
+</tr>
+<tr>
+<td><code>partial</code></td>
+<td>Some components assessed; others skipped or incomplete before the deadline.</td>
+</tr>
+<tr>
+<td><code>full</code></td>
+<td>All applicable components assessed successfully within the window.</td>
+</tr>
+<tr>
+<td><code>metrics_timed_out</code> / <code>alert_decay_timeout</code> / <code>expired</code></td>
+<td>Assessment deadline paths where the validity window expired before full convergence.</td>
 </tr>
 </tbody>
 </table>
@@ -3498,7 +3609,8 @@
 <li>Clamped to [0.0, 1.0]</li>
 <li>Overall score: average of per-metric improvements</li>
 </ul>
-<p>Respects <code>PrometheusCheckAfter</code> deadline and uses <code>PrometheusLookback</code> (default: 10m) for the query range.</p>
+<p>Respects <code>PrometheusCheckAfter</code> deadline and uses <code>PrometheusLookback</code> (default: 30m) for the query range.</p>
+<p><strong>Reliability (v1.2+)</strong>: The interaction between <code>ValidityWindow</code> and alert duration was corrected so metrics windows align with the assessment timeline. Metrics scoring is now reliable when both are configured.</p>
 <h3 id="spec-hash-comparison-dd-em-002">Spec Hash Comparison (DD-EM-002)<a class="headerlink" href="#spec-hash-comparison-dd-em-002" title="Permanent link">&para;</a></h3>
 <p>Compares the resource specification before and after remediation to detect drift:</p>
 <ol>
@@ -3506,6 +3618,7 @@
 <li><strong>Post-remediation hash</strong>: Computed live via <code>CanonicalSpecHash(target.Spec)</code></li>
 <li><strong>Comparison</strong>: <code>postHash == preHash</code> → <code>Match=true</code> (spec unchanged). <code>postHash != preHash</code> can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed <em>after</em> the stabilization window began.</li>
 </ol>
+<p><strong>ConfigMap content (v1.2+)</strong>: The RO and EM spec hash includes content from mounted ConfigMaps — specifically <code>.data</code> and <code>.binaryData</code> — while excluding Secret material. If a referenced ConfigMap changes between pre-capture and post-capture, the hash will differ, which is expected for effectiveness comparisons that include configuration mounted from ConfigMaps.</p>
 <h4 id="canonical-hash-algorithm">Canonical Hash Algorithm<a class="headerlink" href="#canonical-hash-algorithm" title="Permanent link">&para;</a></h4>
 <ul>
 <li>Maps: keys sorted alphabetically, values normalized recursively</li>

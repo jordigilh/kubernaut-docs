@@ -96,10 +96,12 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  You're not viewing the latest version.
-  <a href="../../..">
-    <strong>Click here to go to latest.</strong>
-  </a>
+  
+    You're not viewing the latest version.
+    <a href="../../..">
+      <strong>Click here to go to latest.</strong>
+    </a>
+  
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -1187,6 +1189,17 @@
       Table of contents
     </label>
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#phase-state-and-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase state and tuning
+      
+    </span>
+  </a>
+  
+</li>
       
         <li class="md-nav__item">
   <a href="#how-it-works" class="md-nav__link">
@@ -2709,7 +2722,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
         
   
   
@@ -2947,6 +2960,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#phase-state-and-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Phase state and tuning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3063,6 +3087,10 @@
 <p>For the CRD specification, phase state machine, and timing model, see <a href="../../architecture/effectiveness/">Architecture: Effectiveness Assessment</a>.</p>
 </div>
 <p>After a remediation workflow completes, Kubernaut evaluates whether the fix actually resolved the issue. This is handled by the <strong>Effectiveness Monitor</strong> — a CRD controller that watches <code>EffectivenessAssessment</code> resources.</p>
+<h2 id="phase-state-and-tuning">Phase state and tuning<a class="headerlink" href="#phase-state-and-tuning" title="Permanent link">&para;</a></h2>
+<p>Assessments normally progress through pending, propagation, stabilization, and active scoring to <strong>Completed</strong>. If the EM cannot finish — for example the target resource was deleted, or Prometheus stays unavailable after retries — the CRD moves to a terminal <strong><code>Failed</code></strong> phase. See <a href="../../architecture/effectiveness/#phase-state-machine">Architecture: Phase State Machine</a>.</p>
+<p>Helm values under <code>effectivenessmonitor.config.assessment</code> include <code>stabilizationWindow</code>, <code>validityWindow</code>, and <code>maxConcurrentReconciles</code>. Requeue cadence during in-progress assessment follows controller timing derived from scrape windows. See <a href="../configuration/#effectivenessmonitor">Configuration Reference</a>.</p>
+<p>The remediation orchestrator and effectiveness monitor include <strong>mounted ConfigMap <code>.data</code> / <code>.binaryData</code></strong> in the canonical spec hash (Secrets are excluded). If a referenced ConfigMap changes between pre- and post-capture, hashes will differ — treat that as a real configuration change for effectiveness comparison.</p>
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When a remediation reaches a terminal phase, the Orchestrator creates an <code>EffectivenessAssessment</code> CRD. The Effectiveness Monitor then:</p>
 <ol>

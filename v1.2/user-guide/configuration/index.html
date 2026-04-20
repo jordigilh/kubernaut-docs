@@ -96,10 +96,12 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  You're not viewing the latest version.
-  <a href="../../..">
-    <strong>Click here to go to latest.</strong>
-  </a>
+  
+    You're not viewing the latest version.
+    <a href="../../..">
+      <strong>Click here to go to latest.</strong>
+    </a>
+  
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -3086,7 +3088,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
         
   
   
@@ -4261,7 +4263,12 @@
 <tr>
 <td><code>effectivenessmonitor.config.assessment.validityWindow</code></td>
 <td>Time window for assessment validity</td>
-<td><code>120s</code></td>
+<td><code>300s</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor.config.assessment.maxConcurrentReconciles</code></td>
+<td>Maximum concurrent EA reconciliations</td>
+<td><code>5</code></td>
 </tr>
 <tr>
 <td><code>effectivenessmonitor.external.prometheusUrl</code></td>

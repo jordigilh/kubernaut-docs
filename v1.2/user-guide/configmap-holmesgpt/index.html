@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -1431,15 +1429,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#toolset-optimization" class="md-nav__link">
+  <a href="#toolset-optimization-pre-v12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Toolset Optimization
+        Toolset Optimization (pre-v1.2)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Toolset Optimization">
+    <nav class="md-nav" aria-label="Toolset Optimization (pre-v1.2)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2839,7 +2837,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3138,15 +3136,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#toolset-optimization" class="md-nav__link">
+  <a href="#toolset-optimization-pre-v12" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Toolset Optimization
+        Toolset Optimization (pre-v1.2)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Toolset Optimization">
+    <nav class="md-nav" aria-label="Toolset Optimization (pre-v1.2)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -3380,7 +3378,7 @@
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a>
 </span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="nt">mcp_servers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">          </span><span class="c1"># Optional: Model Context Protocol servers</span>
 </span></code></pre></div>
-<h2 id="toolset-optimization">Toolset Optimization<a class="headerlink" href="#toolset-optimization" title="Permanent link">&para;</a></h2>
+<h2 id="toolset-optimization-pre-v12">Toolset Optimization (pre-v1.2)<a class="headerlink" href="#toolset-optimization-pre-v12" title="Permanent link">&para;</a></h2>
 <p>Each enabled toolset injects its full tool schema into every LLM context turn. When a toolset is enabled but never called during an investigation, those schema tokens are pure overhead — they consume budget and can bias the LLM toward irrelevant investigation paths.</p>
 <p>Empirical testing shows that loading a single unused toolset (Prometheus, 123 tools) can add ~30% token overhead and increase LLM latency by ~15%, with no benefit to the investigation outcome. See the <a href="https://github.com/jordigilh/kubernaut/issues/434">two-phase toolkit selection discussion</a> for detailed measurements.</p>
 <p><strong>Recommendation:</strong> Enable only the toolsets needed for your workload. The Kubernetes core toolset (<code>kubectl</code> commands and logs) is always available — it cannot be disabled.</p>
@@ -3428,7 +3426,7 @@
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">v1.2: Automatic toolset selection</p>
-<p>v1.2 introduces <a href="https://github.com/jordigilh/kubernaut/issues/434">two-phase toolkit selection</a> that automatically loads only the toolsets relevant to each investigation.</p>
+<p>v1.2 will introduce <a href="https://github.com/jordigilh/kubernaut/issues/434">two-phase toolkit selection</a> that automatically loads only the toolsets relevant to each investigation. This section will be updated when that feature ships.</p>
 </div>
 <h2 id="provider-examples">Provider Examples<a class="headerlink" href="#provider-examples" title="Permanent link">&para;</a></h2>
 <h3 id="openai">OpenAI<a class="headerlink" href="#openai" title="Permanent link">&para;</a></h3>

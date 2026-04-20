@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2564,7 +2562,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3192,7 +3190,7 @@
 <p>Kubernaut's audit pipeline is <strong>designed to align</strong> with SOC2 Type II trust service criteria for automated remediation systems. This page maps Kubernaut's audit capabilities to specific SOC2 controls and explains how each control is addressed.</p>
 <div class="admonition warning">
 <p class="admonition-title">Not a certification claim</p>
-<p>This page documents how Kubernaut's audit architecture <strong>aims to support</strong> SOC2 compliance. It is not a certification claim. Formal SOC2 Type II compliance requires an independent auditor's assessment of the operating organization's controls, processes, and evidence -- which is outside the scope of Kubernaut itself. Items with version annotations indicate when a capability was <strong>introduced</strong> or remains <strong>future</strong> work relative to a release.</p>
+<p>This page documents how Kubernaut's audit architecture <strong>aims to support</strong> SOC2 compliance. It is not a certification claim. Formal SOC2 Type II compliance requires an independent auditor's assessment of the operating organization's controls, processes, and evidence -- which is outside the scope of Kubernaut itself. Items with version annotations (e.g., "planned for v1.2") indicate capabilities not yet available in the current release.</p>
 </div>
 <div class="admonition info">
 <p class="admonition-title">Scope</p>
@@ -3373,8 +3371,8 @@
 <li>Legal hold support (<code>legal_hold</code>, <code>legal_hold_reason</code>, <code>legal_hold_set_at</code>, <code>legal_hold_set_by</code>) is available at the event level to prevent retention-based deletion of specific events.</li>
 </ul>
 <div class="admonition note">
-<p class="admonition-title">CLI verification tools</p>
-<p>Client-side hash chain verification and digital signature verification CLI tooling is <strong>not shipped in v1.2</strong>. Server-side integrity verification remains available through the DataStorage API.</p>
+<p class="admonition-title">CLI verification tools (v1.1)</p>
+<p>Client-side hash chain verification and digital signature verification CLI tools are planned for v1.2. Server-side integrity verification is available through the DataStorage API.</p>
 </div>
 <hr />
 <h3 id="ac-2-account-management">AC-2 -- Account Management<a class="headerlink" href="#ac-2-account-management" title="Permanent link">&para;</a></h3>

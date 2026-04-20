@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2030,23 +2028,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Workflow Execution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#per-workflow-serviceaccount-v12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-Workflow ServiceAccount (v1.2)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -2826,7 +2807,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3139,23 +3120,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Workflow Execution">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#per-workflow-serviceaccount-v12" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Per-Workflow ServiceAccount (v1.2)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -3464,7 +3428,7 @@
 <p>The RemediationOrchestrator and EffectivenessMonitor are additionally bound to the Kubernetes built-in <code>view</code> ClusterRole via <code>remediationorchestrator-view</code> and <code>effectivenessmonitor-view</code> ClusterRoleBindings. This provides broad read access to CRD types not individually enumerated in their dedicated ClusterRoles -- for example, cert-manager <code>Certificate</code> resources and Istio networking resources -- which is required for pre- and post-remediation hash capture (DD-EM-002).</p>
 <p>If the <code>view</code> ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), the <strong>Remediation Orchestrator</strong> emits a <code>HashCaptureDegraded</code> Kubernetes event on the <code>RemediationRequest</code> when <code>CapturePreRemediationHash</code> returns a degraded reason. The EffectivenessAssessment then proceeds in <strong>degraded mode</strong> — the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.</p>
 <h2 id="workflow-execution">Workflow Execution<a class="headerlink" href="#workflow-execution" title="Permanent link">&para;</a></h2>
-<p>Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the <code>kubernaut-workflows</code> namespace. By default, workflow executions run with the execution namespace default ServiceAccount. Many deployments bind that default to <code>kubernaut-workflow-runner</code>, which carries the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.</p>
+<p>Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the <code>kubernaut-workflows</code> namespace under the <code>kubernaut-workflow-runner</code> ServiceAccount. This is the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.</p>
 <table>
 <thead>
 <tr>
@@ -3585,47 +3549,12 @@
 </tr>
 </tbody>
 </table>
-<p>The last four rules were added for production Ansible playbooks (DD-WE-007).</p>
+<p>The last four rules were added for production Ansible playbooks (DD-WE-007). In v1.2, per-workflow SA scoping (<a href="https://github.com/jordigilh/kubernaut/issues/501">#501</a>) will replace the shared ClusterRole with schema-declared RBAC per execution.</p>
 <p>Additionally, a namespace-scoped <code>workflowexecution-dep-reader</code> Role grants <code>get</code>, <code>list</code>, <code>watch</code> on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.</p>
-<h3 id="per-workflow-serviceaccount-v12">Per-Workflow ServiceAccount (v1.2)<a class="headerlink" href="#per-workflow-serviceaccount-v12" title="Permanent link">&para;</a></h3>
-<p>Starting with v1.2, workflows can declare a dedicated ServiceAccount via the <code>spec.execution.serviceAccountName</code> field on the <code>RemediationWorkflow</code> CRD. This value is propagated into <code>WorkflowExecution.spec.serviceAccountName</code>.</p>
-<ul>
-<li><strong>Job/Tekton execution</strong>: the service account name is set directly on the created Job or PipelineRun.</li>
-<li><strong>Ansible execution</strong>: the WE controller requests a short-lived token via the Kubernetes <a href="https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-request-v1/">TokenRequest API</a> and injects it into AWX credentials.</li>
-</ul>
-<p>This enables least-privilege RBAC per workflow — each SA needs only the permissions required by its specific remediation.</p>
-<p>The WE controller's ClusterRole includes the following permissions for TokenRequest:</p>
-<table>
-<thead>
-<tr>
-<th>apiGroup</th>
-<th>Resources</th>
-<th>Verbs</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>(core)</td>
-<td><code>serviceaccounts</code></td>
-<td>get</td>
-<td>Look up the per-workflow SA</td>
-</tr>
-<tr>
-<td>(core)</td>
-<td><code>serviceaccounts/token</code></td>
-<td>create</td>
-<td>Create short-lived tokens via TokenRequest</td>
-</tr>
-</tbody>
-</table>
-<p><strong>TTL validation (Ansible path):</strong> When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets <code>TokenTTLInsufficient</code> on the WorkflowExecution and emits a warning event (<code>TokenTTLShortened</code>).</p>
-<p><strong>Fallback behavior:</strong> If <code>serviceAccountName</code> is not set:</p>
-<ul>
-<li>Job/Tekton run with the execution namespace default ServiceAccount.</li>
-<li>Ansible falls back to controller in-cluster credentials for AWX credential injection.</li>
-</ul>
-<p>For the Ansible executor (#501), TokenRequest tokens replace the controller's own in-cluster SA token for AWX credential injection, ensuring each playbook runs with the minimum permissions declared by the workflow author.</p>
+<div class="admonition info">
+<p class="admonition-title">Per-workflow scoped RBAC</p>
+<p>All workflows share the <code>kubernaut-workflow-runner</code> ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.2.</p>
+</div>
 <h2 id="ocp-monitoring-rbac">OCP Monitoring RBAC<a class="headerlink" href="#ocp-monitoring-rbac" title="Permanent link">&para;</a></h2>
 <p>When <code>effectivenessmonitor.external.ocpMonitoringRbac</code> is <code>true</code>, the chart creates additional RBAC resources for EM to access OCP's monitoring stack through <code>kube-rbac-proxy</code>:</p>
 <table>
@@ -3668,7 +3597,7 @@
 <li>Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate</li>
 </ol>
 <p>The v2 kubeconfig template conditionally includes <code>certificate-authority-data</code> when the cluster CA is available, or sets <code>insecure-skip-tls-verify: true</code> otherwise. AWX injects the rendered kubeconfig as a temp file and sets <code>K8S_AUTH_KUBECONFIG</code> to point to it, ensuring <code>kubernetes.core</code> modules use the injected credentials instead of in-cluster config.</p>
-<p>Ephemeral credentials are cleaned up after the AWX job completes. See <a href="https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md">BR-WE-017</a> for the full shared SA model. In v1.2, workflows can declare a dedicated ServiceAccount via <code>spec.execution.serviceAccountName</code> — see <a href="#per-workflow-serviceaccount-v12">Per-Workflow ServiceAccount</a> above.</p>
+<p>Ephemeral credentials are cleaned up after the AWX job completes. See <a href="https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md">BR-WE-017</a> for the full shared SA model and the planned v1.2 transition to per-workflow ServiceAccounts.</p>
 <h2 id="internal-service-communication">Internal Service Communication<a class="headerlink" href="#internal-service-communication" title="Permanent link">&para;</a></h2>
 <h3 id="datastorage-authentication">DataStorage Authentication<a class="headerlink" href="#datastorage-authentication" title="Permanent link">&para;</a></h3>
 <p>DataStorage uses the same TokenReview + SAR pattern as the Gateway. The <code>data-storage-auth-middleware</code> ClusterRole grants DataStorage permission to validate client tokens:</p>

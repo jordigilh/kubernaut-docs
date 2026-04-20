@@ -96,12 +96,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    You're not viewing the latest version.
-    <a href="../../..">
-      <strong>Click here to go to latest.</strong>
-    </a>
-  
+  You're not viewing the latest version.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2248,78 +2246,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#completion-and-status-notification-content" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Completion and status notification content
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Completion and status notification content">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#effectiveness-assessment-in-completion-messages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Effectiveness assessment in completion messages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hash-capture-degradation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hash-capture degradation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cluster-identification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cluster identification
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remediationrequest-name-and-body-layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RemediationRequest name and body layout
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-not-needed-noaction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow not needed (NoAction)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#audit-events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3141,7 +3067,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../operations/upgrading/1.1-to-1.2/" class="md-nav__link">
+      <a href="../../operations/upgrading/1.1-to-1.2.md" class="md-nav__link">
         
   
   
@@ -3784,78 +3710,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#completion-and-status-notification-content" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Completion and status notification content
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Completion and status notification content">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#effectiveness-assessment-in-completion-messages" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Effectiveness assessment in completion messages
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hash-capture-degradation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hash-capture degradation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#cluster-identification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Cluster identification
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#remediationrequest-name-and-body-layout" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RemediationRequest name and body layout
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-not-needed-noaction" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow not needed (NoAction)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#audit-events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3936,7 +3790,6 @@
 <h3 id="spec-immutable">Spec (Immutable)<a class="headerlink" href="#spec-immutable" title="Permanent link">&para;</a></h3>
 <p>For the complete field specification, see <a href="../../api-reference/crds/#notificationrequest">NotificationRequest in the CRD Reference</a>.</p>
 <h3 id="notification-types">Notification Types<a class="headerlink" href="#notification-types" title="Permanent link">&para;</a></h3>
-<p>API values use <strong>PascalCase</strong> enum strings for <code>type</code>/<code>priority</code> (e.g. <code>Completion</code>, <code>StatusUpdate</code>, <code>Critical</code>). Routing <code>match</code> keys compare against these values for those fields. <code>severity</code> remains source/signal-derived (typically lowercase from Signal Processing normalization).</p>
 <table>
 <thead>
 <tr>
@@ -3946,32 +3799,31 @@
 </thead>
 <tbody>
 <tr>
-<td><code>Escalation</code></td>
+<td><code>escalation</code></td>
 <td>Escalation to human review</td>
 </tr>
 <tr>
-<td><code>Simple</code></td>
+<td><code>simple</code></td>
 <td>Basic status notification</td>
 </tr>
 <tr>
-<td><code>StatusUpdate</code></td>
+<td><code>status-update</code></td>
 <td>Phase change update</td>
 </tr>
 <tr>
-<td><code>Approval</code></td>
+<td><code>approval</code></td>
 <td>Approval request</td>
 </tr>
 <tr>
-<td><code>ManualReview</code></td>
+<td><code>manual-review</code></td>
 <td>Manual review required</td>
 </tr>
 <tr>
-<td><code>Completion</code></td>
+<td><code>completion</code></td>
 <td>Remediation outcome (success or failure)</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Notification priority</strong> (when used on the request) uses PascalCase: <code>Critical</code>, <code>High</code>, <code>Medium</code>, <code>Low</code>.</p>
 <h3 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h3>
 <p>For the complete field specification, see <a href="../../api-reference/crds/#notificationrequest">NotificationRequest in the CRD Reference</a>.</p>
 <h3 id="deliveryattempt">DeliveryAttempt<a class="headerlink" href="#deliveryattempt" title="Permanent link">&para;</a></h3>
@@ -4323,17 +4175,6 @@
 <p>If the workflow UUID is absent from the workflow context, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.</p>
 <h3 id="extensibility">Extensibility<a class="headerlink" href="#extensibility" title="Permanent link">&para;</a></h3>
 <p>The enrichment layer uses a <code>WorkflowNameResolver</code> interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.</p>
-<h2 id="completion-and-status-notification-content">Completion and status notification content<a class="headerlink" href="#completion-and-status-notification-content" title="Permanent link">&para;</a></h2>
-<h3 id="effectiveness-assessment-in-completion-messages">Effectiveness assessment in completion messages<a class="headerlink" href="#effectiveness-assessment-in-completion-messages" title="Permanent link">&para;</a></h3>
-<p>For <strong>completion</strong> notifications, the Remediation Orchestrator loads the effectiveness assessment via <code>RemediationRequest.Status.EffectivenessAssessmentRef</code> before building the message body. The notification includes assessment reason, per-component scores (health, alerts, metrics, hash), and hash comparison details so operators can see outcome and evidence in one place.</p>
-<h3 id="hash-capture-degradation">Hash-capture degradation<a class="headerlink" href="#hash-capture-degradation" title="Permanent link">&para;</a></h3>
-<p>When pre- or post-remediation hash capture fails in a non-fatal (soft-fail) path, completion notifications indicate <strong>EA degraded</strong>, with the reason and guidance — for example, verifying RBAC for the view <code>ClusterRole</code> if the EM cannot read mounted ConfigMaps or related resources.</p>
-<h3 id="cluster-identification">Cluster identification<a class="headerlink" href="#cluster-identification" title="Permanent link">&para;</a></h3>
-<p>Every notification body begins with cluster context: <strong><code>Cluster: &lt;name&gt; (&lt;uuid&gt;)</code></strong>, across console, log, file, and Slack channels. <strong>Timeout</strong> notifications also include the cluster identifier so multi-cluster operators can route quickly.</p>
-<h3 id="remediationrequest-name-and-body-layout">RemediationRequest name and body layout<a class="headerlink" href="#remediationrequest-name-and-body-layout" title="Permanent link">&para;</a></h3>
-<p>Notifications include the <strong>RemediationRequest</strong> resource name. Body fields are <strong>reordered</strong> for faster triage (high-signal context first).</p>
-<h3 id="workflow-not-needed-noaction">Workflow not needed (NoAction)<a class="headerlink" href="#workflow-not-needed-noaction" title="Permanent link">&para;</a></h3>
-<p>When <code>handleWorkflowNotNeeded</code> runs (remediation not required), the pipeline emits a <strong><code>StatusUpdate</code></strong> notification when self-resolved notifications are enabled, so operators still get a lifecycle update.</p>
 <h2 id="audit-events">Audit Events<a class="headerlink" href="#audit-events" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

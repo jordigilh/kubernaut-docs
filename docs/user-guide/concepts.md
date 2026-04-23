@@ -45,13 +45,12 @@ Created after a RemediationRequest is accepted. The Signal Processing controller
 
 Created after signal enrichment completes. The AI Analysis controller:
 
-1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for a three-phase LLM investigation:
-    - **Phase 1: Investigate** — Root cause analysis using live cluster data (logs, events, resource state, metrics)
-    - **Phase 2: Enrich** — Resolves the target resource's owner chain, computes a spec hash, fetches **remediation history** (past outcomes and effectiveness scores via DataStorage), and detects **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
-    - **Phase 3: Workflow Select** — The LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection
+1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for a **two-invocation** LLM investigation (v1.3+):
+    - **Invocation 1 (RCA)** — Root cause analysis using live cluster data (logs, events, resource state, metrics) via tools; also resolves the target resource's owner chain, spec hash, **remediation history** (DataStorage), and **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB) when resource-context tools are used
+    - **Invocation 2 (Workflow selection)** — A **new** model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection, then HAPI **merges** the two invocations' results
 2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
-See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full three-phase architecture.
+See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full two-invocation architecture.
 
 ### RemediationApprovalRequest
 

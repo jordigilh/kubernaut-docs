@@ -37,27 +37,64 @@ toolsets:
 
 The Helm chart supports three tiers for providing the SDK config -- see [Configuration Reference: HolmesGPT API](../user-guide/configuration.md#holmesgpt-api-llm-integration).
 
+**SDK config hot-reload (v1.3):** The mounted SDK config supports **hot-reload** via `fsnotify` when files change. **Active investigations** pin a **config snapshot** at session start, so in-flight work is not affected mid-stream.
+
+| Category | Settings |
+|---|---|
+| **Restart required** (process must restart to take effect) | `llm.provider`, `llm.structured_output`, `llm.oauth2.token_url`, `llm.oauth2.client_id`, `llm.oauth2.client_secret` |
+| **Hot-reloadable** | `model`, `endpoint`, `api_key`, `temperature`, and other non-provider/core-auth LLM and toolset options |
+
 ## Pipeline Overview
 
-The investigation follows a three-phase pipeline (redesigned in v1.1, BR-HAPI-260--265), executed as a single LLM agent session:
+In **v1.3** the pipeline uses **two distinct LLM invocations** (new v1.3 architecture, superseding the v1.1 three-phase, single-session design). The sessions do not share model chat memory. The first performs RCA with full tool access; the second performs workflow selection from structured inputs only, then HAPI merges results.
 
 ```mermaid
 flowchart LR
-    P1["Phase 1<br/>Investigate"] --> P2["Phase 2<br/>Enrich"]
-    P2 --> P3["Phase 3<br/>Workflow Select"]
+    I1["Invocation 1: RCA"] -->|structured context| I2["Invocation 2: Workflow selection"]
 ```
 
-| Phase | Purpose | Key Operations |
-|---|---|---|
-| **Phase 1: Investigate** | Root cause analysis using live cluster data | Kubernetes tool calls (logs, events, describe), root cause identification, signal name determination |
-| **Phase 2: Enrich** | Gather context and validate the remediation target | Call `get_namespaced_resource_context` or `get_cluster_resource_context` (owner chain resolution, spec hash, detected labels, remediation history), validate LLM-provided `remediationTarget` (BR-HAPI-261, BR-HAPI-212) |
-| **Phase 3: Workflow Select** | Discover and select a workflow from the catalog | Three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`, parameter mapping, confidence scoring, structured JSON response |
+### Invocation 1 (RCA)
 
-In reactive mode, Phase 1 investigates an active incident. In proactive mode (signal_mode=proactive), Phase 1 assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
+A **new** LLM session. The system prompt and iterative **tool calls** drive root cause analysis. The model submits a constrained result with the **`submit_result` sentinel tool** and **`RCAResultSchema`**, which includes:
 
-Remediation history is automatically included by the resource-context tools via an internal DataStorage lookup (`get_remediation_history_context` API), providing tiered remediation history based on spec hash matching (24h with full detail, 90d with summary detail) as part of the resource context result during Phase 2.
+- **`root_cause_analysis` object** — `summary`, `severity`, `contributing_factors`, `remediation_target` (`Kind`, `Name`, `Namespace`), and `investigation_analysis` (under 500 words)
+- **Top-level `severity`**, **`confidence`** (0–1), and **`investigation_outcome` enum** — `actionable`, `not_actionable`, `problem_resolved`, `insufficient_data`, `inconclusive`
+- **`actionable`**, and **`detected_labels`**
+
+### Invocation 2 (Workflow selection)
+
+A **new** LLM session with **no memory** of Invocation 1. Only **seven** structured input fields are injected: **`RCASummary`**, **`Severity`**, **`ContributingFactors`**, **`RemediationTarget`**, **`InvestigationOutcome`**, **`Confidence`**, and **`InvestigationAnalysis`**.
+
+The model must finish via a sentinel tool:
+
+- **`submit_result_with_workflow`** — schema **`WithWorkflowResultSchema`** (equivalent in shape to the full `InvestigationResultSchema`), including **`selected_workflow`** and **`alternative_workflows`**
+- **`submit_result_no_workflow`** — schema **`NoWorkflowResultSchema`**, with a **reasoning** string; only **`root_cause_analysis`** is required on this path
+
+### Post-invocation merge: `mergePhase1Fallbacks`
+
+After Invocation 2, **`mergePhase1Fallbacks`** backfills **only** `severity`, `contributing_factors`, `confidence`, and `investigation_outcome` from Invocation 1 when the workflow-selection result omits them. It does **not** backfill `InvestigationAnalysis` or `RemediationTarget` (Invocation 2 always wins for those). **Special case:** if Invocation 1’s `investigation_outcome` is `problem_resolved`, it **overrides** a contradictory `HumanReviewNeeded` from Invocation 2.
+
+In reactive mode, **Invocation 1 (RCA)** investigates an active incident. In proactive mode (`signal_mode=proactive`), **Invocation 1** assesses whether a predicted incident is likely to materialize -- "no action needed" is a valid outcome.
+
+Remediation history is included when the first invocation’s resource-context tools run: an internal DataStorage lookup (`get_remediation_history_context` API) provides tiered history by spec hash (24h with full detail, 90d with summary detail) in the **resource context tool result** during **Invocation 1**.
 
 The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively, synthesizes findings, and makes decisions. HAPI provides the prompt framing, tools, and validation; the LLM drives the investigation.
+
+## LLM output resilience
+
+HAPI applies several **defense layers** (v1.3) so malformed or partial model output is handled predictably.
+
+| Defense | Purpose |
+|---|---|
+| **Double-serialization unwrap** | Recovers when the model double–JSON-encodes its response |
+| **Balanced JSON extraction** | Strips trailing garbage after a first complete JSON object |
+| **Single-element array unwrap** | Unwraps `[{...}]` to `{...}` for schema parsing |
+| **Type coercion** | e.g. string `confidence` coerced to float where applicable |
+| **Partial RCA guard** | Rejects responses that include `confidence` but lack a usable summary/workflow in the expected shape |
+| **Truncation detection + retry** | When `finish_reason == "length"`: one retry with **2×** max completion tokens, **capped at 16384** (default before escalation **8192**). If the second response is still truncated, processing continues without further token escalation |
+| **RCA parse retry** | One retry that constrains the model to **tool-only** completion using **`submit_result`** with `RCAResultSchema` |
+
+These paths apply in addition to schema-constrained provider output where the runtime supports it.
 
 !!! warning "Mandatory structured JSON responses"
     HAPI requires the LLM provider/runtime to support schema-constrained JSON responses. This ensures the LLM returns structured payloads that HAPI can parse reliably. Most modern providers (OpenAI, Azure OpenAI, Anthropic) support this natively.
@@ -96,23 +133,21 @@ The `signal_mode` field determines how the LLM frames its investigation. The too
 
 The LLM investigates an **active incident**:
 
-- **Investigate:** "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions. Identify the root cause -- determine if the signal is the root cause or a symptom of a deeper issue.
-- **Enrich:** Resolve the target resource via owner chain, compute spec hash, detect infrastructure labels, fetch remediation history.
-- **Workflow Select:** Natural language summary + structured JSON with workflow selection.
+- **Invocation 1 (RCA):** "Use your Kubernetes tools to investigate the incident" -- check pod status, events, logs, resource usage, node conditions. Identify the root cause -- determine if the signal is the root cause or a symptom of a deeper issue. Resolve the target via owner chain, spec hash, labels, and remediation history using the **resource context tools** as needed.
+- **Invocation 2 (Workflow selection):** **Structured** workflow discovery and a sentinel-tool JSON result (`submit_result_with_workflow` or `submit_result_no_workflow`); no free-form continuation of the RCA chat.
 
 ### Proactive Mode
 
 The LLM investigates an **anticipated incident**:
 
-- **Investigate:** "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize." Decide if the anticipated incident is likely and what preventive actions to take -- **"no action needed" is a valid outcome** if the prediction is unlikely.
-- **Enrich:** Same resource context resolution as reactive mode.
-- **Workflow Select:** Same structured output, but the LLM may conclude that no remediation is warranted.
+- **Invocation 1 (RCA):** "Assess utilization trends, recent deployments, and whether the prediction is likely to materialize." Decide if the anticipated incident is likely and what preventive actions to take -- **"no action needed" is a valid outcome** if the prediction is unlikely. Use the same resource context tooling as reactive mode when a concrete target is identified.
+- **Invocation 2 (Workflow selection):** Same sentinel-tool protocol as reactive mode; the model may conclude that no remediation is warranted.
 
 The proactive mode distinction is important: it tells the LLM that doing nothing is acceptable, preventing unnecessary remediations for predictions that may not materialize.
 
 ## RCA Execution
 
-During the Investigate phase, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:
+During **Invocation 1 (RCA)**, the LLM uses Kubernetes tools to investigate the cluster. It operates autonomously, calling tools iteratively until it reaches a diagnosis:
 
 1. **Inspect the target resource** -- `kubectl describe`, `kubectl get` for the resource mentioned in the signal
 2. **Read pod logs** -- Current and previous container logs to identify errors, panics, or OOM events
@@ -120,11 +155,17 @@ During the Investigate phase, the LLM uses Kubernetes tools to investigate the c
 4. **Examine live metrics** -- `kubectl top pods` for CPU/memory pressure
 5. **Synthesize a root cause** -- The LLM determines what went wrong, whether the signal is the root cause or a symptom, and what resource is actually affected
 
-The RCA phase is unconstrained -- the LLM decides which tools to call and in what order based on what it discovers. A CrashLoopBackOff investigation might start with pod status, move to logs, then check events for OOM signals. A NodePressure investigation might start with `top pods`, then check for pending pods and resource quotas.
+**Invocation 1** is unconstrained in tool choice -- the LLM decides which tools to call and in what order based on what it discovers. A CrashLoopBackOff investigation might start with pod status, move to logs, then check events for OOM signals. A NodePressure investigation might start with `top pods`, then check for pending pods and resource quotas.
 
 ## Post-RCA: Resource Context
 
-Once the LLM identifies the affected resource (Phase 2: Enrich), it calls `get_namespaced_resource_context(kind, name, namespace)` (or `get_cluster_resource_context(kind, name)` for cluster-scoped resources). This is the pivotal moment in the pipeline -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
+During **Invocation 1 (RCA)**, once the LLM has identified the affected resource, it calls `get_namespaced_resource_context(kind, name, namespace)` (or `get_cluster_resource_context(kind, name)` for cluster-scoped resources such as **Nodes**, **PVs**, **ClusterRoles**, and other **cluster-scoped** kinds). This is the pivotal moment in the first session -- it transforms the investigation from "what happened" to "what should we do about it, given what we've tried before."
+
+**Namespace normalization (`normalizeNamespace`):** When the scope resolver determines the target is **cluster-scoped**, the client namespace is cleared to `""` for enrichment and DataStorage calls. If resolution fails, the original namespace is **kept** and a **warning** is logged.
+
+**Per-investigation cache:** Enrichment for a given `kind` / `name` / `namespace` is **cached** for the **lifetime of that investigation**, avoiding duplicate work when the same target is re-requested.
+
+**Gateway fingerprint (target identity):** The Gateway uses a **SHA256** over `namespace:kind:name` for the **root owner** (after owner-chain resolution). For **cluster-scoped** resources, the namespace is **empty**, producing fingerprints such as **`:Node:worker-1`**.
 
 The tool performs four operations in sequence:
 
@@ -209,7 +250,7 @@ The response contains two tiers of history with different query strategies, time
 
 ## How Remediation History Influences the LLM
 
-The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the Enrich phase prompt instructs: *"Use this to avoid repeating recently failed workflows."*
+The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the **Invocation 1 (RCA)** resource-context framing instructs: *"Use this to avoid repeating recently failed workflows."*
 
 ### Three-Way Hash Comparison
 
@@ -380,7 +421,9 @@ When either threshold is exceeded, the Orchestrator blocks the RemediationReques
 
 ## Workflow Selection: Three-Step Discovery
 
-After resource context is gathered (Phase 2: Enrich), the LLM enters the Workflow Select phase. The `session_state["detected_labels"]` from the previous phase are automatically injected into all DataStorage queries as context filters.
+**Invocation 2 (Workflow selection)** is a **separate** session that runs the three-step DataStorage protocol with **no tool transcript from Invocation 1** — it relies on the **structured RCA fields** injected at session start, plus the usual workflow tools.
+
+Labels and other signal context that were **detected or resolved in Invocation 1** (e.g. `session_state["detected_labels"]` and enriched signal metadata) are available to the workflow step and are **automatically applied** to DataStorage queries (e.g. as context filters in `list_available_actions`).
 
 ### Step 1: List Available Actions
 
@@ -428,26 +471,31 @@ DataStorage's scoring determines the presentation order but not the selection. A
 
 ## Investigation Outcomes
 
-The LLM investigation can produce 9 distinct outcomes, each handled differently by the system:
+The LLM investigation (two invocations, merged) can produce 9 distinct outcomes, each handled differently by the system:
 
 ```mermaid
 flowchart TD
-    HAPI["HAPI Response"] --> NHR{"needs_human_review?"}
+    subgraph hapi2["HAPI: two invocations + merge"]
+    I1["Invocation 1: RCA"] -->|structured context| I2["Invocation 2: Workflow selection"]
+    I2 --> MERGE["mergePhase1Fallbacks"]
+    end
+    MERGE --> HAPI["HAPI merged response"]
+    HAPI --> NHR{"needs_human_review?"}
     NHR -->|true| HasWFReview{"selected_workflow?"}
-    HasWFReview -->|present| HRFailed["Human Review + Workflow<br/><small>Phase: Failed (any review scenario)</small>"]
-    HasWFReview -->|null| HRCompleted["Manual Review Required<br/><small>Phase: Completed</small>"]
+    HasWFReview -->|present| HRFailed["Human Review + Workflow<br/><small>AA Phase: Failed (any review scenario)</small>"]
+    HasWFReview -->|null| HRCompleted["Manual Review Required<br/><small>AA Phase: Completed</small>"]
     NHR -->|false| HasWF{"selected_workflow?"}
     HasWF -->|null| Resolved{"Resolved or<br/>not actionable?"}
     HasWF -->|present| Confidence{"confidence >= 0.7?"}
-    Resolved -->|"resolved / not actionable"| NoAction["No Action Required<br/><small>Phase: Completed<br/>(Outcome 2 or 9)</small>"]
-    Resolved -->|no| NoWFFailure["No Workflow Found<br/><small>Phase: Failed</small>"]
-    Confidence -->|no| LowConf["Low Confidence<br/><small>Phase: Failed</small>"]
-    Confidence -->|yes| Rego["Rego Evaluation<br/><small>Phase: Analyzing</small>"]
+    Resolved -->|"resolved / not actionable"| NoAction["No Action Required<br/><small>AA Phase: Completed<br/>(Outcome 2 or 9)</small>"]
+    Resolved -->|no| NoMatch["No catalog match (Outcome 4)<br/><small>AA Phase: Completed, Needs human review (NoMatchingWorkflows)</small>"]
+    Confidence -->|no| LowConf["Low Confidence<br/><small>AA Phase: Failed</small>"]
+    Confidence -->|yes| Rego["Rego Evaluation<br/><small>AA Phase: Analyzing</small>"]
 ```
 
 ### Outcome 1: Success (Workflow Selected)
 
-The LLM returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters`. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved via `get_namespaced_resource_context` or `get_cluster_resource_context`). This is the only outcome that proceeds to Rego evaluation.
+**Invocation 2** returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters` (through **`submit_result_with_workflow`**), after `mergePhase1Fallbacks` when needed. HAPI then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved in **Invocation 1** via `get_namespaced_resource_context` or `get_cluster_resource_context`). This is the only outcome that proceeds to Rego evaluation.
 
 **Fields:** `needs_human_review=false`, `selected_workflow` present, `confidence >= 0.7`
 **Next:** AA transitions to `Analyzing` phase → Rego evaluation
@@ -473,10 +521,15 @@ The LLM cannot determine the root cause or current state. Sets `investigation_ou
 
 ### Outcome 4: No Matching Workflows
 
-The LLM identified the root cause but no workflow in the catalog matches the required action.
+The first invocation may identify a root cause, but the **workflow selection** step finds **no** suitable entry in the catalog. In the second invocation, the model completes with the **`submit_result_no_workflow`** sentinel tool, which is how HAPI encodes a **"no matching workflows"** path.
 
-**Fields:** `selected_workflow=null` (without `resolved` outcome), `needs_human_review=true`, `human_review_reason=no_matching_workflows`
-**Next:** Routed to human review. Operators should check whether a suitable workflow exists or needs to be authored.
+**Parser routing:** In **`applyOutcomeRouting`**, the response is classified with **`HumanReviewNeeded=true`**, **`HumanReviewReason="no_matching_workflows"`**.
+
+**AA controller handling:** The **`handleNoMatchingWorkflowsCompleted`** path sets the AIAnalysis to **`Phase=Completed`**, **`Reason=AnalysisCompleted`**, **`SubReason=NoMatchingWorkflows`**, and **`NeedsHumanReview=true`**.
+
+**Fields (logical):** `selected_workflow=null` (and no self-resolved / not-actionable completion), `needs_human_review=true`, `human_review_reason=no_matching_workflows` after routing.
+
+**Next:** Human review. Operators should check whether a suitable workflow exists or needs to be authored.
 
 ### Outcome 5: RCA Incomplete
 
@@ -591,9 +644,17 @@ If the Rego policy fails to load or evaluate, the evaluator returns `Degraded=tr
 | `ApprovalRequired=true` | Stores approval context (investigation summary, recommended workflow, evidence, alternatives) | Creates `RemediationApprovalRequest` + approval `NotificationRequest`, transitions RR to `AwaitingApproval` |
 | `ApprovalRequired=false` | Sets `AutoApproved` | Creates `WorkflowExecution` directly, transitions RR to `Executing` |
 
+## Tool output limits
+
+HAPI and the HolmesGPT SDK cap tool and audit text so the model context stays bounded (v1.3).
+
+- **`MaxToolOutputSize`:** default **100,000** characters. Excess output is **hard-truncated** and an **`[TRUNCATED]`** suffix is appended to the result passed to the LLM.
+- **`Summarizer.MaybeSummarize`:** optional **LLM-based summarization** of oversize tool output may run **before** a hard cap is applied, when the summarizer is enabled in configuration.
+- **Audit previews:** for audit log emission, the pipeline uses **`truncatePreview(500)`**-style behavior so long payloads do not bloat event records; full payloads may be stored elsewhere in the system.
+
 ## LLM Tool Reference
 
-Complete list of tools available during investigation:
+**Invocation 1 (RCA)** uses Kubernetes core, metrics, and **resource context** tools. **Invocation 2 (Workflow selection)** uses the **workflow discovery** tools (`list_available_actions`, `list_workflows`, `get_workflow`) and the **sentinel submit** tools. Complete list:
 
 ### Kubernetes Core
 
@@ -624,7 +685,7 @@ Complete list of tools available during investigation:
 | Tool | Description | Parameters |
 |---|---|---|
 | `get_namespaced_resource_context` | Resolve root owner, compute spec hash, detect infrastructure labels, fetch remediation history (via internal DataStorage lookup) for **namespaced** resources | `kind`, `name`, `namespace` |
-| `get_cluster_resource_context` | Same as above for **cluster-scoped** resources (Nodes, PersistentVolumes) | `kind`, `name` |
+| `get_cluster_resource_context` | Same resolution and history behavior as the namespaced tool for **cluster-scoped** resources — e.g. **Nodes**, **PersistentVolumes**, **ClusterRoles** / **ClusterRoleBindings**, and other cluster-scoped kinds | `kind`, `name` |
 
 ### Workflow Discovery (Custom)
 

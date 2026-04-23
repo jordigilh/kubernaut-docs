@@ -55,7 +55,7 @@ Each service has a single responsibility:
 ```mermaid
 graph TB
     subgraph Ingress["Signal Ingestion"]
-        GW[Gateway<br/><small>HTTP → CRD</small>]
+        GW[Gateway<br/><small>Signals → CRD</small>]
     end
 
     subgraph Core["Core Pipeline"]
@@ -152,7 +152,21 @@ An internal admission webhook validates and audits:
 - **DataStorage** -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
 - **Gateway** -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see [Security & RBAC](security-rbac.md#signal-ingestion))
 - **NetworkPolicies** -- Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
-- **TLS** -- Not configured for internal service-to-service traffic in v1.1
+- **TLS (inter-service)** -- v1.3+ supports HTTPS and mutual TLS for internal REST traffic when certificate material is present; see [Configuration Reference -- TLS](../user-guide/configuration.md#tls-and-certificate-management)
+
+## Port model (v1.3+)
+
+Kubernaut uses a **three-port** split on components that serve both an API and operational endpoints:
+
+| Port | Purpose |
+|------|---------|
+| **8080** | Primary API. Serves **HTTPS** when TLS certificate files exist under `tls.interService.certDir`; otherwise plain HTTP. |
+| **8081** | **Health probes only**, always **plain HTTP**: `GET /healthz` (liveness), `GET /readyz` (readiness). The path **`/livez` is not registered** — do not configure probes to use it. |
+| **9090** | **Prometheus metrics**, always **plain HTTP** at `GET /metrics`. |
+
+**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, and the **AIAnalysis** controller. Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the 8080/8081 API/health split.
+
+**Auth Webhook** is an exception: the Service uses **port 443** with **targetPort 9443** for admission traffic; health checks use **8081** (`/healthz`, `/readyz`) like the other Go components.
 
 ## Error Handling Patterns
 

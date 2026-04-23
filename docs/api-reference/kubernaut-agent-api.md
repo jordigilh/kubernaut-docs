@@ -14,7 +14,7 @@ The Kubernaut Agent is a **Go** service that wraps LLM calls with live Kubernete
 https://kubernaut-agent.kubernaut-system.svc.cluster.local:8080
 ```
 
-Internal services use the short form `https://kubernaut-agent:8080` when communicating within the same namespace.
+Internal services use the short form `https://kubernaut-agent:8080` when communicating within the same namespace (HTTPS when inter-service TLS is enabled).
 
 ## Session-Based Async Pattern
 
@@ -123,15 +123,16 @@ Returns the current runtime configuration snapshot (available on the API port).
 
 Audit events of type `aiagent.response.complete` include LLM token totals on the payload: **`total_prompt_tokens`** and **`total_completion_tokens`**, for cost and usage tracking in the audit trail.
 
-### Health and Observability
+### Health and metrics (v1.3+)
 
-Health and metrics endpoints are served on **dedicated ports** (not the main API port):
+Liveness and readiness are on **port 8081** (plain HTTP): `GET /healthz`, `GET /readyz` (readiness checks SDK, context API, and Prometheus client). **Prometheus** metrics are on **port 9090** (`GET /metrics`, plain HTTP). The primary REST API remains on **port 8080** (**HTTPS** when inter-service TLS is configured).
 
-| Port | Method | Path | Description |
+| Method | Port | Path | Description |
 |---|---|---|---|
-| 8081 | `GET` | `/healthz` | Liveness probe |
-| 8081 | `GET` | `/readyz` | Readiness probe |
-| 9090 | `GET` | `/metrics` | Prometheus metrics |
+| `GET` | 8081 | `/healthz` | Liveness |
+| `GET` | 8081 | `/readyz` | Readiness |
+| `GET` | 8080 | `/config` | Configuration snapshot (dev mode only) |
+| `GET` | 9090 | `/metrics` | Prometheus metrics |
 
 ## Error Responses
 

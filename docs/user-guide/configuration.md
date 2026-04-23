@@ -431,9 +431,34 @@ For authoring ansible workflows, see [Ansible (AWX/AAP) in Remediation Workflows
 
 ## TLS and Certificate Management
 
-The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
+Kubernaut configures **inter-service TLS** (REST between components) and **admission webhook TLS** (Auth Webhook). The Helm values below cover both surfaces; the following subsections describe how admission webhook certificates are generated in each mode.
 
-The chart supports three modes for managing TLS certificates used by the admission webhooks, controlled by `tls.mode`:
+### Inter-service TLS (Helm)
+
+These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under `tls.interService.certDir`, the primary API port (**8080**) uses HTTPS; health (**8081**) and metrics (**9090**) stay plain HTTP.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual--external-pki) below. | `hook` |
+| `tls.interService.certDir` | Directory mounted in pods containing the server cert/key (and related material) for inter-service listeners. | `/etc/tls` |
+| `tls.interService.caFile` | Path to the PEM CA bundle used to **verify peer** certificates (client CA). | `/etc/tls-ca/ca.crt` |
+| `tls.certManager.issuerRef.name` | **Required** when `tls.mode=cert-manager` -- Issuer or ClusterIssuer that signs inter-service and webhook certificates. | -- |
+| `tls.certManager.issuerRef.kind` | Issuer kind (`Issuer` or `ClusterIssuer`). | `ClusterIssuer` |
+| `tls.certManager.issuerRef.group` | API group for the Issuer reference. | `cert-manager.io` |
+
+When `tls.mode=cert-manager`, the chart creates **cert-manager** `Certificate` resources. Recommended renewal settings (align with the chart defaults): **`duration: 8760h`** (365 days), **`renewBefore: 720h`** (30 days before expiry).
+
+**Kubernaut Agent** (scraping / TLS to peers):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `kubernautAgent.prometheus.tls.enabled` | Enable TLS for Prometheus client connections from the agent. | (see `values.yaml`) |
+| `kubernautAgent.prometheus.tls.caConfigMapName` | ConfigMap name holding the CA to trust. | (see `values.yaml`) |
+| `kubernautAgent.prometheus.tls.caConfigMapKey` | Key within that ConfigMap for the PEM CA. | (see `values.yaml`) |
+
+### Admission webhook TLS modes
+
+The Auth Webhook requires a TLS server certificate for traffic from the Kubernetes API server. Inter-service and webhook TLS use the same `tls.mode` (and cert-manager issuer when applicable). The chart supports **three** modes for **admission** certificates, all selected with `tls.mode`:
 
 ### Hook Mode (`tls.mode: hook`) -- Default
 

@@ -14,7 +14,7 @@ The DataStorage service provides a REST API for audit events, workflow catalog m
 ## Base URL
 
 ```
-http://data-storage-service.kubernaut-system.svc.cluster.local:8080
+https://data-storage-service.kubernaut-system.svc.cluster.local:8080
 ```
 
 ## Endpoints
@@ -74,14 +74,15 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | `PATCH` | `/api/v1/action-types/{name}/disable` | Disable an action type |
 | `GET` | `/api/v1/action-types/{name}/workflow-count` | Get the number of active workflows for an action type |
 
-### Health
+### Health and metrics (v1.3+)
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/health` | Health check (checks PostgreSQL connectivity) |
-| `GET` | `/health/live` | Liveness probe (always 200) |
-| `GET` | `/health/ready` | Readiness probe (checks PostgreSQL connectivity + shutdown flag) |
-| `GET` | `/metrics` | Prometheus metrics (`:9090/metrics`) |
+Operational endpoints are **not** on the API port: **liveness and readiness** are on **port 8081** (plain HTTP) at `GET /healthz` and `GET /readyz` respectively. **Prometheus** metrics are on **port 9090** at `GET /metrics` (plain HTTP). The REST API on **8080** uses **HTTPS** when inter-service TLS is configured (`tls.interService.certDir`).
+
+| Port | Path | Description |
+|------|------|-------------|
+| 8081 | `GET /healthz` | Liveness |
+| 8081 | `GET /readyz` | Readiness (PostgreSQL connectivity + shutdown) |
+| 9090 | `GET /metrics` | Prometheus exposition |
 
 ## Error Responses
 

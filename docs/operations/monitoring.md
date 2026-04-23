@@ -6,14 +6,16 @@ In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt
 
 ## Health Checks
 
-Services expose health endpoints at different paths depending on their framework:
+**v1.3+ (three-port components):** Gateway, DataStorage, HolmesGPT API, Kubernaut Agent, and the AIAnalysis controller split traffic by port: **8080** (primary API; **HTTPS** when inter-service TLS is enabled), **8081** (health only -- **plain HTTP**), and **9090** (`/metrics` -- **plain HTTP**). Probes use **8081** with `GET /healthz` (liveness) and `GET /readyz` (readiness). **`/livez` is not a registered path** (do not use it in probes or docs).
 
-| Service Type | Liveness | Readiness | Notes |
-|---|---|---|---|
-| **Go CRD controllers** (RO, SP, AA, WFE, NT, EM) | `GET /healthz` | `GET /readyz` | controller-runtime defaults |
-| **Gateway** | `GET /health` | `GET /ready` | Also supports `GET /healthz` |
-| **DataStorage** | `GET /health/live` | `GET /health/ready` | Nested structure; checks PostgreSQL |
-| **Kubernaut Agent** | `GET /healthz` | `GET /readyz` | On dedicated health port (8081) |
+| Service Type | Liveness | Readiness | Port | Notes |
+|---|---|---|---|---|
+| **Go CRD controllers** (RO, SP, WFE, NT, EM) | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Metrics on **9090** only -- no 8080 API |
+| **AIAnalysis** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Three-port: API **8080**, metrics **9090** |
+| **Gateway** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Ingestion API on **8080** |
+| **DataStorage** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness checks PostgreSQL; REST API on **8080** |
+| **Kubernaut Agent** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness includes LLM connectivity |
+| **Auth Webhook** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Service **443** → targetPort **9443** for admission |
 
 ## Scrape Configuration
 

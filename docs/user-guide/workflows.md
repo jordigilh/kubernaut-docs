@@ -520,9 +520,9 @@ kubectl apply -f my-workflow.yaml
 State transitions via the DataStorage API (for advanced lifecycle management):
 
 ```bash
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/disable
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/enable
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/disable
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/enable
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
 ```
 
 ### Content Integrity and Supersede

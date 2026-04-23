@@ -447,7 +447,7 @@ The ranking and the descriptions **reinforce each other**:
 2. **Check DataStorage ranking**: Query the DataStorage API directly to see how workflows are scored:
 
     ```bash
-    curl -s "http://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
+    curl -s "https://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
     ```
 
     If the wrong workflow is ranked higher, check label matching.

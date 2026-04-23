@@ -239,7 +239,7 @@ TokenRequest is used by the Ansible path for AWX credential injection when the w
 
 ## Standard Resource Parameters
 
-Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **HAPI (HolmesGPT API)** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
+Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **Kubernaut Agent** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -249,7 +249,7 @@ Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that id
 
 ### Declaring Standard Parameters in Workflow Schemas
 
-Workflows that operate on the target resource should declare these as **required** parameters in their schema. HAPI validates that all required parameters in the workflow schema are satisfied during its workflow response validation step.
+Workflows that operate on the target resource should declare these as **required** parameters in their schema. Kubernaut Agent validates that all required parameters in the workflow schema are satisfied during its workflow response validation step.
 
 ```yaml
 parameters:
@@ -345,15 +345,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -389,15 +389,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -447,7 +447,7 @@ The ranking and the descriptions **reinforce each other**:
 2. **Check DataStorage ranking**: Query the DataStorage API directly to see how workflows are scored:
 
     ```bash
-    curl -s "http://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
+    curl -s "https://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
     ```
 
     If the wrong workflow is ranked higher, check label matching.

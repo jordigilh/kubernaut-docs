@@ -256,10 +256,10 @@ The approval decision is governed by the `aianalysis.approval` Rego policy. The 
 | `confidence` | AI Analysis result | LLM confidence score (0.0--1.0) |
 | `confidence_threshold` | Helm values (default: 0.8) | Auto-approval threshold |
 | `environment` | Signal Processing classification | `production`, `staging`, `development`, `qa`, `test` |
-| `detected_labels` | HAPI label detection | Infrastructure labels (e.g., `stateful`, `gitOpsManaged`) |
-| `failed_detections` | HAPI label detection | Labels where detection failed |
+| `detected_labels` | Kubernaut Agent label detection | Infrastructure labels (e.g., `stateful`, `gitOpsManaged`) |
+| `failed_detections` | Kubernaut Agent label detection | Labels where detection failed |
 | `remediation_target` | AI Analysis RCA result | Target resource `kind` and `name` |
-| `warnings` | HAPI investigation | Non-fatal investigation warnings |
+| `warnings` | Kubernaut Agent investigation | Non-fatal investigation warnings |
 
 The built-in policy behavior:
 

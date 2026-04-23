@@ -72,13 +72,13 @@ See [Installation](../getting-started/installation.md#signal-source-authenticati
 
 Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).
 
-Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
+Four services (Kubernaut Agent, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
 
 | Controller | ServiceAccount | CRDs Managed | Additional Access | Notes |
 |---|---|---|---|---|
 | RemediationOrchestrator | `remediationorchestrator-controller` | All 7 child CRDs (full CRUD) | Pods, nodes, events, namespaces, services, deployments, statefulsets, daemonsets, jobs, cronjobs (read) | Broadest permissions -- creates and watches all child CRDs |
 | SignalProcessing | `signalprocessing-controller` | SignalProcessing, RemediationRequest | Pods, services, namespaces, nodes, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, network policies (read); leases (full) | Owner chain resolution and enrichment |
-| AIAnalysis | `aianalysis-controller` | AIAnalysis | Events (create) | Also bound to `holmesgpt-api-client` for HolmesGPT access and `data-storage-client` for DataStorage access |
+| AIAnalysis | `aianalysis-controller` | AIAnalysis | Events (create) | Also bound to `kubernaut-agent-client` for Kubernaut Agent access and `data-storage-client` for DataStorage access |
 | WorkflowExecution | `workflowexecution-controller` | WorkflowExecution | Tekton PipelineRuns (full), TaskRuns (read), Jobs (full), events (create); leases (full) | Creates Jobs and PipelineRuns in the execution namespace. When the ansible engine is enabled, also requires `get` on the AWX API token Secret -- see [Ansible Engine Setup](../user-guide/configuration.md#ansible-engine-awxaap). |
 | EffectivenessMonitor | `effectivenessmonitor-controller` | EffectivenessAssessment, RemediationRequest (read) | Pods, nodes, services, PVCs, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, jobs, cronjobs (read) | Post-remediation health checks |
 | Notification | `notification-controller` | NotificationRequest | Events (create) | Minimal scope |
@@ -188,13 +188,13 @@ DataStorage uses the same TokenReview + SAR pattern as the Gateway. The `data-st
 
 Clients must have `create` permission on `services/data-storage-service` (via the `data-storage-client` ClusterRole). The chart binds every Kubernaut service to this role:
 
-Gateway, SignalProcessing, RemediationOrchestrator, AIAnalysis, WorkflowExecution, EffectivenessMonitor, Notification, AuthWebhook, HolmesGPT API, and DataStorage itself.
+Gateway, SignalProcessing, RemediationOrchestrator, AIAnalysis, WorkflowExecution, EffectivenessMonitor, Notification, AuthWebhook, Kubernaut Agent, and DataStorage itself.
 
-### HolmesGPT API Access
+### Kubernaut Agent Access
 
-The AIAnalysis controller communicates with HolmesGPT API via the `holmesgpt-api-client` ClusterRole, which grants `create` and `get` on `services/holmesgpt-api`.
+The AIAnalysis controller communicates with Kubernaut Agent via the `kubernaut-agent-client` ClusterRole, which grants `create` and `get` on `services/kubernaut-agent`.
 
-HolmesGPT API itself has a broad **read-only** ClusterRole (`holmesgpt-api-investigator`) for its kubectl-based investigation:
+Kubernaut Agent itself has a broad **read-only** ClusterRole (`kubernaut-agent-investigator`) for its kubectl-based investigation:
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|

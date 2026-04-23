@@ -86,7 +86,7 @@ AlertManager must include `http_config.bearer_token_file` in its webhook receive
 receivers:
   - name: kubernaut
     webhook_configs:
-      - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+      - url: "https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
         send_resolved: true
         http_config:
           bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -108,7 +108,7 @@ alertmanager:
     receivers:
       - name: kubernaut
         webhook_configs:
-          - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+          - url: "https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
             send_resolved: true
             http_config:
               bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -177,9 +177,9 @@ kubectl create secret generic valkey-secret \
 |---|---|---|
 | `postgresql-secret` | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB`, `db-secrets.yaml` | PostgreSQL (env vars), DataStorage (file mount), migration hook |
 | `valkey-secret` | `valkey-secrets.yaml` | DataStorage (file mount) |
-| `llm-credentials` | Provider-specific (see [below](#llm-credentials-required-for-ai-analysis)) | HolmesGPT API |
+| `llm-credentials` | Provider-specific (see [below](#llm-credentials-required-for-ai-analysis)) | Kubernaut Agent |
 
-To use custom secret names for database/cache secrets, pass `--set postgresql.auth.existingSecret=<name>` and `--set valkey.existingSecret=<name>` at install time. For LLM credentials, use `--set holmesgptApi.llm.credentialsSecretName=<name>`.
+To use custom secret names for database/cache secrets, pass `--set postgresql.auth.existingSecret=<name>` and `--set valkey.existingSecret=<name>` at install time. For LLM credentials, use `--set kubernautAgent.llm.credentialsSecretName=<name>`.
 
 #### LLM credentials (required for AI analysis)
 
@@ -199,15 +199,15 @@ To use custom secret names for database/cache secrets, pass `--set postgresql.au
       -n kubernaut-system
     ```
 
-    HAPI auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` to the mount path at runtime.
+    Kubernaut Agent auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` to the mount path at runtime.
     With GCP Workload Identity the secret can be omitted.
 
     !!! note "Vertex AI requires an SDK config file"
-        The quickstart `--set holmesgptApi.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-holmesgpt.md#google-vertex-ai).
+        The quickstart `--set kubernautAgent.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-kubernaut-agent.md#google-vertex-ai).
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
-| `holmesgptApi.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `application_default_credentials.json` (file) |
+| `kubernautAgent.llm.credentialsSecretName` | `llm-credentials` (default) | Provider-specific: `OPENAI_API_KEY`, `AZURE_API_KEY`, or `application_default_credentials.json` (file) |
 
 #### Notification credentials (optional, Slack only)
 
@@ -232,8 +232,8 @@ The chart is distributed as an OCI artifact. With the namespace and secrets prov
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set kubernautAgent.llm.provider=openai \
+  --set kubernautAgent.llm.model=gpt-4o
 ```
 
 ### OpenShift (OCP)
@@ -244,8 +244,8 @@ OpenShift requires additional configuration: cert-manager TLS mode, OCP monitori
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
   --values kubernaut-ocp-values.yaml \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o
+  --set kubernautAgent.llm.provider=openai \
+  --set kubernautAgent.llm.model=gpt-4o
 ```
 
 The OCP values overlay configures:
@@ -270,7 +270,7 @@ For advanced LLM configurations (Vertex AI, local models) or custom Rego policie
 ```bash
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=my-approval.rego \
   --set-file signalprocessing.policy=my-policy.rego
 ```
@@ -283,7 +283,7 @@ To pin a specific chart version, add `--version <version>`. Omitting `--version`
     The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
-    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for details.
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization-pre-v12) for details.
 
 ### Quickstart
 

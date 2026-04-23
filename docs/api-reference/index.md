@@ -2,11 +2,11 @@
 
 - **[Custom Resources (CRDs)](crds.md)** — Spec, status, and phase definitions for all 9 CRD types. Documents the full spec and status schema for each CRD in the remediation pipeline.
 - **[DataStorage API](datastorage-api.md)** — REST API for audit events, workflow catalog, and reconstruction. REST endpoints for querying audit data, workflow catalog, and reconstruction.
-- **[HolmesGPT API](holmesgpt-api.md)** — Session-based async API for LLM-powered root cause analysis. Documents endpoints for LLM-driven investigation, infrastructure label detection, and workflow discovery.
+- **[Kubernaut Agent](kubernaut-agent-api.md)** — Session-based async API for LLM-powered root cause analysis. Documents endpoints for LLM-driven investigation, infrastructure label detection, and workflow discovery.
 
 ## Error Responses (RFC 7807)
 
-All Kubernaut HTTP APIs return errors in [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) format. This applies to the Gateway signal ingestion endpoint, the DataStorage REST API, and the HolmesGPT API.
+All Kubernaut HTTP APIs return errors in [RFC 7807 Problem Details](https://datatracker.ietf.org/doc/html/rfc7807) format. This applies to the Gateway signal ingestion endpoint, the DataStorage REST API, and Kubernaut Agent.
 
 **Content-Type**: `application/problem+json`
 

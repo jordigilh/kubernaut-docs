@@ -66,15 +66,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -306,9 +306,9 @@ Every workflow schema **must** declare these three parameters as `required: true
 | `TARGET_RESOURCE_KIND` | Kind of the root managing resource (e.g., `Deployment`) |
 | `TARGET_RESOURCE_NAMESPACE` | Namespace of the root managing resource |
 
-These are **HAPI-injected** -- HAPI derives them from the K8s-verified `root_owner` (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into `selected_workflow.parameters` before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).
+These are **KA-injected** -- Kubernaut Agent derives them from the K8s-verified `root_owner` (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into `selected_workflow.parameters` before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).
 
-If HAPI cannot determine the `root_owner` (e.g., the resource context tools were never called), the investigation is flagged `rca_incomplete` with `needs_human_review=true`.
+If Kubernaut Agent cannot determine the `root_owner` (e.g., the resource context tools were never called), the investigation is flagged `rca_incomplete` with `needs_human_review=true`.
 
 Additionally, the WFE controller injects `TARGET_RESOURCE` (composite format `namespace/kind/name`) from `wfe.Spec.TargetResource` into every Job and Tekton PipelineRun as a system variable.
 
@@ -394,15 +394,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
 ```
 
 The `engineConfig` fields for Ansible:
@@ -520,9 +520,9 @@ kubectl apply -f my-workflow.yaml
 State transitions via the DataStorage API (for advanced lifecycle management):
 
 ```bash
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/disable
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/enable
-curl -X PATCH http://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/disable
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/enable
+curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
 ```
 
 ### Content Integrity and Supersede
@@ -710,7 +710,7 @@ Re-applying a previously deleted `ActionType` CRD re-enables it with the previou
 
 ## Next Steps
 
-- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the LLM discovers and selects workflows
+- [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) -- How the LLM discovers and selects workflows
 - [Human Approval](approval.md) -- When workflows require approval before execution
 - [Effectiveness Monitoring](effectiveness.md) -- How outcomes are evaluated
 - [Architecture: Workflow Execution](../architecture/workflow-execution.md) -- Deep-dive into the execution engine

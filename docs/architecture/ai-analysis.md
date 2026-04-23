@@ -78,10 +78,10 @@ If either timeout expires, the AIAnalysis transitions to `Failed`.
 
 ## Kubernaut Agent Investigation
 
-Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with live Kubernetes access and configurable observability toolsets. During investigation, it:
+Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with live Kubernetes access and optional Prometheus integration. During investigation, it:
 
 1. **Reads the enriched signal** — Alert details, target resource, namespace context
-2. **Investigates using K8s tools** — Inspects pod logs, events, resource state, and live metrics via `kubectl`; optionally queries Prometheus, Grafana Loki/Tempo, and other configured toolsets
+2. **Investigates using K8s tools** — Inspects pod logs, events, resource state via `kubectl`; optionally queries Prometheus for live metrics when enabled
 3. **Produces a root cause analysis** — Structured explanation of what went wrong
 4. **Resolves the target resource** — Calls `get_namespaced_resource_context` (or `get_cluster_resource_context` for cluster-scoped resources) to resolve the owner chain, compute a spec hash, fetch **remediation history** (past outcomes and effectiveness scores via internal DataStorage lookup), and detect **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
 5. **Discovers workflows via DataStorage** — The LLM uses a three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).

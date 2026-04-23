@@ -1,6 +1,6 @@
 # AI Analysis
 
-The AI Analysis service performs root cause investigation using an LLM (via HolmesGPT) and decides whether the selected workflow should be auto-approved or require human review.
+The AI Analysis service performs root cause investigation using an LLM (via Kubernaut Agent) and decides whether the selected workflow should be auto-approved or require human review.
 
 !!! abstract "CRD Reference"
     For the complete AIAnalysis CRD specification, see [API Reference: CRDs](../api-reference/crds.md#aianalysis).
@@ -9,18 +9,18 @@ The AI Analysis service performs root cause investigation using an LLM (via Holm
 
 ```mermaid
 graph TB
-    AA[AI Analysis<br/>Controller] -->|session submit| HAPI[HolmesGPT API]
-    AA -->|session poll| HAPI
-    AA -->|session result| HAPI
-    HAPI -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI</small>]
-    HAPI -->|workflow query| DS[DataStorage]
+    AA[AI Analysis<br/>Controller] -->|session submit| KA[Kubernaut Agent]
+    AA -->|session poll| KA
+    AA -->|session result| KA
+    KA -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI</small>]
+    KA -->|workflow query| DS[DataStorage]
     AA -->|Rego eval| REGO[Approval Policy]
     AA -->|audit| DS
 ```
 
 ## Session-Based Async Pattern
 
-The AI Analysis controller communicates with HolmesGPT using a **session-based asynchronous** pattern (BR-AA-HAPI-064):
+The AI Analysis controller communicates with Kubernaut Agent using a **session-based asynchronous** pattern (BR-AA-HAPI-064):
 
 ### Flow
 
@@ -31,29 +31,29 @@ The AI Analysis controller communicates with HolmesGPT using a **session-based a
 ```mermaid
 sequenceDiagram
     participant AA as AI Analysis Controller
-    participant HAPI as HolmesGPT API
+    participant KA as Kubernaut Agent
     participant LLM as LLM Provider
 
-    AA->>HAPI: POST /api/v1/incident/analyze
-    HAPI-->>AA: 202 {session_id}
+    AA->>KA: POST /api/v1/incident/analyze
+    KA-->>AA: 202 {session_id}
     Note over AA: Phase: Investigating
 
-    HAPI->>LLM: Run investigation (kubectl access)
-    LLM-->>HAPI: Analysis result
+    KA->>LLM: Run investigation (kubectl access)
+    LLM-->>KA: Analysis result
 
-    AA->>HAPI: GET /session/{id}
-    HAPI-->>AA: {status: "completed"}
+    AA->>KA: GET /session/{id}
+    KA-->>AA: {status: "completed"}
 
-    AA->>HAPI: GET /session/{id}/result
-    HAPI-->>AA: IncidentResponse
+    AA->>KA: GET /session/{id}/result
+    KA-->>AA: IncidentResponse
     Note over AA: Phase: Analyzing
 ```
 
-This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (`RequeueAfter`) while the LLM investigation runs. The controller polls at a **constant 15-second interval** (configurable from 1s to 5m via the `holmesgpt.sessionPollInterval` YAML config field).
+This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (`RequeueAfter`) while the LLM investigation runs. The controller polls at a **constant 15-second interval** (configurable from 1s to 5m via the `kubernautAgent.sessionPollInterval` YAML config field).
 
 ### Session Recovery
 
-If HolmesGPT API restarts and returns `404` for a session, the controller regenerates the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).
+If Kubernaut Agent restarts and returns `404` for a session, the controller regenerates the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).
 
 ## Timeout Configuration
 
@@ -71,14 +71,14 @@ If either timeout expires, the AIAnalysis transitions to `Failed`.
 | Phase | Description |
 |---|---|
 | `Pending` | CRD created by Orchestrator |
-| `Investigating` | Session submitted to HolmesGPT, polling for completion |
+| `Investigating` | Session submitted to Kubernaut Agent, polling for completion |
 | `Analyzing` | Results received, evaluating Rego approval policy |
 | `Completed` | Analysis and approval decision recorded |
 | `Failed` | Investigation or analysis failed |
 
-## HolmesGPT Investigation
+## Kubernaut Agent Investigation
 
-HolmesGPT is a Python FastAPI service that orchestrates LLM-driven investigation with live Kubernetes access and configurable observability toolsets. During investigation, it:
+Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with live Kubernetes access and configurable observability toolsets. During investigation, it:
 
 1. **Reads the enriched signal** — Alert details, target resource, namespace context
 2. **Investigates using K8s tools** — Inspects pod logs, events, resource state, and live metrics via `kubectl`; optionally queries Prometheus, Grafana Loki/Tempo, and other configured toolsets
@@ -101,9 +101,9 @@ Applied in the response processor during the Investigating phase:
 
 #### Problem Self-Resolved Bypass (#301)
 
-When HolmesGPT reports `investigation_outcome=resolved`, it appends a "Problem self-resolved" warning to the response. The response processor detects this signal and bypasses the substantive RCA check -- even if the LLM produced a root cause analysis with contributing factors, the RCA is treated as documenting a **transient condition** (e.g., a pod that recovered on its own) rather than an active problem.
+When Kubernaut Agent reports `investigation_outcome=resolved`, it appends a "Problem self-resolved" warning to the response. The response processor detects this signal and bypasses the substantive RCA check -- even if the LLM produced a root cause analysis with contributing factors, the RCA is treated as documenting a **transient condition** (e.g., a pod that recovered on its own) rather than an active problem.
 
-Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because `hasSubstantiveRCA` would return `true`, preventing the `WorkflowNotNeeded` completion path). The fix ensures that HAPI's authoritative "resolved" signal takes priority over the RCA content check.
+Without this bypass, a resolved incident with a detailed RCA would be incorrectly escalated to human review (because `hasSubstantiveRCA` would return `true`, preventing the `WorkflowNotNeeded` completion path). The fix ensures that KA's authoritative "resolved" signal takes priority over the RCA content check.
 
 ### Approval Gate (Rego policy, operator-provided)
 

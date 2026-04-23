@@ -43,7 +43,7 @@ kubectl logs -n kubernaut-system -l app=signalprocessing-controller --tail=100
 
 ### Stuck in `Analyzing`
 
-AI Analysis is waiting for HolmesGPT.
+AI Analysis is waiting for Kubernaut Agent.
 
 **Check**:
 
@@ -54,12 +54,12 @@ kubectl get aianalysis -n kubernaut-system -o yaml
 # Check session status
 kubectl logs -n kubernaut-system -l app=aianalysis-controller --tail=100 | grep session
 
-# Is HolmesGPT healthy?
-kubectl get pods -n kubernaut-system -l app=holmesgpt-api
-kubectl logs -n kubernaut-system -l app=holmesgpt-api --tail=100
+# Is Kubernaut Agent healthy?
+kubectl get pods -n kubernaut-system -l app=kubernaut-agent
+kubectl logs -n kubernaut-system -l app=kubernaut-agent --tail=100
 ```
 
-**Common causes**: LLM provider unreachable, API key missing, HolmesGPT pod not running, session timeout.
+**Common causes**: LLM provider unreachable, API key missing, Kubernaut Agent pod not running, session timeout.
 
 ### Stuck in `AwaitingApproval`
 

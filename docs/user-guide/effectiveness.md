@@ -73,8 +73,8 @@ flowchart LR
     RO["RO<br/><small>Captures pre-hash</small>"] --> WFE["WFE<br/><small>Executes workflow</small>"]
     WFE --> EM["EM<br/><small>Evaluates effectiveness</small>"]
     EM --> DS["DS<br/><small>Stores audit events</small>"]
-    DS --> HAPI["HAPI<br/><small>Fetches history</small>"]
-    HAPI --> LLM["LLM<br/><small>Avoids past failures</small>"]
+    DS --> KA["KA<br/><small>Fetches history</small>"]
+    KA --> LLM["LLM<br/><small>Avoids past failures</small>"]
     LLM --> RO
 ```
 
@@ -92,12 +92,12 @@ The Remediation Orchestrator also emits `remediation.workflow_created` with the 
 
 ### How History Is Queried
 
-When the next incident hits the same resource, HAPI calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
+When the next incident hits the same resource, Kubernaut Agent calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
 
 ### How the Spec Hash Creates a Configuration Fingerprint
 
 - **Pre-remediation hash** (captured by RO before execution) and **post-remediation hash** (captured by EM after stabilization) create a before/after pair
-- When a future incident occurs, HAPI computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
+- When a future incident occurs, Kubernaut Agent computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
     - `"preRemediation"` -- Current config matches a previously-remediated state (**regression**)
     - `"postRemediation"` -- Config unchanged since last remediation
     - `"none"` -- Config has changed (fresh start)

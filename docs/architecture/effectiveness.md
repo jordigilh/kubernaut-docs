@@ -209,7 +209,7 @@ EA results feed back into the remediation pipeline through the [Investigation Pi
 
 1. **Audit storage** -- EA completion events are stored in DataStorage with the correlation ID
 2. **Remediation history** -- DataStorage indexes EA results by spec hash and target resource
-3. **HAPI retrieval** -- During future investigations, HAPI queries remediation history using the tiered strategy (24h recent, then 90d historical)
+3. **KA retrieval** -- During future investigations, KA queries remediation history using the tiered strategy (24h recent, then 90d historical)
 4. **LLM prompt** -- History entries include effectiveness scores and outcomes, formatted as warnings in the LLM prompt
 5. **Decision influence** -- The LLM uses history to avoid repeating ineffective workflows and prefer historically successful ones
 

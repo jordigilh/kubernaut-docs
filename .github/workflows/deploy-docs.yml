@@ -2,7 +2,7 @@ name: Deploy Documentation
 
 on:
   push:
-    branches: [main, release/v1.2]
+    branches: [main, release/v1.2, release/v1.3]
   repository_dispatch:
     types: [crd-docs-updated]
   workflow_dispatch:
@@ -37,6 +37,7 @@ jobs:
       - name: Fetch generated CRD API reference
         run: |
           case "${{ github.ref_name }}" in
+            release/v1.3) CRD_REF="v1.3.0" ;;
             release/v1.2) CRD_REF="v1.2.0" ;;
             *)            CRD_REF="main" ;;
           esac
@@ -54,12 +55,13 @@ jobs:
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
             case "${{ github.ref_name }}" in
+              release/v1.3) VERSION="v1.3" ;;
               release/v1.2) VERSION="v1.2" ;;
-              *)            VERSION="v1.1" ;;
+              *)            VERSION="v1.2" ;;
             esac
           fi
 
-          if [ "$VERSION" = "v1.2" ]; then
+          if [ "$VERSION" = "v1.3" ]; then
             mike deploy --push --update-aliases "$VERSION" latest
           else
             mike deploy --push "$VERSION"

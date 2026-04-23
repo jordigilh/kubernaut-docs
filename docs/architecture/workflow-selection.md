@@ -1,6 +1,6 @@
 # Workflow Selection
 
-Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where HolmesGPT queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
+Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where Kubernaut Agent queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
 
 !!! abstract "CRD Reference"
     For the complete CRD specifications, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the API Reference.
@@ -10,24 +10,24 @@ Workflow selection is the process of finding the best remediation workflow for a
 ```mermaid
 sequenceDiagram
     participant LLM as LLM
-    participant HAPI as HolmesGPT API
+    participant KA as Kubernaut Agent
     participant DS as DataStorage
 
-    LLM->>HAPI: list_available_actions()
-    HAPI->>DS: GET /api/v1/workflows/actions
-    DS-->>HAPI: Action types with workflow counts
-    HAPI-->>LLM: Available action types
+    LLM->>KA: list_available_actions()
+    KA->>DS: GET /api/v1/workflows/actions
+    DS-->>KA: Action types with workflow counts
+    KA-->>LLM: Available action types
 
-    LLM->>HAPI: list_workflows(action_type)
-    HAPI->>DS: GET /api/v1/workflows/actions/{action_type}
+    LLM->>KA: list_workflows(action_type)
+    KA->>DS: GET /api/v1/workflows/actions/{action_type}
     DS->>DS: Layer 1 filter + Layer 2 scoring
-    DS-->>HAPI: Scored candidates (scores stripped)
-    HAPI-->>LLM: Workflow summaries
+    DS-->>KA: Scored candidates (scores stripped)
+    KA-->>LLM: Workflow summaries
 
-    LLM->>HAPI: get_workflow(workflow_id)
-    HAPI->>DS: GET /api/v1/workflows/{workflow_id}
-    DS-->>HAPI: Full workflow schema
-    HAPI-->>LLM: Full schema for evaluation
+    LLM->>KA: get_workflow(workflow_id)
+    KA->>DS: GET /api/v1/workflows/{workflow_id}
+    DS-->>KA: Full workflow schema
+    KA-->>LLM: Full schema for evaluation
 ```
 
 ### Step 1: List Action Types
@@ -57,7 +57,7 @@ The LLM calls `get_workflow(workflow_id)` to retrieve the full schema for detail
 
 ## Signal Context Propagation
 
-HAPI propagates signal context from the investigation session to all DataStorage queries:
+KA propagates signal context from the investigation session to all DataStorage queries:
 
 | Parameter | Source | Purpose |
 |---|---|---|
@@ -66,10 +66,10 @@ HAPI propagates signal context from the investigation session to all DataStorage
 | `environment` | SP classification | Mandatory filter |
 | `priority` | SP classification | Mandatory filter |
 | `custom_labels` | SP custom labels | Layer 2 scoring boost |
-| `detected_labels` | HAPI `LabelDetector` (post-RCA) | Layer 2 scoring boost + penalty |
+| `detected_labels` | KA `LabelDetector` (post-RCA) | Layer 2 scoring boost + penalty |
 | `remediation_id` | Parent RR name | Audit correlation |
 
-Detected labels are computed by HAPI for the RCA target resource (ADR-056). Labels with `failedDetections` entries are stripped before propagation to DataStorage.
+Detected labels are computed by KA for the RCA target resource (ADR-056). Labels with `failedDetections` entries are stripped before propagation to DataStorage.
 
 ## Layer 1: Mandatory Filtering
 
@@ -245,6 +245,6 @@ After selection, the confidence score determines the next step:
 ## Next Steps
 
 - [Workflow Execution](workflow-execution.md) -- How selected workflows are run
-- [Investigation Pipeline](hapi-investigation.md) -- The HAPI investigation and selection process
+- [Investigation Pipeline](hapi-investigation.md) -- The KA investigation and selection process
 - [Remediation Workflows](../user-guide/workflows.md) -- Writing workflow schemas
 - [Signal Processing](signal-processing.md) -- How classification feeds into workflow filtering

@@ -14,7 +14,7 @@ Install Kubernaut on a disconnected OpenShift cluster by mirroring all container
 | **Kubernaut chart source** | A clone of [github.com/jordigilh/kubernaut](https://github.com/jordigilh/kubernaut) on the bastion host. |
 
 !!! info "LLM endpoint"
-    Kubernaut's AI analysis service (HolmesGPT) requires an LLM. In a disconnected environment, deploy a locally hosted LLM accessible from inside the cluster (e.g., [LiteLLM](https://docs.litellm.ai/) or any OpenAI-compatible endpoint). Configure the endpoint in your SDK config file (see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md)).
+    The Kubernaut Agent requires an LLM. In a disconnected environment, deploy a locally hosted LLM accessible from inside the cluster — either **Ollama** or any **OpenAI-compatible endpoint** (vLLM, LocalAI, TGI). Configure the endpoint in your SDK config file (see [Kubernaut Agent SDK Config](../user-guide/configmap-kubernaut-agent.md)). LangChainGo subprocess mode (`local`) is explicitly not supported for security reasons.
 
 ---
 
@@ -34,7 +34,7 @@ All published under `quay.io/kubernaut-ai/` with a tag matching the chart versio
 | `quay.io/kubernaut-ai/workflowexecution` | Job / Tekton execution engine |
 | `quay.io/kubernaut-ai/notification` | Notification delivery (Slack, console) |
 | `quay.io/kubernaut-ai/effectivenessmonitor` | Post-remediation effectiveness verification |
-| `quay.io/kubernaut-ai/holmesgpt-api` | LLM integration service |
+| `quay.io/kubernaut-ai/kubernaut-agent` | LLM integration service |
 | `quay.io/kubernaut-ai/authwebhook` | Admission controller for CRD authorization |
 | `quay.io/kubernaut-ai/db-migrate` | Database schema migration (pre-upgrade hook) |
 | `quay.io/kubernaut-ai/must-gather` | Diagnostic data collection for support |
@@ -247,14 +247,24 @@ The two overlay files must be layered on top of the base `values.yaml` in this o
 !!! important "Layering order"
     `values-airgap.yaml` **must** come after `values-ocp.yaml`. It overrides the `registry.redhat.io` image references with your mirror registry. The `postgresql.variant: ocp` setting from `values-ocp.yaml` is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.
 
-Prepare your SDK config file with the local LLM endpoint (see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md)):
+Prepare your SDK config file with the local LLM endpoint (see [Kubernaut Agent SDK Config](../user-guide/configmap-kubernaut-agent.md)):
 
 ```yaml
-# my-sdk-config.yaml
+# my-sdk-config.yaml — Ollama example
 llm:
-  provider: litellm
+  provider: ollama
+  model: llama3
+  endpoint: http://ollama.internal.svc:11434
+```
+
+Alternatively, for an OpenAI-compatible server:
+
+```yaml
+# my-sdk-config.yaml — OpenAI-compatible example
+llm:
+  provider: openai
   model: gpt-4o
-  endpoint: http://litellm.internal.svc:4000
+  endpoint: http://vllm.internal.svc:8000
 ```
 
 **Nested registry** (Harbor, Artifactory):
@@ -265,7 +275,7 @@ helm install kubernaut charts/kubernaut/ \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=harbor.corp \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml
 ```
 
 **Flat registry** (quay.io, OCP internal):
@@ -277,7 +287,7 @@ helm install kubernaut charts/kubernaut/ \
   -f charts/kubernaut/values-airgap.yaml \
   --set global.image.registry=quay.io/myorg \
   --set global.image.separator=- \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml
 ```
 
 If you used custom secret names in step 4a, add the corresponding `--set` flags:
@@ -337,8 +347,8 @@ kubectl logs job/<release-name>-db-migration -n kubernaut-system
 ### Service health
 
 ```bash
-kubectl port-forward -n kubernaut-system svc/holmesgpt-api 8080:8080
-curl -s http://localhost:8080/health | jq '.'
+kubectl port-forward -n kubernaut-system svc/kubernaut-agent 8081:8081
+curl -s http://localhost:8081/healthz | jq '.'
 ```
 
 ---
@@ -376,7 +386,7 @@ helm install kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-ocp.yaml \
   --set global.image.digest=sha256:<digest> \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml
 ```
 
 !!! tip "Recommendation"
@@ -397,7 +407,7 @@ helm upgrade kubernaut charts/kubernaut/ \
   --namespace kubernaut-system \
   -f charts/kubernaut/values-ocp.yaml \
   -f charts/kubernaut/values-airgap.yaml \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml
 ```
 
 ### Migration Job fails connecting to PostgreSQL

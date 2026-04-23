@@ -9,7 +9,7 @@ Use `helm upgrade` to apply configuration changes or move to a new chart version
 ```bash
 helm upgrade kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   -n kubernaut-system --reuse-values \
-  --set holmesgptApi.llm.model=gpt-4o-mini
+  --set kubernautAgent.llm.model=gpt-4o-mini
 ```
 
 To upgrade to a specific version, add `--version <new-version>`.

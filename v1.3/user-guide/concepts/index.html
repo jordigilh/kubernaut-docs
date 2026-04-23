@@ -3289,15 +3289,14 @@
 <h3 id="aianalysis">AIAnalysis<a class="headerlink" href="#aianalysis" title="Permanent link">&para;</a></h3>
 <p>Created after signal enrichment completes. The AI Analysis controller:</p>
 <ol>
-<li>Submits the enriched signal to <strong>Kubernaut Agent</strong> for a three-phase LLM investigation:<ul>
-<li><strong>Phase 1: Investigate</strong> — Root cause analysis using live cluster data (logs, events, resource state, metrics)</li>
-<li><strong>Phase 2: Enrich</strong> — Resolves the target resource's owner chain, computes a spec hash, fetches <strong>remediation history</strong> (past outcomes and effectiveness scores via DataStorage), and detects <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
-<li><strong>Phase 3: Workflow Select</strong> — The LLM discovers and selects a workflow from the catalog via a three-step protocol (<code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>); DataStorage applies label-based ranking but the LLM drives the final selection</li>
+<li>Submits the enriched signal to <strong>Kubernaut Agent</strong> for a <strong>two-invocation</strong> LLM investigation (v1.3+):<ul>
+<li><strong>Invocation 1 (RCA)</strong> — Root cause analysis using live cluster data (logs, events, resource state, metrics) via tools; also resolves the target resource's owner chain, spec hash, <strong>remediation history</strong> (DataStorage), and <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB) when resource-context tools are used</li>
+<li><strong>Invocation 2 (Workflow selection)</strong> — A <strong>new</strong> model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (<code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>); DataStorage applies label-based ranking but the LLM drives the final selection, then KA <strong>merges</strong> the two invocations' results</li>
 </ul>
 </li>
 <li>Evaluates whether auto-approval is safe via a <strong>Rego policy</strong> (configurable confidence threshold)</li>
 </ol>
-<p>See <a href="../../architecture/kubernaut-agent-investigation/">Investigation Pipeline</a> for the full three-phase architecture.</p>
+<p>See <a href="../../architecture/kubernaut-agent-investigation/">Investigation Pipeline</a> for the full two-invocation architecture.</p>
 <h3 id="remediationapprovalrequest">RemediationApprovalRequest<a class="headerlink" href="#remediationapprovalrequest" title="Permanent link">&para;</a></h3>
 <p>Created when the AI Analysis confidence is below the approval threshold, or when the Rego policy requires human review. A human operator approves or rejects the remediation.</p>
 <h3 id="workflowexecution">WorkflowExecution<a class="headerlink" href="#workflowexecution" title="Permanent link">&para;</a></h3>

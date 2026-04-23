@@ -1281,6 +1281,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#finish_reason-and-truncation-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        finish_reason and truncation (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tool-call-attribution" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3080,6 +3091,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#finish_reason-and-truncation-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        finish_reason and truncation (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#tool-call-attribution" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3223,8 +3245,8 @@
 </tr>
 <tr>
 <td><strong>Kubernaut Agent</strong></td>
-<td>Enrichment phase completed/failed during investigation</td>
-<td><code>aiagent.enrichment.completed</code>, <code>aiagent.enrichment.failed</code></td>
+<td>Enrichment and investigation; LLM completion and max-token handling (v1.3)</td>
+<td><code>aiagent.enrichment.completed</code>, <code>aiagent.enrichment.failed</code>, <code>aiagent.response.complete</code>, <code>truncation_detected</code></td>
 </tr>
 <tr>
 <td><strong>Orchestrator</strong></td>
@@ -3262,6 +3284,9 @@
 <p>Each event contains core fields: <code>event_id</code>, <code>event_timestamp</code>, <code>event_type</code>, <code>event_category</code>, <code>event_action</code>, <code>event_outcome</code>, <code>actor_type</code>/<code>actor_id</code>, <code>resource_type</code>/<code>resource_id</code>, <code>correlation_id</code>, <code>namespace</code>, and <code>event_data</code>. See <a href="../../architecture/audit-pipeline/#event-structure">Architecture: Audit Pipeline</a> for the complete event structure and field definitions.</p>
 <h3 id="llm-token-usage-aiagentresponsecomplete">LLM token usage (<code>aiagent.response.complete</code>)<a class="headerlink" href="#llm-token-usage-aiagentresponsecomplete" title="Permanent link">&para;</a></h3>
 <p>Events with type <code>aiagent.response.complete</code> include <strong><code>total_prompt_tokens</code></strong> and <strong><code>total_completion_tokens</code></strong> in the payload for token accounting and cost analysis.</p>
+<h3 id="finish_reason-and-truncation-v13"><code>finish_reason</code> and truncation (v1.3)<a class="headerlink" href="#finish_reason-and-truncation-v13" title="Permanent link">&para;</a></h3>
+<p>HolmesGPT API investigation <strong>response</strong> events in this same category can include <strong><code>finish_reason</code></strong>, taken from the provider completion, so you can see whether a response ended with <strong><code>length</code> (max tokens)</strong>, <code>stop</code>, <code>tool_calls</code>, and so on in your audit store.</p>
+<p>A <strong><code>truncation_detected</code></strong> event is emitted when truncation triggers the <strong>token escalation</strong> path. Its <code>event_data</code> can include **<code>escalated_max_tokens: true</code> when a second attempt runs with a higher max-token cap (capped, for example, at 16,384; see <a href="../../architecture/kubernaut-agent-investigation/#llm-output-resilience">Investigation Pipeline: LLM output resilience</a>).</p>
 <h3 id="tool-call-attribution">Tool call attribution<a class="headerlink" href="#tool-call-attribution" title="Permanent link">&para;</a></h3>
 <p>For tool-invocation audit events, <strong><code>tool_name</code></strong> is populated with the actual tool name. In v1.1 this field was incorrectly recorded as <code>unknown</code> in some paths; <strong>v1.2</strong> records it correctly.</p>
 <h2 id="operator-attribution">Operator Attribution<a class="headerlink" href="#operator-attribution" title="Permanent link">&para;</a></h2>

@@ -2,7 +2,7 @@
 
 All Kubernaut services expose Prometheus-compatible metrics and standard health check endpoints. This page provides a complete metrics reference for building Grafana dashboards and alerting rules.
 
-In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt_*` namespace to `aiagent_api_*`. **Effectiveness Monitor** and **Notification** metrics remain stable from v1.2.
+In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt_*` namespace to `aiagent_api_*`. **Effectiveness Monitor** metrics remain stable from v1.2. **Notification** metrics were refactored internally (DD-METRICS-001: 3-layer → 1-layer) but the metric names and semantics are unchanged.
 
 ## Health Checks
 
@@ -92,14 +92,17 @@ scrape_configs:
 
 ## Notification Metrics
 
+!!! note "DD-METRICS-001: Metrics wiring pattern"
+    In v1.3, the Notification controller's metrics were collapsed from a **3-layer stack** (interface → recorder → raw metrics) to a **single dependency-injected `*Metrics` struct**, matching the pattern mandated by DD-METRICS-001 for all CRD controllers. The metrics struct is injected into both the reconciler and the delivery orchestrator at startup via `NewMetrics()`. Test isolation uses `NewMetricsWithRegistry(prometheus.NewRegistry())` instead of interface mocking.
+
 | Metric | Type | Labels | Description |
 |---|---|---|---|
+| `kubernaut_notification_reconciler_active` | Gauge | `phase` | Active notification backlog by phase (Pending, Sending, Sent, Retrying, PartiallySent, Failed) |
 | `kubernaut_notification_delivery_attempts_total` | Counter | `channel`, `status` | Delivery attempts per channel |
 | `kubernaut_notification_delivery_duration_seconds` | Histogram | `channel` | Delivery duration per channel |
-| `kubernaut_notification_delivery_retries_total` | Counter | `channel`, `reason` | Delivery retries per channel |
+| `kubernaut_notification_delivery_retries_total` | Counter | `channel` | Delivery retries per channel |
 | `kubernaut_notification_channel_circuit_breaker_state` | Gauge | `channel` | Circuit breaker state (0=closed, 1=open, 2=half-open) |
-| `kubernaut_notification_channel_health_score` | Gauge | `channel` | Channel health score (0--100) |
-| `kubernaut_notification_reconciler_active` | Gauge | `phase` | Active notification backlog by phase |
+| `kubernaut_notification_channel_health_score` | Gauge | `channel` | Channel health score (0–100) |
 
 ## Effectiveness Monitor Metrics
 

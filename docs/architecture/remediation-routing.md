@@ -147,6 +147,31 @@ The Blocked phase behaves differently based on the block type:
 
 The Gateway treats Blocked RRs as active, preventing new RRs for the same fingerprint.
 
+### Block-Reason Notifications (v1.3)
+
+When a RR enters the `Blocked` phase, the Orchestrator creates a NotificationRequest for **every** block reason. Prior to v1.3, most block reasons were silent (no NR, at most a K8s event).
+
+| Block Reason | NR Type | Priority | Previously |
+|---|---|---|---|
+| `ConsecutiveFailures` | Escalation | High | Silent (K8s Warning event only) |
+| `UnmanagedResource` | Escalation | High | Silent (no NR, no event) |
+| `DuplicateInProgress` | StatusUpdate | Low | Silent (no NR, no event) |
+| `ResourceBusy` | StatusUpdate | Low | Silent (no NR, no event) |
+| `RecentlyRemediated` | StatusUpdate | Low | Silent (K8s Normal event only) |
+| `ExponentialBackoff` | StatusUpdate | Low | Silent (K8s Normal event only) |
+| `IneffectiveChain` | ManualReview | High | Already documented |
+
+NR naming: `nr-block-<lowercased-reason>-<rr-name>` (one NR per block reason per RR).
+
+### Terminal Failure Escalation Notifications (v1.3)
+
+Two paths create Escalation NRs for terminal failures:
+
+- **`transitionToFailed`**: Any failure path reaching terminal `Failed` without a prior ManualReview or Escalation NR creates an Escalation NR (`nr-escalation-<rr-name>`). This covers config errors, SP failures, approval timeouts, WFE ref corruption, hash errors, and other previously-silent failure paths.
+- **`transitionToFailedTerminal`**: When a blocked RR's cooldown expires and transitions to terminal `Failed`, an Escalation NR is created with the block reason in the body.
+
+Both paths enforce a **double-NR guard**: if a ManualReview or Escalation NR already exists for the RR (e.g., from the WFE failure handler), no duplicate is created. The guard uses Get-before-Create on the deterministic NR name (`nr-escalation-<rr-name>`).
+
 ## Routing Checkpoints
 
 The routing engine evaluates blocking conditions at two points. Checks are evaluated in order; the first blocking condition wins.
@@ -295,8 +320,8 @@ Each child CRD status change triggers a reconcile of the parent RR. The reconcil
 
 When a RR reaches a terminal phase:
 
-1. **NotificationRequest** -- Created for `Completed`, `Failed`, and `TimedOut` outcomes
-2. **Duplicate notification** -- If `DuplicateCount > 0`, a bulk notification is created for tracked duplicates
+1. **NotificationRequest** -- Created for `Completed`, `Failed`, and `TimedOut` outcomes. For `Failed`, `transitionToFailed` creates an Escalation NR (`nr-escalation-<rr-name>`) unless a ManualReview or Escalation NR already exists (double-NR guard)
+2. **Duplicate notification** -- If `DuplicateCount > 0`, a bulk notification (`nr-bulk-<rr-name>`) is created for tracked duplicates
 3. **Consecutive failure update** -- `ConsecutiveFailureCount` and `NextAllowedExecution` are updated for backoff calculation
 
 ## Escalation Paths
@@ -304,11 +329,13 @@ When a RR reaches a terminal phase:
 | Trigger | Escalation | Mechanism |
 |---|---|---|
 | Rego policy requires approval (environment, sensitive kind, confidence) | Human approval | RemediationApprovalRequest CRD |
-| KA flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
-| Failure at any stage | Team notification | NotificationRequest with error context |
-| No matching workflow | Team notification with RCA | NotificationRequest |
-| Consecutive ineffective remediations | Manual review | `IneffectiveChain` block + `RequiresManualReview` |
-| 3+ consecutive failures | Cooldown block | `ConsecutiveFailures` block (1h) |
+| KA flags human review with selected workflow | Notification + Failed | ManualReview NR (`nr-manual-review-<rr-name>`) |
+| WFE execution failure (v1.3) | ManualReview + Failed | ManualReview NR (`reviewSource=WorkflowExecution`, `priority=Critical`) before `transitionToFailed` |
+| Failure at any stage (v1.3) | Escalation NR | `nr-escalation-<rr-name>` (double-NR guard) |
+| No matching workflow | Team notification with RCA | ManualReview NR |
+| Consecutive ineffective remediations | Manual review | `IneffectiveChain` block + ManualReview NR |
+| 3+ consecutive failures (v1.3) | Escalation NR + block | `nr-block-consecutivefailures-<rr-name>` |
+| Blocked RR cooldown expiry (v1.3) | Escalation NR | `nr-escalation-<rr-name>` (block reason in body) |
 
 ## Handoff to Workflow Execution
 

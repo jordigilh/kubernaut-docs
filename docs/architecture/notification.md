@@ -29,6 +29,28 @@ API values use **PascalCase** enum strings for `type`/`priority` (e.g. `Completi
 
 **Notification priority** (when used on the request) uses PascalCase: `Critical`, `High`, `Medium`, `Low`.
 
+### NR Naming Conventions
+
+All NotificationRequest names are **deterministic**, enabling Get-before-Create idempotency (at most one NR of each type per RR):
+
+| NR Type | Naming Pattern | Scope |
+|---|---|---|
+| ManualReview | `nr-manual-review-<rr-name>` | One per RR |
+| Escalation | `nr-escalation-<rr-name>` | One per RR |
+| Block reason | `nr-block-<lowercased-reason>-<rr-name>` | One per (RR, block reason) |
+| Approval | `nr-approval-<rr-name>` | One per RR |
+| Completion | `nr-completion-<rr-name>` | One per RR |
+| Bulk duplicate | `nr-bulk-<rr-name>` | One per RR |
+| Self-resolved | `nr-self-resolved-<rr-name>` | One per RR |
+
+ManualReview NRs use the **same name** regardless of origin. The `spec.reviewSource` field distinguishes the source:
+
+| `reviewSource` | Created by |
+|---|---|
+| `WorkflowExecution` | WFE PhaseFailed handler |
+| `AIAnalysis` | AI handler (NeedsHumanReview dispatch) |
+| `RoutingEngine` | IneffectiveChain block |
+
 ### Status
 
 For the complete field specification, see [NotificationRequest in the CRD Reference](../api-reference/crds.md#notificationrequest).

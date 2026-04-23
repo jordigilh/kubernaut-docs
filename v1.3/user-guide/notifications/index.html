@@ -1335,6 +1335,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#routing-new-v13-notification-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing New v1.3 Notification Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Routing New v1.3 Notification Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#escalation-nrs-block-reasons-and-terminal-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation NRs (block reasons and terminal failures)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statusupdate-nrs-transient-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StatusUpdate NRs (transient blocks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manualreview-nrs-by-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ManualReview NRs by source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enabling-slack-end-to-end-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3307,6 +3357,56 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#routing-new-v13-notification-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Routing New v1.3 Notification Types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Routing New v1.3 Notification Types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#escalation-nrs-block-reasons-and-terminal-failures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Escalation NRs (block reasons and terminal failures)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#statusupdate-nrs-transient-blocks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        StatusUpdate NRs (transient blocks)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#manualreview-nrs-by-source" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ManualReview NRs by source
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#enabling-slack-end-to-end-walkthrough" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3616,6 +3716,71 @@
 </span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">backoffMultiplier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2</span>
 </span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">maxBackoffSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
+<h2 id="routing-new-v13-notification-types">Routing New v1.3 Notification Types<a class="headerlink" href="#routing-new-v13-notification-types" title="Permanent link">&para;</a></h2>
+<p>v1.3 introduces notifications for block reasons and terminal failures that were previously silent. Operators with existing routing rules should add routes for these new NR types.</p>
+<h3 id="escalation-nrs-block-reasons-and-terminal-failures">Escalation NRs (block reasons and terminal failures)<a class="headerlink" href="#escalation-nrs-block-reasons-and-terminal-failures" title="Permanent link">&para;</a></h3>
+<p>Match <code>type: Escalation</code> to capture:</p>
+<ul>
+<li><strong>Block-reason escalations</strong> (<code>nr-block-consecutivefailures-*</code>, <code>nr-block-unmanagedresource-*</code>) -- persistent blocks requiring operator investigation</li>
+<li><strong>Terminal failure escalations</strong> (<code>nr-escalation-*</code>) -- failure paths that previously had no notification</li>
+</ul>
+<p>These are <strong>High</strong> priority. Route to your primary ops investigation channel.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">routes</span><span class="p">:</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Escalation</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ops-escalation-channel</span>
+</span></code></pre></div>
+<h3 id="statusupdate-nrs-transient-blocks">StatusUpdate NRs (transient blocks)<a class="headerlink" href="#statusupdate-nrs-transient-blocks" title="Permanent link">&para;</a></h3>
+<p>Match <code>type: StatusUpdate</code> with <code>priority: Low</code> to capture transient block notifications (<code>DuplicateInProgress</code>, <code>ResourceBusy</code>, <code>RecentlyRemediated</code>, <code>ExponentialBackoff</code>). These are informational -- route to a low-priority channel or suppress in high-traffic environments.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">routes</span><span class="p">:</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">StatusUpdate</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">      </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Low</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">low-priority-channel</span>
+</span></code></pre></div>
+<h3 id="manualreview-nrs-by-source">ManualReview NRs by source<a class="headerlink" href="#manualreview-nrs-by-source" title="Permanent link">&para;</a></h3>
+<p>ManualReview NRs can be further distinguished by <code>review-source</code> to route different failure types to different teams:</p>
+<table>
+<thead>
+<tr>
+<th><code>review-source</code></th>
+<th>Meaning</th>
+<th>Suggested action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WorkflowExecution</code></td>
+<td>Execution failure</td>
+<td>Ops investigation</td>
+</tr>
+<tr>
+<td><code>AIAnalysis</code></td>
+<td>AI couldn't recommend a workflow</td>
+<td>Catalog update / workflow authoring</td>
+</tr>
+<tr>
+<td><code>RoutingEngine</code></td>
+<td>Repeated ineffective remediations</td>
+<td>Root cause investigation</td>
+</tr>
+</tbody>
+</table>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">routes</span><span class="p">:</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ManualReview</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="nt">review-source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WorkflowExecution</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ops-failures-channel</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ManualReview</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">      </span><span class="nt">review-source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AIAnalysis</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">workflow-authors-channel</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">match</span><span class="p">:</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">      </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ManualReview</span>
+</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">      </span><span class="nt">review-source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RoutingEngine</span>
+</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">    </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ops-escalation-channel</span>
+</span></code></pre></div>
+<p>See <a href="../../architecture/notification/#nr-naming-conventions">Notification Pipeline: NR Naming Conventions</a> for the complete NR naming catalog.</p>
 <h2 id="enabling-slack-end-to-end-walkthrough">Enabling Slack: End-to-End Walkthrough<a class="headerlink" href="#enabling-slack-end-to-end-walkthrough" title="Permanent link">&para;</a></h2>
 <ol>
 <li>
@@ -3623,31 +3788,31 @@
 </li>
 <li>
 <p><strong>Create the Kubernetes Secret:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span><span class="s2">&quot;https://hooks.slack.com/services/T.../B.../xxx&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span><span class="s2">&quot;https://hooks.slack.com/services/T.../B.../xxx&quot;</span>
 </span></code></pre></div>
 </li>
 <li>
 <p><strong>Provide a routing config</strong> (via <code>--set-file</code> or in a values file):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span>--set-file<span class="w"> </span>notification.routing.content<span class="o">=</span>charts/kubernaut/examples/notification-routing.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span>-f<span class="w"> </span>values.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>--set-file<span class="w"> </span>notification.routing.content<span class="o">=</span>charts/kubernaut/examples/notification-routing.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>-f<span class="w"> </span>values.yaml
 </span></code></pre></div>
 <p>Ensure your values file includes the credential mount:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">notification</span><span class="p">:</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">credentials</span><span class="p">:</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">      </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook-url</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">notification</span><span class="p">:</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">credentials</span><span class="p">:</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">      </span><span class="nt">secretKey</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">webhook-url</span>
 </span></code></pre></div>
 </li>
 <li>
 <p><strong>Verify</strong> the notification pod has the credential mounted:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deploy/notification-controller<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>ls<span class="w"> </span>/etc/notification/credentials/
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># Should show: slack-webhook</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deploy/notification-controller<span class="w"> </span>--<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>ls<span class="w"> </span>/etc/notification/credentials/
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># Should show: slack-webhook</span>
 </span></code></pre></div>
 </li>
 </ol>

@@ -1897,6 +1897,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#block-reason-notifications-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Block-Reason Notifications (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminal-failure-escalation-notifications-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal Failure Escalation Notifications (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3464,6 +3486,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#block-reason-notifications-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Block-Reason Notifications (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#terminal-failure-escalation-notifications-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Terminal Failure Escalation Notifications (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3943,6 +3987,70 @@
 </li>
 </ul>
 <p>The Gateway treats Blocked RRs as active, preventing new RRs for the same fingerprint.</p>
+<h3 id="block-reason-notifications-v13">Block-Reason Notifications (v1.3)<a class="headerlink" href="#block-reason-notifications-v13" title="Permanent link">&para;</a></h3>
+<p>When a RR enters the <code>Blocked</code> phase, the Orchestrator creates a NotificationRequest for <strong>every</strong> block reason. Prior to v1.3, most block reasons were silent (no NR, at most a K8s event).</p>
+<table>
+<thead>
+<tr>
+<th>Block Reason</th>
+<th>NR Type</th>
+<th>Priority</th>
+<th>Previously</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConsecutiveFailures</code></td>
+<td>Escalation</td>
+<td>High</td>
+<td>Silent (K8s Warning event only)</td>
+</tr>
+<tr>
+<td><code>UnmanagedResource</code></td>
+<td>Escalation</td>
+<td>High</td>
+<td>Silent (no NR, no event)</td>
+</tr>
+<tr>
+<td><code>DuplicateInProgress</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+<td>Silent (no NR, no event)</td>
+</tr>
+<tr>
+<td><code>ResourceBusy</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+<td>Silent (no NR, no event)</td>
+</tr>
+<tr>
+<td><code>RecentlyRemediated</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+<td>Silent (K8s Normal event only)</td>
+</tr>
+<tr>
+<td><code>ExponentialBackoff</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+<td>Silent (K8s Normal event only)</td>
+</tr>
+<tr>
+<td><code>IneffectiveChain</code></td>
+<td>ManualReview</td>
+<td>High</td>
+<td>Already documented</td>
+</tr>
+</tbody>
+</table>
+<p>NR naming: <code>nr-block-&lt;lowercased-reason&gt;-&lt;rr-name&gt;</code> (one NR per block reason per RR).</p>
+<h3 id="terminal-failure-escalation-notifications-v13">Terminal Failure Escalation Notifications (v1.3)<a class="headerlink" href="#terminal-failure-escalation-notifications-v13" title="Permanent link">&para;</a></h3>
+<p>Two paths create Escalation NRs for terminal failures:</p>
+<ul>
+<li><strong><code>transitionToFailed</code></strong>: Any failure path reaching terminal <code>Failed</code> without a prior ManualReview or Escalation NR creates an Escalation NR (<code>nr-escalation-&lt;rr-name&gt;</code>). This covers config errors, SP failures, approval timeouts, WFE ref corruption, hash errors, and other previously-silent failure paths.</li>
+<li><strong><code>transitionToFailedTerminal</code></strong>: When a blocked RR's cooldown expires and transitions to terminal <code>Failed</code>, an Escalation NR is created with the block reason in the body.</li>
+</ul>
+<p>Both paths enforce a <strong>double-NR guard</strong>: if a ManualReview or Escalation NR already exists for the RR (e.g., from the WFE failure handler), no duplicate is created. The guard uses Get-before-Create on the deterministic NR name (<code>nr-escalation-&lt;rr-name&gt;</code>).</p>
 <h2 id="routing-checkpoints">Routing Checkpoints<a class="headerlink" href="#routing-checkpoints" title="Permanent link">&para;</a></h2>
 <p>The routing engine evaluates blocking conditions at two points. Checks are evaluated in order; the first blocking condition wins.</p>
 <h3 id="pre-analysis-checks-pending-processing">Pre-Analysis Checks (Pending → Processing)<a class="headerlink" href="#pre-analysis-checks-pending-processing" title="Permanent link">&para;</a></h3>
@@ -4252,8 +4360,8 @@
 <h2 id="terminal-phase-actions">Terminal Phase Actions<a class="headerlink" href="#terminal-phase-actions" title="Permanent link">&para;</a></h2>
 <p>When a RR reaches a terminal phase:</p>
 <ol>
-<li><strong>NotificationRequest</strong> -- Created for <code>Completed</code>, <code>Failed</code>, and <code>TimedOut</code> outcomes</li>
-<li><strong>Duplicate notification</strong> -- If <code>DuplicateCount &gt; 0</code>, a bulk notification is created for tracked duplicates</li>
+<li><strong>NotificationRequest</strong> -- Created for <code>Completed</code>, <code>Failed</code>, and <code>TimedOut</code> outcomes. For <code>Failed</code>, <code>transitionToFailed</code> creates an Escalation NR (<code>nr-escalation-&lt;rr-name&gt;</code>) unless a ManualReview or Escalation NR already exists (double-NR guard)</li>
+<li><strong>Duplicate notification</strong> -- If <code>DuplicateCount &gt; 0</code>, a bulk notification (<code>nr-bulk-&lt;rr-name&gt;</code>) is created for tracked duplicates</li>
 <li><strong>Consecutive failure update</strong> -- <code>ConsecutiveFailureCount</code> and <code>NextAllowedExecution</code> are updated for backoff calculation</li>
 </ol>
 <h2 id="escalation-paths">Escalation Paths<a class="headerlink" href="#escalation-paths" title="Permanent link">&para;</a></h2>
@@ -4274,27 +4382,37 @@
 <tr>
 <td>KA flags human review with selected workflow</td>
 <td>Notification + Failed</td>
-<td>NotificationRequest with rejected recommendation</td>
+<td>ManualReview NR (<code>nr-manual-review-&lt;rr-name&gt;</code>)</td>
 </tr>
 <tr>
-<td>Failure at any stage</td>
-<td>Team notification</td>
-<td>NotificationRequest with error context</td>
+<td>WFE execution failure (v1.3)</td>
+<td>ManualReview + Failed</td>
+<td>ManualReview NR (<code>reviewSource=WorkflowExecution</code>, <code>priority=Critical</code>) before <code>transitionToFailed</code></td>
+</tr>
+<tr>
+<td>Failure at any stage (v1.3)</td>
+<td>Escalation NR</td>
+<td><code>nr-escalation-&lt;rr-name&gt;</code> (double-NR guard)</td>
 </tr>
 <tr>
 <td>No matching workflow</td>
 <td>Team notification with RCA</td>
-<td>NotificationRequest</td>
+<td>ManualReview NR</td>
 </tr>
 <tr>
 <td>Consecutive ineffective remediations</td>
 <td>Manual review</td>
-<td><code>IneffectiveChain</code> block + <code>RequiresManualReview</code></td>
+<td><code>IneffectiveChain</code> block + ManualReview NR</td>
 </tr>
 <tr>
-<td>3+ consecutive failures</td>
-<td>Cooldown block</td>
-<td><code>ConsecutiveFailures</code> block (1h)</td>
+<td>3+ consecutive failures (v1.3)</td>
+<td>Escalation NR + block</td>
+<td><code>nr-block-consecutivefailures-&lt;rr-name&gt;</code></td>
+</tr>
+<tr>
+<td>Blocked RR cooldown expiry (v1.3)</td>
+<td>Escalation NR</td>
+<td><code>nr-escalation-&lt;rr-name&gt;</code> (block reason in body)</td>
 </tr>
 </tbody>
 </table>

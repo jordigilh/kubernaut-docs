@@ -1877,6 +1877,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#nr-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NR Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#status" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3443,6 +3454,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#nr-naming-conventions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NR Naming Conventions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#status" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4002,6 +4024,77 @@
 </tbody>
 </table>
 <p><strong>Notification priority</strong> (when used on the request) uses PascalCase: <code>Critical</code>, <code>High</code>, <code>Medium</code>, <code>Low</code>.</p>
+<h3 id="nr-naming-conventions">NR Naming Conventions<a class="headerlink" href="#nr-naming-conventions" title="Permanent link">&para;</a></h3>
+<p>All NotificationRequest names are <strong>deterministic</strong>, enabling Get-before-Create idempotency (at most one NR of each type per RR):</p>
+<table>
+<thead>
+<tr>
+<th>NR Type</th>
+<th>Naming Pattern</th>
+<th>Scope</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ManualReview</td>
+<td><code>nr-manual-review-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+<tr>
+<td>Escalation</td>
+<td><code>nr-escalation-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+<tr>
+<td>Block reason</td>
+<td><code>nr-block-&lt;lowercased-reason&gt;-&lt;rr-name&gt;</code></td>
+<td>One per (RR, block reason)</td>
+</tr>
+<tr>
+<td>Approval</td>
+<td><code>nr-approval-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+<tr>
+<td>Completion</td>
+<td><code>nr-completion-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+<tr>
+<td>Bulk duplicate</td>
+<td><code>nr-bulk-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+<tr>
+<td>Self-resolved</td>
+<td><code>nr-self-resolved-&lt;rr-name&gt;</code></td>
+<td>One per RR</td>
+</tr>
+</tbody>
+</table>
+<p>ManualReview NRs use the <strong>same name</strong> regardless of origin. The <code>spec.reviewSource</code> field distinguishes the source:</p>
+<table>
+<thead>
+<tr>
+<th><code>reviewSource</code></th>
+<th>Created by</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>WorkflowExecution</code></td>
+<td>WFE PhaseFailed handler</td>
+</tr>
+<tr>
+<td><code>AIAnalysis</code></td>
+<td>AI handler (NeedsHumanReview dispatch)</td>
+</tr>
+<tr>
+<td><code>RoutingEngine</code></td>
+<td>IneffectiveChain block</td>
+</tr>
+</tbody>
+</table>
 <h3 id="status">Status<a class="headerlink" href="#status" title="Permanent link">&para;</a></h3>
 <p>For the complete field specification, see <a href="../../api-reference/crds/#notificationrequest">NotificationRequest in the CRD Reference</a>.</p>
 <h3 id="deliveryattempt">DeliveryAttempt<a class="headerlink" href="#deliveryattempt" title="Permanent link">&para;</a></h3>

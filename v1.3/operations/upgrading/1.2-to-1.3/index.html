@@ -2936,6 +2936,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-coverage-for-block-reasons-and-terminal-failures-br-orch-036" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification coverage for block reasons and terminal failures (BR-ORCH-036)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3454,6 +3465,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#notification-coverage-for-block-reasons-and-terminal-failures-br-orch-036" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification coverage for block reasons and terminal failures (BR-ORCH-036)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3774,6 +3796,59 @@
 </tbody>
 </table>
 <p>The legacy <code>holmesgpt_llm_token_usage_total</code> referenced in some CRD descriptions is stale and does not correspond to any live metric.</p>
+<h3 id="notification-coverage-for-block-reasons-and-terminal-failures-br-orch-036">Notification coverage for block reasons and terminal failures (BR-ORCH-036)<a class="headerlink" href="#notification-coverage-for-block-reasons-and-terminal-failures-br-orch-036" title="Permanent link">&para;</a></h3>
+<p>The Remediation Orchestrator now creates NotificationRequests for <strong>all</strong> block reasons and terminal failure paths that were previously silent. Operators will see new notifications after upgrading:</p>
+<p><strong>Block-reason notifications</strong>: When a RR enters <code>Blocked</code>, a NotificationRequest is created for every block reason:</p>
+<table>
+<thead>
+<tr>
+<th>Block Reason</th>
+<th>NR Type</th>
+<th>Priority</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ConsecutiveFailures</code></td>
+<td>Escalation</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>UnmanagedResource</code></td>
+<td>Escalation</td>
+<td>High</td>
+</tr>
+<tr>
+<td><code>DuplicateInProgress</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>ResourceBusy</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>RecentlyRemediated</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>ExponentialBackoff</code></td>
+<td>StatusUpdate</td>
+<td>Low</td>
+</tr>
+<tr>
+<td><code>IneffectiveChain</code></td>
+<td>ManualReview</td>
+<td>High</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Terminal failure escalation</strong>: <code>transitionToFailed</code> and <code>transitionToFailedTerminal</code> now create Escalation NRs (<code>nr-escalation-&lt;rr-name&gt;</code>) for failure paths that previously had no notification. A double-NR guard prevents duplicates.</p>
+<p><strong>WFE PhaseFailed</strong>: WorkflowExecution failures now create a ManualReview NR (<code>reviewSource=WorkflowExecution</code>, <code>priority=Critical</code>) before transitioning to Failed.</p>
+<p><strong>NeedsHumanReview dispatch fix</strong>: AIAnalysis with <code>NeedsHumanReview=true</code> and no <code>SelectedWorkflow</code> now correctly creates a ManualReview NR via the AI handler.</p>
+<p>NR naming follows deterministic patterns (e.g., <code>nr-block-&lt;reason&gt;-&lt;rr-name&gt;</code>, <code>nr-escalation-&lt;rr-name&gt;</code>, <code>nr-manual-review-&lt;rr-name&gt;</code>). See <a href="../../../architecture/notification/#nr-naming-conventions">Notification Pipeline: NR Naming Conventions</a> for the full catalog. Operators with existing notification routing rules should review <a href="../../../user-guide/notifications/#routing-new-v13-notification-types">Routing New v1.3 Notification Types</a> for guidance on filtering and routing the new NR types.</p>
 <h2 id="upgrade-procedure">Upgrade Procedure<a class="headerlink" href="#upgrade-procedure" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># 1. Back up CRDs and values</span>
 </span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>crd<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>&gt;<span class="w"> </span>crds-backup.yaml

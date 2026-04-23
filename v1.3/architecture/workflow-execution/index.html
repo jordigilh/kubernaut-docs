@@ -3969,8 +3969,9 @@
 <h2 id="handoff">Handoff<a class="headerlink" href="#handoff" title="Permanent link">&para;</a></h2>
 <p>The WFE controller reports status back to the Orchestrator through the CRD status:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>WFE Completed → RO creates EffectivenessAssessment → Verifying phase
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>WFE Failed    → RO creates EA (for tracking) + NotificationRequest → Failed phase
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>WFE Failed    → WFE handler creates ManualReview NR → RO transitionToFailed → Failed phase
 </span></code></pre></div>
+<p>In v1.3, when a WorkflowExecution enters <code>PhaseFailed</code>, the WFE handler creates a <strong>ManualReview NR</strong> (<code>nr-manual-review-&lt;rr-name&gt;</code>) with <code>reviewSource=WorkflowExecution</code> and <code>priority=Critical</code> <strong>before</strong> calling <code>transitionToFailed</code>. The subsequent <code>transitionToFailed</code> Escalation NR is suppressed by the double-NR guard (a ManualReview NR already exists for this RR).</p>
 <p>For Ansible executions, the handoff is identical -- the AWX job status is mapped to the same WFE phases (<code>Completed</code>/<code>Failed</code>), so the Orchestrator does not need to distinguish between execution engines.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>

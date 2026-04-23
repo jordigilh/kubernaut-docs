@@ -4331,7 +4331,7 @@
 <tbody>
 <tr>
 <td><code>effectivenessmonitor.config.assessment.stabilizationWindow</code></td>
-<td>Wait time after remediation before assessment</td>
+<td>EM-internal stabilization window (logged at startup). <strong>Note:</strong> the actual stabilization delay enforced by the EM reconciler is read from <code>EA.spec.config.stabilizationWindow</code>, which is set by the RO (default <code>5m</code> via <code>remediationorchestrator.config.effectivenessAssessment.stabilizationWindow</code>).</td>
 <td><code>30s</code></td>
 </tr>
 <tr>

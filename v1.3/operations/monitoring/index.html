@@ -3465,7 +3465,7 @@
 
 <h1 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h1>
 <p>All Kubernaut services expose Prometheus-compatible metrics and standard health check endpoints. This page provides a complete metrics reference for building Grafana dashboards and alerting rules.</p>
-<p>In <strong>v1.3</strong>, the Kubernaut Agent metrics were renamed from the legacy <code>holmesgpt_*</code> namespace to <code>aiagent_api_*</code>. <strong>Effectiveness Monitor</strong> and <strong>Notification</strong> metrics remain stable from v1.2.</p>
+<p>In <strong>v1.3</strong>, the Kubernaut Agent metrics were renamed from the legacy <code>holmesgpt_*</code> namespace to <code>aiagent_api_*</code>. <strong>Effectiveness Monitor</strong> metrics remain stable from v1.2. <strong>Notification</strong> metrics were refactored internally (DD-METRICS-001: 3-layer → 1-layer) but the metric names and semantics are unchanged.</p>
 <h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h2>
 <p><strong>v1.3+ (three-port components):</strong> Gateway, DataStorage, HolmesGPT API, Kubernaut Agent, and the AIAnalysis controller split traffic by port: <strong>8080</strong> (primary API; <strong>HTTPS</strong> when inter-service TLS is enabled), <strong>8081</strong> (health only -- <strong>plain HTTP</strong>), and <strong>9090</strong> (<code>/metrics</code> -- <strong>plain HTTP</strong>). Probes use <strong>8081</strong> with <code>GET /healthz</code> (liveness) and <code>GET /readyz</code> (readiness). <strong><code>/livez</code> is not a registered path</strong> (do not use it in probes or docs).</p>
 <table>
@@ -3758,6 +3758,10 @@
 </tbody>
 </table>
 <h2 id="notification-metrics">Notification Metrics<a class="headerlink" href="#notification-metrics" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">DD-METRICS-001: Metrics wiring pattern</p>
+<p>In v1.3, the Notification controller's metrics were collapsed from a <strong>3-layer stack</strong> (interface → recorder → raw metrics) to a <strong>single dependency-injected <code>*Metrics</code> struct</strong>, matching the pattern mandated by DD-METRICS-001 for all CRD controllers. The metrics struct is injected into both the reconciler and the delivery orchestrator at startup via <code>NewMetrics()</code>. Test isolation uses <code>NewMetricsWithRegistry(prometheus.NewRegistry())</code> instead of interface mocking.</p>
+</div>
 <table>
 <thead>
 <tr>
@@ -3768,6 +3772,12 @@
 </tr>
 </thead>
 <tbody>
+<tr>
+<td><code>kubernaut_notification_reconciler_active</code></td>
+<td>Gauge</td>
+<td><code>phase</code></td>
+<td>Active notification backlog by phase (Pending, Sending, Sent, Retrying, PartiallySent, Failed)</td>
+</tr>
 <tr>
 <td><code>kubernaut_notification_delivery_attempts_total</code></td>
 <td>Counter</td>
@@ -3783,7 +3793,7 @@
 <tr>
 <td><code>kubernaut_notification_delivery_retries_total</code></td>
 <td>Counter</td>
-<td><code>channel</code>, <code>reason</code></td>
+<td><code>channel</code></td>
 <td>Delivery retries per channel</td>
 </tr>
 <tr>
@@ -3796,13 +3806,7 @@
 <td><code>kubernaut_notification_channel_health_score</code></td>
 <td>Gauge</td>
 <td><code>channel</code></td>
-<td>Channel health score (0--100)</td>
-</tr>
-<tr>
-<td><code>kubernaut_notification_reconciler_active</code></td>
-<td>Gauge</td>
-<td><code>phase</code></td>
-<td>Active notification backlog by phase</td>
+<td>Channel health score (0–100)</td>
 </tr>
 </tbody>
 </table>

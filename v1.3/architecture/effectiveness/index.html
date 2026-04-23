@@ -1978,6 +1978,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#configmap-composite-fingerprinting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConfigMap Composite Fingerprinting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#canonical-hash-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3306,6 +3317,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#configmap-composite-fingerprinting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConfigMap Composite Fingerprinting
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#canonical-hash-algorithm" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3732,7 +3754,37 @@
 <li><strong>Post-remediation hash</strong>: Computed live via <code>CanonicalSpecHash(target.Spec)</code></li>
 <li><strong>Comparison</strong>: <code>postHash == preHash</code> → <code>Match=true</code> (spec unchanged). <code>postHash != preHash</code> can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed <em>after</em> the stabilization window began.</li>
 </ol>
-<p><strong>ConfigMap content (v1.2+)</strong>: The RO and EM spec hash includes content from mounted ConfigMaps — specifically <code>.data</code> and <code>.binaryData</code> — while excluding Secret material. If a referenced ConfigMap changes between pre-capture and post-capture, the hash will differ, which is expected for effectiveness comparisons that include configuration mounted from ConfigMaps.</p>
+<h4 id="configmap-composite-fingerprinting">ConfigMap Composite Fingerprinting<a class="headerlink" href="#configmap-composite-fingerprinting" title="Permanent link">&para;</a></h4>
+<p>The spec hash includes content from ConfigMaps referenced by the target workload, producing a <strong>composite fingerprint</strong> that detects configuration drift even when the workload spec itself is unchanged.</p>
+<p><strong>Hash algorithm</strong> (<code>ConfigMapDataHash</code>): SHA-256 over sorted <code>.data</code> entries (<code>d:key=value</code>) and <code>.binaryData</code> entries (<code>b:key=base64(...)</code>) → returns <code>sha256:&lt;hex&gt;</code>.</p>
+<p><strong>ConfigMap reference extraction</strong> (<code>ExtractConfigMapRefs</code>): walks the pod-template spec to collect all referenced ConfigMap names from:</p>
+<ul>
+<li>Volume mounts (<code>volumes[].configMap</code>)</li>
+<li>Projected volume sources (<code>volumes[].projected.sources[].configMap</code>)</li>
+<li><code>envFrom[].configMapRef</code></li>
+<li><code>env[].valueFrom.configMapKeyRef</code></li>
+</ul>
+<p><strong>Composite hash</strong> (<code>CompositeResourceFingerprint</code>): combines the target resource's canonical spec fingerprint with per-ConfigMap content hashes into a single <code>sha256:...</code> digest. If no ConfigMaps are referenced, the fingerprint is returned unchanged (backward compatible).</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>RO</strong> (Remediation Orchestrator)</td>
+<td>Captures <strong>pre-remediation</strong> composite hash (<code>capturePreRemediationHash</code> → <code>resolveConfigMapHashes</code>)</td>
+</tr>
+<tr>
+<td><strong>EM</strong> (Effectiveness Monitor)</td>
+<td>Computes <strong>post-remediation</strong> composite hash and compares to pre; runs spec drift guard on subsequent reconciles (<code>assessHash</code> → <code>resolveConfigMapHashes</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Sentinel hashes</strong>: When a ConfigMap cannot be read (forbidden, missing, transient error), a sentinel hash is used so the set of referenced names stays stable and intermittent API failures don't false-positive as drift.</p>
+<p>If a referenced ConfigMap changes between pre-capture and post-capture without any change to the workload spec, the composite hash will differ, triggering <code>SpecDrift</code> classification.</p>
 <h4 id="canonical-hash-algorithm">Canonical Hash Algorithm<a class="headerlink" href="#canonical-hash-algorithm" title="Permanent link">&para;</a></h4>
 <ul>
 <li>Maps: keys sorted alphabetically, values normalized recursively</li>

@@ -3124,7 +3124,7 @@
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>When a remediation reaches a terminal phase, the Orchestrator creates an <code>EffectivenessAssessment</code> CRD. The Effectiveness Monitor then:</p>
 <ol>
-<li><strong>Waits for stabilization</strong> — Two configurable windows control timing: the Remediation Orchestrator waits <strong>5 minutes</strong> (<code>remediationorchestrator.config.effectivenessAssessment.stabilizationWindow</code>) before creating the EA, and the Effectiveness Monitor waits <strong>30 seconds</strong> (<code>effectivenessmonitor.config.assessment.stabilizationWindow</code>) after EA creation before running assessments</li>
+<li><strong>Waits for stabilization</strong> — The Remediation Orchestrator creates the EA with a <strong>stabilization window</strong> (default: <strong>5 minutes</strong>, from <code>remediationorchestrator.config.effectivenessAssessment.stabilizationWindow</code>). The Effectiveness Monitor enforces this window using <code>EA.spec.config.stabilizationWindow</code> — the EM does not start running assessment scorers until this duration has elapsed after the EA's creation. The stabilization window that governs the EM reconciler behavior comes from the <strong>EA spec</strong> (set by the RO), not from the EM's own Helm config.</li>
 <li><strong>Evaluates effectiveness</strong> through multiple dimensions</li>
 <li><strong>Records the assessment</strong> in the audit trail</li>
 </ol>

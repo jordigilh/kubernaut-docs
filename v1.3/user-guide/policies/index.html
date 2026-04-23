@@ -3552,7 +3552,7 @@
 <h2 id="ai-analysis-approval-policy">AI Analysis Approval Policy<a class="headerlink" href="#ai-analysis-approval-policy" title="Permanent link">&para;</a></h2>
 <p>The approval policy runs after Kubernaut Agent returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.</p>
 <p><strong>Package:</strong> <code>aianalysis.approval</code></p>
-<p><strong>ConfigMap:</strong> <code>approval.rego</code> mounted via <code>charts/kubernaut/files/rego/aianalysis/approval.rego</code></p>
+<p><strong>ConfigMap:</strong> <code>aianalysis-policies</code>, key <code>approval.rego</code>. Operators install the policy via <code>--set-file aianalysis.policies.content=approval.rego</code> or by providing a pre-created ConfigMap with <code>aianalysis.policies.existingConfigMap</code>. See <a href="../configmap-approval/">AIAnalysis Approval Policy ConfigMap</a> for the full reference.</p>
 <h3 id="input-fields">Input Fields<a class="headerlink" href="#input-fields" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3607,7 +3607,7 @@
 <p><strong>Missing remediation target</strong> -- If <code>remediation_target</code> is absent or has an empty <code>kind</code>, approval is always required. Safety net for incomplete RCA.</p>
 </li>
 <li>
-<p><strong>Production environment</strong> -- All production remediations require human approval, regardless of confidence. Controlled by setting <code>kubernaut.ai/environment=production</code> on the namespace.</p>
+<p><strong>Production environment</strong> -- All production remediations require human approval, regardless of confidence (case-insensitive match: <code>Production</code>, <code>production</code>, <code>PRODUCTION</code>). Controlled by setting <code>kubernaut.ai/environment=production</code> on the namespace.</p>
 </li>
 <li>
 <p><strong>Sensitive resource kinds</strong> -- Remediations targeting <code>Node</code> or <code>StatefulSet</code> resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.</p>

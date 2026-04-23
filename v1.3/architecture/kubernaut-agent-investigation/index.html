@@ -4439,10 +4439,11 @@
 </tr>
 </tbody>
 </table>
-<p>When <code>resourceQuotaConstrained</code> is detected, the <code>LabelDetector</code> also surfaces <code>quota_details</code> as a top-level field in the resource context response, containing the namespace's <code>ResourceQuota</code> spec (limits, requests, and used values). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.</p>
+<p>When <code>resourceQuotaConstrained</code> is detected, the <code>LabelDetector</code> also surfaces <strong><code>quota_details</code></strong> as a structured <code>map[string]QuotaResourceUsage</code> in the resource context response, containing per-resource <code>hard</code> and <code>used</code> values from all <code>ResourceQuota</code> objects in the namespace (e.g., <code>cpu: {hard: "4", used: "2.5"}</code>). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.</p>
+<p>The detection pipeline is: <code>Investigator.Investigate</code> → <code>resolveEnrichmentCached</code> → <code>Enricher.Enrich</code> → <code>LabelDetector.DetectLabels</code> → <code>detectResourceQuota</code>. On detection failure (empty namespace, API error), <code>"resourceQuotaConstrained"</code> is appended to <code>failedDetections</code> and the enrichment continues with best-effort results.</p>
 <div class="admonition note">
 <p class="admonition-title">LimitRange detection</p>
-<p>LimitRange detection is not implemented in v1.2. Only ResourceQuota constraints are surfaced.</p>
+<p>LimitRange detection is <strong>not implemented</strong> in v1.3. Only ResourceQuota constraints are surfaced. LimitRange may be added in a future release.</p>
 </div>
 <p>These labels are stored in <code>session_state</code> and automatically injected into all subsequent workflow discovery queries. They serve two purposes:</p>
 <ol>

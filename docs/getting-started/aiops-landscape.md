@@ -54,7 +54,7 @@ Kubernaut's LLM investigates each incident as an open-ended question rather than
 - **Non-deterministic**: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.
 - **Latency**: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.
 - **Hallucination risk**: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.
-- **Per-token cost**: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or locally hosted LLMs via LiteLLM.
+- **Per-token cost**: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or a self-hosted OpenAI-compatible endpoint.
 
 ## Predictive AI as a Knowledge-Based Agent
 
@@ -135,7 +135,7 @@ Predictive AI platforms can feed alerts into Kubernaut's Gateway alongside Prome
 
 ### Investigation Tool
 
-During HAPI's LLM investigation, the predictive AI platform is exposed as a tool call. The LLM can query:
+During Kubernaut Agent's LLM investigation, the predictive AI platform is exposed as a tool call. The LLM can query:
 
 - **Dynatrace Davis API**: Problem details, root cause entities, impact analysis, topology context
 - **Datadog Watchdog API**: Anomaly details, correlated metrics, service dependency information

@@ -19,7 +19,7 @@ The Remediation Orchestrator detects whether the remediation target requires pro
 
 | Characteristic | Detection Method | Source |
 |---|---|---|
-| **GitOps-managed** | `PostRCAContext.DetectedLabels.GitOpsManaged=true` (JSON field from HAPI response, not a Kubernetes object label) | HAPI `LabelDetector` during post-RCA analysis |
+| **GitOps-managed** | `PostRCAContext.DetectedLabels.GitOpsManaged=true` (JSON field from KA response, not a Kubernetes object label) | KA `LabelDetector` during post-RCA analysis |
 | **Custom Resource (CRD)** | Target resource belongs to a non-built-in API group (detected via `IsBuiltInGroup(group)` allowlist — non-built-in groups are treated as CRDs) | API group check, no operator/controller detection |
 
 These flags are set during the AI Analysis phase and propagated to the EffectivenessAssessment CRD spec.

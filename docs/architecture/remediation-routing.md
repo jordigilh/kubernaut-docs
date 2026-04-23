@@ -107,8 +107,8 @@ The AI Analysis produces one of six outcomes:
 | **Normal** (workflow selected, auto-approved) | Run post-analysis checks → create **WFE** → **Executing** |
 | **ApprovalRequired** (Rego policy mandate) | Create **RemediationApprovalRequest** → **AwaitingApproval** |
 | **WorkflowNotNeeded** (issue already resolved) | Transition to **Completed** with `Outcome: NoActionRequired` |
-| **ManualReviewRequired** (no workflow, HAPI flagged human review) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
-| **HumanReviewWithWorkflow** (HAPI flagged review + workflow present) | Transition to **Failed** (see [ManualReviewRequired Outcome](#manualreviewrequired-outcome)) |
+| **ManualReviewRequired** (no workflow, KA flagged human review) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
+| **HumanReviewWithWorkflow** (KA flagged review + workflow present) | Transition to **Failed** (see [ManualReviewRequired Outcome](#manualreviewrequired-outcome)) |
 | **Failed** (AI analysis error) | Transition to **Failed** |
 
 For the normal path, the Orchestrator runs **post-analysis routing checks** before creating the WFE. If blocked, the RR enters **Blocked** (returning to Analyzing when the block clears).
@@ -207,7 +207,7 @@ When the AIAnalysis result has `NeedsHumanReview=true` AND `SelectedWorkflow=nil
 The Orchestrator still creates a `NotificationRequest` to inform the operator that human review is required. The 24-hour `NoActionRequiredDelayHours` suppression window is also applied (same as `NoActionRequired`), preventing duplicate RRs while the operator investigates.
 
 !!! note "Low confidence WITH a selected workflow"
-    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
+    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but KA flagged the result for human review), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
 
 ## Timeout System
 
@@ -278,7 +278,7 @@ When a RR reaches a terminal phase:
 | Trigger | Escalation | Mechanism |
 |---|---|---|
 | Rego policy requires approval (environment, sensitive kind, confidence) | Human approval | RemediationApprovalRequest CRD |
-| HAPI flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
+| KA flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
 | Failure at any stage | Team notification | NotificationRequest with error context |
 | No matching workflow | Team notification with RCA | NotificationRequest |
 | Consecutive ineffective remediations | Manual review | `IneffectiveChain` block + `RequiresManualReview` |

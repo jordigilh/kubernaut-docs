@@ -52,6 +52,7 @@ See the [installation guide](../../getting-started/installation.md#2-provision-s
 
 ## Version-Specific Notes
 
+- [**v1.2 to v1.3**](1.2-to-1.3.md) — holmesgpt-api → kubernaut-agent rename, LiteLLM removed (LangChainGo), inter-service TLS by default, three-port model, two-invocation investigation pipeline, label arrays, PascalCase AssessmentReason, content integrity enforcement.
 - [**v1.1 to v1.2**](1.1-to-1.2.md) — CRD schema hardening (typed enums, `metav1.Duration`), storm detection removal, PascalCase enum migration, per-workflow ServiceAccount, database migrations 002-004.
 
-v1.0 is end-of-life and no longer documented.
+v1.0 and v1.2 are end-of-life and no longer documented.

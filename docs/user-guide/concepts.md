@@ -50,7 +50,7 @@ Created after signal enrichment completes. The AI Analysis controller:
     - **Invocation 2 (Workflow selection)** — A **new** model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection, then HAPI **merges** the two invocations' results
 2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
-See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full two-invocation architecture.
+See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the full two-invocation architecture.
 
 ### RemediationApprovalRequest
 

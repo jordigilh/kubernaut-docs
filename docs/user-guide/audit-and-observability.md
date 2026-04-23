@@ -61,7 +61,7 @@ Events with type `aiagent.response.complete` include **`total_prompt_tokens`** a
 
 HolmesGPT API investigation **response** events in this same category can include **`finish_reason`**, taken from the provider completion, so you can see whether a response ended with **`length` (max tokens)**, `stop`, `tool_calls`, and so on in your audit store.
 
-A **`truncation_detected`** event is emitted when truncation triggers the **token escalation** path. Its `event_data` can include **`escalated_max_tokens: true` when a second attempt runs with a higher max-token cap (capped, for example, at 16,384; see [Investigation Pipeline: LLM output resilience](../architecture/hapi-investigation.md#llm-output-resilience)).
+A **`truncation_detected`** event is emitted when truncation triggers the **token escalation** path. Its `event_data` can include **`escalated_max_tokens: true` when a second attempt runs with a higher max-token cap (capped, for example, at 16,384; see [Investigation Pipeline: LLM output resilience](../architecture/kubernaut-agent-investigation.md#llm-output-resilience)).
 
 ### Tool call attribution
 

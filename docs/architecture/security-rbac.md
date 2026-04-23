@@ -135,7 +135,10 @@ The WE controller's ClusterRole includes the following permissions for TokenRequ
 | (core) | `serviceaccounts` | get | Look up the per-workflow SA |
 | (core) | `serviceaccounts/token` | create | Create short-lived tokens via TokenRequest |
 
-**TTL validation (Ansible path):** When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets `TokenTTLInsufficient` on the WorkflowExecution and emits a warning event (`TokenTTLShortened`).
+**TTL validation (Ansible path):** The controller requests tokens with a **3600s (1 hour)** TTL by default. When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets `TokenTTLInsufficient` on the WorkflowExecution and emits a warning event (`TokenTTLShortened`).
+
+!!! warning "Cluster-level TTL constraints"
+    The Kubernetes API server flag `--service-account-max-token-expiration` (or OpenShift `ServiceAccountTokenMaxExpiration`) can silently cap token TTLs below the requested duration. If the cap is lower than the workflow execution timeout, Ansible jobs may receive **401 Unauthorized** errors mid-execution. Ensure the cluster-level maximum is at least **3600s** (or greater than your longest workflow execution timeout). Check for `TokenTTLShortened` warning events on WorkflowExecution CRDs if Ansible jobs fail unexpectedly with authentication errors.
 
 **Fallback behavior:** If `serviceAccountName` is not set:
 

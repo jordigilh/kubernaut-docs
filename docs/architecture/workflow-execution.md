@@ -233,9 +233,7 @@ When a WFE spec omits `engineConfig`, the controller resolves it from the workfl
 
 ## Execution Namespace and RBAC
 
-All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. By default they use the execution namespace default ServiceAccount (commonly configured as `kubernaut-workflow-runner` in shared-SA deployments). See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to the shared execution role.
-
-Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`). This enables least-privilege RBAC per workflow.
+All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. Each workflow declares its own ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`). This enables least-privilege RBAC per workflow. If omitted, the execution namespace default ServiceAccount is used.
 
 - Job/Tekton: the service account name is set directly on the created Job/PipelineRun.
 - Ansible: the controller requests a short-lived token via the Kubernetes TokenRequest API for AWX credential injection.

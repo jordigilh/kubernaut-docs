@@ -180,6 +180,9 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
 | `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `false` |
+| `effectivenessmonitor.external.connectionTimeout` | HTTP client timeout for Prometheus/AlertManager connections | `10s` |
+| `effectivenessmonitor.external.prometheusLookback` | Duration before EA creation to query Prometheus for baseline metrics. Min: `1m`. | `30m` |
+| `effectivenessmonitor.external.scrapeInterval` | Prometheus scrape interval used to derive requeue timing for metric assessment. Min: `5s`. | `60s` |
 | `effectivenessmonitor.external.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with `ocpMonitoringRbac`, set to `/etc/ssl/em/service-ca.crt` (auto-mounted). | `""` |
 | `effectivenessmonitor.external.ocpMonitoringRbac` | Create `cluster-monitoring-view` ClusterRoleBinding and (when `alertManagerEnabled`) a ClusterRole granting `monitoring.coreos.com/alertmanagers/api` access for OCP's `kube-rbac-proxy`. Also sets `IS_OPENSHIFT` env and auto-configures TLS CA trust via a service-CA ConfigMap. | `false` |
 

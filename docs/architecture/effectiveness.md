@@ -6,6 +6,9 @@
 !!! abstract "CRD Reference"
     For the complete EffectivenessAssessment CRD specification, see [API Reference: CRDs](../api-reference/crds.md#effectivenessassessment).
 
+!!! note "Design Decision"
+    This architecture follows **ADR-EM-001** (Effectiveness Monitor service integration), which defines the multi-component scoring model, timing derivation, and assessment paths described below.
+
 The Effectiveness Monitor evaluates whether a remediation actually resolved the issue. It operates as a CRD controller watching `EffectivenessAssessment` resources created by the Orchestrator after workflow execution completes (or fails).
 
 ## CRD Specification
@@ -42,15 +45,20 @@ On relevant phase transitions, the Effectiveness Monitor emits an `effectiveness
 
 ### EM controller assessment tuning
 
-The EM controller exposes assessment timing and concurrency knobs:
+The EM controller exposes assessment timing, concurrency, and external integration knobs:
 
-| Parameter | Purpose |
-|---|---|
-| `stabilizationWindow` | Wait time before starting assessment scorers after EA creation. |
-| `validityWindow` | Total window before the assessment expires. |
-| `maxConcurrentReconciles` | Maximum number of EA reconciliations processed in parallel by the controller. |
+| Parameter | Purpose | Default |
+|---|---|---|
+| `stabilizationWindow` | Wait time before starting assessment scorers after EA creation. | `30s` |
+| `validityWindow` | Total window before the assessment expires. | `300s` (5m) |
+| `maxConcurrentReconciles` | Maximum number of EA reconciliations processed in parallel by the controller. | `5` |
+| `prometheusLookback` | Duration before EA creation to query Prometheus for baseline metrics. Min: 1m. | `30m` |
+| `scrapeInterval` | Prometheus scrape interval used to derive requeue timing for metric assessment. Min: 5s. | `60s` |
+| `connectionTimeout` | HTTP client timeout for Prometheus/AlertManager connections. | `10s` |
 
 ### Assessment paths
+
+The Orchestrator creates an `EffectivenessAssessment` for **both successful and failed** workflow executions. This allows the EM to verify whether a failed workflow inadvertently resolved the issue (e.g., a restart that fixed a crash loop before the workflow itself failed) and feeds into the Orchestrator's `Inconclusive` outcome logic.
 
 Each completed assessment is classified with an **AssessmentReason** (PascalCase), reflecting how fully the EM could run the configured scorers within the validity window:
 

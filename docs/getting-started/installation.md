@@ -11,6 +11,10 @@ This guide walks you through installing Kubernaut on a Kubernetes cluster using 
 | StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
 | cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
 
+**LLM provider** (required for AI investigation):
+
+- Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output support (`response_format: json_object` or equivalent). KA enables JSON mode on all LLM requests — models that do not support it will produce parse failures.
+
 **Workflow execution engine** (at least one):
 
 - Kubernetes Jobs (built-in, no extra dependency)

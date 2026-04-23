@@ -41,7 +41,7 @@ The Helm chart supports three tiers for providing the SDK config -- see [Configu
 
 | Category | Settings |
 |---|---|
-| **Restart required** (process must restart to take effect) | `llm.provider`, `llm.structured_output`, `llm.oauth2.token_url`, `llm.oauth2.client_id`, `llm.oauth2.client_secret` |
+| **Restart required** (process must restart to take effect) | `llm.provider`, `llm.oauth2.token_url`, `llm.oauth2.client_id`, `llm.oauth2.client_secret` |
 | **Hot-reloadable** | `model`, `endpoint`, `api_key`, `temperature`, and other non-provider/core-auth LLM and toolset options |
 
 ## Pipeline Overview

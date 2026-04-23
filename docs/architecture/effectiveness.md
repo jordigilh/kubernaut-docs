@@ -186,7 +186,29 @@ Compares the resource specification before and after remediation to detect drift
 2. **Post-remediation hash**: Computed live via `CanonicalSpecHash(target.Spec)`
 3. **Comparison**: `postHash == preHash` → `Match=true` (spec unchanged). `postHash != preHash` can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed *after* the stabilization window began.
 
-**ConfigMap content (v1.2+)**: The RO and EM spec hash includes content from mounted ConfigMaps — specifically `.data` and `.binaryData` — while excluding Secret material. If a referenced ConfigMap changes between pre-capture and post-capture, the hash will differ, which is expected for effectiveness comparisons that include configuration mounted from ConfigMaps.
+#### ConfigMap Composite Fingerprinting
+
+The spec hash includes content from ConfigMaps referenced by the target workload, producing a **composite fingerprint** that detects configuration drift even when the workload spec itself is unchanged.
+
+**Hash algorithm** (`ConfigMapDataHash`): SHA-256 over sorted `.data` entries (`d:key=value`) and `.binaryData` entries (`b:key=base64(...)`) → returns `sha256:<hex>`.
+
+**ConfigMap reference extraction** (`ExtractConfigMapRefs`): walks the pod-template spec to collect all referenced ConfigMap names from:
+
+- Volume mounts (`volumes[].configMap`)
+- Projected volume sources (`volumes[].projected.sources[].configMap`)
+- `envFrom[].configMapRef`
+- `env[].valueFrom.configMapKeyRef`
+
+**Composite hash** (`CompositeResourceFingerprint`): combines the target resource's canonical spec fingerprint with per-ConfigMap content hashes into a single `sha256:...` digest. If no ConfigMaps are referenced, the fingerprint is returned unchanged (backward compatible).
+
+| Component | Role |
+|---|---|
+| **RO** (Remediation Orchestrator) | Captures **pre-remediation** composite hash (`capturePreRemediationHash` → `resolveConfigMapHashes`) |
+| **EM** (Effectiveness Monitor) | Computes **post-remediation** composite hash and compares to pre; runs spec drift guard on subsequent reconciles (`assessHash` → `resolveConfigMapHashes`) |
+
+**Sentinel hashes**: When a ConfigMap cannot be read (forbidden, missing, transient error), a sentinel hash is used so the set of referenced names stays stable and intermittent API failures don't false-positive as drift.
+
+If a referenced ConfigMap changes between pre-capture and post-capture without any change to the workload spec, the composite hash will differ, triggering `SpecDrift` classification.
 
 #### Canonical Hash Algorithm
 

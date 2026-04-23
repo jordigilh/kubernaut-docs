@@ -212,10 +212,12 @@ Probes the cluster to detect infrastructure characteristics of the root owner:
 | `serviceMesh` | Istio/Linkerd sidecar annotations |
 | `resourceQuotaConstrained` | Namespace has an active `ResourceQuota` |
 
-When `resourceQuotaConstrained` is detected, the `LabelDetector` also surfaces `quota_details` as a top-level field in the resource context response, containing the namespace's `ResourceQuota` spec (limits, requests, and used values). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.
+When `resourceQuotaConstrained` is detected, the `LabelDetector` also surfaces **`quota_details`** as a structured `map[string]QuotaResourceUsage` in the resource context response, containing per-resource `hard` and `used` values from all `ResourceQuota` objects in the namespace (e.g., `cpu: {hard: "4", used: "2.5"}`). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.
+
+The detection pipeline is: `Investigator.Investigate` → `resolveEnrichmentCached` → `Enricher.Enrich` → `LabelDetector.DetectLabels` → `detectResourceQuota`. On detection failure (empty namespace, API error), `"resourceQuotaConstrained"` is appended to `failedDetections` and the enrichment continues with best-effort results.
 
 !!! note "LimitRange detection"
-    LimitRange detection is not implemented in v1.2. Only ResourceQuota constraints are surfaced.
+    LimitRange detection is **not implemented** in v1.3. Only ResourceQuota constraints are surfaced. LimitRange may be added in a future release.
 
 These labels are stored in `session_state` and automatically injected into all subsequent workflow discovery queries. They serve two purposes:
 

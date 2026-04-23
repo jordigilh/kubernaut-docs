@@ -32,6 +32,22 @@ route:
 
 The Gateway validates each alert, extracts the target resource, checks scope labels, and creates a `RemediationRequest` CRD.
 
+#### Required AlertManager Labels
+
+The Gateway expects the following labels on incoming alerts:
+
+| Label | Required | Purpose |
+|---|---|---|
+| `namespace` | Yes | Target namespace for resource scope resolution. Without this, the Gateway cannot determine which resource to remediate. |
+| `alertname` | Yes | Used in fingerprint computation and signal deduplication. |
+| `severity` | Yes | Normalized during signal processing; used for routing and notification priority. |
+| `pod` | No | Preferred resource target identifier. |
+| `deployment` | No | Fallback resource target when `pod` is absent. |
+| `container` | No | Enrichment context for investigation. |
+
+!!! note "Thanos Ruler and OpenShift namespace labels"
+    When using Thanos Ruler or OpenShift user-workload monitoring, alerts may carry the namespace in a non-standard label (e.g., `exported_namespace` or `tenant_id`). The Gateway uses `namespace` as the canonical key. Configure AlertManager relabeling rules to map your environment's namespace label to `namespace` before forwarding to the Gateway.
+
 ### Kubernetes Events
 
 The Gateway accepts Kubernetes events via a webhook endpoint:
@@ -44,6 +60,18 @@ This captures events like `BackOff`, `OOMKilled`, `FailedScheduling`, and `Unhea
 
 !!! note "Event Exporter removed from chart in v1.1"
     The Event Exporter was previously bundled in the Helm chart. Since v1.1, Kubernetes event forwarding is a user-provided concern managed independently of the Kubernaut installation.
+
+#### Expected Event Fields
+
+When configuring your event exporter, ensure the webhook payload includes these fields from `involvedObject`:
+
+| Field | Required | Purpose |
+|---|---|---|
+| `involvedObject.namespace` | Yes | Target namespace for scope resolution. |
+| `involvedObject.name` | Yes | Resource name for remediation targeting. |
+| `involvedObject.kind` | Yes | Resource kind (e.g., `Pod`, `Deployment`). |
+| `reason` | Yes | Event reason (e.g., `BackOff`, `OOMKilled`), used as signal type. |
+| `message` | No | Human-readable context for investigation enrichment. |
 
 ## Signal Types
 

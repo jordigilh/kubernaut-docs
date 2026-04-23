@@ -65,7 +65,7 @@ llm:
   vertex_project: ""        # Vertex-specific (vertex and vertex_ai)
   vertex_location: ""       # Vertex-specific
   bedrock_region: ""        # Bedrock-specific
-  structured_output: false  # Requires pod restart to change
+  structured_output: false  # Reserved; KA always enables JSON mode internally (see note below)
   temperature: 0.7          # Creativity vs determinism (0.0--1.0)
   max_retries: 3            # LLM call retry count
   timeout_seconds: 120      # Per-call timeout
@@ -104,6 +104,9 @@ mcp_servers: {}             # Optional: Model Context Protocol servers
 
 !!! warning "Vertex AI provider distinction"
     `vertex` = Gemini models on Vertex AI. `vertex_ai` = Anthropic Claude models on Vertex AI. These use separate code paths and different SDKs.
+
+!!! warning "Mandatory JSON structured output"
+    KA internally sets `JSONMode: true` on every LLM request. This is **not configurable** — the `structured_output` field in the config is reserved and has no effect at runtime. Your LLM provider/model **must** support schema-constrained JSON responses (equivalent to `response_format: {"type": "json_object"}` in the OpenAI API). All listed providers support this natively. For self-hosted or air-gapped deployments using Ollama or OpenAI-compatible servers, ensure the model supports JSON mode (most instruction-tuned models do).
 
 ## Toolset Optimization
 
@@ -252,7 +255,6 @@ The SDK config supports hot-reload. Changes to the ConfigMap are detected via an
 **Restart-required fields** (changes are rejected with a warning log):
 
 - `llm.provider`
-- `llm.structured_output`
 - `llm.oauth2.token_url`, `llm.oauth2.client_id`, `llm.oauth2.client_secret`
 
 **Hot-reloadable fields**: `model`, `endpoint`, `api_key`, `azure_api_version`, `vertex_project`, `vertex_location`, `bedrock_region`, `temperature`, `max_retries`, `timeout_seconds`, `custom_headers`, `oauth2.scopes`

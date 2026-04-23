@@ -82,7 +82,7 @@ spec:
   receivers:
     - name: kubernaut
       webhookConfigs:
-        - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+        - url: "https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
           httpConfig:
             authorization:
               type: Bearer

@@ -11,10 +11,10 @@ HolmesGPT is a **Python FastAPI** service that wraps LLM calls with live Kuberne
 ## Base URL
 
 ```
-http://holmesgpt-api.kubernaut-system.svc.cluster.local:8080
+https://holmesgpt-api.kubernaut-system.svc.cluster.local:8080
 ```
 
-Internal services use the short form `http://holmesgpt-api:8080` when communicating within the same namespace.
+Internal services use the short form `https://holmesgpt-api:8080` when communicating within the same namespace (HTTPS when inter-service TLS is enabled).
 
 ## Session-Based Async Pattern
 
@@ -115,14 +115,16 @@ Key response fields:
 
 Audit events of type `aiagent.response.complete` include LLM token totals on the payload: **`total_prompt_tokens`** and **`total_completion_tokens`**, for cost and usage tracking in the audit trail.
 
-### Health
+### Health and metrics (v1.3+)
 
-| Method | Path | Description |
-|---|---|---|
-| `GET` | `/health` | Liveness probe |
-| `GET` | `/ready` | Readiness probe (checks SDK, context API, Prometheus client) |
-| `GET` | `/config` | Configuration snapshot (dev mode only) |
-| `GET` | `/metrics` | Prometheus metrics |
+Liveness and readiness are on **port 8081** (plain HTTP): `GET /healthz`, `GET /readyz` (readiness checks SDK, context API, and Prometheus client). **Prometheus** metrics are on **port 9090** (`GET /metrics`, plain HTTP). The primary REST API remains on **port 8080** ( **HTTPS** when inter-service TLS is configured).
+
+| Method | Port | Path | Description |
+|---|---|---|---|
+| `GET` | 8081 | `/healthz` | Liveness |
+| `GET` | 8081 | `/readyz` | Readiness |
+| `GET` | 8080 | `/config` | Configuration snapshot (dev mode only) |
+| `GET` | 9090 | `/metrics` | Prometheus metrics |
 
 ## Error Responses
 

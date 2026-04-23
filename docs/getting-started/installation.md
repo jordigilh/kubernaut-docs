@@ -86,7 +86,7 @@ AlertManager must include `http_config.bearer_token_file` in its webhook receive
 receivers:
   - name: kubernaut
     webhook_configs:
-      - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+      - url: "https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
         send_resolved: true
         http_config:
           bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
@@ -108,7 +108,7 @@ alertmanager:
     receivers:
       - name: kubernaut
         webhook_configs:
-          - url: "http://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
+          - url: "https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus"
             send_resolved: true
             http_config:
               bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token

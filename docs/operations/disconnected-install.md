@@ -337,8 +337,8 @@ kubectl logs job/<release-name>-db-migration -n kubernaut-system
 ### Service health
 
 ```bash
-kubectl port-forward -n kubernaut-system svc/holmesgpt-api 8080:8080
-curl -s http://localhost:8080/health | jq '.'
+kubectl port-forward -n kubernaut-system svc/holmesgpt-api 8081:8081
+curl -s http://localhost:8081/healthz | jq '.'
 ```
 
 ---

@@ -19,7 +19,7 @@ Configure AlertManager to send alerts to this endpoint:
 receivers:
   - name: kubernaut
     webhook_configs:
-      - url: http://gateway-service.kubernaut-system.svc:8080/api/v1/signals/prometheus
+      - url: https://gateway-service.kubernaut-system.svc:8080/api/v1/signals/prometheus
         send_resolved: false
 
 route:

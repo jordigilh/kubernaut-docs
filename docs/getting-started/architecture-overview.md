@@ -8,11 +8,11 @@ Kubernaut is a microservices platform with 10 services that communicate through 
   ![Kubernaut Layered Architecture](../assets/diagrams/kubernaut-layered-architecture.svg){ width="100%" }
 </figure>
 
-The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to HolmesGPT API for LLM-driven investigation, and HolmesGPT API queries DataStorage for the workflow catalog and remediation history.
+The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history.
 
 ## Services
 
-Kubernaut runs **10 services**: 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 1 Python API service.
+Kubernaut runs **10 services**: 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 1 Go API service.
 
 ### CRD Controllers
 
@@ -20,11 +20,11 @@ Each CRD is owned by a dedicated controller. See [System Overview](../architectu
 
 ### Stateless Services
 
-See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and HolmesGPT API.
+See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and Kubernaut Agent.
 
 ## Communication Pattern
 
-All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls HolmesGPT API for AI investigation, and EM queries AlertManager and Prometheus for effectiveness assessment.
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, and EM queries AlertManager and Prometheus for effectiveness assessment.
 
 This architecture provides:
 
@@ -69,7 +69,7 @@ stateDiagram-v2
 
 ### AI Analysis Outcomes
 
-The **Analyzing** phase represents the LLM investigation via HolmesGPT API. The AI produces one of these outcomes:
+The **Analyzing** phase represents the LLM investigation via Kubernaut Agent. The AI produces one of these outcomes:
 
 | Outcome | RR Transition | Description |
 |---|---|---|

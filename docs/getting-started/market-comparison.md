@@ -57,7 +57,7 @@ Komodor Klaudia is the closest head-to-head competitor to Kubernaut in the agent
 
 ### Remediation Architecture
 
-Kubernaut separates investigation from remediation through a **declarative workflow catalog**. The LLM investigates the incident and produces a structured RCA. The HolmesGPT API (HAPI) then matches the RCA against a catalog of pre-authored `RemediationWorkflow` CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. DataStorage ranks candidates by label-weighted SQL scoring, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.
+Kubernaut separates investigation from remediation through a **declarative workflow catalog**. The LLM investigates the incident and produces a structured RCA. **Kubernaut Agent** then matches the RCA against a catalog of pre-authored `RemediationWorkflow` CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. DataStorage ranks candidates by label-weighted SQL scoring, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.
 
 Klaudia uses an **agent-generated remediation** model. The Remediator agent determines and executes the fix based on the investigation output. In Komodor's demo, Klaudia produced a specific remediation instruction ("Change the secret to app mode with a value set to 'safe'") directly from agent reasoning, not from selecting a pre-defined workflow.
 
@@ -115,9 +115,9 @@ This distinction is decisive for organizations in regulated industries (finance,
 
 ### Investigation Architecture
 
-Klaudia's investigation is more sophisticated today. Hundreds of specialized SME agents run parallel hypotheses coordinated by an Orchestrator that ranks findings by confidence and evidence. Kubernaut uses a single-agent investigation via HAPI with sequential tool calls.
+Klaudia's investigation is more sophisticated today. Hundreds of specialized SME agents run parallel hypotheses coordinated by an Orchestrator that ranks findings by confidence and evidence. Kubernaut uses a single-agent investigation via Kubernaut Agent with sequential tool calls.
 
-Multi-agent parallel investigation is a planned evolution for Kubernaut. The [Go rewrite of HAPI](https://github.com/jordigilh/kubernaut/issues/433) gives Kubernaut ownership of the agent loop, enabling parallel investigation branches with specialized toolsets in a future phase.
+Multi-agent parallel investigation is a planned evolution for Kubernaut. The [Go implementation of Kubernaut Agent](https://github.com/jordigilh/kubernaut/issues/433) gives Kubernaut ownership of the agent loop, enabling parallel investigation branches with specialized toolsets in a future phase.
 
 ## Comparison Matrix
 

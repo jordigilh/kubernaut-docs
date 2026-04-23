@@ -8,7 +8,7 @@
 If you were using the chart-provided Event Exporter, deploy the [Resmo Kubernetes Event Exporter](https://github.com/resmoio/kubernetes-event-exporter) separately and configure it to forward events to the Gateway:
 
 1. Deploy the Event Exporter in your cluster (e.g., via its own Helm chart or manifest)
-2. Configure it to POST `Warning` events to the Gateway endpoint: `http://gateway-service.<namespace>.svc.cluster.local:8080/api/v1/signals/kubernetes-event`
+2. Configure it to POST `Warning` events to the Gateway endpoint: `https://gateway-service.<namespace>.svc.cluster.local:8080/api/v1/signals/kubernetes-event`
 3. Register the Event Exporter's ServiceAccount as an authorized signal source in your Kubernaut values:
 
 ```yaml

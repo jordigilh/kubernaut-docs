@@ -14,7 +14,7 @@ configuration changes -- just feedback from prior failure influencing the LLM's 
 
 !!! info "Observed on a live cluster"
     This behavior was captured on a Kind multi-node cluster running Kubernaut demo v1.9.
-    LLM: `vertex_ai/claude-sonnet-4`. All log excerpts are from actual DataStorage and HAPI
+    LLM: `vertex_ai/claude-sonnet-4`. All log excerpts are from actual DataStorage and Kubernaut Agent
     service logs.
 
 ## The Scenario
@@ -56,7 +56,7 @@ making, indefinitely. What happened next is where Kubernaut diverges.
 
 ## Second Attempt: History-Informed Self-Correction
 
-When the alert re-fired, a new RemediationRequest was created. This time, the HAPI
+When the alert re-fired, a new RemediationRequest was created. This time, the Kubernaut Agent
 investigation pipeline served the LLM additional context: **remediation history** for
 the target resource.
 
@@ -94,7 +94,7 @@ But this time, the LLM **deliberately chose not to select it**:
 > "The issue is not actually an OOMKill scenario that would benefit from increasing
 > memory limits -- it's a resource quota exhaustion problem."
 
-The LLM returned no selected workflow. HAPI mapped this to the `no_matching_workflows`
+The LLM returned no selected workflow. Kubernaut Agent mapped this to the `no_matching_workflows`
 outcome:
 
 ```

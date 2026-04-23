@@ -107,8 +107,8 @@ The AI Analysis produces one of six outcomes:
 | **Normal** (workflow selected, auto-approved) | Run post-analysis checks → create **WFE** → **Executing** |
 | **ApprovalRequired** (Rego policy mandate) | Create **RemediationApprovalRequest** → **AwaitingApproval** |
 | **WorkflowNotNeeded** (issue already resolved) | Transition to **Completed** with `Outcome: NoActionRequired` |
-| **ManualReviewRequired** (no workflow, HAPI flagged human review) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
-| **HumanReviewWithWorkflow** (HAPI flagged review + workflow present) | Transition to **Failed** (see [ManualReviewRequired Outcome](#manualreviewrequired-outcome)) |
+| **ManualReviewRequired** (no workflow, KA flagged human review) | Transition to **Completed** with `Outcome: ManualReviewRequired` |
+| **HumanReviewWithWorkflow** (KA flagged review + workflow present) | Transition to **Failed** (see [ManualReviewRequired Outcome](#manualreviewrequired-outcome)) |
 | **Failed** (AI analysis error) | Transition to **Failed** |
 
 For the normal path, the Orchestrator runs **post-analysis routing checks** before creating the WFE. If blocked, the RR enters **Blocked** (returning to Analyzing when the block clears).
@@ -208,7 +208,7 @@ Set the delay to **0** to disable the cooldown. After a non-zero delay expires, 
 - **`RequiresManualReview`:** `true`
 - **Cooldown:** Same `noActionRequiredDelay` as `NoActionRequired` (default 24h, `routing.noActionRequiredDelayHours`; **0** to opt out). The Orchestrator sets `NextAllowedExecution` so the Gateway suppresses duplicate RRs while operators investigate.
 
-Typical when AIAnalysis has `NeedsHumanReview=true` and `SelectedWorkflow=nil` (no catalog workflow, or HAPI requested human review without a selected workflow) — a **successfully finished** triage with human follow-up, not a pipeline failure. This path does **not** increment `ConsecutiveFailureCount`.
+Typical when AIAnalysis has `NeedsHumanReview=true` and `SelectedWorkflow=nil` (no catalog workflow, or KA requested human review without a selected workflow) — a **successfully finished** triage with human follow-up, not a pipeline failure. This path does **not** increment `ConsecutiveFailureCount`.
 
 The Orchestrator still creates a `NotificationRequest` for the operator.
 
@@ -233,7 +233,7 @@ The RR is blocked pending operator action; this is not the same as the Completed
 - **(C) Blocked / IneffectiveChain:** `Blocked` + `ManualReviewRequired`.
 
 !!! note "Low confidence WITH a selected workflow (AIAnalysis)"
-    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR often follows a **Failed**-style path rather than the Completed (A) path. Check the current AA/RO behavior for your release when correlating with metrics.
+    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but KA flagged the result for human review), the RR often follows a **Failed**-style path rather than the Completed (A) path. Check the current AA/RO behavior for your release when correlating with metrics.
 
 ## Timeout System
 
@@ -304,7 +304,7 @@ When a RR reaches a terminal phase:
 | Trigger | Escalation | Mechanism |
 |---|---|---|
 | Rego policy requires approval (environment, sensitive kind, confidence) | Human approval | RemediationApprovalRequest CRD |
-| HAPI flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
+| KA flags human review with selected workflow | Notification + Failed | NotificationRequest with rejected recommendation |
 | Failure at any stage | Team notification | NotificationRequest with error context |
 | No matching workflow | Team notification with RCA | NotificationRequest |
 | Consecutive ineffective remediations | Manual review | `IneffectiveChain` block + `RequiresManualReview` |

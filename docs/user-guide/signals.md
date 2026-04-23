@@ -19,7 +19,7 @@ Configure AlertManager to send alerts to this endpoint:
 receivers:
   - name: kubernaut
     webhook_configs:
-      - url: http://gateway-service.kubernaut-system.svc:8080/api/v1/signals/prometheus
+      - url: https://gateway-service.kubernaut-system.svc:8080/api/v1/signals/prometheus
         send_resolved: false
 
 route:
@@ -139,7 +139,7 @@ Rego policies evaluate the enriched signal to determine:
 | **Reactive** | Active incident requiring remediation | `KubePodCrashLooping`, `KubePodOOMKilled` |
 | **Proactive** | Predicted issue before user impact | `PredictDiskFull`, `PredictMemoryExhaustion` (via `predict_linear()`) |
 
-Signal mode determines which prompt variant HolmesGPT uses during investigation, affecting the framing of the analysis (incident response vs. preventive assessment). See [Signal Mode Configuration](policies.md#signal-mode-configuration) for how to configure which alert names are treated as proactive.
+Signal mode determines which prompt variant Kubernaut Agent uses during investigation, affecting the framing of the analysis (incident response vs. preventive assessment). See [Signal Mode Configuration](policies.md#signal-mode-configuration) for how to configure which alert names are treated as proactive.
 
 ## Error Responses
 

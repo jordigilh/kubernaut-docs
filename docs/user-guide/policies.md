@@ -160,14 +160,14 @@ proactive_signal_mappings:
 
 Signal names that match a key in this map are classified as `proactive`; all others default to `reactive`. The mapped value is the base signal name used for workflow catalog lookup.
 
-Signal mode determines which prompt variant HolmesGPT uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/hapi-investigation.md#reactive-vs-proactive-mode) for details.
+Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md#reactive-vs-proactive-mode) for details.
 
 !!! info "Signal mode mappings are not hot-reloaded"
     Unlike Rego policies, the proactive signal mappings are loaded once at startup. Changes require a pod restart.
 
 ## AI Analysis Approval Policy
 
-The approval policy runs after HAPI returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.
+The approval policy runs after Kubernaut Agent returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.
 
 **Package:** `aianalysis.approval`
 
@@ -178,12 +178,12 @@ The approval policy runs after HAPI returns a successful workflow selection. It 
 | Field | Source | Description |
 |---|---|---|
 | `input.environment` | SP enrichment | `production`, `staging`, `development`, `qa`, `test` |
-| `input.confidence` | HAPI `SelectedWorkflow.Confidence` | LLM confidence score (0.0--1.0) |
+| `input.confidence` | Kubernaut Agent `SelectedWorkflow.Confidence` | LLM confidence score (0.0--1.0) |
 | `input.confidence_threshold` | Helm config (optional) | Overrides default 0.8 |
-| `input.remediation_target` | HAPI `RootCauseAnalysis.RemediationTarget` | `{kind, name, namespace}` |
-| `input.detected_labels` | HAPI `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
-| `input.failed_detections` | HAPI `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
-| `input.warnings` | HAPI investigation warnings | Array of warning strings |
+| `input.remediation_target` | Kubernaut Agent `RootCauseAnalysis.RemediationTarget` | `{kind, name, namespace}` |
+| `input.detected_labels` | Kubernaut Agent `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
+| `input.failed_detections` | Kubernaut Agent `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
+| `input.warnings` | Kubernaut Agent investigation warnings | Array of warning strings |
 
 ### Approval Rules
 
@@ -324,6 +324,6 @@ The reload is **validated** -- if the new policy has a syntax error, the previou
 ## Next Steps
 
 - [Remediation Workflows](workflows.md) -- How policies feed into workflow discovery and scoring
-- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the approval policy integrates with the investigation outcomes
+- [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) -- How the approval policy integrates with the investigation outcomes
 - [Human Approval](approval.md) -- What happens when approval is required
 - [Configuration Reference](configuration.md) -- Other configurable aspects of Kubernaut

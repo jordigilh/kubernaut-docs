@@ -3039,7 +3039,7 @@
 <ol>
 <li><strong>Signal Deduplication</strong> — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, deduplicates and suppresses noise, and creates a <code>RemediationRequest</code>.</li>
 <li><strong>Signal Categorization</strong> — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.</li>
-<li><strong>LLM Investigation</strong> — The Kubernaut Agent investigates the incident live using Kubernetes inspection tools (logs, events, resource state, live metrics) and optionally Prometheus, Grafana Loki, and other configured toolsets. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
+<li><strong>LLM Investigation</strong> — The Kubernaut Agent investigates the incident live using Kubernetes inspection tools (logs, events, resource state) and optionally Prometheus for live metrics. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.</li>
 <li><strong>Remediation Execution</strong> — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).</li>
 <li><strong>Effectiveness Assessment</strong> — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.</li>
 <li><strong>Multichannel Notification</strong> — Notifies the team with the full remediation outcome, including the effectiveness assessment results.</li>
@@ -3060,7 +3060,7 @@
 </tr>
 <tr>
 <td><strong>AI-Powered Root Cause Analysis</strong></td>
-<td>Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and configurable observability toolsets (Prometheus, Grafana Loki/Tempo, and more)</td>
+<td>Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and Prometheus metrics (when enabled)</td>
 </tr>
 <tr>
 <td><strong>Workflow Catalog</strong></td>

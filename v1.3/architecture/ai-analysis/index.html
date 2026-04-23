@@ -3298,10 +3298,10 @@
 </tbody>
 </table>
 <h2 id="kubernaut-agent-investigation">Kubernaut Agent Investigation<a class="headerlink" href="#kubernaut-agent-investigation" title="Permanent link">&para;</a></h2>
-<p>Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with live Kubernetes access and configurable observability toolsets. During investigation, it:</p>
+<p>Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with live Kubernetes access and optional Prometheus integration. During investigation, it:</p>
 <ol>
 <li><strong>Reads the enriched signal</strong> — Alert details, target resource, namespace context</li>
-<li><strong>Investigates using K8s tools</strong> — Inspects pod logs, events, resource state, and live metrics via <code>kubectl</code>; optionally queries Prometheus, Grafana Loki/Tempo, and other configured toolsets</li>
+<li><strong>Investigates using K8s tools</strong> — Inspects pod logs, events, resource state via <code>kubectl</code>; optionally queries Prometheus for live metrics when enabled</li>
 <li><strong>Produces a root cause analysis</strong> — Structured explanation of what went wrong</li>
 <li><strong>Resolves the target resource</strong> — Calls <code>get_namespaced_resource_context</code> (or <code>get_cluster_resource_context</code> for cluster-scoped resources) to resolve the owner chain, compute a spec hash, fetch <strong>remediation history</strong> (past outcomes and effectiveness scores via internal DataStorage lookup), and detect <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
 <li><strong>Discovers workflows via DataStorage</strong> — The LLM uses a three-step protocol: <code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).</li>

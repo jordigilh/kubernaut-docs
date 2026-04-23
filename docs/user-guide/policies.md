@@ -171,7 +171,7 @@ The approval policy runs after Kubernaut Agent returns a successful workflow sel
 
 **Package:** `aianalysis.approval`
 
-**ConfigMap:** `approval.rego` mounted via `charts/kubernaut/files/rego/aianalysis/approval.rego`
+**ConfigMap:** `aianalysis-policies`, key `approval.rego`. Operators install the policy via `--set-file aianalysis.policies.content=approval.rego` or by providing a pre-created ConfigMap with `aianalysis.policies.existingConfigMap`. See [AIAnalysis Approval Policy ConfigMap](configmap-approval.md) for the full reference.
 
 ### Input Fields
 
@@ -191,7 +191,7 @@ Three mandatory triggers:
 
 1. **Missing remediation target** -- If `remediation_target` is absent or has an empty `kind`, approval is always required. Safety net for incomplete RCA.
 
-2. **Production environment** -- All production remediations require human approval, regardless of confidence. Controlled by setting `kubernaut.ai/environment=production` on the namespace.
+2. **Production environment** -- All production remediations require human approval, regardless of confidence (case-insensitive match: `Production`, `production`, `PRODUCTION`). Controlled by setting `kubernaut.ai/environment=production` on the namespace.
 
 3. **Sensitive resource kinds** -- Remediations targeting `Node` or `StatefulSet` resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.
 

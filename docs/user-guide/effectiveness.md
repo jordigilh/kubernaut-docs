@@ -113,7 +113,7 @@ The richer the effectiveness data, the better the LLM's future decisions:
 
 Operators should ensure the Effectiveness Monitor has access to AlertManager and Prometheus for the richest possible history data.
 
-For a detailed technical breakdown of how history influences the LLM's workflow selection, see [Investigation Pipeline: How Remediation History Influences the LLM](../architecture/hapi-investigation.md#how-remediation-history-influences-the-llm).
+For a detailed technical breakdown of how history influences the LLM's workflow selection, see [Investigation Pipeline: How Remediation History Influences the LLM](../architecture/kubernaut-agent-investigation.md#how-remediation-history-influences-the-llm).
 
 ## Next Steps
 

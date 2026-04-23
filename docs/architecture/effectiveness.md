@@ -205,7 +205,7 @@ Only assessed components with non-nil scores are included. Weights are redistrib
 
 ## Feedback Loop
 
-EA results feed back into the remediation pipeline through the [Investigation Pipeline](hapi-investigation.md):
+EA results feed back into the remediation pipeline through the [Investigation Pipeline](kubernaut-agent-investigation.md):
 
 1. **Audit storage** -- EA completion events are stored in DataStorage with the correlation ID
 2. **Remediation history** -- DataStorage indexes EA results by spec hash and target resource
@@ -213,7 +213,7 @@ EA results feed back into the remediation pipeline through the [Investigation Pi
 4. **LLM prompt** -- History entries include effectiveness scores and outcomes, formatted as warnings in the LLM prompt
 5. **Decision influence** -- The LLM uses history to avoid repeating ineffective workflows and prefer historically successful ones
 
-See [Investigation Pipeline: Remediation History](hapi-investigation.md) for details on how the three-way hash comparison and formatted warnings work.
+See [Investigation Pipeline: Remediation History](kubernaut-agent-investigation.md) for details on how the three-way hash comparison and formatted warnings work.
 
 ## OCP Monitoring RBAC
 
@@ -223,5 +223,5 @@ On OpenShift clusters with `effectivenessmonitor.external.ocpMonitoringRbac: tru
 
 - [Async Propagation](async-propagation.md) -- The propagation delay model in detail
 - [Effectiveness Monitoring](../user-guide/effectiveness.md) -- User guide for operators
-- [Investigation Pipeline](hapi-investigation.md) -- How EA results influence future investigations
+- [Investigation Pipeline](kubernaut-agent-investigation.md) -- How EA results influence future investigations
 - [Configuration](../user-guide/configuration.md) -- Tuning stabilization and propagation delays

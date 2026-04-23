@@ -130,7 +130,7 @@ See [Human Approval](../user-guide/approval.md) for the full approval flow and p
 
 ## Next Steps
 
-- [Investigation Pipeline](hapi-investigation.md) — Deep-dive into the LLM investigation phases, resource context, remediation history, decision outcomes, and approval gate
+- [Investigation Pipeline](kubernaut-agent-investigation.md) — Deep-dive into the LLM investigation phases, resource context, remediation history, decision outcomes, and approval gate
 - [Remediation Routing](remediation-routing.md) — How the Orchestrator routes the result
 - [Workflow Selection](workflow-selection.md) — Catalog query and scoring details
 - [Human Approval](../user-guide/approval.md) — The approval flow

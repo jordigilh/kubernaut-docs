@@ -245,6 +245,6 @@ After selection, the confidence score determines the next step:
 ## Next Steps
 
 - [Workflow Execution](workflow-execution.md) -- How selected workflows are run
-- [Investigation Pipeline](hapi-investigation.md) -- The KA investigation and selection process
+- [Investigation Pipeline](kubernaut-agent-investigation.md) -- The KA investigation and selection process
 - [Remediation Workflows](../user-guide/workflows.md) -- Writing workflow schemas
 - [Signal Processing](signal-processing.md) -- How classification feeds into workflow filtering

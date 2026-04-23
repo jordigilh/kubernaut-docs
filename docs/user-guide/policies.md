@@ -160,7 +160,7 @@ proactive_signal_mappings:
 
 Signal names that match a key in this map are classified as `proactive`; all others default to `reactive`. The mapped value is the base signal name used for workflow catalog lookup.
 
-Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/hapi-investigation.md#reactive-vs-proactive-mode) for details.
+Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md#reactive-vs-proactive-mode) for details.
 
 !!! info "Signal mode mappings are not hot-reloaded"
     Unlike Rego policies, the proactive signal mappings are loaded once at startup. Changes require a pod restart.
@@ -324,6 +324,6 @@ The reload is **validated** -- if the new policy has a syntax error, the previou
 ## Next Steps
 
 - [Remediation Workflows](workflows.md) -- How policies feed into workflow discovery and scoring
-- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the approval policy integrates with the investigation outcomes
+- [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) -- How the approval policy integrates with the investigation outcomes
 - [Human Approval](approval.md) -- What happens when approval is required
 - [Configuration Reference](configuration.md) -- Other configurable aspects of Kubernaut

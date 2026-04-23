@@ -126,7 +126,7 @@ nav:
       - Gateway: architecture/gateway.md
       - Signal Processing: architecture/signal-processing.md
       - AI Analysis: architecture/ai-analysis.md
-      - Investigation Pipeline: architecture/hapi-investigation.md
+      - Investigation Pipeline: architecture/kubernaut-agent-investigation.md
       - Remediation Routing: architecture/remediation-routing.md
       - Workflow Selection: architecture/workflow-selection.md
       - Workflow Execution: architecture/workflow-execution.md

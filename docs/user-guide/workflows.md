@@ -710,7 +710,7 @@ Re-applying a previously deleted `ActionType` CRD re-enables it with the previou
 
 ## Next Steps
 
-- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the LLM discovers and selects workflows
+- [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) -- How the LLM discovers and selects workflows
 - [Human Approval](approval.md) -- When workflows require approval before execution
 - [Effectiveness Monitoring](effectiveness.md) -- How outcomes are evaluated
 - [Architecture: Workflow Execution](../architecture/workflow-execution.md) -- Deep-dive into the execution engine

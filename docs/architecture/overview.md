@@ -43,7 +43,7 @@ Each service has a single responsibility:
 | **Gateway** | Signal ingestion, authentication, scope checking, deduplication, RR creation | [Gateway](gateway.md) |
 | **Signal Processing** | Kubernetes context enrichment, Rego-based classification (environment, severity, priority, signal mode), business categorization | [Signal Processing](signal-processing.md) |
 | **AI Analysis** | Orchestrates Kubernaut Agent investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
-| **Kubernaut Agent** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](hapi-investigation.md) |
+| **Kubernaut Agent** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](kubernaut-agent-investigation.md) |
 | **Remediation Orchestrator** | Lifecycle coordination, routing engine, timeout enforcement, child CRD management | [Remediation Routing](remediation-routing.md) |
 | **Workflow Execution** | Dependency resolution, Job/Tekton execution, cooldown, deterministic locking | [Workflow Execution](workflow-execution.md) |
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |

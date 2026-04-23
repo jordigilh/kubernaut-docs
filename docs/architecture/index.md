@@ -6,7 +6,7 @@ Deep-dive documentation for Kubernaut's internal design. Pages are ordered by th
 - **[Gateway](gateway.md)** — Signal ingestion, adapters, authentication, scope checking, deduplication, CRD creation. Details how signals enter the system and become RemediationRequest CRDs.
 - **[Signal Processing](signal-processing.md)** — Context enrichment, severity/priority/environment classification, and signal mode. Covers enrichment, Rego-based classification, and signal mode handling.
 - **[AI Analysis](ai-analysis.md)** — Kubernaut Agent integration, session-based async, Rego approval. Explains Kubernaut Agent integration, async session handling, and Rego approval gates.
-- **[Investigation Pipeline](hapi-investigation.md)** — LLM investigation phases, resource context, remediation history, workflow selection, decision outcomes, approval gate. Describes the LLM investigation flow and workflow selection logic.
+- **[Investigation Pipeline](kubernaut-agent-investigation.md)** — LLM investigation phases, resource context, remediation history, workflow selection, decision outcomes, approval gate. Describes the LLM investigation flow and workflow selection logic.
 - **[Remediation Routing](remediation-routing.md)** — Orchestrator routing engine, phase transitions, timeout system, child CRD lifecycle, escalation. Covers orchestration, phase state machine, and escalation behavior.
 - **[Workflow Selection](workflow-selection.md)** — Catalog query, label matching, confidence scoring. Details how workflows are queried, matched, and scored for selection.
 - **[Workflow Execution](workflow-execution.md)** — Tekton and Job executors, dependency resolution, cooldown, deterministic locking. Explains executors, dependency resolution, and locking semantics.

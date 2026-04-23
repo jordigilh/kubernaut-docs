@@ -51,7 +51,7 @@ Created after signal enrichment completes. The AI Analysis controller:
     - **Phase 3: Workflow Select** — The LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection
 2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
-See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full three-phase architecture.
+See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the full three-phase architecture.
 
 ### RemediationApprovalRequest
 

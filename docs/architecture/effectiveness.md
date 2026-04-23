@@ -52,14 +52,18 @@ The EM controller exposes assessment timing and concurrency knobs:
 
 ### Assessment paths
 
-Each completed assessment is classified into one of four paths, reflecting how fully the EM could run the configured scorers within the validity window:
+Each completed assessment is classified with an **AssessmentReason** (PascalCase), reflecting how fully the EM could run the configured scorers within the validity window:
 
-| Path | Meaning |
+| AssessmentReason | Meaning |
 |---|---|
-| `no_execution` | No meaningful assessment run (e.g., prerequisites not met). |
-| `partial` | Some components assessed; others skipped or incomplete before the deadline. |
-| `full` | All applicable components assessed successfully within the window. |
-| `metrics_timed_out` / `alert_decay_timeout` / `expired` | Assessment deadline paths where the validity window expired before full convergence. |
+| `NoExecution` | No meaningful assessment run (e.g., prerequisites not met). |
+| `Partial` | Some components assessed; others skipped or incomplete before the deadline. |
+| `Full` | All applicable components assessed successfully within the window. |
+| `SpecDrift` | The spec changed *during* the assessment window, invalidating the evaluation (not the same as a deliberate remediation change). |
+| `Expired` | The validity window expired before all components could be assessed. |
+| `MetricsTimedOut` | Metrics scoring did not complete within the allowed window. |
+| `AlertDecayTimeout` | Alert decay handling exceeded the time budget. |
+| `Unrecoverable` | Assessment cannot proceed (e.g., dependencies unavailable after retries, target gone). |
 
 ## Timing Model
 
@@ -102,7 +106,7 @@ If the total check offset exceeds the ValidityWindow, the deadline is automatica
 
 ### Validity Window
 
-The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (`AssessmentReason: expired`).
+The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (`AssessmentReason: Expired`).
 
 | Parameter | Default |
 |---|---|
@@ -187,7 +191,7 @@ Compares the resource specification before and after remediation to detect drift
 
 When `HashComputeDelay` is set (async targets), the hash is not computed until the propagation delay elapses. The controller enters `WaitingForPropagation` and requeues with the remaining duration.
 
-If spec drift is detected (`assessment_status == "spec_drift"` — the spec changed *during* the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to **0.0** regardless of other component results. Note: `postHash != preHash` alone is **normal** for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.
+If spec drift is detected (assessment classifies as `SpecDrift` — the spec changed *during* the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to **0.0** regardless of other component results. Note: `postHash != preHash` alone is **normal** for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.
 
 ## Weighted Scoring
 
@@ -202,6 +206,23 @@ DataStorage computes a weighted overall score when the EA results are stored:
 Only assessed components with non-nil scores are included. Weights are redistributed proportionally when components are missing (e.g., if AlertManager is unavailable, health gets ~62% and metrics ~38%).
 
 **Spec drift override**: If the hash comparison detects drift, the overall score is set to 0.0.
+
+## Remediation outcome: Inconclusive (not an assessment reason) {: #remediation-outcome-inconclusive-not-an-assessment-reason }
+
+`Inconclusive` is a **RemediationRequest outcome** set by the **Remediation Orchestrator** when deriving the final RR result from the Effectiveness Assessment (EA). It is **not** an `AssessmentReason` from the Effectiveness Monitor.
+
+The RO uses `DeriveOutcomeFromEA` (post-verification) with this logic:
+
+- **AlertAssessed=true** and **AlertScore=0** (alert still firing) → **Inconclusive** (remediation did not clear the signal).
+- **AlertAssessed=true** and **AlertScore>0** (alert resolved) → **Remediated**.
+- **AlertAssessed=false** (AlertManager unavailable) → **Remediated** (fail-open; **not** Inconclusive).
+- **AlertManager disabled** in the EffectivenessMonitor config: **AlertAssessed=true**, **AlertScore=nil** → **Remediated**.
+
+## Spec hash: root owner vs direct resource (v1.3) {: #spec-hash-root-owner-vs-direct-resource-v13 }
+
+**Effectiveness (EM) path:** The **generic enricher** computes the canonical spec hash on the **direct remediation target** resource.
+
+**Investigation (HAPI) path:** The `get_namespaced_resource_context` tool resolves the **owner chain to the root owner first**, then computes `specHash` for that **root** resource. This keeps remediation history and configuration fingerprints aligned with the stable workload (e.g., Deployment) rather than an intermediate object.
 
 ## Feedback Loop
 

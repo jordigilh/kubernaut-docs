@@ -187,27 +187,53 @@ Includes all pre-analysis checks plus:
 | `IneffectiveTimeWindow` | 4 hours | Time window for ineffective chain |
 | `RequeueResourceBusy` | 30 seconds | Requeue interval for resource busy |
 | `RequeueGenericError` | 5 seconds | Requeue interval for generic errors |
-| `NoActionRequiredDelayHours` | 24 hours | Suppression window after a `NoActionRequired` outcome (see below) |
+| `NoActionRequiredDelayHours` | 24 hours | Cooldown for `NoActionRequired` and for **Completed** `ManualReviewRequired` (path A); `0` opts out (see [ManualReviewRequired](#manualreviewrequired-outcome)) |
 
 ## NoActionRequired Suppression
 
-When an RR completes with `Outcome: NoActionRequired` (the LLM determined no remediation was needed), the Orchestrator sets `NextAllowedExecution` to `now + NoActionRequiredDelayHours` on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.
+When an RR completes with `Outcome: NoActionRequired` (the LLM determined no remediation was needed), the Orchestrator sets `NextAllowedExecution` to `now + noActionRequiredDelay` (default **24h**, configurable via `routing.noActionRequiredDelayHours`; use **0** to opt out) on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.
 
 This prevents duplicate RR churn for signals whose underlying condition is unchanged by design (e.g., a `DiskPressure` alert for a PVC that the LLM correctly identified as not requiring automated action). Without this suppression, the same alert would generate a new RR on every AlertManager re-fire interval, each producing the same `NoActionRequired` outcome.
 
-The default delay is **24 hours** (`NoActionRequiredDelayHours: 24`), configurable in the routing config. After the delay expires, a new RR is created if the alert is still firing, allowing the LLM to re-evaluate whether conditions have changed.
+Set the delay to **0** to disable the cooldown. After a non-zero delay expires, a new RR can be created if the alert is still firing, allowing the LLM to re-evaluate.
 
 ## ManualReviewRequired Outcome
 
-When the AIAnalysis result has `NeedsHumanReview=true` AND `SelectedWorkflow=nil`, the Orchestrator transitions the RR to **Completed** with `Outcome: ManualReviewRequired` rather than **Failed**. This distinction is important for operational metrics:
+`ManualReviewRequired` can appear in **three distinct paths**. The phase and whether `NextAllowedExecution` is set depend on *how* the RR got there.
 
-- A **Failed** RR increments `ConsecutiveFailureCount` and may trigger exponential backoff or consecutive failure blocking for future signals with the same fingerprint.
-- A **Completed** (ManualReviewRequired) RR does **not** increment `ConsecutiveFailureCount`, preventing false failure metric inflation.
+### (A) Completed path (#550)
 
-The Orchestrator still creates a `NotificationRequest` to inform the operator that human review is required. The 24-hour `NoActionRequiredDelayHours` suppression window is also applied (same as `NoActionRequired`), preventing duplicate RRs while the operator investigates.
+- **Phase:** `Completed`
+- **Outcome:** `ManualReviewRequired`
+- **`RequiresManualReview`:** `true`
+- **Cooldown:** Same `noActionRequiredDelay` as `NoActionRequired` (default 24h, `routing.noActionRequiredDelayHours`; **0** to opt out). The Orchestrator sets `NextAllowedExecution` so the Gateway suppresses duplicate RRs while operators investigate.
 
-!!! note "Low confidence WITH a selected workflow"
-    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR transitions to **Failed** instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.
+Typical when AIAnalysis has `NeedsHumanReview=true` and `SelectedWorkflow=nil` (no catalog workflow, or HAPI requested human review without a selected workflow) — a **successfully finished** triage with human follow-up, not a pipeline failure. This path does **not** increment `ConsecutiveFailureCount`.
+
+The Orchestrator still creates a `NotificationRequest` for the operator.
+
+### (B) Failed path
+
+- **Transition:** `Outcome: ManualReviewRequired` then `transitionToFailed` → **Phase:** `Failed`
+- **No** `NextAllowedExecution` / cooldown (failure path does not apply the `noActionRequiredDelay` suppression)
+
+Triggered when human review is required in a **failure** context, including **workflow rejection** (e.g. approval denied), **workflow resolution failure**, or **remediation target missing** after execution concerns. These RRs are terminal failures and participate in failure metrics and backoff as designed for the failure phase.
+
+### (C) Blocked path (IneffectiveChain)
+
+- **Phase:** `Blocked`
+- **Outcome:** `ManualReviewRequired` (e.g. after ineffective-chain escalation)
+
+The RR is blocked pending operator action; this is not the same as the Completed “triage only” path (A).
+
+### Summary
+
+- **(A) Completed:** manual review with optional duplicate suppression via `noActionRequiredDelay` / `routing.noActionRequiredDelayHours` (0 = off).
+- **(B) Failed:** manual review after a real failure; **no** matching cooldown.
+- **(C) Blocked / IneffectiveChain:** `Blocked` + `ManualReviewRequired`.
+
+!!! note "Low confidence WITH a selected workflow (AIAnalysis)"
+    When `NeedsHumanReview=true` but `SelectedWorkflow` is present (the LLM selected a workflow but HAPI flagged the result for human review), the RR often follows a **Failed**-style path rather than the Completed (A) path. Check the current AA/RO behavior for your release when correlating with metrics.
 
 ## Timeout System
 

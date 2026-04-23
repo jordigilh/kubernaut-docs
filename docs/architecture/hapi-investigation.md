@@ -143,10 +143,10 @@ All subsequent context (spec hash, history, detected labels) is about the root o
 
 ### 2. Spec Hash Computation
 
-Computes a canonical SHA-256 hash of the root owner's `.spec`:
+Computes a canonical SHA-256 hash of the **root owner** resource's `.spec` (v1.3+ for `get_namespaced_resource_context` / `get_cluster_resource_context`: the tool resolves the owner chain first, then hashes the root). This differs from the **Effectiveness Monitor generic enricher**, which hashes the **direct** remediation target. See [Effectiveness: Spec hash: root owner vs direct resource (v1.3)](effectiveness.md#spec-hash-root-owner-vs-direct-resource-v13).
 
 ```
-sha256(canonicalize(resource.spec))
+sha256(canonicalize(rootOwner.spec))
 ```
 
 This fingerprint uniquely identifies the current configuration state. When sent to DataStorage, it enables the history endpoint to distinguish between:
@@ -340,7 +340,7 @@ The HolmesGPT Python codebase (not the kubernaut Go repository) includes a `buil
 | **Configuration regression** | `regressionDetected: true` | "The current resource spec matches a pre-remediation state. Consider a different remediation approach." |
 | **Declining effectiveness** | Same `workflowType` used 3+ times with monotonically decreasing scores | "Each successive application is less effective, suggesting the workflow treats the symptom rather than the root cause." |
 | **Repeated ineffective remediation** | Same `workflowType` completed N+ times for the same signal but the issue recurs | "Recommend selecting `needs_human_review` or an alternative escalation workflow." |
-| **Spec drift (inconclusive)** | `assessmentReason == "spec_drift"` | "The target resource spec was modified during the assessment window, invalidating effectiveness data. Do not treat as a failed remediation." |
+| **Spec drift (inconclusive)** | `assessmentReason == "SpecDrift"` | "The target resource spec was modified during the assessment window, invalidating effectiveness data. Do not treat as a failed remediation." |
 | **Spec drift (causal chain)** | Spec drift entry's `postRemediationSpecHash` matches a subsequent entry's `preRemediationSpecHash` | "The outcome was unstable, and a subsequent remediation was triggered from the resulting state." |
 
 The section concludes with explicit reasoning guidance: *"Avoid repeating workflows that previously failed or had poor effectiveness. If a workflow completed successfully multiple times but the same signal keeps recurring, escalate to human review."*

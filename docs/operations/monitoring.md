@@ -105,7 +105,7 @@ scrape_configs:
 |---|---|---|---|
 | `kubernaut_effectivenessmonitor_component_scores` | Histogram | `component` | Score distribution (0.0--1.0) per component |
 | `kubernaut_effectivenessmonitor_component_assessments_total` | Counter | `component`, `result` | Component assessments (health, hash, alert, metrics) |
-| `kubernaut_effectivenessmonitor_assessments_completed_total` | Counter | `reason` | Assessments completed (full, partial, expired) |
+| `kubernaut_effectivenessmonitor_assessments_completed_total` | Counter | `reason` | Assessments completed (`Full`, `Partial`, `Expired`, and other `AssessmentReason` values) |
 | `kubernaut_effectivenessmonitor_validity_expirations_total` | Counter | -- | Assessments that expired before completion |
 | `kubernaut_effectivenessmonitor_external_call_errors_total` | Counter | `service`, `operation`, `error_type` | Prometheus/AlertManager call errors |
 

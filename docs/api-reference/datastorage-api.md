@@ -65,6 +65,19 @@ http://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | `PATCH` | `/api/v1/workflows/{workflow_id}/enable` | Enable a workflow |
 | `PATCH` | `/api/v1/workflows/{workflow_id}/deprecate` | Deprecate a workflow |
 
+#### Workflow registration: content integrity and idempotency
+
+`POST /api/v1/workflows` (Auth Webhook on `RemediationWorkflow` admission) is **idempotent** when the same `(name, version)` is submitted with the **same content hash** — the API returns **200 OK** and does not create duplicate rows.
+
+If the client registers a workflow with the same `(name, version)` but a **different** content hash, the request **conflicts** with the existing row: the API returns **HTTP 409 Conflict** with an [RFC 7807](https://www.rfc-editor.org/rfc/rfc9457) problem body:
+
+| Field | Value |
+|-------|--------|
+| `type` | `content-integrity-violation` |
+| `title` | `Content Changed Without Version Bump` |
+
+Bump the workflow **version** (or reconcile with the stored definition) so catalog identity matches the new content.
+
 ### Action Type Taxonomy
 
 | Method | Path | Description |

@@ -39,6 +39,8 @@ sequenceDiagram
 
 The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
 
+**`Inconclusive` is not an EA value.** When verification finishes, the **Remediation Orchestrator** may set the RR outcome to `Inconclusive` (or `Remediated`) from EA alert results — that logic lives in the RO, not the EM. See [Architecture: Remediation outcome: Inconclusive](../architecture/effectiveness.md#remediation-outcome-inconclusive-not-an-assessment-reason).
+
 !!! note "Alert Decay Detection"
     When a Prometheus alert transitions from firing to resolved, the AlertManager lookback window may cause the alert to appear active even though the resource is healthy. The EM detects this by comparing health status with alert state, and re-queues the assessment until the alert clears. The `alertDecayRetries` field on the `EffectivenessAssessment` status tracks the number of decay re-checks. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
 
@@ -73,8 +75,8 @@ flowchart LR
     RO["RO<br/><small>Captures pre-hash</small>"] --> WFE["WFE<br/><small>Executes workflow</small>"]
     WFE --> EM["EM<br/><small>Evaluates effectiveness</small>"]
     EM --> DS["DS<br/><small>Stores audit events</small>"]
-    DS --> HAPI["HAPI<br/><small>Fetches history</small>"]
-    HAPI --> LLM["LLM<br/><small>Avoids past failures</small>"]
+    DS --> KA["KA<br/><small>Fetches history</small>"]
+    KA --> LLM["LLM<br/><small>Avoids past failures</small>"]
     LLM --> RO
 ```
 
@@ -92,12 +94,12 @@ The Remediation Orchestrator also emits `remediation.workflow_created` with the 
 
 ### How History Is Queried
 
-When the next incident hits the same resource, HAPI calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
+When the next incident hits the same resource, Kubernaut Agent calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
 
 ### How the Spec Hash Creates a Configuration Fingerprint
 
 - **Pre-remediation hash** (captured by RO before execution) and **post-remediation hash** (captured by EM after stabilization) create a before/after pair
-- When a future incident occurs, HAPI computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
+- When a future incident occurs, Kubernaut Agent computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
     - `"preRemediation"` -- Current config matches a previously-remediated state (**regression**)
     - `"postRemediation"` -- Config unchanged since last remediation
     - `"none"` -- Config has changed (fresh start)

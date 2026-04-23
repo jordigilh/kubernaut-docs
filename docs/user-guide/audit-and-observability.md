@@ -41,7 +41,7 @@ Every stage of the remediation lifecycle emits audit events:
 | **Gateway** | Signal received, scope validated | `gateway.signal.received` |
 | **Signal Processing** | Enrichment completed, classification results | `signalprocessing.enrichment.completed` |
 | **AI Analysis** | Investigation submitted, analysis completed/failed, Rego evaluation, approval decision | `aianalysis.analysis.completed`, `aianalysis.rego.evaluation`, `aianalysis.approval.decision` |
-| **Kubernaut Agent** | Enrichment phase completed/failed during investigation | `aiagent.enrichment.completed`, `aiagent.enrichment.failed` |
+| **Kubernaut Agent** | Enrichment and investigation; LLM completion and max-token handling (v1.3) | `aiagent.enrichment.completed`, `aiagent.enrichment.failed`, `aiagent.response.complete`, `truncation_detected` |
 | **Orchestrator** | Lifecycle transitions, child CRD creation, routing blocks | `orchestrator.lifecycle.created`, `orchestrator.lifecycle.transitioned`, `orchestrator.routing.blocked` |
 | **Workflow Execution** | Workflow selected, execution started/completed, block clearance | `workflowexecution.selection.completed`, `workflowexecution.execution.started`, `workflowexecution.block.cleared` |
 | **Notification** | Message sent, delivery failure, acknowledgement, escalation | `notification.message.sent`, `notification.message.failed`, `notification.message.acknowledged`, `notification.message.escalated` |
@@ -56,6 +56,12 @@ Each event contains core fields: `event_id`, `event_timestamp`, `event_type`, `e
 ### LLM token usage (`aiagent.response.complete`)
 
 Events with type `aiagent.response.complete` include **`total_prompt_tokens`** and **`total_completion_tokens`** in the payload for token accounting and cost analysis.
+
+### `finish_reason` and truncation (v1.3)
+
+HolmesGPT API investigation **response** events in this same category can include **`finish_reason`**, taken from the provider completion, so you can see whether a response ended with **`length` (max tokens)**, `stop`, `tool_calls`, and so on in your audit store.
+
+A **`truncation_detected`** event is emitted when truncation triggers the **token escalation** path. Its `event_data` can include **`escalated_max_tokens: true` when a second attempt runs with a higher max-token cap (capped, for example, at 16,384; see [Investigation Pipeline: LLM output resilience](../architecture/kubernaut-agent-investigation.md#llm-output-resilience)).
 
 ### Tool call attribution
 

@@ -1972,6 +1972,56 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ManualReviewRequired Outcome">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-completed-path-550" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (A) Completed path (#550)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-failed-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (B) Failed path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-blocked-path-ineffectivechain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (C) Blocked path (IneffectiveChain)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3489,6 +3539,56 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="ManualReviewRequired Outcome">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-completed-path-550" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (A) Completed path (#550)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-failed-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (B) Failed path
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-blocked-path-ineffectivechain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (C) Blocked path (IneffectiveChain)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -3992,24 +4092,46 @@
 <tr>
 <td><code>NoActionRequiredDelayHours</code></td>
 <td>24 hours</td>
-<td>Suppression window after a <code>NoActionRequired</code> outcome (see below)</td>
+<td>Cooldown for <code>NoActionRequired</code> and for <strong>Completed</strong> <code>ManualReviewRequired</code> (path A); <code>0</code> opts out (see <a href="#manualreviewrequired-outcome">ManualReviewRequired</a>)</td>
 </tr>
 </tbody>
 </table>
 <h2 id="noactionrequired-suppression">NoActionRequired Suppression<a class="headerlink" href="#noactionrequired-suppression" title="Permanent link">&para;</a></h2>
-<p>When an RR completes with <code>Outcome: NoActionRequired</code> (the LLM determined no remediation was needed), the Orchestrator sets <code>NextAllowedExecution</code> to <code>now + NoActionRequiredDelayHours</code> on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.</p>
+<p>When an RR completes with <code>Outcome: NoActionRequired</code> (the LLM determined no remediation was needed), the Orchestrator sets <code>NextAllowedExecution</code> to <code>now + noActionRequiredDelay</code> (default <strong>24h</strong>, configurable via <code>routing.noActionRequiredDelayHours</code>; use <strong>0</strong> to opt out) on the completed RR. The Gateway's deduplication logic respects this field on terminal RRs -- any new signal with the same fingerprint is suppressed until the delay expires.</p>
 <p>This prevents duplicate RR churn for signals whose underlying condition is unchanged by design (e.g., a <code>DiskPressure</code> alert for a PVC that the LLM correctly identified as not requiring automated action). Without this suppression, the same alert would generate a new RR on every AlertManager re-fire interval, each producing the same <code>NoActionRequired</code> outcome.</p>
-<p>The default delay is <strong>24 hours</strong> (<code>NoActionRequiredDelayHours: 24</code>), configurable in the routing config. After the delay expires, a new RR is created if the alert is still firing, allowing the LLM to re-evaluate whether conditions have changed.</p>
+<p>Set the delay to <strong>0</strong> to disable the cooldown. After a non-zero delay expires, a new RR can be created if the alert is still firing, allowing the LLM to re-evaluate.</p>
 <h2 id="manualreviewrequired-outcome">ManualReviewRequired Outcome<a class="headerlink" href="#manualreviewrequired-outcome" title="Permanent link">&para;</a></h2>
-<p>When the AIAnalysis result has <code>NeedsHumanReview=true</code> AND <code>SelectedWorkflow=nil</code>, the Orchestrator transitions the RR to <strong>Completed</strong> with <code>Outcome: ManualReviewRequired</code> rather than <strong>Failed</strong>. This distinction is important for operational metrics:</p>
+<p><code>ManualReviewRequired</code> can appear in <strong>three distinct paths</strong>. The phase and whether <code>NextAllowedExecution</code> is set depend on <em>how</em> the RR got there.</p>
+<h3 id="a-completed-path-550">(A) Completed path (#550)<a class="headerlink" href="#a-completed-path-550" title="Permanent link">&para;</a></h3>
 <ul>
-<li>A <strong>Failed</strong> RR increments <code>ConsecutiveFailureCount</code> and may trigger exponential backoff or consecutive failure blocking for future signals with the same fingerprint.</li>
-<li>A <strong>Completed</strong> (ManualReviewRequired) RR does <strong>not</strong> increment <code>ConsecutiveFailureCount</code>, preventing false failure metric inflation.</li>
+<li><strong>Phase:</strong> <code>Completed</code></li>
+<li><strong>Outcome:</strong> <code>ManualReviewRequired</code></li>
+<li><strong><code>RequiresManualReview</code>:</strong> <code>true</code></li>
+<li><strong>Cooldown:</strong> Same <code>noActionRequiredDelay</code> as <code>NoActionRequired</code> (default 24h, <code>routing.noActionRequiredDelayHours</code>; <strong>0</strong> to opt out). The Orchestrator sets <code>NextAllowedExecution</code> so the Gateway suppresses duplicate RRs while operators investigate.</li>
 </ul>
-<p>The Orchestrator still creates a <code>NotificationRequest</code> to inform the operator that human review is required. The 24-hour <code>NoActionRequiredDelayHours</code> suppression window is also applied (same as <code>NoActionRequired</code>), preventing duplicate RRs while the operator investigates.</p>
+<p>Typical when AIAnalysis has <code>NeedsHumanReview=true</code> and <code>SelectedWorkflow=nil</code> (no catalog workflow, or KA requested human review without a selected workflow) — a <strong>successfully finished</strong> triage with human follow-up, not a pipeline failure. This path does <strong>not</strong> increment <code>ConsecutiveFailureCount</code>.</p>
+<p>The Orchestrator still creates a <code>NotificationRequest</code> for the operator.</p>
+<h3 id="b-failed-path">(B) Failed path<a class="headerlink" href="#b-failed-path" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Transition:</strong> <code>Outcome: ManualReviewRequired</code> then <code>transitionToFailed</code> → <strong>Phase:</strong> <code>Failed</code></li>
+<li><strong>No</strong> <code>NextAllowedExecution</code> / cooldown (failure path does not apply the <code>noActionRequiredDelay</code> suppression)</li>
+</ul>
+<p>Triggered when human review is required in a <strong>failure</strong> context, including <strong>workflow rejection</strong> (e.g. approval denied), <strong>workflow resolution failure</strong>, or <strong>remediation target missing</strong> after execution concerns. These RRs are terminal failures and participate in failure metrics and backoff as designed for the failure phase.</p>
+<h3 id="c-blocked-path-ineffectivechain">(C) Blocked path (IneffectiveChain)<a class="headerlink" href="#c-blocked-path-ineffectivechain" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Phase:</strong> <code>Blocked</code></li>
+<li><strong>Outcome:</strong> <code>ManualReviewRequired</code> (e.g. after ineffective-chain escalation)</li>
+</ul>
+<p>The RR is blocked pending operator action; this is not the same as the Completed “triage only” path (A).</p>
+<h3 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>(A) Completed:</strong> manual review with optional duplicate suppression via <code>noActionRequiredDelay</code> / <code>routing.noActionRequiredDelayHours</code> (0 = off).</li>
+<li><strong>(B) Failed:</strong> manual review after a real failure; <strong>no</strong> matching cooldown.</li>
+<li><strong>(C) Blocked / IneffectiveChain:</strong> <code>Blocked</code> + <code>ManualReviewRequired</code>.</li>
+</ul>
 <div class="admonition note">
-<p class="admonition-title">Low confidence WITH a selected workflow</p>
-<p>When <code>NeedsHumanReview=true</code> but <code>SelectedWorkflow</code> is present (the LLM selected a workflow but KA flagged the result for human review), the RR transitions to <strong>Failed</strong> instead. This signals that the LLM found a candidate workflow but the operator should review the rejected recommendation.</p>
+<p class="admonition-title">Low confidence WITH a selected workflow (AIAnalysis)</p>
+<p>When <code>NeedsHumanReview=true</code> but <code>SelectedWorkflow</code> is present (the LLM selected a workflow but KA flagged the result for human review), the RR often follows a <strong>Failed</strong>-style path rather than the Completed (A) path. Check the current AA/RO behavior for your release when correlating with metrics.</p>
 </div>
 <h2 id="timeout-system">Timeout System<a class="headerlink" href="#timeout-system" title="Permanent link">&para;</a></h2>
 <p>The Orchestrator enforces both global and per-phase timeouts. Per-RR overrides are supported via <code>TimeoutConfig</code>.</p>

@@ -3799,6 +3799,7 @@
 <li>Partial index on <code>is_latest_version = true</code> for active workflow queries</li>
 </ul>
 <p><strong>Workflow supersession</strong>: Only one workflow version per <code>(workflow_name, action_type)</code> pair can be <code>active</code> at a time. When a new version of a workflow is registered (via <code>RemediationWorkflow</code> CRD creation or update), DataStorage marks the previous active entry as <code>superseded</code> and activates the new one. This is enforced by the <code>GetActiveByWorkflowName</code> repository method during registration. The AuthWebhook intercepts both CREATE and UPDATE operations on <code>RemediationWorkflow</code> CRDs and forwards them to DataStorage for catalog registration.</p>
+<p><strong>PK collision recovery (SupersedeAndCreate)</strong>: Workflow primary keys are <strong>deterministic</strong> (UUIDv5). A rare re-registration can collide with an existing row for the same ID. If the colliding row has <code>status = 'Superseded'</code>, DataStorage <strong>re-activates</strong> that row: <code>status = 'Active'</code>, with reason <code>reactivated: re-registered via CRD</code>. The implementation uses a <strong>SAVEPOINT/ROLLBACK</strong> pattern so a failed attempt can be retried or handled without leaving the transaction in a bad state.</p>
 <h3 id="action_type_taxonomy">action_type_taxonomy<a class="headerlink" href="#action_type_taxonomy" title="Permanent link">&para;</a></h3>
 <p>The action type registry for workflow categorization.</p>
 <table>

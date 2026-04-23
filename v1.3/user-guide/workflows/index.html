@@ -1118,6 +1118,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflow-display-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow display name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#detected-labels" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3413,6 +3424,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflow-display-name" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow display name
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#detected-labels" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3823,7 +3845,7 @@
 </span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">critical</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">high</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">medium</span><span class="p p-Indicator">]</span>
 </span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">production</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">staging</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">development</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;*&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deployment</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">deployment</span><span class="p p-Indicator">]</span>
 </span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
 </span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a>
 </span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span><span class="nt">detectedLabels</span><span class="p">:</span>
@@ -3923,25 +3945,25 @@
 <td><code>severity</code></td>
 <td>string[]</td>
 <td>Yes</td>
-<td>Severity levels: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code></td>
+<td>Severity levels: <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code> (array, <code>minItems: 1</code>)</td>
 </tr>
 <tr>
 <td><code>environment</code></td>
 <td>string[]</td>
 <td>Yes</td>
-<td>Environments: <code>production</code>, <code>staging</code>, <code>development</code>, <code>test</code>, or <code>"*"</code></td>
+<td>Environments: <code>production</code>, <code>staging</code>, <code>development</code>, <code>test</code>, or <code>"*"</code> (array, <code>minItems: 1</code>)</td>
 </tr>
 <tr>
 <td><code>component</code></td>
-<td>string</td>
+<td>string[]</td>
 <td>Yes</td>
-<td>Resource kind: <code>pod</code>, <code>deployment</code>, <code>node</code>, or <code>"*"</code></td>
+<td>Resource kind(s): <code>pod</code>, <code>deployment</code>, <code>node</code>, or <code>"*"</code> (array, <code>minItems: 1</code>)</td>
 </tr>
 <tr>
 <td><code>priority</code></td>
 <td>string</td>
 <td>Yes</td>
-<td>Priority: <code>P0</code>, <code>P1</code>, <code>P2</code>, <code>P3</code>, or <code>"*"</code></td>
+<td>Priority: <code>P0</code>, <code>P1</code>, <code>P2</code>, <code>P3</code>, or <code>"*"</code> (single value)</td>
 </tr>
 <tr>
 <td><code>signalName</code></td>
@@ -3953,14 +3975,16 @@
 </table>
 <p>Labels support:</p>
 <ul>
-<li><strong>Exact match</strong> -- <code>component: deployment</code></li>
-<li><strong>Wildcard</strong> -- <code>component: "*"</code> (matches any value)</li>
+<li><strong>Exact match</strong> -- <code>component: [deployment]</code></li>
+<li><strong>Wildcard</strong> -- <code>component: ["*"]</code> (matches any value)</li>
 <li><strong>Multi-value</strong> -- <code>severity: [critical, high]</code> (matches either)</li>
 </ul>
 <div class="admonition warning">
 <p class="admonition-title">Labels determine discoverability</p>
 <p>Workflows that don't match the mandatory label filters are excluded entirely -- they never reach the LLM. A misconfigured severity or environment can silently hide a workflow from the candidate set. See <a href="#workflow-search-and-scoring">Workflow Search and Scoring</a> for details.</p>
 </div>
+<h3 id="workflow-display-name">Workflow display name<a class="headerlink" href="#workflow-display-name" title="Permanent link">&para;</a></h3>
+<p><code>FormatWorkflowDisplay(actionType, workflowName)</code> returns <code>ActionType:WorkflowName</code> for user-visible strings. The runtime looks up a friendly label through <strong>DataStorage</strong> via <code>ResolveWorkflowDisplay</code> (catalog lookup by workflow identity). If the resolver is nil or DataStorage returns no row, the fallback is the <strong>raw workflow UUID</strong> (no <code>ActionType:</code> prefix).</p>
 <h3 id="detected-labels">Detected Labels<a class="headerlink" href="#detected-labels" title="Permanent link">&para;</a></h3>
 <p>Optional infrastructure-awareness labels that influence scoring and help the LLM select the right workflow for the target environment:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">detectedLabels</span><span class="p">:</span>
@@ -4197,7 +4221,7 @@
 </span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">high</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">medium</span><span class="p p-Indicator">]</span>
 </span><span id="__span-14-13"><a id="__codelineno-14-13" name="__codelineno-14-13" href="#__codelineno-14-13"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">production</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">staging</span><span class="p p-Indicator">]</span>
-</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deployment</span>
+</span><span id="__span-14-14"><a id="__codelineno-14-14" name="__codelineno-14-14" href="#__codelineno-14-14"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">deployment</span><span class="p p-Indicator">]</span>
 </span><span id="__span-14-15"><a id="__codelineno-14-15" name="__codelineno-14-15" href="#__codelineno-14-15"></a><span class="w">    </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
 </span><span id="__span-14-16"><a id="__codelineno-14-16" name="__codelineno-14-16" href="#__codelineno-14-16"></a><span class="w">  </span><span class="nt">execution</span><span class="p">:</span>
 </span><span id="__span-14-17"><a id="__codelineno-14-17" name="__codelineno-14-17" href="#__codelineno-14-17"></a><span class="w">    </span><span class="nt">engine</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ansible</span>
@@ -4511,7 +4535,7 @@
 </tr>
 <tr>
 <td><strong>Priority</strong></td>
-<td>Handles both scalar (<code>"P1"</code>) and array (<code>["P0","P1"]</code>) values with <code>"*"</code> wildcard</td>
+<td>String match (single value) with <code>"*"</code> wildcard</td>
 </tr>
 </tbody>
 </table>

@@ -2239,6 +2239,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Workflow Catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflow-registration-content-integrity-and-idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow registration: content integrity and idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3095,6 +3112,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Workflow Catalog">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#workflow-registration-content-integrity-and-idempotency" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow registration: content integrity and idempotency
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3357,6 +3391,28 @@
 </tr>
 </tbody>
 </table>
+<h4 id="workflow-registration-content-integrity-and-idempotency">Workflow registration: content integrity and idempotency<a class="headerlink" href="#workflow-registration-content-integrity-and-idempotency" title="Permanent link">&para;</a></h4>
+<p><code>POST /api/v1/workflows</code> (Auth Webhook on <code>RemediationWorkflow</code> admission) is <strong>idempotent</strong> when the same <code>(name, version)</code> is submitted with the <strong>same content hash</strong> — the API returns <strong>200 OK</strong> and does not create duplicate rows.</p>
+<p>If the client registers a workflow with the same <code>(name, version)</code> but a <strong>different</strong> content hash, the request <strong>conflicts</strong> with the existing row: the API returns <strong>HTTP 409 Conflict</strong> with an <a href="https://www.rfc-editor.org/rfc/rfc9457">RFC 7807</a> problem body:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>type</code></td>
+<td><code>content-integrity-violation</code></td>
+</tr>
+<tr>
+<td><code>title</code></td>
+<td><code>Content Changed Without Version Bump</code></td>
+</tr>
+</tbody>
+</table>
+<p>Bump the workflow <strong>version</strong> (or reconcile with the stored definition) so catalog identity matches the new content.</p>
 <h3 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

@@ -4382,8 +4382,8 @@
 </span></code></pre></div>
 <p>All subsequent context (spec hash, history, detected labels) is about the root owner, not the individual pod. This ensures that history is tracked at the right level -- a Deployment, not an ephemeral ReplicaSet.</p>
 <h3 id="2-spec-hash-computation">2. Spec Hash Computation<a class="headerlink" href="#2-spec-hash-computation" title="Permanent link">&para;</a></h3>
-<p>Computes a canonical SHA-256 hash of the root owner's <code>.spec</code>:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sha256(canonicalize(resource.spec))
+<p>Computes a canonical SHA-256 hash of the <strong>root owner</strong> resource's <code>.spec</code> (v1.3+ for <code>get_namespaced_resource_context</code> / <code>get_cluster_resource_context</code>: the tool resolves the owner chain first, then hashes the root). This differs from the <strong>Effectiveness Monitor generic enricher</strong>, which hashes the <strong>direct</strong> remediation target. See <a href="../effectiveness/#spec-hash-root-owner-vs-direct-resource-v13">Effectiveness: Spec hash: root owner vs direct resource (v1.3)</a>.</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sha256(canonicalize(rootOwner.spec))
 </span></code></pre></div>
 <p>This fingerprint uniquely identifies the current configuration state. When sent to DataStorage, it enables the history endpoint to distinguish between:</p>
 <ul>
@@ -4644,7 +4644,7 @@
 </tr>
 <tr>
 <td><strong>Spec drift (inconclusive)</strong></td>
-<td><code>assessmentReason == "spec_drift"</code></td>
+<td><code>assessmentReason == "SpecDrift"</code></td>
 <td>"The target resource spec was modified during the assessment window, invalidating effectiveness data. Do not treat as a failed remediation."</td>
 </tr>
 <tr>

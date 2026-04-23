@@ -3564,9 +3564,9 @@
 </tr>
 <tr>
 <td><code>component</code></td>
-<td><code>string</code></td>
+<td><code>string[]</code></td>
 <td><code>pod</code>, <code>deployment</code>, <code>node</code>, <code>"*"</code></td>
-<td><code>LOWER(labels-&gt;&gt;'component') = LOWER($val) OR labels-&gt;&gt;'component' = '*'</code></td>
+<td>Array containment (case-insensitive match to resource kind), consistent with <code>severity</code> / <code>environment</code> JSONB patterns</td>
 </tr>
 <tr>
 <td><code>environment</code></td>
@@ -3578,14 +3578,14 @@
 <td><code>priority</code></td>
 <td><code>string</code></td>
 <td><code>P0</code>, <code>P1</code>, <code>P2</code>, <code>P3</code>, <code>"*"</code></td>
-<td>JSONB scalar or array containment</td>
+<td>Scalar match with <code>"*"</code> wildcard</td>
 </tr>
 </tbody>
 </table>
 <p>Labels support:</p>
 <ul>
-<li><strong>Exact match</strong> -- <code>component: deployment</code></li>
-<li><strong>Wildcard</strong> -- <code>component: "*"</code> (matches any value)</li>
+<li><strong>Exact match</strong> -- <code>component: [deployment]</code></li>
+<li><strong>Wildcard</strong> -- <code>component: ["*"]</code> (matches any value)</li>
 <li><strong>Multi-value</strong> -- <code>severity: [critical, high]</code> (matches if any value overlaps)</li>
 </ul>
 <h3 id="detected-label-filters">Detected Label Filters<a class="headerlink" href="#detected-label-filters" title="Permanent link">&para;</a></h3>

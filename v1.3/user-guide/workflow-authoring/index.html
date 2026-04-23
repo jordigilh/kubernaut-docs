@@ -3802,7 +3802,7 @@
 <ul>
 <li>DetectedLabels (highest impact on ranking)</li>
 <li>CustomLabels (operator-intent boost)</li>
-<li>Mandatory label filters (severity, environment, component, priority) -- workflows that don't match are excluded entirely</li>
+<li>Mandatory label filters: <code>severity</code>, <code>environment</code>, and <code>component</code> are string arrays in the API (<code>[]string</code> with <code>minItems: 1</code>); <code>priority</code> is a single string -- workflows that don't match are excluded entirely</li>
 </ul>
 <h3 id="step-3-workflow-selection">Step 3: Workflow Selection<a class="headerlink" href="#step-3-workflow-selection" title="Permanent link">&para;</a></h3>
 <p>The LLM receives the ranked list and picks the workflow whose <code>description.whenToUse</code> best fits the incident. It also considers remediation history (what worked or failed before on this resource).</p>
@@ -4071,7 +4071,7 @@
 </span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">critical</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">high</span><span class="p p-Indicator">]</span>
 </span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;*&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deployment</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">deployment</span><span class="p p-Indicator">]</span>
 </span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">    </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
 </span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">  </span><span class="nt">customLabels</span><span class="p">:</span>
 </span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">    </span><span class="nt">risk_tolerance</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;high&quot;</span>
@@ -4113,7 +4113,7 @@
 </span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
 </span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">    </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">critical</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">high</span><span class="p p-Indicator">]</span>
 </span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="nt">environment</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;*&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">deployment</span>
+</span><span id="__span-12-16"><a id="__codelineno-12-16" name="__codelineno-12-16" href="#__codelineno-12-16"></a><span class="w">    </span><span class="nt">component</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">deployment</span><span class="p p-Indicator">]</span>
 </span><span id="__span-12-17"><a id="__codelineno-12-17" name="__codelineno-12-17" href="#__codelineno-12-17"></a><span class="w">    </span><span class="nt">priority</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;*&quot;</span>
 </span><span id="__span-12-18"><a id="__codelineno-12-18" name="__codelineno-12-18" href="#__codelineno-12-18"></a><span class="w">  </span><span class="nt">customLabels</span><span class="p">:</span>
 </span><span id="__span-12-19"><a id="__codelineno-12-19" name="__codelineno-12-19" href="#__codelineno-12-19"></a><span class="w">    </span><span class="nt">risk_tolerance</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;low&quot;</span>
@@ -4235,7 +4235,7 @@
 <td>Determines which action category the LLM picks</td>
 </tr>
 <tr>
-<td>Mandatory labels (severity, environment, component, priority)</td>
+<td>Mandatory labels (<code>severity</code>, <code>environment</code>, <code>component</code> as <code>[]string</code> with <code>minItems: 1</code>; <code>priority</code> as string)</td>
 <td>Step 2 (filtering)</td>
 <td>Excludes workflows that don't match -- they never reach the LLM</td>
 </tr>

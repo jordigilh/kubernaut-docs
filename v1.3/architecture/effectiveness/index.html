@@ -2021,6 +2021,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remediation-outcome-inconclusive-not-an-assessment-reason" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remediation outcome: Inconclusive (not an assessment reason)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-hash-root-owner-vs-direct-resource-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spec hash: root owner vs direct resource (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feedback-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3327,6 +3349,28 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#remediation-outcome-inconclusive-not-an-assessment-reason" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remediation outcome: Inconclusive (not an assessment reason)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#spec-hash-root-owner-vs-direct-resource-v13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Spec hash: root owner vs direct resource (v1.3)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#feedback-loop" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3461,30 +3505,46 @@
 </tbody>
 </table>
 <h3 id="assessment-paths">Assessment paths<a class="headerlink" href="#assessment-paths" title="Permanent link">&para;</a></h3>
-<p>Each completed assessment is classified into one of four paths, reflecting how fully the EM could run the configured scorers within the validity window:</p>
+<p>Each completed assessment is classified with an <strong>AssessmentReason</strong> (PascalCase), reflecting how fully the EM could run the configured scorers within the validity window:</p>
 <table>
 <thead>
 <tr>
-<th>Path</th>
+<th>AssessmentReason</th>
 <th>Meaning</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>no_execution</code></td>
+<td><code>NoExecution</code></td>
 <td>No meaningful assessment run (e.g., prerequisites not met).</td>
 </tr>
 <tr>
-<td><code>partial</code></td>
+<td><code>Partial</code></td>
 <td>Some components assessed; others skipped or incomplete before the deadline.</td>
 </tr>
 <tr>
-<td><code>full</code></td>
+<td><code>Full</code></td>
 <td>All applicable components assessed successfully within the window.</td>
 </tr>
 <tr>
-<td><code>metrics_timed_out</code> / <code>alert_decay_timeout</code> / <code>expired</code></td>
-<td>Assessment deadline paths where the validity window expired before full convergence.</td>
+<td><code>SpecDrift</code></td>
+<td>The spec changed <em>during</em> the assessment window, invalidating the evaluation (not the same as a deliberate remediation change).</td>
+</tr>
+<tr>
+<td><code>Expired</code></td>
+<td>The validity window expired before all components could be assessed.</td>
+</tr>
+<tr>
+<td><code>MetricsTimedOut</code></td>
+<td>Metrics scoring did not complete within the allowed window.</td>
+</tr>
+<tr>
+<td><code>AlertDecayTimeout</code></td>
+<td>Alert decay handling exceeded the time budget.</td>
+</tr>
+<tr>
+<td><code>Unrecoverable</code></td>
+<td>Assessment cannot proceed (e.g., dependencies unavailable after retries, target gone).</td>
 </tr>
 </tbody>
 </table>
@@ -3521,7 +3581,7 @@
 </ul>
 <p>If the total check offset exceeds the ValidityWindow, the deadline is automatically extended.</p>
 <h3 id="validity-window">Validity Window<a class="headerlink" href="#validity-window" title="Permanent link">&para;</a></h3>
-<p>The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (<code>AssessmentReason: expired</code>).</p>
+<p>The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (<code>AssessmentReason: Expired</code>).</p>
 <table>
 <thead>
 <tr>
@@ -3658,7 +3718,7 @@
 </ul>
 <h4 id="hash-deferral">Hash Deferral<a class="headerlink" href="#hash-deferral" title="Permanent link">&para;</a></h4>
 <p>When <code>HashComputeDelay</code> is set (async targets), the hash is not computed until the propagation delay elapses. The controller enters <code>WaitingForPropagation</code> and requeues with the remaining duration.</p>
-<p>If spec drift is detected (<code>assessment_status == "spec_drift"</code> — the spec changed <em>during</em> the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to <strong>0.0</strong> regardless of other component results. Note: <code>postHash != preHash</code> alone is <strong>normal</strong> for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.</p>
+<p>If spec drift is detected (assessment classifies as <code>SpecDrift</code> — the spec changed <em>during</em> the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to <strong>0.0</strong> regardless of other component results. Note: <code>postHash != preHash</code> alone is <strong>normal</strong> for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.</p>
 <h2 id="weighted-scoring">Weighted Scoring<a class="headerlink" href="#weighted-scoring" title="Permanent link">&para;</a></h2>
 <p>DataStorage computes a weighted overall score when the EA results are stored:</p>
 <table>
@@ -3685,6 +3745,18 @@
 </table>
 <p>Only assessed components with non-nil scores are included. Weights are redistributed proportionally when components are missing (e.g., if AlertManager is unavailable, health gets ~62% and metrics ~38%).</p>
 <p><strong>Spec drift override</strong>: If the hash comparison detects drift, the overall score is set to 0.0.</p>
+<h2 id="remediation-outcome-inconclusive-not-an-assessment-reason">Remediation outcome: Inconclusive (not an assessment reason)<a class="headerlink" href="#remediation-outcome-inconclusive-not-an-assessment-reason" title="Permanent link">&para;</a></h2>
+<p><code>Inconclusive</code> is a <strong>RemediationRequest outcome</strong> set by the <strong>Remediation Orchestrator</strong> when deriving the final RR result from the Effectiveness Assessment (EA). It is <strong>not</strong> an <code>AssessmentReason</code> from the Effectiveness Monitor.</p>
+<p>The RO uses <code>DeriveOutcomeFromEA</code> (post-verification) with this logic:</p>
+<ul>
+<li><strong>AlertAssessed=true</strong> and <strong>AlertScore=0</strong> (alert still firing) → <strong>Inconclusive</strong> (remediation did not clear the signal).</li>
+<li><strong>AlertAssessed=true</strong> and <strong>AlertScore&gt;0</strong> (alert resolved) → <strong>Remediated</strong>.</li>
+<li><strong>AlertAssessed=false</strong> (AlertManager unavailable) → <strong>Remediated</strong> (fail-open; <strong>not</strong> Inconclusive).</li>
+<li><strong>AlertManager disabled</strong> in the EffectivenessMonitor config: <strong>AlertAssessed=true</strong>, <strong>AlertScore=nil</strong> → <strong>Remediated</strong>.</li>
+</ul>
+<h2 id="spec-hash-root-owner-vs-direct-resource-v13">Spec hash: root owner vs direct resource (v1.3)<a class="headerlink" href="#spec-hash-root-owner-vs-direct-resource-v13" title="Permanent link">&para;</a></h2>
+<p><strong>Effectiveness (EM) path:</strong> The <strong>generic enricher</strong> computes the canonical spec hash on the <strong>direct remediation target</strong> resource.</p>
+<p><strong>Investigation (HAPI) path:</strong> The <code>get_namespaced_resource_context</code> tool resolves the <strong>owner chain to the root owner first</strong>, then computes <code>specHash</code> for that <strong>root</strong> resource. This keeps remediation history and configuration fingerprints aligned with the stable workload (e.g., Deployment) rather than an intermediate object.</p>
 <h2 id="feedback-loop">Feedback Loop<a class="headerlink" href="#feedback-loop" title="Permanent link">&para;</a></h2>
 <p>EA results feed back into the remediation pipeline through the <a href="../kubernaut-agent-investigation/">Investigation Pipeline</a>:</p>
 <ol>

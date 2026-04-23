@@ -3676,6 +3676,10 @@
 </tr>
 </tbody>
 </table>
+<p><strong>LLM provider</strong> (required for AI investigation):</p>
+<ul>
+<li>Any <a href="../../user-guide/configmap-kubernaut-agent/#supported-providers">supported provider</a> with JSON structured output support (<code>response_format: json_object</code> or equivalent). KA enables JSON mode on all LLM requests — models that do not support it will produce parse failures.</li>
+</ul>
 <p><strong>Workflow execution engine</strong> (at least one):</p>
 <ul>
 <li>Kubernetes Jobs (built-in, no extra dependency)</li>

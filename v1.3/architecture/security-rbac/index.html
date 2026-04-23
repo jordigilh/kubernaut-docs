@@ -3649,7 +3649,11 @@
 </tr>
 </tbody>
 </table>
-<p><strong>TTL validation (Ansible path):</strong> When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets <code>TokenTTLInsufficient</code> on the WorkflowExecution and emits a warning event (<code>TokenTTLShortened</code>).</p>
+<p><strong>TTL validation (Ansible path):</strong> The controller requests tokens with a <strong>3600s (1 hour)</strong> TTL by default. When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets <code>TokenTTLInsufficient</code> on the WorkflowExecution and emits a warning event (<code>TokenTTLShortened</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Cluster-level TTL constraints</p>
+<p>The Kubernetes API server flag <code>--service-account-max-token-expiration</code> (or OpenShift <code>ServiceAccountTokenMaxExpiration</code>) can silently cap token TTLs below the requested duration. If the cap is lower than the workflow execution timeout, Ansible jobs may receive <strong>401 Unauthorized</strong> errors mid-execution. Ensure the cluster-level maximum is at least <strong>3600s</strong> (or greater than your longest workflow execution timeout). Check for <code>TokenTTLShortened</code> warning events on WorkflowExecution CRDs if Ansible jobs fail unexpectedly with authentication errors.</p>
+</div>
 <p><strong>Fallback behavior:</strong> If <code>serviceAccountName</code> is not set:</p>
 <ul>
 <li>Job/Tekton run with the execution namespace default ServiceAccount.</li>

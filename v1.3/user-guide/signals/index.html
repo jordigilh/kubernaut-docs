@@ -1015,6 +1015,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Prometheus AlertManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-alertmanager-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required AlertManager Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -1025,6 +1042,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Kubernetes Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expected-event-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Event Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -3099,6 +3133,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Prometheus AlertManager">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#required-alertmanager-labels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required AlertManager Labels
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
         
           <li class="md-nav__item">
@@ -3109,6 +3160,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Kubernetes Events">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#expected-event-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Expected Event Fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -3312,6 +3380,53 @@
 </span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="w">      </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
 </span></code></pre></div>
 <p>The Gateway validates each alert, extracts the target resource, checks scope labels, and creates a <code>RemediationRequest</code> CRD.</p>
+<h4 id="required-alertmanager-labels">Required AlertManager Labels<a class="headerlink" href="#required-alertmanager-labels" title="Permanent link">&para;</a></h4>
+<p>The Gateway expects the following labels on incoming alerts:</p>
+<table>
+<thead>
+<tr>
+<th>Label</th>
+<th>Required</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>namespace</code></td>
+<td>Yes</td>
+<td>Target namespace for resource scope resolution. Without this, the Gateway cannot determine which resource to remediate.</td>
+</tr>
+<tr>
+<td><code>alertname</code></td>
+<td>Yes</td>
+<td>Used in fingerprint computation and signal deduplication.</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td>Yes</td>
+<td>Normalized during signal processing; used for routing and notification priority.</td>
+</tr>
+<tr>
+<td><code>pod</code></td>
+<td>No</td>
+<td>Preferred resource target identifier.</td>
+</tr>
+<tr>
+<td><code>deployment</code></td>
+<td>No</td>
+<td>Fallback resource target when <code>pod</code> is absent.</td>
+</tr>
+<tr>
+<td><code>container</code></td>
+<td>No</td>
+<td>Enrichment context for investigation.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Thanos Ruler and OpenShift namespace labels</p>
+<p>When using Thanos Ruler or OpenShift user-workload monitoring, alerts may carry the namespace in a non-standard label (e.g., <code>exported_namespace</code> or <code>tenant_id</code>). The Gateway uses <code>namespace</code> as the canonical key. Configure AlertManager relabeling rules to map your environment's namespace label to <code>namespace</code> before forwarding to the Gateway.</p>
+</div>
 <h3 id="kubernetes-events">Kubernetes Events<a class="headerlink" href="#kubernetes-events" title="Permanent link">&para;</a></h3>
 <p>The Gateway accepts Kubernetes events via a webhook endpoint:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>POST /api/v1/signals/kubernetes-event
@@ -3321,6 +3436,44 @@
 <p class="admonition-title">Event Exporter removed from chart in v1.1</p>
 <p>The Event Exporter was previously bundled in the Helm chart. Since v1.1, Kubernetes event forwarding is a user-provided concern managed independently of the Kubernaut installation.</p>
 </div>
+<h4 id="expected-event-fields">Expected Event Fields<a class="headerlink" href="#expected-event-fields" title="Permanent link">&para;</a></h4>
+<p>When configuring your event exporter, ensure the webhook payload includes these fields from <code>involvedObject</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Required</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>involvedObject.namespace</code></td>
+<td>Yes</td>
+<td>Target namespace for scope resolution.</td>
+</tr>
+<tr>
+<td><code>involvedObject.name</code></td>
+<td>Yes</td>
+<td>Resource name for remediation targeting.</td>
+</tr>
+<tr>
+<td><code>involvedObject.kind</code></td>
+<td>Yes</td>
+<td>Resource kind (e.g., <code>Pod</code>, <code>Deployment</code>).</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td>Yes</td>
+<td>Event reason (e.g., <code>BackOff</code>, <code>OOMKilled</code>), used as signal type.</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>No</td>
+<td>Human-readable context for investigation enrichment.</td>
+</tr>
+</tbody>
+</table>
 <h2 id="signal-types">Signal Types<a class="headerlink" href="#signal-types" title="Permanent link">&para;</a></h2>
 <p>After ingestion, the Gateway normalizes all signals to a single type:</p>
 <table>

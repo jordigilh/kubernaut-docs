@@ -4365,6 +4365,21 @@
 <td><code>false</code></td>
 </tr>
 <tr>
+<td><code>effectivenessmonitor.external.connectionTimeout</code></td>
+<td>HTTP client timeout for Prometheus/AlertManager connections</td>
+<td><code>10s</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor.external.prometheusLookback</code></td>
+<td>Duration before EA creation to query Prometheus for baseline metrics. Min: <code>1m</code>.</td>
+<td><code>30m</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor.external.scrapeInterval</code></td>
+<td>Prometheus scrape interval used to derive requeue timing for metric assessment. Min: <code>5s</code>.</td>
+<td><code>60s</code></td>
+</tr>
+<tr>
 <td><code>effectivenessmonitor.external.tlsCaFile</code></td>
 <td>Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with <code>ocpMonitoringRbac</code>, set to <code>/etc/ssl/em/service-ca.crt</code> (auto-mounted).</td>
 <td><code>""</code></td>

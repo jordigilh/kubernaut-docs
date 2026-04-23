@@ -3487,7 +3487,7 @@
 </span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">  </span><span class="nt">vertex_project</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">        </span><span class="c1"># Vertex-specific (vertex and vertex_ai)</span>
 </span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">  </span><span class="nt">vertex_location</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">       </span><span class="c1"># Vertex-specific</span>
 </span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">  </span><span class="nt">bedrock_region</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">        </span><span class="c1"># Bedrock-specific</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nt">structured_output</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># Requires pod restart to change</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">  </span><span class="nt">structured_output</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">  </span><span class="c1"># Reserved; KA always enables JSON mode internally (see note below)</span>
 </span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">  </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span><span class="w">          </span><span class="c1"># Creativity vs determinism (0.0--1.0)</span>
 </span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">  </span><span class="nt">max_retries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">            </span><span class="c1"># LLM call retry count</span>
 </span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">  </span><span class="nt">timeout_seconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w">      </span><span class="c1"># Per-call timeout</span>
@@ -3569,6 +3569,10 @@
 <div class="admonition warning">
 <p class="admonition-title">Vertex AI provider distinction</p>
 <p><code>vertex</code> = Gemini models on Vertex AI. <code>vertex_ai</code> = Anthropic Claude models on Vertex AI. These use separate code paths and different SDKs.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Mandatory JSON structured output</p>
+<p>KA internally sets <code>JSONMode: true</code> on every LLM request. This is <strong>not configurable</strong> — the <code>structured_output</code> field in the config is reserved and has no effect at runtime. Your LLM provider/model <strong>must</strong> support schema-constrained JSON responses (equivalent to <code>response_format: {"type": "json_object"}</code> in the OpenAI API). All listed providers support this natively. For self-hosted or air-gapped deployments using Ollama or OpenAI-compatible servers, ensure the model supports JSON mode (most instruction-tuned models do).</p>
 </div>
 <h2 id="toolset-optimization">Toolset Optimization<a class="headerlink" href="#toolset-optimization" title="Permanent link">&para;</a></h2>
 <p>Each enabled toolset injects its full tool schema into every LLM context turn. When a toolset is enabled but never called during an investigation, those schema tokens are pure overhead — they consume budget and can bias the LLM toward irrelevant investigation paths.</p>
@@ -3692,7 +3696,6 @@
 <p><strong>Restart-required fields</strong> (changes are rejected with a warning log):</p>
 <ul>
 <li><code>llm.provider</code></li>
-<li><code>llm.structured_output</code></li>
 <li><code>llm.oauth2.token_url</code>, <code>llm.oauth2.client_id</code>, <code>llm.oauth2.client_secret</code></li>
 </ul>
 <p><strong>Hot-reloadable fields</strong>: <code>model</code>, <code>endpoint</code>, <code>api_key</code>, <code>azure_api_version</code>, <code>vertex_project</code>, <code>vertex_location</code>, <code>bedrock_region</code>, <code>temperature</code>, <code>max_retries</code>, <code>timeout_seconds</code>, <code>custom_headers</code>, <code>oauth2.scopes</code></p>

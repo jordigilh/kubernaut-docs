@@ -3862,8 +3862,7 @@
 <h3 id="engine-configuration-resolution">Engine Configuration Resolution<a class="headerlink" href="#engine-configuration-resolution" title="Permanent link">&para;</a></h3>
 <p>When a WFE spec omits <code>engineConfig</code>, the controller resolves it from the workflow catalog in DataStorage. This prevents nil-pointer panics when workflow registration did not include engine-specific configuration.</p>
 <h2 id="execution-namespace-and-rbac">Execution Namespace and RBAC<a class="headerlink" href="#execution-namespace-and-rbac" title="Permanent link">&para;</a></h2>
-<p>All Jobs and PipelineRuns execute in the dedicated <code>kubernaut-workflows</code> namespace. By default they use the execution namespace default ServiceAccount (commonly configured as <code>kubernaut-workflow-runner</code> in shared-SA deployments). See <a href="../security-rbac/#workflow-execution">Security &amp; RBAC -- Workflow Execution</a> for the full list of permissions granted to the shared execution role.</p>
-<p>Starting with v1.2, workflows can declare a dedicated ServiceAccount via <code>spec.execution.serviceAccountName</code> on the <code>RemediationWorkflow</code> CRD (propagated to <code>WorkflowExecution.spec.serviceAccountName</code>). This enables least-privilege RBAC per workflow.</p>
+<p>All Jobs and PipelineRuns execute in the dedicated <code>kubernaut-workflows</code> namespace. Each workflow declares its own ServiceAccount via <code>spec.execution.serviceAccountName</code> on the <code>RemediationWorkflow</code> CRD (propagated to <code>WorkflowExecution.spec.serviceAccountName</code>). This enables least-privilege RBAC per workflow. If omitted, the execution namespace default ServiceAccount is used.</p>
 <ul>
 <li>Job/Tekton: the service account name is set directly on the created Job/PipelineRun.</li>
 <li>Ansible: the controller requests a short-lived token via the Kubernetes TokenRequest API for AWX credential injection.</li>

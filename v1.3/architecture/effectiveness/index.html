@@ -3429,6 +3429,10 @@
 <p class="admonition-title">CRD Reference</p>
 <p>For the complete EffectivenessAssessment CRD specification, see <a href="../../api-reference/crds/#effectivenessassessment">API Reference: CRDs</a>.</p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Design Decision</p>
+<p>This architecture follows <strong>ADR-EM-001</strong> (Effectiveness Monitor service integration), which defines the multi-component scoring model, timing derivation, and assessment paths described below.</p>
+</div>
 <p>The Effectiveness Monitor evaluates whether a remediation actually resolved the issue. It operates as a CRD controller watching <code>EffectivenessAssessment</code> resources created by the Orchestrator after workflow execution completes (or fails).</p>
 <h2 id="crd-specification">CRD Specification<a class="headerlink" href="#crd-specification" title="Permanent link">&para;</a></h2>
 <p>For the complete field specification, see <a href="../../api-reference/crds/#effectivenessassessment">EffectivenessAssessment in the CRD Reference</a>.</p>
@@ -3481,30 +3485,50 @@
 </table>
 <p>On relevant phase transitions, the Effectiveness Monitor emits an <code>effectiveness.assessment.scheduled</code> audit event so operators and automation can observe when the next assessment step is expected.</p>
 <h3 id="em-controller-assessment-tuning">EM controller assessment tuning<a class="headerlink" href="#em-controller-assessment-tuning" title="Permanent link">&para;</a></h3>
-<p>The EM controller exposes assessment timing and concurrency knobs:</p>
+<p>The EM controller exposes assessment timing, concurrency, and external integration knobs:</p>
 <table>
 <thead>
 <tr>
 <th>Parameter</th>
 <th>Purpose</th>
+<th>Default</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>stabilizationWindow</code></td>
 <td>Wait time before starting assessment scorers after EA creation.</td>
+<td><code>30s</code></td>
 </tr>
 <tr>
 <td><code>validityWindow</code></td>
 <td>Total window before the assessment expires.</td>
+<td><code>300s</code> (5m)</td>
 </tr>
 <tr>
 <td><code>maxConcurrentReconciles</code></td>
 <td>Maximum number of EA reconciliations processed in parallel by the controller.</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>prometheusLookback</code></td>
+<td>Duration before EA creation to query Prometheus for baseline metrics. Min: 1m.</td>
+<td><code>30m</code></td>
+</tr>
+<tr>
+<td><code>scrapeInterval</code></td>
+<td>Prometheus scrape interval used to derive requeue timing for metric assessment. Min: 5s.</td>
+<td><code>60s</code></td>
+</tr>
+<tr>
+<td><code>connectionTimeout</code></td>
+<td>HTTP client timeout for Prometheus/AlertManager connections.</td>
+<td><code>10s</code></td>
 </tr>
 </tbody>
 </table>
 <h3 id="assessment-paths">Assessment paths<a class="headerlink" href="#assessment-paths" title="Permanent link">&para;</a></h3>
+<p>The Orchestrator creates an <code>EffectivenessAssessment</code> for <strong>both successful and failed</strong> workflow executions. This allows the EM to verify whether a failed workflow inadvertently resolved the issue (e.g., a restart that fixed a crash loop before the workflow itself failed) and feeds into the Orchestrator's <code>Inconclusive</code> outcome logic.</p>
 <p>Each completed assessment is classified with an <strong>AssessmentReason</strong> (PascalCase), reflecting how fully the EM could run the configured scorers within the validity window:</p>
 <table>
 <thead>

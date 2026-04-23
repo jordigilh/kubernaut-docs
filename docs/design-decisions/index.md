@@ -18,7 +18,7 @@ This section documents the key architectural decisions made during Kubernaut's d
 
 | Decision | Summary |
 |---|---|
-| **ADR-045** | AIAnalysis–HolmesGPT API contract — session-based async integration |
+| **ADR-045** | AIAnalysis–Kubernaut Agent contract — session-based async integration |
 | **ADR-054** | Proactive signal mode classification — reactive vs proactive handling |
 | **ADR-055** | LLM-driven context enrichment — using LLM for deeper signal understanding |
 | **ADR-056** | Post-RCA label computation — deriving labels from AI analysis results |

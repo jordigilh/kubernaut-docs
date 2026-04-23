@@ -105,8 +105,8 @@ The `nonexistent-ca-secret` was then deleted to simulate the problem recurring. 
 
 ### History-Informed Decision Making
 
-When the LLM investigated the second incident, HAPI's resource context tools
-automatically queried DataStorage for the resource's remediation history. The HAPI logs
+When the LLM investigated the second incident, Kubernaut Agent's resource context tools
+automatically queried DataStorage for the resource's remediation history. The Kubernaut Agent logs
 confirmed:
 
 ```

@@ -45,13 +45,13 @@ Created after a RemediationRequest is accepted. The Signal Processing controller
 
 Created after signal enrichment completes. The AI Analysis controller:
 
-1. Submits the enriched signal to **HolmesGPT** (via the HolmesGPT API service) for a three-phase LLM investigation:
+1. Submits the enriched signal to **Kubernaut Agent** for a three-phase LLM investigation:
     - **Phase 1: Investigate** — Root cause analysis using live cluster data (logs, events, resource state, metrics)
     - **Phase 2: Enrich** — Resolves the target resource's owner chain, computes a spec hash, fetches **remediation history** (past outcomes and effectiveness scores via DataStorage), and detects **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
     - **Phase 3: Workflow Select** — The LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection
 2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
-See [Investigation Pipeline](../architecture/hapi-investigation.md) for the full three-phase architecture.
+See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the full three-phase architecture.
 
 ### RemediationApprovalRequest
 
@@ -97,7 +97,7 @@ A `RemediationRequest` progresses through these phases:
 | **Verifying** | Workflow succeeded; effectiveness assessment in progress |
 | **Blocked** | Routing engine prevents progress; automatically retried after cooldown (see below) |
 | **Completed** | Remediation finished successfully, or `NoActionRequired` / `ManualReviewRequired` outcome |
-| **Failed** | Remediation failed at any stage (including human rejection, or HAPI flagged human review with a selected workflow) |
+| **Failed** | Remediation failed at any stage (including human rejection, or Kubernaut Agent flagged human review with a selected workflow) |
 | **TimedOut** | Phase timeout expired |
 | **Skipped** | Remediation skipped (e.g., resource busy) |
 | **Cancelled** | Remediation cancelled |
@@ -125,7 +125,7 @@ Kubernaut classifies signals into two modes:
 - **Reactive** — Responding to an active incident (e.g., `KubePodCrashLooping`, `KubePodOOMKilled`)
 - **Proactive** — Responding to a predicted issue (e.g., Prometheus `predict_linear()` alerts for disk pressure, memory exhaustion)
 
-Signal mode determines which prompt variant HolmesGPT uses for the investigation. In **reactive** mode, the LLM performs root cause analysis of an incident that has already occurred. In **proactive** mode, the prompt shifts to trend assessment and prevention — the LLM evaluates whether the predicted issue is likely to materialize and recommends preventive action (or concludes no action is needed).
+Signal mode determines which prompt variant Kubernaut Agent uses for the investigation. In **reactive** mode, the LLM performs root cause analysis of an incident that has already occurred. In **proactive** mode, the prompt shifts to trend assessment and prevention — the LLM evaluates whether the predicted issue is likely to materialize and recommends preventive action (or concludes no action is needed).
 
 ## Resource Scope
 
@@ -148,7 +148,7 @@ Remediation workflows are defined as declarative **`RemediationWorkflow` CRDs** 
 
 During investigation, the LLM selects a workflow through a three-step discovery protocol:
 
-1. **List action types** — HolmesGPT calls DataStorage to retrieve available action types (e.g., `RestartPod`, `RollbackDeployment`), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)
+1. **List action types** — Kubernaut Agent calls DataStorage to retrieve available action types (e.g., `RestartPod`, `RollbackDeployment`), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)
 2. **List workflows for action type** — The LLM picks an action type and retrieves matching workflows, which DataStorage returns ordered by label-match scoring (though scores are not exposed to the LLM)
 3. **Get workflow details** — The LLM selects a specific workflow and retrieves its full parameter schema to fill in values from the root cause analysis
 

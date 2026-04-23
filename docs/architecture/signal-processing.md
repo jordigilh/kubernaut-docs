@@ -114,7 +114,7 @@ When the target resource is not found (`404 Not Found`), the enricher activates 
 
 ### Operational Details Not Captured
 
-Pod conditions, container statuses, events, and resource requests/limits are **not** captured by Signal Processing. HolmesGPT fetches these on demand via `kubectl` during the AI investigation phase.
+Pod conditions, container statuses, events, and resource requests/limits are **not** captured by Signal Processing. Kubernaut Agent fetches these on demand via `kubectl` during the AI investigation phase.
 
 ## Phase 2: Classifying
 
@@ -157,7 +157,7 @@ Signal mode is determined by a YAML configuration (`proactive-signal-mappings.ya
 | **Reactive** | Active incident (default) | `KubePodCrashLooping`, `KubePodOOMKilled` |
 | **Proactive** | Predictive alert | `PredictDiskFull`, `MemoryApproaching90Percent` |
 
-Signal mode determines which **prompt variant** HolmesGPT uses during the AI investigation, affecting how the investigation is framed (reactive diagnosis vs. proactive prevention).
+Signal mode determines which **prompt variant** Kubernaut Agent uses during the AI investigation, affecting how the investigation is framed (reactive diagnosis vs. proactive prevention).
 
 ### Classification Output
 
@@ -267,6 +267,6 @@ When Signal Processing reaches `Completed` with `Ready=True`, the Remediation Or
 ## Next Steps
 
 - [Gateway](gateway.md) -- How signals enter the system
-- [AI Analysis](ai-analysis.md) -- How the enriched signal is analyzed by HolmesGPT
+- [AI Analysis](ai-analysis.md) -- How the enriched signal is analyzed by Kubernaut Agent
 - [Remediation Routing](remediation-routing.md) -- The Orchestrator's state machine
 - [Rego Policies](../user-guide/policies.md) -- Writing and configuring classification policies

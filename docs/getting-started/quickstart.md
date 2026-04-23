@@ -95,8 +95,8 @@ AMCFG
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
   --version {{ chart_version }} \
-  --set holmesgptApi.llm.provider=openai \
-  --set holmesgptApi.llm.model=gpt-4o \
+  --set kubernautAgent.llm.provider=openai \
+  --set kubernautAgent.llm.model=gpt-4o \
   --set gateway.auth.signalSources[0].name=alertmanager \
   --set gateway.auth.signalSources[0].namespace=monitoring \
   --set gateway.auth.signalSources[0].serviceAccount=alertmanager-kube-prometheus-stack-alertmanager \
@@ -106,7 +106,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 !!! tip "What the chart handles automatically"
     The chart embeds default Rego policies for signal processing and AI analysis approval, and seeds demo ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default).
 
-For advanced LLM configurations (Vertex AI, Azure, local models), see [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md).
+For advanced LLM configurations (Vertex AI, Azure, local models), see [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md).
 
 ---
 
@@ -294,7 +294,7 @@ The pipeline flows through these stages:
 |---|---|---|
 | **Gateway** | Alert received, RemediationRequest created | Instant |
 | **Signal Processing** | Enriches signal with K8s context (owner chain, namespace labels, severity) | ~5s |
-| **AI Analysis** | HolmesGPT investigates via `kubectl` (pod logs, events, config) | 30-90s |
+| **AI Analysis** | Kubernaut Agent investigates via `kubectl` (pod logs, events, config) | 30-90s |
 | **Approval** | Auto-approved if confidence >= 80%, otherwise awaits human review | Instant or manual |
 | **Workflow Execution** | Runs `kubectl rollout undo deployment/worker` via Job | ~10s |
 | **Effectiveness Monitor** | Confirms pods running, restart count stabilized | 5 min (stabilization window) |
@@ -329,7 +329,7 @@ kubectl delete namespace demo-crashloop
 
 1. Kubernaut's **Gateway** received the `KubePodCrashLooping` alert from AlertManager
 2. **Signal Processing** enriched it with Kubernetes context (owner chain: Pod → ReplicaSet → Deployment, namespace labels: production, high criticality)
-3. **AI Analysis** submitted the enriched signal to HolmesGPT, which used `kubectl` to inspect the crashing pods, read their logs (`unknown directive "invalid_directive_that_breaks_nginx"`), and diagnosed the root cause as a bad ConfigMap
+3. **AI Analysis** submitted the enriched signal to Kubernaut Agent, which used `kubectl` to inspect the crashing pods, read their logs (`unknown directive "invalid_directive_that_breaks_nginx"`), and diagnosed the root cause as a bad ConfigMap
 4. The LLM searched the workflow catalog and selected `crashloop-rollback-v1` (RollbackDeployment)
 5. **Workflow Execution** ran the rollback Job, which executed `kubectl rollout undo deployment/worker`
 6. **Effectiveness Monitor** waited for the stabilization window and confirmed the pods were healthy with no further restarts
@@ -343,4 +343,4 @@ The full audit trail of every step is stored in PostgreSQL for compliance and po
 - [Remediation Workflows](../user-guide/workflows.md) — Write your own workflow schemas
 - [Human Approval](../user-guide/approval.md) — Configure approval gates and confidence thresholds
 - [Architecture Overview](architecture-overview.md) — Dive deeper into the system design
-- [HolmesGPT SDK Config](../user-guide/configmap-holmesgpt.md) — Configure LLM providers, toolsets, and token optimization
+- [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md) — Configure LLM providers, toolsets, and token optimization

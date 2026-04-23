@@ -97,19 +97,19 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `datastorage.resources` | CPU/memory requests and limits | See `values.yaml` |
 | `datastorage.service.type` | Kubernetes Service type | `ClusterIP` |
 
-### HolmesGPT API (LLM Integration)
+### Kubernaut Agent (LLM integration)
 
 | Parameter | Description | Default |
 |---|---|---|
-| `holmesgptApi.replicas` | Number of replicas | `1` |
-| `holmesgptApi.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
-| `holmesgptApi.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `holmesgpt-sdk-config` ConfigMap. | `""` |
-| `holmesgptApi.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
+| `kubernautAgent.replicas` | Number of replicas | `1` |
+| `kubernautAgent.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
+| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `kubernaut-agent-sdk-config` ConfigMap. | `""` |
+| `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
-HAPI uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
+Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
 
-1. **Inline content** (recommended): Provide full SDK config content via `--set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `holmesgpt-sdk-config` ConfigMap from this content.
-2. **External ConfigMap**: Set `holmesgptApi.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
+1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `kubernaut-agent-sdk-config` ConfigMap from this content.
+2. **External ConfigMap**: Set `kubernautAgent.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
 
 One of these two options **must** be provided; the chart will fail at install time if neither is set.
 
@@ -268,7 +268,7 @@ See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signa
 
 ## LLM Provider Setup
 
-LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [HolmesGPT SDK Config](configmap-holmesgpt.md) for the full schema and provider examples.
+LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) for the full schema and provider examples.
 
 **Quick setup:**
 
@@ -292,7 +292,7 @@ kubectl create secret generic llm-credentials \
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml \
   ...
 ```
 
@@ -314,7 +314,7 @@ The RemediationOrchestrator exposes per-phase timeouts and routing thresholds as
 |---|---|---|
 | `remediationorchestrator.config.timeouts.global` | `1h` | Total remediation timeout |
 | `remediationorchestrator.config.timeouts.processing` | `5m` | Signal Processing phase |
-| `remediationorchestrator.config.timeouts.analyzing` | `10m` | AI Analysis (HAPI investigation) |
+| `remediationorchestrator.config.timeouts.analyzing` | `10m` | AI Analysis (Kubernaut Agent investigation) |
 | `remediationorchestrator.config.timeouts.executing` | `30m` | Workflow execution |
 | `remediationorchestrator.config.timeouts.verifying` | `30m` | Effectiveness assessment |
 
@@ -581,7 +581,7 @@ Understanding which configuration changes take effect live vs which require a re
 | AA approval policy | Yes | fsnotify file watcher | ~60s |
 | Notification credentials | Yes | fsnotify file watcher | ~60s |
 | Notification routing | Yes | fsnotify file watcher | ~60s |
-| HolmesGPT config | Yes | Python watchdog | ~60s |
+| Kubernaut Agent config | Yes | file watcher (fsnotify) | ~60s |
 | Gateway config | No | Restart required | -- |
 | DataStorage config | No | Restart required | -- |
 | Proactive signal mappings | No | Restart required | -- |
@@ -597,13 +597,13 @@ All services implement graceful shutdown to ensure in-flight remediations are no
 | **Gateway** | Sets shutdown flag → readiness probe returns 503 → waits 5s for endpoint removal → drains in-flight requests → closes resources |
 | **DataStorage** | Same 4-step sequence as Gateway |
 | **CRD Controllers** (SP, AA, RO, WFE, EM, NT) | controller-runtime built-in signal handling; in-flight reconciles complete |
-| **HolmesGPT API** | Python SIGTERM handler; readiness returns 503; in-flight investigations complete |
+| **Kubernaut Agent** | Go graceful shutdown; readiness returns 503; in-flight investigations complete |
 
 This means `helm upgrade` and rolling updates do not disrupt in-flight remediations. The readiness probe change ensures no new traffic reaches the pod during drain.
 
 ## Next Steps
 
-- [HolmesGPT SDK Config](configmap-holmesgpt.md) -- LLM provider, toolsets, and MCP server configuration
+- [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) -- LLM provider, toolsets, and MCP server configuration
 - [SignalProcessing Rego Policies](configmap-policies.md) -- Policy bundle format and customization
 - [AIAnalysis Approval Policy](configmap-approval.md) -- Approval gates and risk factors
 - [Notification Routing](configmap-notification.md) -- Routing schema and Slack setup

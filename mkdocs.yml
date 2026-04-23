@@ -47,8 +47,8 @@ theme:
     - toc.follow
 
 extra:
-  chart_version: "1.2.0"
-  image_tag: "v1.2.0"
+  chart_version: "1.3.0"
+  image_tag: "v1.3.0"
   version:
     provider: mike
     default: latest
@@ -116,7 +116,7 @@ nav:
       - Data Lifecycle: user-guide/data-lifecycle.md
       - Configuration Reference: user-guide/configuration.md
       - ConfigMap References:
-          - HolmesGPT SDK Config: user-guide/configmap-holmesgpt.md
+          - Kubernaut Agent SDK Config: user-guide/configmap-kubernaut-agent.md
           - SignalProcessing Rego Policies: user-guide/configmap-policies.md
           - AIAnalysis Approval Policy: user-guide/configmap-approval.md
           - Notification Routing: user-guide/configmap-notification.md
@@ -126,7 +126,7 @@ nav:
       - Gateway: architecture/gateway.md
       - Signal Processing: architecture/signal-processing.md
       - AI Analysis: architecture/ai-analysis.md
-      - Investigation Pipeline: architecture/hapi-investigation.md
+      - Investigation Pipeline: architecture/kubernaut-agent-investigation.md
       - Remediation Routing: architecture/remediation-routing.md
       - Workflow Selection: architecture/workflow-selection.md
       - Workflow Execution: architecture/workflow-execution.md
@@ -142,7 +142,7 @@ nav:
       - api-reference/index.md
       - Custom Resources: api-reference/crds.md
       - DataStorage API: api-reference/datastorage-api.md
-      - HolmesGPT API: api-reference/holmesgpt-api.md
+      - Kubernaut Agent API: api-reference/kubernaut-agent-api.md
   - Use Cases:
       - use-cases/index.md
       - Multi-Path Remediation: use-cases/multi-path-remediation.md
@@ -156,6 +156,7 @@ nav:
       - Upgrading:
           - operations/upgrading/index.md
           - v1.1 to v1.2: operations/upgrading/1.1-to-1.2.md
+          - v1.2 to v1.3: operations/upgrading/1.2-to-1.3.md
       - Disconnected Install: operations/disconnected-install.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md

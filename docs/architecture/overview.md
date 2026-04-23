@@ -16,7 +16,7 @@ Every inter-service interaction in the remediation pipeline uses Kubernetes CRDs
 The only exceptions are:
 
 - **DataStorage** -- Called via REST API for audit events, workflow catalog, remediation history, and effectiveness data
-- **HolmesGPT API** -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
+- **Kubernaut Agent** -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
 
 ### Orchestrator Pattern
 
@@ -25,7 +25,7 @@ The **Remediation Orchestrator** is the central coordinator. It watches `Remedia
 ```
 RemediationRequest (Gateway)
   └─ SignalProcessing (Orchestrator → SP Controller)
-  └─ AIAnalysis (Orchestrator → AA Controller → HolmesGPT API)
+  └─ AIAnalysis (Orchestrator → AA Controller → Kubernaut Agent)
   └─ RemediationApprovalRequest (Orchestrator, when approval needed)
   └─ WorkflowExecution (Orchestrator → WE Controller)
   └─ EffectivenessAssessment (Orchestrator → EM Controller)
@@ -42,8 +42,8 @@ Each service has a single responsibility:
 |---|---|---|
 | **Gateway** | Signal ingestion, authentication, scope checking, deduplication, RR creation | [Gateway](gateway.md) |
 | **Signal Processing** | Kubernetes context enrichment, Rego-based classification (environment, severity, priority, signal mode), business categorization | [Signal Processing](signal-processing.md) |
-| **AI Analysis** | Orchestrates HolmesGPT investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
-| **HolmesGPT API** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](hapi-investigation.md) |
+| **AI Analysis** | Orchestrates Kubernaut Agent investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
+| **Kubernaut Agent** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](kubernaut-agent-investigation.md) |
 | **Remediation Orchestrator** | Lifecycle coordination, routing engine, timeout enforcement, child CRD management | [Remediation Routing](remediation-routing.md) |
 | **Workflow Execution** | Dependency resolution, Job/Tekton execution, cooldown, deterministic locking | [Workflow Execution](workflow-execution.md) |
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |
@@ -71,7 +71,7 @@ graph TB
     end
 
     subgraph External["External Services"]
-        HAPI[HolmesGPT API<br/><small>Python/FastAPI</small>]
+        KA[Kubernaut Agent<br/><small>Go</small>]
         DS[DataStorage<br/><small>REST API</small>]
         LLM[LLM Provider]
     end
@@ -88,9 +88,9 @@ graph TB
     RO -->|NotificationRequest| NF
     RO -->|EffectivenessAssessment| EM
 
-    AA -.->|session async| HAPI
-    HAPI -.-> LLM
-    HAPI -.-> DS
+    AA -.->|session async| KA
+    KA -.-> LLM
+    KA -.-> DS
 
     SP -.-> DS
     AA -.-> DS
@@ -112,7 +112,7 @@ The complete CRD lifecycle for a single remediation follows the natural flow:
 |---|---|---|---|---|
 | 1 | `RemediationRequest` | Gateway | Orchestrator | Root lifecycle object |
 | 2 | `SignalProcessing` | Orchestrator | SP Controller | Enrichment and classification |
-| 3 | `AIAnalysis` | Orchestrator | AA Controller | RCA, workflow selection via HAPI |
+| 3 | `AIAnalysis` | Orchestrator | AA Controller | RCA, workflow selection via KA |
 | 4 | `RemediationApprovalRequest` | Orchestrator | (human) | Approval gate (when needed) |
 | 5 | `WorkflowExecution` | Orchestrator | WE Controller | Run remediation workflow |
 | 6 | `EffectivenessAssessment` | Orchestrator | EM Controller | Post-execution verification |
@@ -184,6 +184,6 @@ All controllers share common error handling patterns:
 
 - [Gateway](gateway.md) -- Signal ingestion entry point
 - [Signal Processing](signal-processing.md) -- Enrichment and classification
-- [AI Analysis](ai-analysis.md) -- HolmesGPT integration
+- [AI Analysis](ai-analysis.md) -- Kubernaut Agent integration
 - [Remediation Routing](remediation-routing.md) -- Orchestrator lifecycle management
 - [Audit Pipeline](audit-pipeline.md) -- How audit events flow through the system

@@ -251,9 +251,9 @@ The executor injects system variables and passes through all parameters from the
 | Variable | Source |
 |---|---|
 | `TARGET_RESOURCE` | `wfe.Spec.TargetResource` (system-injected by WFE controller) |
-| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
 | Custom parameters | All remaining entries from `wfe.Spec.Parameters` (LLM-populated) |
 
 Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables (Jobs) or Tekton params (PipelineRuns).
@@ -262,9 +262,9 @@ Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment v
 
 | Variable | Source |
 |---|---|
-| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
 | `WFE_NAME` | `wfe.Name` (auto-injected) |
 | `WFE_NAMESPACE` | `wfe.Namespace` (auto-injected) |
 | `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` (auto-injected) |

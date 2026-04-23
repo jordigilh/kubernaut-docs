@@ -2,7 +2,7 @@
 
 All Kubernaut services expose Prometheus-compatible metrics and standard health check endpoints. This page provides a complete metrics reference for building Grafana dashboards and alerting rules.
 
-In **v1.2**, **Effectiveness Monitor** and **Notification** metric names and semantics were **stabilized** (fewer breaking renames between patch releases).
+In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt_*` namespace to `aiagent_api_*`. **Effectiveness Monitor** and **Notification** metrics remain stable from v1.2.
 
 ## Health Checks
 
@@ -14,7 +14,7 @@ In **v1.2**, **Effectiveness Monitor** and **Notification** metric names and sem
 | **AIAnalysis** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Three-port: API **8080**, metrics **9090** |
 | **Gateway** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Ingestion API on **8080** |
 | **DataStorage** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness checks PostgreSQL; REST API on **8080** |
-| **HolmesGPT API** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness includes LLM connectivity |
+| **Kubernaut Agent** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness includes LLM connectivity |
 | **Auth Webhook** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Service **443** → targetPort **9443** for admission |
 
 ## Scrape Configuration
@@ -120,17 +120,17 @@ scrape_configs:
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |
 
-## AI Agent API Metrics
+## Kubernaut Agent Metrics
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
 | `aiagent_api_investigations_total` | Counter | `status` | Investigation requests by outcome |
 | `aiagent_api_investigations_duration_seconds` | Histogram | -- | End-to-end investigation duration |
-| `aiagent_api_llm_calls_total` | Counter | `provider`, `model`, `status` | LLM API calls by provider and outcome |
-| `aiagent_api_llm_call_duration_seconds` | Histogram | `provider`, `model` | LLM call latency |
-| `aiagent_api_llm_token_usage_total` | Counter | `provider`, `model`, `type` | LLM token consumption; use label `type` to distinguish **prompt** vs **completion** tokens (increments on each completed LLM call) |
+| `aiagent_api_llm_requests_total` | Counter | `status` | LLM API calls by outcome (`success`, `error`) |
+| `aiagent_api_llm_request_duration_seconds` | Histogram | -- | LLM request latency |
+| `aiagent_api_llm_tokens_total` | Counter | `type` | LLM token consumption; use label `type` to distinguish **prompt** vs **completion** tokens (increments on each completed LLM call) |
 
-HolmesGPT exposes **prompt** and **completion** token counts as **counters** via `aiagent_api_llm_token_usage_total` (see [LLM Token Cost Tracking](#llm-token-cost-tracking) for example PromQL).
+The Kubernaut Agent exposes **prompt** and **completion** token counts as **counters** via `aiagent_api_llm_tokens_total` (see [LLM Token Cost Tracking](#llm-token-cost-tracking) for example PromQL).
 
 ## Audit Pipeline Metrics
 
@@ -215,8 +215,8 @@ kubernaut_notification_channel_circuit_breaker_state{channel="slack"} > 0
 ### LLM Token Cost Tracking
 
 ```promql
-# Tokens consumed per hour by provider
-sum by (provider, type) (increase(aiagent_api_llm_token_usage_total[1h]))
+# Tokens consumed per hour by type (prompt vs completion)
+sum by (type) (increase(aiagent_api_llm_tokens_total[1h]))
 ```
 
 ## Logging

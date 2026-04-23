@@ -49,7 +49,7 @@ https://data-storage-service.kubernaut-system.svc.cluster.local:8080
 | Method | Path | Description |
 |---|---|---|
 | `GET` | `/api/v1/effectiveness/{correlation_id}` | Get effectiveness score for a remediation |
-| `GET` | `/api/v1/remediation-history/context` | Get remediation history for a target resource (called internally by HAPI resource-context tools during investigation; not LLM-callable directly) |
+| `GET` | `/api/v1/remediation-history/context` | Get remediation history for a target resource (called internally by Kubernaut Agent resource-context tools during investigation; not LLM-callable directly) |
 
 ### Workflow Catalog
 
@@ -106,5 +106,5 @@ DataStorage uses **Kubernetes TokenReview** authentication. Clients must present
 ## Next Steps
 
 - [Data Persistence](../architecture/data-persistence.md) — PostgreSQL schema details
-- [HolmesGPT API](holmesgpt-api.md) — LLM integration API
+- [Kubernaut Agent](kubernaut-agent-api.md) — LLM integration API
 - [CRD Reference](crds.md) — Custom Resource definitions

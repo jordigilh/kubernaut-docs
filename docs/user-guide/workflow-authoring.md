@@ -33,7 +33,7 @@ The DataStorage scoring algorithm combines detected label boosts, custom label b
 
 - DetectedLabels (highest impact on ranking)
 - CustomLabels (operator-intent boost)
-- Mandatory label filters (severity, environment, component, priority) -- workflows that don't match are excluded entirely
+- Mandatory label filters: `severity`, `environment`, and `component` are string arrays in the API (`[]string` with `minItems: 1`); `priority` is a single string -- workflows that don't match are excluded entirely
 
 ### Step 3: Workflow Selection
 
@@ -333,7 +333,7 @@ spec:
   labels:
     severity: [critical, high]
     environment: ["*"]
-    component: deployment
+    component: [deployment]
     priority: "*"
   customLabels:
     risk_tolerance: "high"
@@ -378,7 +378,7 @@ spec:
   labels:
     severity: [critical, high]
     environment: ["*"]
-    component: deployment
+    component: [deployment]
     priority: "*"
   customLabels:
     risk_tolerance: "low"
@@ -504,7 +504,7 @@ This is expected behavior in some cases. The LLM makes the final decision based 
 | Authoring Decision | Affects Step | Impact |
 |---|---|---|
 | Action type `whenToUse` | Step 1 (action type selection) | Determines which action category the LLM picks |
-| Mandatory labels (severity, environment, component, priority) | Step 2 (filtering) | Excludes workflows that don't match -- they never reach the LLM |
+| Mandatory labels (`severity`, `environment`, `component` as `[]string` with `minItems: 1`; `priority` as string) | Step 2 (filtering) | Excludes workflows that don't match -- they never reach the LLM |
 | DetectedLabels | Step 2 (scoring) | Highest-weight infrastructure boost |
 | CustomLabels | Step 2 (scoring) | Operator-intent boost |
 | Workflow `whenToUse` / `whenNotToUse` | Step 3 (LLM selection) | The LLM's primary decision input -- must reinforce the ranking |

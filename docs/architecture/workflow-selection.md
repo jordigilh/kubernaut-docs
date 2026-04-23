@@ -78,14 +78,14 @@ Every workflow declares four mandatory labels. DataStorage applies these as hard
 | Label | Type | Values | SQL Pattern |
 |---|---|---|---|
 | `severity` | `string[]` | `critical`, `high`, `medium`, `low`, `"*"` | `labels->'severity' ? $val OR labels->'severity' ? '*'` |
-| `component` | `string` | `pod`, `deployment`, `node`, `"*"` | `LOWER(labels->>'component') = LOWER($val) OR labels->>'component' = '*'` |
+| `component` | `string[]` | `pod`, `deployment`, `node`, `"*"` | Array containment (case-insensitive match to resource kind), consistent with `severity` / `environment` JSONB patterns |
 | `environment` | `string[]` | `production`, `staging`, `development`, `test`, `"*"` | `labels->'environment' ? $val OR labels->'environment' ? '*'` |
-| `priority` | `string` | `P0`, `P1`, `P2`, `P3`, `"*"` | JSONB scalar or array containment |
+| `priority` | `string` | `P0`, `P1`, `P2`, `P3`, `"*"` | Scalar match with `"*"` wildcard |
 
 Labels support:
 
-- **Exact match** -- `component: deployment`
-- **Wildcard** -- `component: "*"` (matches any value)
+- **Exact match** -- `component: [deployment]`
+- **Wildcard** -- `component: ["*"]` (matches any value)
 - **Multi-value** -- `severity: [critical, high]` (matches if any value overlaps)
 
 ### Detected Label Filters

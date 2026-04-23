@@ -52,7 +52,7 @@ spec:
   labels:
     severity: [critical, high, medium]
     environment: [production, staging, development, "*"]
-    component: deployment
+    component: [deployment]
     priority: "*"
 
   detectedLabels:
@@ -164,20 +164,24 @@ Mandatory labels control when a workflow is eligible during discovery:
 
 | Label | Type | Required | Description |
 |---|---|---|---|
-| `severity` | string[] | Yes | Severity levels: `critical`, `high`, `medium`, `low` |
-| `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` |
-| `component` | string | Yes | Resource kind: `pod`, `deployment`, `node`, or `"*"` |
-| `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` |
+| `severity` | string[] | Yes | Severity levels: `critical`, `high`, `medium`, `low` (array, `minItems: 1`) |
+| `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` (array, `minItems: 1`) |
+| `component` | string[] | Yes | Resource kind(s): `pod`, `deployment`, `node`, or `"*"` (array, `minItems: 1`) |
+| `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` (single value) |
 | `signalName` | string | No | Optional metadata for workflow authors. Not used for matching -- the LLM selects by `actionType` |
 
 Labels support:
 
-- **Exact match** -- `component: deployment`
-- **Wildcard** -- `component: "*"` (matches any value)
+- **Exact match** -- `component: [deployment]`
+- **Wildcard** -- `component: ["*"]` (matches any value)
 - **Multi-value** -- `severity: [critical, high]` (matches either)
 
 !!! warning "Labels determine discoverability"
     Workflows that don't match the mandatory label filters are excluded entirely -- they never reach the LLM. A misconfigured severity or environment can silently hide a workflow from the candidate set. See [Workflow Search and Scoring](#workflow-search-and-scoring) for details.
+
+### Workflow display name
+
+`FormatWorkflowDisplay(actionType, workflowName)` returns `ActionType:WorkflowName` for user-visible strings. The runtime looks up a friendly label through **DataStorage** via `ResolveWorkflowDisplay` (catalog lookup by workflow identity). If the resolver is nil or DataStorage returns no row, the fallback is the **raw workflow UUID** (no `ActionType:` prefix).
 
 ### Detected Labels
 
@@ -381,7 +385,7 @@ spec:
   labels:
     severity: [high, medium]
     environment: [production, staging]
-    component: deployment
+    component: [deployment]
     priority: "*"
   execution:
     engine: ansible
@@ -555,7 +559,7 @@ Before scoring, DataStorage filters candidates using the mandatory labels from t
 | **Severity** | JSONB array `?` operator: workflow's `severity` array must contain the query value, or contain `"*"` |
 | **Component** | Case-insensitive comparison: Kubernetes Kind is PascalCase (e.g., `Deployment`), workflow labels store lowercase (e.g., `deployment`) |
 | **Environment** | JSONB array `?` operator with `"*"` wildcard fallback |
-| **Priority** | Handles both scalar (`"P1"`) and array (`["P0","P1"]`) values with `"*"` wildcard |
+| **Priority** | String match (single value) with `"*"` wildcard |
 
 Additionally, only `active` + `is_latest_version = true` workflows pass.
 

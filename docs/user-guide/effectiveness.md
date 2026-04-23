@@ -39,6 +39,8 @@ sequenceDiagram
 
 The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
 
+**`Inconclusive` is not an EA value.** When verification finishes, the **Remediation Orchestrator** may set the RR outcome to `Inconclusive` (or `Remediated`) from EA alert results — that logic lives in the RO, not the EM. See [Architecture: Remediation outcome: Inconclusive](../architecture/effectiveness.md#remediation-outcome-inconclusive-not-an-assessment-reason).
+
 !!! note "Alert Decay Detection"
     When a Prometheus alert transitions from firing to resolved, the AlertManager lookback window may cause the alert to appear active even though the resource is healthy. The EM detects this by comparing health status with alert state, and re-queues the assessment until the alert clears. The `alertDecayRetries` field on the `EffectivenessAssessment` status tracks the number of decay re-checks. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
 

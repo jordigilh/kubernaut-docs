@@ -134,6 +134,8 @@ The workflow catalog table, used for workflow discovery and scoring.
 
 **Workflow supersession**: Only one workflow version per `(workflow_name, action_type)` pair can be `active` at a time. When a new version of a workflow is registered (via `RemediationWorkflow` CRD creation or update), DataStorage marks the previous active entry as `superseded` and activates the new one. This is enforced by the `GetActiveByWorkflowName` repository method during registration. The AuthWebhook intercepts both CREATE and UPDATE operations on `RemediationWorkflow` CRDs and forwards them to DataStorage for catalog registration.
 
+**PK collision recovery (SupersedeAndCreate)**: Workflow primary keys are **deterministic** (UUIDv5). A rare re-registration can collide with an existing row for the same ID. If the colliding row has `status = 'Superseded'`, DataStorage **re-activates** that row: `status = 'Active'`, with reason `reactivated: re-registered via CRD`. The implementation uses a **SAVEPOINT/ROLLBACK** pattern so a failed attempt can be retried or handled without leaving the transaction in a bad state.
+
 ### action_type_taxonomy
 
 The action type registry for workflow categorization.

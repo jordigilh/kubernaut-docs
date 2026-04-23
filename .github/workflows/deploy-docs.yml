@@ -62,7 +62,10 @@ jobs:
           fi
 
           if [ "$VERSION" = "v1.3" ]; then
-            mike deploy --push --update-aliases "$VERSION" latest
+            mike deploy --push --update-aliases --title "$VERSION" "$VERSION" latest
+            mike set-default --push latest
+            mike retitle --push v1.0 "v1.0 (archived)"
+            mike retitle --push v1.2 "v1.2 (archived)"
           else
-            mike deploy --push "$VERSION"
+            mike deploy --push --title "$VERSION" "$VERSION"
           fi

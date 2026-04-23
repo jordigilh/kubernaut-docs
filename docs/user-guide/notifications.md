@@ -244,6 +244,66 @@ spec:
     maxBackoffSeconds: 120
 ```
 
+## Routing New v1.3 Notification Types
+
+v1.3 introduces notifications for block reasons and terminal failures that were previously silent. Operators with existing routing rules should add routes for these new NR types.
+
+### Escalation NRs (block reasons and terminal failures)
+
+Match `type: Escalation` to capture:
+
+- **Block-reason escalations** (`nr-block-consecutivefailures-*`, `nr-block-unmanagedresource-*`) -- persistent blocks requiring operator investigation
+- **Terminal failure escalations** (`nr-escalation-*`) -- failure paths that previously had no notification
+
+These are **High** priority. Route to your primary ops investigation channel.
+
+```yaml
+routes:
+  - match:
+      type: Escalation
+    receiver: ops-escalation-channel
+```
+
+### StatusUpdate NRs (transient blocks)
+
+Match `type: StatusUpdate` with `priority: Low` to capture transient block notifications (`DuplicateInProgress`, `ResourceBusy`, `RecentlyRemediated`, `ExponentialBackoff`). These are informational -- route to a low-priority channel or suppress in high-traffic environments.
+
+```yaml
+routes:
+  - match:
+      type: StatusUpdate
+      priority: Low
+    receiver: low-priority-channel
+```
+
+### ManualReview NRs by source
+
+ManualReview NRs can be further distinguished by `review-source` to route different failure types to different teams:
+
+| `review-source` | Meaning | Suggested action |
+|---|---|---|
+| `WorkflowExecution` | Execution failure | Ops investigation |
+| `AIAnalysis` | AI couldn't recommend a workflow | Catalog update / workflow authoring |
+| `RoutingEngine` | Repeated ineffective remediations | Root cause investigation |
+
+```yaml
+routes:
+  - match:
+      type: ManualReview
+      review-source: WorkflowExecution
+    receiver: ops-failures-channel
+  - match:
+      type: ManualReview
+      review-source: AIAnalysis
+    receiver: workflow-authors-channel
+  - match:
+      type: ManualReview
+      review-source: RoutingEngine
+    receiver: ops-escalation-channel
+```
+
+See [Notification Pipeline: NR Naming Conventions](../architecture/notification.md#nr-naming-conventions) for the complete NR naming catalog.
+
 ## Enabling Slack: End-to-End Walkthrough
 
 1. **Create a Slack Incoming Webhook** in your workspace (Apps > Incoming Webhooks > Add to Channel)

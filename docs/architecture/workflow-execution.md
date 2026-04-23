@@ -282,8 +282,10 @@ The WFE controller reports status back to the Orchestrator through the CRD statu
 
 ```
 WFE Completed → RO creates EffectivenessAssessment → Verifying phase
-WFE Failed    → RO creates EA (for tracking) + NotificationRequest → Failed phase
+WFE Failed    → WFE handler creates ManualReview NR → RO transitionToFailed → Failed phase
 ```
+
+In v1.3, when a WorkflowExecution enters `PhaseFailed`, the WFE handler creates a **ManualReview NR** (`nr-manual-review-<rr-name>`) with `reviewSource=WorkflowExecution` and `priority=Critical` **before** calling `transitionToFailed`. The subsequent `transitionToFailed` Escalation NR is suppressed by the double-NR guard (a ManualReview NR already exists for this RR).
 
 For Ansible executions, the handoff is identical -- the AWX job status is mapped to the same WFE phases (`Completed`/`Failed`), so the Orchestrator does not need to distinguish between execution engines.
 

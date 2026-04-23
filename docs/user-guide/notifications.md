@@ -29,6 +29,10 @@ Notifications are routed using a ConfigMap with an AlertManager-style `route` + 
 
 **ConfigMap:** `notification-routing-config`
 
+When neither `notification.routing.content` nor `notification.routing.existingConfigMap` is set, the chart generates a default routing config based on Helm values:
+
+**Default when `notification.slack.secretName` is set** (Slack + console):
+
 ```yaml
 route:
   receiver: slack-and-console
@@ -41,7 +45,18 @@ receivers:
         credentialRef: slack-webhook
 ```
 
-The catch-all receiver routes **all** notification types to both Slack and console. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel.
+**Default when `notification.slack.secretName` is empty** (console only):
+
+```yaml
+route:
+  receiver: console
+receivers:
+  - name: console
+    consoleConfigs:
+      - enabled: true
+```
+
+The catch-all receiver routes **all** notification types to the configured channels. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel. See [Notification Routing ConfigMap](configmap-notification.md) for the complete reference.
 
 ### Match Fields
 

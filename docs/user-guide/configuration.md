@@ -173,7 +173,7 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 
 | Parameter | Description | Default |
 |---|---|---|
-| `effectivenessmonitor.config.assessment.stabilizationWindow` | Wait time after remediation before assessment | `30s` |
+| `effectivenessmonitor.config.assessment.stabilizationWindow` | EM-internal stabilization window (logged at startup). **Note:** the actual stabilization delay enforced by the EM reconciler is read from `EA.spec.config.stabilizationWindow`, which is set by the RO (default `5m` via `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`). | `30s` |
 | `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `300s` |
 | `effectivenessmonitor.config.assessment.maxConcurrentReconciles` | Maximum concurrent EA reconciliations | `5` |
 | `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |

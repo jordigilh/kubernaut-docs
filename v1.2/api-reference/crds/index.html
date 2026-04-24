@@ -3283,6 +3283,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflowoverride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowOverride
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#workflowref" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5175,6 +5186,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#workflowoverride" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WorkflowOverride
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#workflowref" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -6799,7 +6821,7 @@ Lightweight summary for both Tekton PipelineRun and K8s Job backends</p>
 <p><em>Appears in:</em>
 - <a href="#remediationrequeststatus">RemediationRequestStatus</a></p>
 <p><em>Validation:</em>
-- Enum: [Configuration SignalProcessing AIAnalysis Approval WorkflowExecution Blocked]</p>
+- Enum: [Configuration SignalProcessing AIAnalysis Approval WorkflowExecution Blocked Deduplicated]</p>
 <table>
 <thead>
 <tr>
@@ -6831,6 +6853,10 @@ Lightweight summary for both Tekton PipelineRun and K8s Job backends</p>
 <tr>
 <td><code>Blocked</code></td>
 <td></td>
+</tr>
+<tr>
+<td><code>Deduplicated</code></td>
+<td>FailurePhaseDeduplicated indicates an RR that inherited a failure from a<br />deduplicated WorkflowExecution collision . Excluded from<br />consecutive failure counting per .</td>
 </tr>
 </tbody>
 </table>
@@ -7753,6 +7779,11 @@ This provides a complete audit trail and prevents race conditions.</p>
 <td>Optional message from the decision maker</td>
 </tr>
 <tr>
+<td><code>workflowOverride</code></td>
+<td><em><a href="#workflowoverride">WorkflowOverride</a></em></td>
+<td>Operator workflow/parameter override (#594, ).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.</td>
+</tr>
+<tr>
 <td><code>conditions</code></td>
 <td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta">Condition</a> array</em></td>
 <td>Conditions represent the latest available observations<br />Standard condition types:<br />- "Approved" - Decision is Approved<br />- "Rejected" - Decision is Rejected<br />- "Expired" - Decision timed out</td>
@@ -8118,6 +8149,11 @@ but retained for explicit documentation of critical fields.</p>
 <td><code>duplicateRefs</code></td>
 <td><em>string array</em></td>
 <td>DuplicateRefs lists the names of RemediationRequests that were skipped<br />because they targeted the same resource as this RR<br />Only populated on parent RRs that have duplicates</td>
+</tr>
+<tr>
+<td><code>deduplicatedByWE</code></td>
+<td><em>string</em></td>
+<td>DeduplicatedByWE stores the name of the original WorkflowExecution whose<br />outcome this RR is waiting to inherit . Set when the RR's own<br />WFE was marked Failed/Deduplicated. Used as a field index key for the<br />cross-WE watch to trigger reconciliation when the original WFE completes.<br />Immutable after initial assignment.</td>
 </tr>
 <tr>
 <td><code>blockReason</code></td>
@@ -8906,6 +8942,11 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io">JSON</a></em></td>
 <td>EngineConfig holds engine-specific configuration .<br />For ansible: {"playbookPath": "...", "jobTemplateName": "...", "inventoryName": "..."}.</td>
 </tr>
+<tr>
+<td><code>serviceAccountName</code></td>
+<td><em>string</em></td>
+<td>ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog . Propagated to the WFE for pod execution.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="signalcontextinput">SignalContextInput<a class="headerlink" href="#signalcontextinput" title="Permanent link">&para;</a></h3>
@@ -8961,6 +9002,11 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td><code>enrichmentResults</code></td>
 <td><em>EnrichmentResults</em></td>
 <td>Complete enrichment results from SignalProcessing</td>
+</tr>
+<tr>
+<td><code>signalAnnotations</code></td>
+<td><em>object (keys:string, values:string)</em></td>
+<td>SignalAnnotations from the original alert (e.g., description, summary from AlertManager).<br />Untrusted content — sanitized by KA prompt builder before reaching the LLM.</td>
 </tr>
 </tbody>
 </table>
@@ -9666,7 +9712,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>executionEngine</code></td>
 <td><em>string</em></td>
-<td>ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowExecutionEngine; immutable thereafter.<br />Values: "tekton", "job", "ansible".</td>
+<td>ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowSchemaMetadata; immutable thereafter.<br />Values: "tekton", "job", "ansible".</td>
 </tr>
 <tr>
 <td><code>serviceAccountName</code></td>
@@ -9674,9 +9720,46 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td>ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog at runtime by the WE controller .<br />Set once during Pending phase via ResolveWorkflowCatalogMetadata; immutable<br />thereafter. If empty, K8s assigns the namespace's default SA (Job/Tekton)<br />or the Ansible executor falls back to the controller's in-cluster credentials.</td>
 </tr>
 <tr>
+<td><code>deduplicatedBy</code></td>
+<td><em>string</em></td>
+<td>DeduplicatedBy stores the name of the original WorkflowExecution that owns<br />the conflicting execution resource. Set atomically inside AtomicStatusUpdate<br />when FailureDetails.Reason == Deduplicated (, M5 constraint).<br />Immutable after initial assignment.</td>
+</tr>
+<tr>
 <td><code>conditions</code></td>
 <td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta">Condition</a> array</em></td>
 <td>Conditions provide detailed status information</td>
+</tr>
+</tbody>
+</table>
+<h3 id="workflowoverride">WorkflowOverride<a class="headerlink" href="#workflowoverride" title="Permanent link">&para;</a></h3>
+<p>WorkflowOverride allows operators to override the AI-recommended workflow
+and/or parameters when approving a RemediationApprovalRequest .
+The RO resolves the final spec from either this override or the AIA default.</p>
+<p><em>Appears in:</em>
+- <a href="#remediationapprovalrequeststatus">RemediationApprovalRequestStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workflowName</code></td>
+<td><em>string</em></td>
+<td>Name of a RemediationWorkflow CRD to use instead of the AI-recommended one.<br />If set, the webhook validates the RW exists and has CatalogStatus=Active.</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td><em>object (keys:string, values:string)</em></td>
+<td>Override parameters for the workflow execution.<br />If non-nil (including empty map), replaces the AI-recommended parameters.<br />If nil, the AI-recommended parameters are preserved.</td>
+</tr>
+<tr>
+<td><code>rationale</code></td>
+<td><em>string</em></td>
+<td>Rationale for the override decision (audit trail).</td>
 </tr>
 </tbody>
 </table>

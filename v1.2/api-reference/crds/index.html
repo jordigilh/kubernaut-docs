@@ -5404,7 +5404,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>subReason</code></td>
 <td><em>string</em></td>
-<td>SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from HolmesGPT-API<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes</td>
+<td>SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from KA<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes</td>
 </tr>
 <tr>
 <td><code>startedAt</code></td>
@@ -5434,7 +5434,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>alternativeWorkflows</code></td>
 <td><em><a href="#alternativeworkflow">AlternativeWorkflow</a> array</em></td>
-<td>ALTERNATIVE WORKFLOWS <br />Alternative workflows considered but not selected.<br />INFORMATIONAL ONLY - NOT for automatic execution.<br />Helps operators make informed approval decisions and provides audit trail.<br />Per HolmesGPT-API team: Alternatives are for CONTEXT, not EXECUTION.</td>
+<td>ALTERNATIVE WORKFLOWS <br />Alternative workflows considered but not selected.<br />INFORMATIONAL ONLY - NOT for automatic execution.<br />Helps operators make informed approval decisions and provides audit trail.<br />Per KA team: Alternatives are for CONTEXT, not EXECUTION.</td>
 </tr>
 <tr>
 <td><code>approvalRequired</code></td>
@@ -5469,7 +5469,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>investigationId</code></td>
 <td><em>string</em></td>
-<td>HolmesGPT investigation ID for correlation</td>
+<td>KA investigation ID for correlation</td>
 </tr>
 <tr>
 <td><code>investigationTime</code></td>
@@ -5479,7 +5479,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>warnings</code></td>
 <td><em>string array</em></td>
-<td>Non-fatal warnings from HolmesGPT-API (e.g., low confidence)</td>
+<td>Non-fatal warnings from KA (e.g., low confidence)</td>
 </tr>
 <tr>
 <td><code>validationAttemptsHistory</code></td>
@@ -5534,7 +5534,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>investigatingTimeout</code></td>
 <td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta">Duration</a></em></td>
-<td>Timeout for Investigating phase (HolmesGPT-API call)<br />Default: 60s if not specified</td>
+<td>Timeout for Investigating phase (KA call)<br />Default: 60s if not specified</td>
 </tr>
 <tr>
 <td><code>analyzingTimeout</code></td>
@@ -5788,7 +5788,7 @@ Helps operators understand AI reasoning during approval decisions.</p>
 <tr>
 <td><code>executionBundle</code></td>
 <td><em>string</em></td>
-<td>Execution bundle OCI reference (digest-pinned) - resolved by HolmesGPT-API</td>
+<td>Execution bundle OCI reference (digest-pinned) - resolved by KA</td>
 </tr>
 <tr>
 <td><code>confidence</code></td>
@@ -5943,7 +5943,7 @@ Helps operators understand AI reasoning during approval decisions.</p>
 <tr>
 <td><code>investigationSummary</code></td>
 <td><em>string</em></td>
-<td>InvestigationSummary from HolmesGPT analysis</td>
+<td>InvestigationSummary from KA analysis</td>
 </tr>
 <tr>
 <td><code>evidenceCollected</code></td>
@@ -7711,7 +7711,7 @@ This provides a complete audit trail and prevents race conditions.</p>
 <tr>
 <td><code>investigationSummary</code></td>
 <td><em>string</em></td>
-<td>Investigation summary from HolmesGPT</td>
+<td>Investigation summary from KA</td>
 </tr>
 <tr>
 <td><code>evidenceCollected</code></td>
@@ -8910,7 +8910,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>executionBundle</code></td>
 <td><em>string</em></td>
-<td>Execution bundle OCI reference (digest-pinned) - resolved by HolmesGPT-API</td>
+<td>Execution bundle OCI reference (digest-pinned) - resolved by KA</td>
 </tr>
 <tr>
 <td><code>executionBundleDigest</code></td>
@@ -8935,7 +8935,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>executionEngine</code></td>
 <td><em>string</em></td>
-<td>ExecutionEngine specifies the backend engine for workflow execution.<br />Populated from HolmesGPT-API workflow recommendation.<br />When empty, defaults to "tekton" for backwards compatibility.</td>
+<td>ExecutionEngine specifies the backend engine for workflow execution.<br />Populated from KA workflow recommendation.<br />When empty, defaults to "tekton" for backwards compatibility.</td>
 </tr>
 <tr>
 <td><code>engineConfig</code></td>

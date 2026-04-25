@@ -12,13 +12,13 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/policies/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/trust-ladder/">
       
       
-        <link rel="prev" href="../workflow-authoring/">
+        <link rel="prev" href="../">
       
       
-        <link rel="next" href="../rego-reference/">
+        <link rel="next" href="../concepts/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Rego Policies - Kubernaut</title>
+        <title>Trust Ladder - Kubernaut</title>
       
     
     
@@ -82,7 +82,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#rego-policies" class="md-skip">
+        <a href="#building-confidence-with-kubernaut" class="md-skip">
           Skip to content
         </a>
       
@@ -133,7 +133,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Rego Policies
+              Trust Ladder
             
           </span>
         </div>
@@ -906,10 +906,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../trust-ladder/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Ladder
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -925,6 +952,225 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-trust-ladder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Trust Ladder
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-3-approve" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 3: Approve (Available Now)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Level 3: Approve (Available Now)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graduation-signals" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graduation signals
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-4-automate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 4: Automate (Available Now)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Level 4: Automate (Available Now)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#monitoring-autonomous-remediations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring autonomous remediations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rollback-to-level-3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Rollback to Level 3
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#references_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-1-observe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 1: Observe (Planned — v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-2-selective-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 2: Selective Trust (Planned — v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggestions: Always-On Safety Net (Planned — v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-adoption-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Adoption Path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agentic-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future: Agentic Enhancements (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -1046,37 +1292,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rego Policies
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../policies/" class="md-nav__link">
         
   
   
@@ -1092,242 +1311,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#policy-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Policy Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#signal-processing-policies" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Signal Processing Policies
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Signal Processing Policies">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#severity-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Severity Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#priority-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Priority Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#environment-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Environment Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#custom-labels-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Custom Labels Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#signal-mode-configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Signal Mode Configuration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ai-analysis-approval-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AI Analysis Approval Policy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="AI Analysis Approval Policy">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#input-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Input Fields
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#approval-rules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approval Rules
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#confidence-threshold" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Confidence Threshold
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#risk-factors" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Risk Factors
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#customization-examples" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Customization Examples
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#crd-safety-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CRD Safety Policy
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#deployment-and-update" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Deployment and Update
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Deployment and Update">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#where-policies-live" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Where Policies Live
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hot-reload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hot-Reload
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -3131,10 +3114,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#policy-overview" class="md-nav__link">
+  <a href="#the-trust-ladder" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Policy Overview
+        The Trust Ladder
       
     </span>
   </a>
@@ -3142,22 +3125,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#signal-processing-policies" class="md-nav__link">
+  <a href="#level-3-approve" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Signal Processing Policies
+        Level 3: Approve (Available Now)
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Signal Processing Policies">
+    <nav class="md-nav" aria-label="Level 3: Approve (Available Now)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#severity-rules" class="md-nav__link">
+  <a href="#how-it-works" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Severity Rules
+        How it works
       
     </span>
   </a>
@@ -3165,10 +3148,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#priority-rules" class="md-nav__link">
+  <a href="#configuration" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Priority Rules
+        Configuration
       
     </span>
   </a>
@@ -3176,10 +3159,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#environment-rules" class="md-nav__link">
+  <a href="#graduation-signals" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Environment Rules
+        Graduation signals
       
     </span>
   </a>
@@ -3187,10 +3170,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#custom-labels-rules" class="md-nav__link">
+  <a href="#references" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Custom Labels Rules
+        References
       
     </span>
   </a>
@@ -3203,33 +3186,22 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#signal-mode-configuration" class="md-nav__link">
+  <a href="#level-4-automate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Signal Mode Configuration
+        Level 4: Automate (Available Now)
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ai-analysis-approval-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        AI Analysis Approval Policy
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="AI Analysis Approval Policy">
+    <nav class="md-nav" aria-label="Level 4: Automate (Available Now)">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#input-fields" class="md-nav__link">
+  <a href="#how-it-works_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Input Fields
+        How it works
       
     </span>
   </a>
@@ -3237,10 +3209,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#approval-rules" class="md-nav__link">
+  <a href="#configuration_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Approval Rules
+        Configuration
       
     </span>
   </a>
@@ -3248,10 +3220,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#confidence-threshold" class="md-nav__link">
+  <a href="#monitoring-autonomous-remediations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Confidence Threshold
+        Monitoring autonomous remediations
       
     </span>
   </a>
@@ -3259,10 +3231,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#risk-factors" class="md-nav__link">
+  <a href="#rollback-to-level-3" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Risk Factors
+        Rollback to Level 3
       
     </span>
   </a>
@@ -3270,21 +3242,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#customization-examples" class="md-nav__link">
+  <a href="#references_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Customization Examples
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#crd-safety-policy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        CRD Safety Policy
+        References
       
     </span>
   </a>
@@ -3297,49 +3258,54 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#deployment-and-update" class="md-nav__link">
+  <a href="#level-1-observe" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Deployment and Update
+        Level 1: Observe (Planned — v1.5)
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Deployment and Update">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#where-policies-live" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Where Policies Live
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#hot-reload" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hot-Reload
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
         <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
+  <a href="#level-2-selective-trust" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Next Steps
+        Level 2: Selective Trust (Planned — v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#suggestions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Suggestions: Always-On Safety Net (Planned — v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recommended-adoption-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recommended Adoption Path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agentic-enhancements" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Future: Agentic Enhancements (v1.5+)
       
     </span>
   </a>
@@ -3363,423 +3329,307 @@
 
 
 
-<h1 id="rego-policies">Rego Policies<a class="headerlink" href="#rego-policies" title="Permanent link">&para;</a></h1>
-<p>Kubernaut uses <a href="https://www.openpolicyagent.org/docs/latest/policy-language/">OPA Rego</a> policies for two critical decision points: <strong>Signal Processing classification</strong> (severity, priority, environment, custom labels) and <strong>AI Analysis approval gates</strong> (whether human approval is required before execution).</p>
-<p>All policies are deployed as ConfigMaps and can be customized. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for provisioning details.</p>
-<div class="admonition info">
-<p class="admonition-title">Case-insensitive matching (v1.2)</p>
-<p>Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is <strong>case-insensitive</strong>. For example, <code>Production</code>, <code>production</code>, and <code>PRODUCTION</code> all match equivalently. The default policies use <code>lower()</code> for comparisons. Custom policies should follow the same pattern.</p>
-</div>
-<div class="admonition info">
-<p class="admonition-title">Embedded default SP Rego (v1.2)</p>
-<p>Starting with v1.2, the Helm chart ships a default <code>signalprocessing-policy.rego</code> so installations work without <code>--set-file</code>. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.</p>
-</div>
-<h2 id="policy-overview">Policy Overview<a class="headerlink" href="#policy-overview" title="Permanent link">&para;</a></h2>
+<h1 id="building-confidence-with-kubernaut">Building Confidence with Kubernaut<a class="headerlink" href="#building-confidence-with-kubernaut" title="Permanent link">&para;</a></h1>
+<p>Operators rarely hand full control of cluster remediation to an AI on day one. Kubernaut provides an incremental <strong>Trust Ladder</strong> — a four-level graduation path that lets teams build confidence at their own pace, starting with full human oversight and progressing toward autonomous remediation as trust grows.</p>
+<h2 id="the-trust-ladder">The Trust Ladder<a class="headerlink" href="#the-trust-ladder" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph LR
+    subgraph Available["Available Today"]
+        L3["Level 3&lt;br/&gt;&lt;b&gt;Approve&lt;/b&gt;&lt;br/&gt;&lt;small&gt;RAR gate&lt;/small&gt;"]
+        L4["Level 4&lt;br/&gt;&lt;b&gt;Automate&lt;/b&gt;&lt;br/&gt;&lt;small&gt;Full autonomous&lt;/small&gt;"]
+    end
+    subgraph Planned["Planned (v1.5)"]
+        L1["Level 1&lt;br/&gt;&lt;b&gt;Observe&lt;/b&gt;&lt;br/&gt;&lt;small&gt;Dry-mode global&lt;/small&gt;"]
+        L2["Level 2&lt;br/&gt;&lt;b&gt;Selective Trust&lt;/b&gt;&lt;br/&gt;&lt;small&gt;Dry-mode per-workflow&lt;/small&gt;"]
+    end
+    L1 --&gt; L2 --&gt; L3 --&gt; L4</code></pre>
 <table>
 <thead>
 <tr>
-<th>Policy File</th>
-<th>Service</th>
-<th>Purpose</th>
-<th>Hot-Reload</th>
+<th>Level</th>
+<th>Name</th>
+<th>Human Involvement</th>
+<th>Available</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>policy.rego</code></td>
-<td>Signal Processing</td>
-<td>Unified classification: environment, severity, priority, custom labels (all rules in <code>package signalprocessing</code>)</td>
-<td>Yes</td>
+<td><strong>1</strong></td>
+<td>Observe</td>
+<td>Operator sees what Kubernaut <em>would</em> do — no execution</td>
+<td>v1.5 (dry-mode)</td>
 </tr>
 <tr>
-<td><code>approval.rego</code></td>
-<td>AI Analysis</td>
-<td>Decide if human approval is required for a remediation</td>
-<td>Yes</td>
+<td><strong>2</strong></td>
+<td>Selective Trust</td>
+<td>Trusted workflows execute; new ones go through review</td>
+<td>v1.5 (dry-mode per-workflow)</td>
+</tr>
+<tr>
+<td><strong>3</strong></td>
+<td><strong>Approve</strong></td>
+<td>All matched workflows proposed via RAR — operator approves/rejects</td>
+<td><strong>Now</strong></td>
+</tr>
+<tr>
+<td><strong>4</strong></td>
+<td><strong>Automate</strong></td>
+<td>Matched workflows execute without human intervention</td>
+<td><strong>Now</strong></td>
 </tr>
 </tbody>
 </table>
-<div class="admonition tip">
-<p class="admonition-title">Complete input field reference</p>
-<p>For a full listing of every <code>input.*</code> field available in each policy -- including types, descriptions, and usage examples for writing custom policies -- see the <a href="../rego-reference/">Rego Policy Reference</a>.</p>
-</div>
-<h2 id="signal-processing-policies">Signal Processing Policies<a class="headerlink" href="#signal-processing-policies" title="Permanent link">&para;</a></h2>
-<p>Signal Processing uses a single unified <code>policy.rego</code> file under <code>package signalprocessing</code> (<a href="https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md">ADR-060</a>). This file contains four rule groups that run during signal enrichment, before the signal reaches AI Analysis. Their output directly feeds into workflow discovery -- see <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a>.</p>
-<p><strong>ConfigMap:</strong> <code>signalprocessing-policy</code> (single key: <code>policy.rego</code>)</p>
-<h3 id="severity-rules">Severity Rules<a class="headerlink" href="#severity-rules" title="Permanent link">&para;</a></h3>
-<p>Normalizes the raw alert severity to one of Kubernaut's standard values.</p>
-<p><strong>Rule name:</strong> <code>severity</code></p>
-<p><strong>Output:</strong> string -- one of <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>, <code>unknown</code></p>
-<p><strong>Default mapping:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Input (case-insensitive)</th>
-<th>Output</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>critical</code>, <code>sev1</code>, <code>p0</code>, <code>p1</code>, <code>error</code></td>
-<td><code>critical</code></td>
-</tr>
-<tr>
-<td><code>high</code>, <code>sev2</code>, <code>p2</code>, <code>warning</code></td>
-<td><code>high</code></td>
-</tr>
-<tr>
-<td><code>medium</code>, <code>sev3</code></td>
-<td><code>medium</code></td>
-</tr>
-<tr>
-<td><code>low</code>, <code>p3</code></td>
-<td><code>low</code></td>
-</tr>
-<tr>
-<td>Anything else</td>
-<td><code>unknown</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Input:</strong> <code>input.signal.severity</code> (the raw severity string from the alert source)</p>
-<div class="admonition warning">
-<p class="admonition-title">Severity determines workflow discoverability</p>
-<p>The severity value produced by these rules feeds into Layer 1 mandatory label filtering in DataStorage. If this maps an alert to <code>"unknown"</code> and no workflow declares <code>severity: ["unknown"]</code> or <code>severity: ["*"]</code>, no workflows will be found. Ensure your severity mappings cover all values your alert sources produce.</p>
-</div>
-<p><strong>Customization example:</strong> To add support for a PagerDuty P0--P4 scheme, add rules in <code>policy.rego</code>:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">severity</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;p0&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="priority-rules">Priority Rules<a class="headerlink" href="#priority-rules" title="Permanent link">&para;</a></h3>
-<p>Assigns a priority level (P0--P3) using a composite score from severity and environment. Priority rules can reference the <code>severity</code> and <code>environment</code> rules directly via Rego cross-rule references.</p>
-<p><strong>Rule name:</strong> <code>priority</code></p>
-<p><strong>Output:</strong> <code>{"priority": "P0"|"P1"|"P2"|"P3", "policy_name": "..."}</code></p>
-<p><strong>Scoring matrix:</strong></p>
-<table>
-<thead>
-<tr>
-<th>Severity</th>
-<th>Score</th>
-<th></th>
-<th>Environment</th>
-<th>Score</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>critical</code></td>
-<td>3</td>
-<td></td>
-<td><code>production</code></td>
-<td>3</td>
-</tr>
-<tr>
-<td><code>warning</code> / <code>high</code></td>
-<td>2</td>
-<td></td>
-<td><code>staging</code></td>
-<td>2</td>
-</tr>
-<tr>
-<td><code>info</code></td>
-<td>1</td>
-<td></td>
-<td><code>development</code> / <code>test</code></td>
-<td>1</td>
-</tr>
-<tr>
-<td>Other</td>
-<td>0</td>
-<td></td>
-<td>Other</td>
-<td>0</td>
-</tr>
-</tbody>
-</table>
-<p>Namespace label <code>tier=critical</code> adds +3, <code>tier=high</code> adds +2 (highest wins).</p>
-<p><strong>Priority assignment:</strong> <code>composite_score = severity_score + env_score</code></p>
-<table>
-<thead>
-<tr>
-<th>Composite Score</th>
-<th>Priority</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>&gt;= 6</td>
-<td>P0</td>
-</tr>
-<tr>
-<td>5</td>
-<td>P1</td>
-</tr>
-<tr>
-<td>4</td>
-<td>P2</td>
-</tr>
-<tr>
-<td>&lt; 4</td>
-<td>P3</td>
-</tr>
-</tbody>
-</table>
-<p><strong>Example:</strong> A <code>critical</code> alert in <code>production</code> = 3 + 3 = 6 = <strong>P0</strong>. A <code>warning</code> alert in <code>development</code> = 2 + 1 = 3 = <strong>P3</strong>.</p>
-<p><strong>Cross-rule referencing:</strong> Priority rules can reference <code>environment.environment</code> and <code>severity</code> directly:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="environment-rules">Environment Rules<a class="headerlink" href="#environment-rules" title="Permanent link">&para;</a></h3>
-<p>Classifies the environment from namespace metadata. Used for workflow filtering, approval decisions, and cross-referenced by priority rules.</p>
-<p><strong>Rule name:</strong> <code>environment</code></p>
-<p><strong>Output:</strong> <code>{"environment": string, "source": string}</code></p>
-<p><strong>Resolution order</strong> (default policy):</p>
+<p>Operators typically start at Level 3 and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.</p>
+<hr />
+<h2 id="level-3-approve">Level 3: Approve (Available Now)<a class="headerlink" href="#level-3-approve" title="Permanent link">&para;</a></h2>
+<p>At this level, every remediation goes through a <strong>RemediationApprovalRequest (RAR)</strong> before execution. The operator reviews Kubernaut's recommendation — the selected workflow, confidence score, root cause analysis, and detected infrastructure labels — and either approves or rejects it.</p>
+<h3 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
 <ol>
-<li><code>kubernaut.ai/environment</code> namespace label (if present)</li>
-<li>Namespace name convention: <code>production</code>/<code>prod</code> → <code>production</code>, <code>staging</code> → <code>staging</code>, <code>development</code>/<code>dev</code> → <code>development</code></li>
-<li>Default: <code>"unknown"</code></li>
+<li>Alert arrives → Signal Processing enriches it → Kubernaut Agent investigates root cause</li>
+<li>Kubernaut Agent selects a workflow with a confidence score</li>
+<li>The <a href="../approval/">Rego approval policy</a> evaluates the selection and creates a <strong>RAR</strong> if approval is needed</li>
+<li>Operator receives a notification with the full RCA and proposed remediation</li>
+<li>Operator <strong>approves</strong> (execution proceeds) or <strong>rejects</strong> (remediation stops)</li>
+<li>If no action is taken within the configured timeout, the RAR expires</li>
 </ol>
-<div class="admonition tip">
-<p class="admonition-title">Workload labels for cluster-scoped resources</p>
-<p>The Rego input includes <code>input.workload.labels</code> from the target resource. Custom environment rules can use these for cluster-scoped resources (e.g., Nodes) where namespace labels are not available. The default policy does not use workload labels, but operators can extend it to classify environments based on workload metadata.</p>
-</div>
-<p><strong>Customization:</strong> Add rules in <code>policy.rego</code> for your namespace naming conventions:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace-name&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;kubernaut.ai/environment&quot;</span><span class="p">]</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">endswith</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-prod&quot;</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="custom-labels-rules">Custom Labels Rules<a class="headerlink" href="#custom-labels-rules" title="Permanent link">&para;</a></h3>
-<p>Extracts operator-defined labels from namespace labels with the <code>kubernaut.ai/label-</code> prefix.</p>
-<p><strong>Rule name:</strong> <code>labels</code></p>
-<p><strong>Output:</strong> map of key-value pairs (map[string][]string)</p>
-<p><strong>Example:</strong> A namespace with:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">labels</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">kubernaut.ai/label-team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">payments</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">kubernaut.ai/label-tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gold</span>
-</span></code></pre></div>
-<p>Produces: <code>{"team": ["payments"], "tier": ["gold"]}</code></p>
-<p>These labels feed into Layer 2 scoring at +0.15 per exact match. See <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a>.</p>
-<h2 id="signal-mode-configuration">Signal Mode Configuration<a class="headerlink" href="#signal-mode-configuration" title="Permanent link">&para;</a></h2>
-<p>Signal mode is configured via YAML (not Rego). A mapping file determines which alert names are treated as proactive vs reactive.</p>
-<p><strong>ConfigMap:</strong> <code>signalprocessing-proactive-signal-mappings</code></p>
-<p><strong>Default mappings:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">proactive_signal_mappings</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">PredictedOOMKill</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OOMKilled</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">PredictedCPUThrottling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPUThrottling</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">PredictedDiskPressure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DiskPressure</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">PredictedNodeNotReady</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NodeNotReady</span>
-</span></code></pre></div>
-<p>Signal names that match a key in this map are classified as <code>proactive</code>; all others default to <code>reactive</code>. The mapped value is the base signal name used for workflow catalog lookup.</p>
-<p>Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See <a href="../../architecture/kubernaut-agent-investigation/#reactive-vs-proactive-mode">Investigation Pipeline</a> for details.</p>
-<div class="admonition info">
-<p class="admonition-title">Signal mode mappings are not hot-reloaded</p>
-<p>Unlike Rego policies, the proactive signal mappings are loaded once at startup. Changes require a pod restart.</p>
-</div>
-<h2 id="ai-analysis-approval-policy">AI Analysis Approval Policy<a class="headerlink" href="#ai-analysis-approval-policy" title="Permanent link">&para;</a></h2>
-<p>The approval policy runs after Kubernaut Agent returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.</p>
-<p><strong>Package:</strong> <code>aianalysis.approval</code></p>
-<p><strong>ConfigMap:</strong> <code>aianalysis-policies</code>, key <code>approval.rego</code>. Operators install the policy via <code>--set-file aianalysis.policies.content=approval.rego</code> or by providing a pre-created ConfigMap with <code>aianalysis.policies.existingConfigMap</code>. See <a href="../configmap-approval/">AIAnalysis Approval Policy ConfigMap</a> for the full reference.</p>
-<h3 id="input-fields">Input Fields<a class="headerlink" href="#input-fields" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Source</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>input.environment</code></td>
-<td>SP enrichment</td>
-<td><code>production</code>, <code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code></td>
-</tr>
-<tr>
-<td><code>input.confidence</code></td>
-<td>Kubernaut Agent <code>SelectedWorkflow.Confidence</code></td>
-<td>LLM confidence score (0.0--1.0)</td>
-</tr>
-<tr>
-<td><code>input.confidence_threshold</code></td>
-<td>Helm config (optional)</td>
-<td>Overrides default 0.8</td>
-</tr>
-<tr>
-<td><code>input.remediation_target</code></td>
-<td>Kubernaut Agent <code>RootCauseAnalysis.RemediationTarget</code></td>
-<td><code>{kind, name, namespace}</code></td>
-</tr>
-<tr>
-<td><code>input.detected_labels</code></td>
-<td>Kubernaut Agent <code>PostRCAContext.DetectedLabels</code></td>
-<td>Infrastructure characteristics</td>
-</tr>
-<tr>
-<td><code>input.failed_detections</code></td>
-<td>Kubernaut Agent <code>PostRCAContext.DetectedLabels.FailedDetections</code></td>
-<td>Detection errors</td>
-</tr>
-<tr>
-<td><code>input.warnings</code></td>
-<td>Kubernaut Agent investigation warnings</td>
-<td>Array of warning strings</td>
-</tr>
-</tbody>
-</table>
-<h3 id="approval-rules">Approval Rules<a class="headerlink" href="#approval-rules" title="Permanent link">&para;</a></h3>
-<p>Three mandatory triggers:</p>
-<ol>
-<li>
-<p><strong>Missing remediation target</strong> -- If <code>remediation_target</code> is absent or has an empty <code>kind</code>, approval is always required. Safety net for incomplete RCA.</p>
-</li>
-<li>
-<p><strong>Production environment</strong> -- All production remediations require human approval, regardless of confidence (case-insensitive match: <code>Production</code>, <code>production</code>, <code>PRODUCTION</code>). Controlled by setting <code>kubernaut.ai/environment=production</code> on the namespace.</p>
-</li>
-<li>
-<p><strong>Sensitive resource kinds</strong> -- Remediations targeting <code>Node</code> or <code>StatefulSet</code> resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.</p>
-</li>
-</ol>
-<p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present and the resource kind is not sensitive.</p>
-<h3 id="confidence-threshold">Confidence Threshold<a class="headerlink" href="#confidence-threshold" title="Permanent link">&para;</a></h3>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">default</span><span class="w"> </span><span class="n">confidence_threshold</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="m">0.8</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">confidence_threshold</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence_threshold</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence_threshold</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">is_high_confidence</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">confidence_threshold</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>The default threshold is <strong>0.8</strong> (80%). Override via Helm:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">aianalysis</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">rego</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span><span class="w">  </span><span class="c1"># Require 90% confidence</span>
-</span></code></pre></div>
-<p>The <code>is_high_confidence</code> helper is defined but not currently used in the approval rules. It is available for operators to add custom rules.</p>
-<h3 id="risk-factors">Risk Factors<a class="headerlink" href="#risk-factors" title="Permanent link">&para;</a></h3>
-<p>Scored risk factors determine the human-readable reason shown in the <code>RemediationApprovalRequest</code>:</p>
-<table>
-<thead>
-<tr>
-<th>Score</th>
-<th>Condition</th>
-<th>Reason</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>90</td>
-<td>Missing remediation target</td>
-<td>"Cannot determine remediation target"</td>
-</tr>
-<tr>
-<td>80</td>
-<td>Production + sensitive resource (Node, StatefulSet)</td>
-<td>"Production environment with sensitive resource kind"</td>
-</tr>
-<tr>
-<td>70</td>
-<td>Production environment</td>
-<td>"Production environment - requires manual approval"</td>
-</tr>
-</tbody>
-</table>
-<p>The highest-scoring factor becomes the approval reason. Scores affect the reason text only, not the approval decision.</p>
-<h3 id="customization-examples">Customization Examples<a class="headerlink" href="#customization-examples" title="Permanent link">&para;</a></h3>
-<p><strong>Require approval for StatefulSet remediations in staging:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">}</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">60</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Staging StatefulSet remediation requires approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Require approval when confidence is below threshold in any environment:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_high_confidence</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">65</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Low confidence remediation requires approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_high_confidence</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="p">}</span>
-</span></code></pre></div>
-<h3 id="crd-safety-policy">CRD Safety Policy<a class="headerlink" href="#crd-safety-policy" title="Permanent link">&para;</a></h3>
-<p>Automated modifications to CustomResourceDefinitions are high-risk operations — a CRD change cascades to every CR of that type across the cluster. The approval policy can gate CRD remediations to require human review.</p>
-<p><strong>Require approval for all CRD modifications:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">}</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">is_sensitive_resource</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">}</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">}</span>
-</span></code></pre></div>
-<p><strong>Elevated risk for GitOps-managed CRDs:</strong></p>
-<p>When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine <code>remediation_target.kind</code> with <code>detected_labels</code> for a stricter gate:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification under GitOps management — requires human approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">detected_labels</span><span class="p">.</span><span class="n">git_ops_managed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">true</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>See the <a href="../rego-reference/#ai-analysis-approval-policy">Rego Reference</a> for the full list of <code>detected_labels</code> fields available in approval rules.</p>
-<h2 id="deployment-and-update">Deployment and Update<a class="headerlink" href="#deployment-and-update" title="Permanent link">&para;</a></h2>
-<h3 id="where-policies-live">Where Policies Live<a class="headerlink" href="#where-policies-live" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Policy</th>
-<th>Provisioning</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>SP unified policy (<code>policy.rego</code>)</td>
-<td>User-provided via <code>--set-file signalprocessing.policy=...</code> or <code>existingPolicyConfigMap</code></td>
-</tr>
-<tr>
-<td>SP proactive signal mappings</td>
-<td>User-provided via <code>--set-file signalprocessing.proactiveSignalMappings.content=...</code> or <code>existingConfigMap</code></td>
-</tr>
-<tr>
-<td>AA approval</td>
-<td>User-provided via <code>--set-file aianalysis.policies.content=...</code> or <code>existingConfigMap</code></td>
-</tr>
-</tbody>
-</table>
-<p>See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for full provisioning instructions and the example at <code>charts/kubernaut/examples/signalprocessing-policy.rego</code>.</p>
-<h3 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h3>
-<p>The SP unified Rego policy and the AA approval policy support <strong>hot-reload</strong> via fsnotify file watchers:</p>
-<ol>
-<li>Update the policy file</li>
-<li>Update the ConfigMap (via <code>helm upgrade</code>, <code>kubectl apply</code>, or direct edit)</li>
-<li>Kubelet syncs the ConfigMap update to the pod (~60 seconds)</li>
-<li>fsnotify detects the file change and reloads the policy (&lt;1 second)</li>
-<li>The new policy takes effect without pod restart</li>
-</ol>
-<p>The reload is <strong>validated</strong> -- if the new policy has a syntax error, the previous policy is kept and an error is logged. No service interruption occurs.</p>
-<div class="admonition note">
-<p class="admonition-title">Single-file reload granularity</p>
-<p>Since all SP classification rules share one <code>policy.rego</code> file, any edit triggers a full reload of all rules. Structure your policy with clear section headers to make partial edits manageable. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for the recommended file structure.</p>
-</div>
-<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<p>The approval gate is controlled entirely by the Rego policy in the <code>aianalysis-policies</code> ConfigMap. The default policy requires approval for:</p>
 <ul>
-<li><a href="../workflows/">Remediation Workflows</a> -- How policies feed into workflow discovery and scoring</li>
-<li><a href="../../architecture/kubernaut-agent-investigation/">Investigation Pipeline</a> -- How the approval policy integrates with the investigation outcomes</li>
-<li><a href="../approval/">Human Approval</a> -- What happens when approval is required</li>
-<li><a href="../configuration/">Configuration Reference</a> -- Other configurable aspects of Kubernaut</li>
+<li><strong>Production namespaces</strong> (case-insensitive)</li>
+<li><strong>Sensitive resource kinds</strong> (Node, StatefulSet)</li>
+<li><strong>Missing remediation targets</strong> (safety net)</li>
 </ul>
+<p>Non-production namespaces with a valid remediation target auto-approve by default.</p>
+<p>To <strong>require approval for everything</strong> (strictest Level 3), replace the default policy with:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">default</span><span class="w"> </span><span class="n">requires_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">true</span>
+</span></code></pre></div>
+<p>To adjust the confidence threshold for approval:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Helm values</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">aianalysis</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">approval</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.9&quot;</span><span class="w">  </span><span class="c1"># Require approval below 90% confidence</span>
+</span></code></pre></div>
+<h3 id="graduation-signals">Graduation signals<a class="headerlink" href="#graduation-signals" title="Permanent link">&para;</a></h3>
+<p>You're ready to graduate a workflow to Level 4 when:</p>
+<ul>
+<li>The Effectiveness Monitor consistently scores remediations as successful (<code>Full</code> assessment reason with high weighted scores)</li>
+<li>You've approved the same workflow type multiple times without rejecting</li>
+<li>The workflow targets non-sensitive resources in well-understood namespaces</li>
+<li>Your team is comfortable with the workflow's blast radius</li>
+</ul>
+<h3 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="../approval/">Human Approval</a> — full RAR lifecycle, Rego policy evaluation, and operator actions</li>
+<li><a href="../configmap-approval/">AIAnalysis Approval Policy</a> — ConfigMap reference and default behavior</li>
+<li><a href="../policies/">Rego Policies</a> — approval policy input fields and rules</li>
+</ul>
+<hr />
+<h2 id="level-4-automate">Level 4: Automate (Available Now)<a class="headerlink" href="#level-4-automate" title="Permanent link">&para;</a></h2>
+<p>At this level, matched workflows execute without human intervention. The operator monitors outcomes via notifications and Effectiveness Monitor dashboards.</p>
+<h3 id="how-it-works_1">How it works<a class="headerlink" href="#how-it-works_1" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Alert arrives → Signal Processing → Kubernaut Agent → workflow selected</li>
+<li>Rego policy evaluates and <strong>does not require approval</strong> (auto-approved)</li>
+<li>Workflow executes immediately</li>
+<li>Operator receives completion/failure notifications</li>
+<li>Effectiveness Monitor verifies the fix worked (health checks, alert resolution, spec hash comparison, metrics)</li>
+<li>Effectiveness scores feed back into future investigations</li>
+</ol>
+<h3 id="configuration_1">Configuration<a class="headerlink" href="#configuration_1" title="Permanent link">&para;</a></h3>
+<p>Auto-approval happens when the Rego policy returns <code>requires_approval := false</code>. With the default policy, this occurs for:</p>
+<ul>
+<li>Non-production namespaces (<code>staging</code>, <code>development</code>, <code>qa</code>, <code>test</code>)</li>
+<li>Non-sensitive resource kinds (anything other than Node/StatefulSet)</li>
+<li>Valid remediation target present</li>
+</ul>
+<p>To allow <strong>specific production workflows</strong> to run autonomously, customize the Rego policy:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">default</span><span class="w"> </span><span class="n">requires_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">true</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">requires_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_production</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">requires_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="n">is_production</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;Node&quot;</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">detected_labels</span><span class="p">.</span><span class="n">workflow_name</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">trusted_production_workflows</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">}</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="n">trusted_production_workflows</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="s2">&quot;crashloop-rollback-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="s2">&quot;restart-pod-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="s2">&quot;increase-memory-limits-v1&quot;</span><span class="p">,</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="p">}</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="n">is_production</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">    </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="monitoring-autonomous-remediations">Monitoring autonomous remediations<a class="headerlink" href="#monitoring-autonomous-remediations" title="Permanent link">&para;</a></h3>
+<p>At Level 4, monitoring replaces manual review:</p>
+<table>
+<thead>
+<tr>
+<th>Signal</th>
+<th>What to watch</th>
+<th>Where</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Effectiveness scores</strong></td>
+<td>Consistent <code>Full</code> assessments with high scores</td>
+<td>Effectiveness Monitor metrics, audit events</td>
+</tr>
+<tr>
+<td><strong>Notification volume</strong></td>
+<td>Sudden spike may indicate oscillation</td>
+<td>Notification metrics (<code>kubernaut_notification_reconciler_active</code>)</td>
+</tr>
+<tr>
+<td><strong>Circuit breaker state</strong></td>
+<td>Channel health degradation</td>
+<td><code>kubernaut_notification_channel_circuit_breaker_state</code></td>
+</tr>
+<tr>
+<td><strong>Assessment reasons</strong></td>
+<td><code>Expired</code>, <code>MetricsTimedOut</code>, or <code>Unrecoverable</code> indicate infrastructure issues</td>
+<td><code>kubernaut_effectivenessmonitor_assessments_completed_total</code></td>
+</tr>
+<tr>
+<td><strong>ManualReviewRequired</strong></td>
+<td>Remediation needs human attention</td>
+<td>Notification pipeline (ManualReview NRs)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="rollback-to-level-3">Rollback to Level 3<a class="headerlink" href="#rollback-to-level-3" title="Permanent link">&para;</a></h3>
+<p>To move a workflow (or all workflows) back to Level 3, update the Rego policy to require approval. Changes to the policy ConfigMap take effect on the next remediation cycle — no pod restart required.</p>
+<h3 id="references_1">References<a class="headerlink" href="#references_1" title="Permanent link">&para;</a></h3>
+<ul>
+<li><a href="../effectiveness/">Effectiveness Monitoring</a> — how Kubernaut verifies fixes</li>
+<li><a href="../../operations/monitoring/">Monitoring</a> — Prometheus metrics for all services</li>
+<li><a href="../notifications/">Notification Channels</a> — configuring alerts for autonomous operations</li>
+</ul>
+<hr />
+<h2 id="level-1-observe">Level 1: Observe (Planned — v1.5)<a class="headerlink" href="#level-1-observe" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Not yet available</p>
+<p>Level 1 depends on <strong>dry-mode</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/116">kubernaut#116</a>), planned for v1.5.</p>
+</div>
+<p>At this level, every matched workflow goes through a <strong>DryRun RAR</strong> instead of executing. The operator sees exactly what Kubernaut <em>would</em> do — the selected workflow, parameters, and target resource — without any changes to the cluster.</p>
+<p><strong>Planned capabilities:</strong></p>
+<ul>
+<li><code>[DRY RUN]</code> notifications showing the proposed remediation</li>
+<li>Interactive review via the RAR: "Why this workflow?", "Show me the parameters"</li>
+<li>Operator can approve (execute for real) or dismiss</li>
+<li>Full audit trail of dry-run decisions</li>
+</ul>
+<p><strong>Goal:</strong> Understand Kubernaut's decision-making without any risk. This is the recommended starting point for new installations.</p>
+<hr />
+<h2 id="level-2-selective-trust">Level 2: Selective Trust (Planned — v1.5)<a class="headerlink" href="#level-2-selective-trust" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Not yet available</p>
+<p>Level 2 depends on <strong>per-workflow dry-mode overrides</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/116">kubernaut#116</a>), planned for v1.5.</p>
+</div>
+<p>At this level, trusted workflows that have been validated in dry-mode graduate to real execution, while new or untested workflows continue to go through DryRun RAR review.</p>
+<p><strong>Planned capabilities:</strong></p>
+<ul>
+<li>Per-workflow dry-mode overrides (disable dry-mode for trusted workflows)</li>
+<li>New workflows automatically enter dry-mode until explicitly graduated</li>
+<li>Effectiveness Monitor data drives graduation confidence</li>
+</ul>
+<p><strong>Goal:</strong> Graduate individual workflows as confidence grows, building a library of trusted automations.</p>
+<hr />
+<h2 id="suggestions">Suggestions: Always-On Safety Net (Planned — v1.5)<a class="headerlink" href="#suggestions" title="Permanent link">&para;</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Not yet available</p>
+<p>The Suggestions feature depends on <a href="https://github.com/jordigilh/kubernaut/issues/115">kubernaut#115</a>, planned for v1.5.</p>
+</div>
+<p>When no workflow matches an alert — at <strong>any</strong> trust level — Kubernaut will suggest step-by-step remediation actions via an LLM-generated Suggestion RAR. This is orthogonal to the trust ladder and operates as a permanent safety net for unknown scenarios.</p>
+<p><strong>Planned capabilities:</strong></p>
+<ul>
+<li>LLM-generated remediation steps when no catalog workflow matches</li>
+<li>Interactive conversation via RAR to refine the suggestion</li>
+<li>Option to convert a validated suggestion into a new registered workflow</li>
+</ul>
+<p><strong>Goal:</strong> Novel incidents become automated workflows through operator-LLM collaboration. The workflow library grows organically.</p>
+<hr />
+<h2 id="recommended-adoption-path">Recommended Adoption Path<a class="headerlink" href="#recommended-adoption-path" title="Permanent link">&para;</a></h2>
+<p>For teams new to Kubernaut, we recommend the following progression:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Timeline</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Week 1–2</strong></td>
+<td>Deployment</td>
+<td>Install with default Rego policy (Level 3). All production remediations require approval. Non-production auto-approves.</td>
+</tr>
+<tr>
+<td><strong>Week 2–4</strong></td>
+<td>Validate</td>
+<td>Review RAR decisions. Check Effectiveness Monitor scores. Build familiarity with Kubernaut's recommendations.</td>
+</tr>
+<tr>
+<td><strong>Month 2</strong></td>
+<td>Graduate non-prod</td>
+<td>Confirm non-production workflows are consistently effective. Monitor autonomous execution.</td>
+</tr>
+<tr>
+<td><strong>Month 2–3</strong></td>
+<td>Graduate prod workflows</td>
+<td>Customize the Rego policy to auto-approve specific, well-validated production workflows (e.g., <code>crashloop-rollback-v1</code>).</td>
+</tr>
+<tr>
+<td><strong>Month 3+</strong></td>
+<td>Expand</td>
+<td>Add new workflow types in Level 3 (approval). Graduate to Level 4 as confidence grows.</td>
+</tr>
+</tbody>
+</table>
+<p>When v1.5 lands with dry-mode support, new installations can start at <strong>Level 1</strong> for zero-risk observation before progressing through the ladder.</p>
+<hr />
+<h2 id="agentic-enhancements">Future: Agentic Enhancements (v1.5+)<a class="headerlink" href="#agentic-enhancements" title="Permanent link">&para;</a></h2>
+<p>The v1.5 release will introduce agentic integration features that enhance every trust level:</p>
+<table>
+<thead>
+<tr>
+<th>Feature</th>
+<th>Enhancement</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MCP Interactive Mode</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/703">#703</a>)</td>
+<td>Operators investigate and review remediations through any MCP-compatible chat interface</td>
+</tr>
+<tr>
+<td><strong>Kubernaut Console</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/713">#713</a>)</td>
+<td>Web dashboard with chat UI, live remediation streaming, and workflow management</td>
+</tr>
+<tr>
+<td><strong>A2A Protocol</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/705">#705</a>)</td>
+<td>External AI agents can delegate remediation to Kubernaut</td>
+</tr>
+<tr>
+<td><strong>Natural Language Investigation</strong> (<a href="https://github.com/jordigilh/kubernaut/issues/714">#714</a>)</td>
+<td>Trigger investigations by describing the problem in plain text</td>
+</tr>
+</tbody>
+</table>
+<p>These features are <strong>complementary</strong> to the Trust Ladder — they enhance how operators interact at each level (e.g., MCP chat during dry-run review at Level 1, Console dashboards for monitoring at Level 4) without changing the fundamental graduation model.</p>
 
 
 
@@ -3815,7 +3665,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../workflow-authoring/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Authoring Workflows">
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: User Guide">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3825,20 +3675,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Authoring Workflows
+                User Guide
               </div>
             </div>
           </a>
         
         
           
-          <a href="../rego-reference/" class="md-footer__link md-footer__link--next" aria-label="Next: Rego Policy Reference">
+          <a href="../concepts/" class="md-footer__link md-footer__link--next" aria-label="Next: Core Concepts">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Rego Policy Reference
+                Core Concepts
               </div>
             </div>
             <div class="md-footer__button md-icon">

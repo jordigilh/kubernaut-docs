@@ -32,6 +32,14 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     [:octicons-arrow-right-24: Installation](getting-started/installation.md)
 
+-   :material-shield-check:{ .lg .middle } **Trust Ladder**
+
+    ---
+
+    Build confidence incrementally — from approval gates to full autonomous remediation, at your own pace.
+
+    [:octicons-arrow-right-24: Building Confidence](user-guide/trust-ladder.md)
+
 -   :material-book-open-variant:{ .lg .middle } **User Guide**
 
     ---

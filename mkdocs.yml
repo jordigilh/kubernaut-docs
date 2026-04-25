@@ -103,6 +103,7 @@ nav:
       - Architecture Overview: getting-started/architecture-overview.md
   - User Guide:
       - user-guide/index.md
+      - Trust Ladder: user-guide/trust-ladder.md
       - Core Concepts: user-guide/concepts.md
       - Signals & Alert Routing: user-guide/signals.md
       - Remediation Workflows: user-guide/workflows.md

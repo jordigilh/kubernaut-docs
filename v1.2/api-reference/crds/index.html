@@ -8198,7 +8198,7 @@ but retained for explicit documentation of critical fields.</p>
 <tr>
 <td><code>outcome</code></td>
 <td><em>string</em></td>
-<td>Outcome indicates the remediation result when completed.<br />Values:<br />- "Remediated": Workflow executed successfully<br />- "NoActionRequired": AIAnalysis determined no action needed (problem self-resolved)<br />- "ManualReviewRequired": Requires operator intervention<br />- "VerificationTimedOut": EA assessment did not complete within deadline <br />- "Inconclusive": EA completed but alert still firing (alertScore=0)</td>
+<td>Outcome indicates the remediation result when completed.<br />Values:<br />- "Remediated": Workflow executed successfully and EA verified effectiveness<br />- "NoActionRequired": AIAnalysis determined no action needed (problem self-resolved)<br />- "ManualReviewRequired": Requires operator intervention<br />- "VerificationTimedOut": EA assessment did not complete within deadline <br />- "Inconclusive": EA completed but alert still firing (alertScore=0) <br />- "DryRun": Pipeline stopped after AI analysis; no WFE/EA created (dry-run mode) (#712, #736)</td>
 </tr>
 <tr>
 <td><code>timeoutPhase</code></td>

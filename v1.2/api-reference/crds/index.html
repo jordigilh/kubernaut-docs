@@ -8312,6 +8312,11 @@ actual target for remediation. This may differ from the signal's source resource
 <td><em>string</em></td>
 <td>Namespace is the resource namespace. Empty for cluster-scoped resources (e.g., Node, PersistentVolume).</td>
 </tr>
+<tr>
+<td><code>apiVersion</code></td>
+<td><em>string</em></td>
+<td>APIVersion disambiguates the resource's API group when the Kind exists in<br />multiple groups (e.g. Route in route.openshift.io vs serving.knative.dev).<br />Format: "group/version" (e.g. "route.openshift.io/v1"). .</td>
+</tr>
 </tbody>
 </table>
 <h2 id="remediationworkflow">RemediationWorkflow<a class="headerlink" href="#remediationworkflow" title="Permanent link">&para;</a></h2>
@@ -9384,6 +9389,11 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td><code>namespace</code></td>
 <td><em>string</em></td>
 <td>Namespace is the resource namespace.<br />Empty for cluster-scoped resources (e.g., Node, PersistentVolume).</td>
+</tr>
+<tr>
+<td><code>apiVersion</code></td>
+<td><em>string</em></td>
+<td>APIVersion disambiguates the resource's API group when the Kind exists in<br />multiple groups (e.g. Route in route.openshift.io vs serving.knative.dev).<br />Format: "group/version" (e.g. "route.openshift.io/v1"). .</td>
 </tr>
 </tbody>
 </table>

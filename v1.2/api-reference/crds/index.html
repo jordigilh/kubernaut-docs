@@ -2262,6 +2262,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#alignmentfindingstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlignmentFindingStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alignmentverdictstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlignmentVerdictStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#alternativeapproach" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -4165,6 +4187,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#alignmentfindingstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlignmentFindingStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alignmentverdictstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AlignmentVerdictStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#alternativeapproach" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -5462,6 +5506,11 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td>Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts</td>
 </tr>
 <tr>
+<td><code>alignmentVerdict</code></td>
+<td><em><a href="#alignmentverdictstatus">AlignmentVerdictStatus</a></em></td>
+<td>Shadow agent alignment verdict from KA (, #1076).<br />When CircuitBreakerActivated=true, the investigation was terminated early<br />and LLM results (RootCauseAnalysis, SelectedWorkflow) may be incomplete<br />or compromised. Users should treat shadow findings as the primary content.</td>
+</tr>
+<tr>
 <td><code>actionability</code></td>
 <td><em>string</em></td>
 <td>#388: LLM's assessment of whether the alert warrants action.<br />Empty when not yet assessed (pre-investigation or error paths).<br />"Actionable" when the LLM determines the alert warrants action (default for all processed alerts).<br />"NotActionable" when the LLM determines the alert is benign (e.g., orphaned PVCs).</td>
@@ -5737,6 +5786,89 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <td><code>catalogStatus</code></td>
 <td><em><a href="#catalogstatus">CatalogStatus</a></em></td>
 <td>CatalogStatus reflects the DS catalog lifecycle state.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="alignmentfindingstatus">AlignmentFindingStatus<a class="headerlink" href="#alignmentfindingstatus" title="Permanent link">&para;</a></h3>
+<p>AlignmentFindingStatus captures a single suspicious step on the CRD.</p>
+<p><em>Appears in:</em>
+- <a href="#alignmentverdictstatus">AlignmentVerdictStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stepIndex</code></td>
+<td><em>integer</em></td>
+<td>StepIndex is the zero-based index of the evaluated step.</td>
+</tr>
+<tr>
+<td><code>stepKind</code></td>
+<td><em>string</em></td>
+<td>StepKind is the kind of step (llm_reasoning, tool_result, signal_input).</td>
+</tr>
+<tr>
+<td><code>tool</code></td>
+<td><em>string</em></td>
+<td>Tool is the tool name if StepKind is tool_result.</td>
+</tr>
+<tr>
+<td><code>explanation</code></td>
+<td><em>string</em></td>
+<td>Explanation is the shadow agent's explanation for flagging this step.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="alignmentverdictstatus">AlignmentVerdictStatus<a class="headerlink" href="#alignmentverdictstatus" title="Permanent link">&para;</a></h3>
+<p>AlignmentVerdictStatus holds the shadow agent's alignment verdict on the CRD.
+Produced by KA (InvestigatorWrapper), mapped by AA (ResponseProcessor).
+, #1076: When CircuitBreakerActivated=true, primary LLM results
+may be incomplete or compromised; shadow findings are the primary content.</p>
+<p><em>Appears in:</em>
+- <a href="#aianalysisstatus">AIAnalysisStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>result</code></td>
+<td><em>string</em></td>
+<td>Result is the overall shadow agent verdict: "clean" or "suspicious".</td>
+</tr>
+<tr>
+<td><code>circuitBreakerActivated</code></td>
+<td><em>boolean</em></td>
+<td>CircuitBreakerActivated indicates the investigation was terminated early.</td>
+</tr>
+<tr>
+<td><code>summary</code></td>
+<td><em>string</em></td>
+<td>Summary is a narrative summary of the shadow agent evaluation.</td>
+</tr>
+<tr>
+<td><code>flagged</code></td>
+<td><em>integer</em></td>
+<td>Flagged is the number of steps flagged as suspicious.</td>
+</tr>
+<tr>
+<td><code>total</code></td>
+<td><em>integer</em></td>
+<td>Total is the total number of steps evaluated.</td>
+</tr>
+<tr>
+<td><code>findings</code></td>
+<td><em><a href="#alignmentfindingstatus">AlignmentFindingStatus</a> array</em></td>
+<td>Findings contains per-step suspicious findings.</td>
 </tr>
 </tbody>
 </table>
@@ -8812,6 +8944,16 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td><code>rootCauseAnalysis</code></td>
 <td><em>string</em></td>
 <td>RootCauseAnalysis from AIAnalysis if available.</td>
+</tr>
+<tr>
+<td><code>alignmentVerdict</code></td>
+<td><em>string</em></td>
+<td>AlignmentVerdict is the shadow agent's overall verdict (aligned/suspicious).<br /> Present when shadow agent alignment check is enabled.</td>
+</tr>
+<tr>
+<td><code>circuitBreakerActivated</code></td>
+<td><em>boolean</em></td>
+<td>CircuitBreakerActivated indicates whether the circuit breaker terminated the investigation early.</td>
 </tr>
 </tbody>
 </table>

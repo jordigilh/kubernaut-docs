@@ -5,11 +5,19 @@
 
 After a remediation workflow completes, Kubernaut evaluates whether the fix actually resolved the issue. This is handled by the **Effectiveness Monitor** — a CRD controller that watches `EffectivenessAssessment` resources.
 
+## Phase state and tuning
+
+Assessments normally progress through pending, propagation, stabilization, and active scoring to **Completed**. If the EM cannot finish — for example the target resource was deleted, or Prometheus stays unavailable after retries — the CRD moves to a terminal **`Failed`** phase. See [Architecture: Phase State Machine](../architecture/effectiveness.md#phase-state-machine).
+
+Helm values under `effectivenessmonitor.config.assessment` include `stabilizationWindow`, `validityWindow`, and `maxConcurrentReconciles`. Requeue cadence during in-progress assessment follows controller timing derived from scrape windows. See [Configuration Reference](configuration.md#effectivenessmonitor).
+
+The remediation orchestrator and effectiveness monitor include **mounted ConfigMap `.data` / `.binaryData`** in the canonical spec hash (Secrets are excluded). If a referenced ConfigMap changes between pre- and post-capture, hashes will differ — treat that as a real configuration change for effectiveness comparison.
+
 ## How It Works
 
 When a remediation reaches a terminal phase, the Orchestrator creates an `EffectivenessAssessment` CRD. The Effectiveness Monitor then:
 
-1. **Waits for stabilization** — Two configurable windows control timing: the Remediation Orchestrator waits **5 minutes** (`remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`) before creating the EA, and the Effectiveness Monitor waits **30 seconds** (`effectivenessmonitor.config.assessment.stabilizationWindow`) after EA creation before running assessments
+1. **Waits for stabilization** — The Remediation Orchestrator creates the EA with a **stabilization window** (default: **5 minutes**, from `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`). The Effectiveness Monitor enforces this window using `EA.spec.config.stabilizationWindow` — the EM does not start running assessment scorers until this duration has elapsed after the EA's creation. The stabilization window that governs the EM reconciler behavior comes from the **EA spec** (set by the RO), not from the EM's own Helm config.
 2. **Evaluates effectiveness** through multiple dimensions
 3. **Records the assessment** in the audit trail
 
@@ -30,6 +38,8 @@ sequenceDiagram
 ```
 
 The EM evaluates four components (health, alert resolution, metrics, and spec hash). See [Architecture: Effectiveness Assessment](../architecture/effectiveness.md#assessment-components) for component weights and scoring details.
+
+**`Inconclusive` is not an EA value.** When verification finishes, the **Remediation Orchestrator** may set the RR outcome to `Inconclusive` (or `Remediated`) from EA alert results — that logic lives in the RO, not the EM. See [Architecture: Remediation outcome: Inconclusive](../architecture/effectiveness.md#remediation-outcome-inconclusive-not-an-assessment-reason).
 
 !!! note "Alert Decay Detection"
     When a Prometheus alert transitions from firing to resolved, the AlertManager lookback window may cause the alert to appear active even though the resource is healthy. The EM detects this by comparing health status with alert state, and re-queues the assessment until the alert clears. The `alertDecayRetries` field on the `EffectivenessAssessment` status tracks the number of decay re-checks. See [Architecture: Alert Decay Detection](../architecture/effectiveness.md#alert-decay-detection-dd-em-003) for details.
@@ -65,8 +75,8 @@ flowchart LR
     RO["RO<br/><small>Captures pre-hash</small>"] --> WFE["WFE<br/><small>Executes workflow</small>"]
     WFE --> EM["EM<br/><small>Evaluates effectiveness</small>"]
     EM --> DS["DS<br/><small>Stores audit events</small>"]
-    DS --> HAPI["HAPI<br/><small>Fetches history</small>"]
-    HAPI --> LLM["LLM<br/><small>Avoids past failures</small>"]
+    DS --> KA["KA<br/><small>Fetches history</small>"]
+    KA --> LLM["LLM<br/><small>Avoids past failures</small>"]
     LLM --> RO
 ```
 
@@ -84,12 +94,12 @@ The Remediation Orchestrator also emits `remediation.workflow_created` with the 
 
 ### How History Is Queried
 
-When the next incident hits the same resource, HAPI calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
+When the next incident hits the same resource, Kubernaut Agent calls the DataStorage remediation history endpoint with the current spec hash. DataStorage **joins** RO and EM events by `correlation_id` to build a complete picture: which workflow was used, what the effectiveness score was, whether the hash changed, and what the health checks showed.
 
 ### How the Spec Hash Creates a Configuration Fingerprint
 
 - **Pre-remediation hash** (captured by RO before execution) and **post-remediation hash** (captured by EM after stabilization) create a before/after pair
-- When a future incident occurs, HAPI computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
+- When a future incident occurs, Kubernaut Agent computes the current spec hash and DataStorage's **three-way comparison** tells the LLM:
     - `"preRemediation"` -- Current config matches a previously-remediated state (**regression**)
     - `"postRemediation"` -- Config unchanged since last remediation
     - `"none"` -- Config has changed (fresh start)
@@ -105,7 +115,7 @@ The richer the effectiveness data, the better the LLM's future decisions:
 
 Operators should ensure the Effectiveness Monitor has access to AlertManager and Prometheus for the richest possible history data.
 
-For a detailed technical breakdown of how history influences the LLM's workflow selection, see [Investigation Pipeline: How Remediation History Influences the LLM](../architecture/hapi-investigation.md#how-remediation-history-influences-the-llm).
+For a detailed technical breakdown of how history influences the LLM's workflow selection, see [Investigation Pipeline: How Remediation History Influences the LLM](../architecture/kubernaut-agent-investigation.md#how-remediation-history-influences-the-llm).
 
 ## Next Steps
 

@@ -3,7 +3,7 @@
 Kubernaut's audit pipeline is **designed to align** with SOC2 Type II trust service criteria for automated remediation systems. This page maps Kubernaut's audit capabilities to specific SOC2 controls and explains how each control is addressed.
 
 !!! warning "Not a certification claim"
-    This page documents how Kubernaut's audit architecture **aims to support** SOC2 compliance. It is not a certification claim. Formal SOC2 Type II compliance requires an independent auditor's assessment of the operating organization's controls, processes, and evidence -- which is outside the scope of Kubernaut itself. Items with version annotations (e.g., "planned for v1.2") indicate capabilities not yet available in the current release.
+    This page documents how Kubernaut's audit architecture **aims to support** SOC2 compliance. It is not a certification claim. Formal SOC2 Type II compliance requires an independent auditor's assessment of the operating organization's controls, processes, and evidence -- which is outside the scope of Kubernaut itself. Items with version annotations indicate when a capability was **introduced** or remains **future** work relative to a release.
 
 !!! info "Scope"
     This mapping covers Kubernaut's **internal** audit capabilities -- the audit events it generates, how they are stored, and what integrity guarantees it provides. Organizational controls (access policies, HR processes, vendor management) are outside Kubernaut's scope and must be addressed by the operating organization's SOC2 program.
@@ -150,8 +150,8 @@ Kubernaut defines auditable events per service in [DD-AUDIT-003]. Seven services
 - The hash chain provides a cryptographic integrity guarantee that is independent of database access controls ([ADR-034]).
 - Legal hold support (`legal_hold`, `legal_hold_reason`, `legal_hold_set_at`, `legal_hold_set_by`) is available at the event level to prevent retention-based deletion of specific events.
 
-!!! note "CLI verification tools (v1.1)"
-    Client-side hash chain verification and digital signature verification CLI tools are planned for v1.2. Server-side integrity verification is available through the DataStorage API.
+!!! note "CLI verification tools"
+    Client-side hash chain verification and digital signature verification CLI tooling is **not shipped in v1.2**. Server-side integrity verification remains available through the DataStorage API.
 
 ---
 

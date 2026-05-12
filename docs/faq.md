@@ -8,14 +8,17 @@ When Kubernaut can't confidently remediate an issue, it escalates to a human wit
 
 ## What LLMs does it support?
 
-Kubernaut supports any LLM provider compatible with the OpenAI API format:
+The Kubernaut Agent uses **LangChainGo** and supports 9 providers:
 
-- **Google Vertex AI** (Gemini models) — used in production testing
-- **OpenAI** (GPT-4, GPT-4o)
-- **LiteLLM** — proxy that supports 100+ model providers (Anthropic, Azure, AWS Bedrock, local models, etc.)
-- **Any OpenAI-compatible endpoint** — including locally hosted models
+- **OpenAI** (GPT-4, GPT-4o) and any **OpenAI-compatible endpoint** (vLLM, LocalAI, TGI)
+- **Google Vertex AI** — Gemini models (`vertex`) and Claude via Model Garden (`vertex_ai`)
+- **Anthropic** (direct API)
+- **Azure OpenAI**
+- **Amazon Bedrock**
+- **Ollama** — recommended for local/air-gapped deployments
+- **Hugging Face**, **Mistral**
 
-Configure the provider in the HolmesGPT API service. See [Configuration Reference](user-guide/configuration.md) for details.
+Configure the provider in the Kubernaut Agent SDK config. See [Configuration Reference](user-guide/configuration.md) for details.
 
 ## Is it safe for production?
 
@@ -32,15 +35,15 @@ See [Why Kubernaut — Safety and Trust](getting-started/why-kubernaut.md#safety
 
 ## What about token cost?
 
-LLM tokens are consumed only during the investigation phase (root cause analysis via HolmesGPT). Workflow selection from the catalog is entirely label-based — it uses weighted SQL scoring against mandatory and detected labels with no LLM invocation.
+LLM tokens are consumed only during the investigation phase (root cause analysis via the Kubernaut Agent). Workflow selection from the catalog is entirely label-based — it uses weighted SQL scoring against mandatory and detected labels with no LLM invocation.
 
-Cost depends on the LLM provider and model. A typical investigation with Gemini 1.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via LiteLLM.
+Cost depends on the LLM provider and model. A typical investigation with Gemini 2.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via Ollama or any OpenAI-compatible server.
 
-Enabled-but-unused toolsets also contribute to token consumption — each toolset injects its full schema into every LLM turn, even when none of its tools are called. Starting with `toolsets: {}` and enabling additional toolsets only for workloads that need them can reduce token usage by ~30%. See [Toolset Optimization](user-guide/configmap-holmesgpt.md#toolset-optimization-pre-v12) for recommended configurations by incident type.
+Enabled-but-unused toolsets also contribute to token consumption — each toolset injects its full schema into every LLM turn, even when none of its tools are called. Starting with `toolsets: {}` and enabling additional toolsets only for workloads that need them can reduce token usage by ~30%. See [Toolset Optimization](user-guide/configmap-kubernaut-agent.md#toolset-optimization) for recommended configurations by incident type.
 
 ## Can I run it air-gapped?
 
-Yes. Point the HolmesGPT API service at a locally hosted LLM endpoint (via LiteLLM or any OpenAI-compatible server). All other components — the CRD controllers, DataStorage, workflow execution — run entirely within the cluster with no external network dependencies.
+Yes. Point the Kubernaut Agent at a locally hosted LLM endpoint (via Ollama or any OpenAI-compatible server). All other components — the CRD controllers, DataStorage, workflow execution — run entirely within the cluster with no external network dependencies.
 
 Container images are available from `quay.io/kubernaut-ai/` and can be mirrored to an internal registry. For a complete walkthrough of mirroring images and installing on a disconnected OpenShift cluster, see the [Disconnected Installation Guide](operations/disconnected-install.md).
 
@@ -61,7 +64,7 @@ Workflows are authored as `RemediationWorkflow` CRDs that reference the executio
 Kubernaut has a multi-layered approach to repeated failures:
 
 1. **Effectiveness feedback** — After each remediation, the effectiveness monitor evaluates whether it worked. Failed remediations are recorded with their effectiveness scores.
-2. **History-aware investigation** — When the same resource triggers again, HolmesGPT receives the full remediation history, including what was tried and whether it worked. The LLM avoids repeating failed approaches.
+2. **History-aware investigation** — When the same resource triggers again, the Kubernaut Agent receives the full remediation history, including what was tried and whether it worked. The LLM avoids repeating failed approaches.
 3. **Alternative selection** — If the first workflow fails, the system can select a different workflow from the catalog on the next attempt.
 4. **Escalation** — After configurable attempts, Kubernaut stops remediating and escalates to a human with the full context: investigation, what was tried, why it failed.
 5. **NoActionRequired** — If the LLM investigation finds no active problem with the resource (e.g., the alert has resolved or the issue was transient), the remediation request is closed as NoActionRequired. This avoids unnecessary workflow execution when the signal is no longer relevant.

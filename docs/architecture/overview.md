@@ -16,7 +16,7 @@ Every inter-service interaction in the remediation pipeline uses Kubernetes CRDs
 The only exceptions are:
 
 - **DataStorage** -- Called via REST API for audit events, workflow catalog, remediation history, and effectiveness data
-- **HolmesGPT API** -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
+- **Kubernaut Agent** -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
 
 ### Orchestrator Pattern
 
@@ -25,7 +25,7 @@ The **Remediation Orchestrator** is the central coordinator. It watches `Remedia
 ```
 RemediationRequest (Gateway)
   └─ SignalProcessing (Orchestrator → SP Controller)
-  └─ AIAnalysis (Orchestrator → AA Controller → HolmesGPT API)
+  └─ AIAnalysis (Orchestrator → AA Controller → Kubernaut Agent)
   └─ RemediationApprovalRequest (Orchestrator, when approval needed)
   └─ WorkflowExecution (Orchestrator → WE Controller)
   └─ EffectivenessAssessment (Orchestrator → EM Controller)
@@ -42,8 +42,8 @@ Each service has a single responsibility:
 |---|---|---|
 | **Gateway** | Signal ingestion, authentication, scope checking, deduplication, RR creation | [Gateway](gateway.md) |
 | **Signal Processing** | Kubernetes context enrichment, Rego-based classification (environment, severity, priority, signal mode), business categorization | [Signal Processing](signal-processing.md) |
-| **AI Analysis** | Orchestrates HolmesGPT investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
-| **HolmesGPT API** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](hapi-investigation.md) |
+| **AI Analysis** | Orchestrates Kubernaut Agent investigation session, evaluates Rego approval policy | [AI Analysis](ai-analysis.md) |
+| **Kubernaut Agent** | LLM-driven investigation with K8s tools, infrastructure label detection, tiered remediation history (via DataStorage), three-step LLM-driven workflow discovery | [Investigation Pipeline](kubernaut-agent-investigation.md) |
 | **Remediation Orchestrator** | Lifecycle coordination, routing engine, timeout enforcement, child CRD management | [Remediation Routing](remediation-routing.md) |
 | **Workflow Execution** | Dependency resolution, Job/Tekton execution, cooldown, deterministic locking | [Workflow Execution](workflow-execution.md) |
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |
@@ -55,7 +55,7 @@ Each service has a single responsibility:
 ```mermaid
 graph TB
     subgraph Ingress["Signal Ingestion"]
-        GW[Gateway<br/><small>HTTP → CRD</small>]
+        GW[Gateway<br/><small>Signals → CRD</small>]
     end
 
     subgraph Core["Core Pipeline"]
@@ -71,7 +71,7 @@ graph TB
     end
 
     subgraph External["External Services"]
-        HAPI[HolmesGPT API<br/><small>Python/FastAPI</small>]
+        KA[Kubernaut Agent<br/><small>Go</small>]
         DS[DataStorage<br/><small>REST API</small>]
         LLM[LLM Provider]
     end
@@ -88,9 +88,9 @@ graph TB
     RO -->|NotificationRequest| NF
     RO -->|EffectivenessAssessment| EM
 
-    AA -.->|session async| HAPI
-    HAPI -.-> LLM
-    HAPI -.-> DS
+    AA -.->|session async| KA
+    KA -.-> LLM
+    KA -.-> DS
 
     SP -.-> DS
     AA -.-> DS
@@ -112,7 +112,7 @@ The complete CRD lifecycle for a single remediation follows the natural flow:
 |---|---|---|---|---|
 | 1 | `RemediationRequest` | Gateway | Orchestrator | Root lifecycle object |
 | 2 | `SignalProcessing` | Orchestrator | SP Controller | Enrichment and classification |
-| 3 | `AIAnalysis` | Orchestrator | AA Controller | RCA, workflow selection via HAPI |
+| 3 | `AIAnalysis` | Orchestrator | AA Controller | RCA, workflow selection via KA |
 | 4 | `RemediationApprovalRequest` | Orchestrator | (human) | Approval gate (when needed) |
 | 5 | `WorkflowExecution` | Orchestrator | WE Controller | Run remediation workflow |
 | 6 | `EffectivenessAssessment` | Orchestrator | EM Controller | Post-execution verification |
@@ -122,7 +122,7 @@ Each CRD has its own phase state machine. The Orchestrator monitors child CRD st
 
 ## Namespace Model
 
-All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace with a shared ServiceAccount (`kubernaut-workflow-runner`). Per-workflow scoped RBAC is planned for v1.2.
+All Kubernaut services run in the `kubernaut-system` namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate `kubernaut-workflows` namespace. By default, executions use the execution namespace default ServiceAccount (commonly configured as `kubernaut-workflow-runner` in shared-SA deployments). Starting with v1.2, workflows can declare a dedicated ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`), enabling per-workflow least-privilege RBAC. See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details.
 
 ## Configuration
 
@@ -152,7 +152,21 @@ An internal admission webhook validates and audits:
 - **DataStorage** -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
 - **Gateway** -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see [Security & RBAC](security-rbac.md#signal-ingestion))
 - **NetworkPolicies** -- Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
-- **TLS** -- Not configured for internal service-to-service traffic in v1.1
+- **TLS (inter-service)** -- v1.3+ supports HTTPS and mutual TLS for internal REST traffic when certificate material is present; see [Configuration Reference -- TLS](../user-guide/configuration.md#tls-and-certificate-management)
+
+## Port model (v1.3+)
+
+Kubernaut uses a **three-port** split on components that serve both an API and operational endpoints:
+
+| Port | Purpose |
+|------|---------|
+| **8080** | Primary API. Serves **HTTPS** when TLS certificate files exist under `tls.interService.certDir`; otherwise plain HTTP. |
+| **8081** | **Health probes only**, always **plain HTTP**: `GET /healthz` (liveness), `GET /readyz` (readiness). The path **`/livez` is not registered** — do not configure probes to use it. |
+| **9090** | **Prometheus metrics**, always **plain HTTP** at `GET /metrics`. |
+
+**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, and the **AIAnalysis** controller. Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the 8080/8081 API/health split.
+
+**Auth Webhook** is an exception: the Service uses **port 443** with **targetPort 9443** for admission traffic; health checks use **8081** (`/healthz`, `/readyz`) like the other Go components.
 
 ## Error Handling Patterns
 
@@ -170,6 +184,6 @@ All controllers share common error handling patterns:
 
 - [Gateway](gateway.md) -- Signal ingestion entry point
 - [Signal Processing](signal-processing.md) -- Enrichment and classification
-- [AI Analysis](ai-analysis.md) -- HolmesGPT integration
+- [AI Analysis](ai-analysis.md) -- Kubernaut Agent integration
 - [Remediation Routing](remediation-routing.md) -- Orchestrator lifecycle management
 - [Audit Pipeline](audit-pipeline.md) -- How audit events flow through the system

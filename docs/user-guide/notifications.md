@@ -5,6 +5,8 @@
 
 Kubernaut sends notifications at key points in the remediation lifecycle: when human approval is required, when a remediation fails, when manual review is needed, and when a remediation completes. Notifications are routed through configurable channels using an AlertManager-style routing configuration.
 
+**Cluster context:** Message bodies include the cluster display name and UUID near the top (`Cluster: <name> (<uuid>)`) on every channel, including timeout notifications.
+
 ## Channel Overview
 
 | Channel | Status | Description |
@@ -27,6 +29,10 @@ Notifications are routed using a ConfigMap with an AlertManager-style `route` + 
 
 **ConfigMap:** `notification-routing-config`
 
+When neither `notification.routing.content` nor `notification.routing.existingConfigMap` is set, the chart generates a default routing config based on Helm values:
+
+**Default when `notification.slack.secretName` is set** (Slack + console):
+
 ```yaml
 route:
   receiver: slack-and-console
@@ -39,7 +45,18 @@ receivers:
         credentialRef: slack-webhook
 ```
 
-The catch-all receiver routes **all** notification types to both Slack and console. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel.
+**Default when `notification.slack.secretName` is empty** (console only):
+
+```yaml
+route:
+  receiver: console
+receivers:
+  - name: console
+    consoleConfigs:
+      - enabled: true
+```
+
+The catch-all receiver routes **all** notification types to the configured channels. New types added in future releases are automatically covered. Avoid matching specific types unless you intentionally want to suppress certain notifications from a channel. See [Notification Routing ConfigMap](configmap-notification.md) for the complete reference.
 
 ### Match Fields
 
@@ -47,9 +64,9 @@ Routes match on notification attributes:
 
 | Match Key | Source | Example Values |
 |---|---|---|
-| `type` | Notification type | `escalation`, `simple`, `status-update`, `approval`, `manual-review`, `completion` |
+| `type` | Notification type | `Escalation`, `Simple`, `StatusUpdate`, `Approval`, `ManualReview`, `Completion` |
 | `severity` | Signal severity | `critical`, `high`, `medium`, `low` |
-| `priority` | Signal priority | `P0`, `P1`, `P2`, `P3` (also accepts `critical`, `high`, `medium`, `low`) |
+| `priority` | Notification priority | `Critical`, `High`, `Medium`, `Low` |
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |
 | `environment` | Namespace environment | `production`, `staging`, `development` |
 | `review-source` | Why review was triggered | `WorkflowResolutionFailed`, `ExhaustedRetries` |
@@ -128,8 +145,8 @@ delivery:
   "timestamp": "2026-03-04T12:34:56Z",
   "notification_name": "approval-required-rr-12345",
   "notification_namespace": "kubernaut-system",
-  "type": "approval",
-  "priority": "critical",
+  "type": "Approval",
+  "priority": "Critical",
   "subject": "Human approval required for OOMKilled remediation",
   "body": "...",
   "metadata": {"environment": "production"},
@@ -147,7 +164,7 @@ Slack delivery sends Block Kit messages via Incoming Webhooks.
 
 1. **Header block** -- Priority emoji + subject (e.g., `:rotating_light: Human approval required for OOMKilled remediation`)
 2. **Section block** -- Notification body (Markdown converted to Slack mrkdwn)
-3. **Context block** -- `*Priority:* critical | *Type:* approval`
+3. **Context block** -- `*Priority:* Critical | *Type:* Approval`
 
 Priority emojis: Critical = :rotating_light:, High = :warning:, Medium = :information_source:, Low = :speech_balloon:
 
@@ -241,6 +258,66 @@ spec:
     backoffMultiplier: 2
     maxBackoffSeconds: 120
 ```
+
+## Routing New v1.3 Notification Types
+
+v1.3 introduces notifications for block reasons and terminal failures that were previously silent. Operators with existing routing rules should add routes for these new NR types.
+
+### Escalation NRs (block reasons and terminal failures)
+
+Match `type: Escalation` to capture:
+
+- **Block-reason escalations** (`nr-block-consecutivefailures-*`, `nr-block-unmanagedresource-*`) -- persistent blocks requiring operator investigation
+- **Terminal failure escalations** (`nr-escalation-*`) -- failure paths that previously had no notification
+
+These are **High** priority. Route to your primary ops investigation channel.
+
+```yaml
+routes:
+  - match:
+      type: Escalation
+    receiver: ops-escalation-channel
+```
+
+### StatusUpdate NRs (transient blocks)
+
+Match `type: StatusUpdate` with `priority: Low` to capture transient block notifications (`DuplicateInProgress`, `ResourceBusy`, `RecentlyRemediated`, `ExponentialBackoff`). These are informational -- route to a low-priority channel or suppress in high-traffic environments.
+
+```yaml
+routes:
+  - match:
+      type: StatusUpdate
+      priority: Low
+    receiver: low-priority-channel
+```
+
+### ManualReview NRs by source
+
+ManualReview NRs can be further distinguished by `review-source` to route different failure types to different teams:
+
+| `review-source` | Meaning | Suggested action |
+|---|---|---|
+| `WorkflowExecution` | Execution failure | Ops investigation |
+| `AIAnalysis` | AI couldn't recommend a workflow | Catalog update / workflow authoring |
+| `RoutingEngine` | Repeated ineffective remediations | Root cause investigation |
+
+```yaml
+routes:
+  - match:
+      type: ManualReview
+      review-source: WorkflowExecution
+    receiver: ops-failures-channel
+  - match:
+      type: ManualReview
+      review-source: AIAnalysis
+    receiver: workflow-authors-channel
+  - match:
+      type: ManualReview
+      review-source: RoutingEngine
+    receiver: ops-escalation-channel
+```
+
+See [Notification Pipeline: NR Naming Conventions](../architecture/notification.md#nr-naming-conventions) for the complete NR naming catalog.
 
 ## Enabling Slack: End-to-End Walkthrough
 

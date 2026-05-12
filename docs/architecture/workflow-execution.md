@@ -233,7 +233,12 @@ When a WFE spec omits `engineConfig`, the controller resolves it from the workfl
 
 ## Execution Namespace and RBAC
 
-All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. They share a common ServiceAccount (`kubernaut-workflow-runner`) managed by the controller. See [Security & RBAC -- Workflow Execution](security-rbac.md#workflow-execution) for the full list of permissions granted to this ServiceAccount. Per-workflow scoped RBAC is planned for v1.2.
+All Jobs and PipelineRuns execute in the dedicated `kubernaut-workflows` namespace. Each workflow declares its own ServiceAccount via `spec.execution.serviceAccountName` on the `RemediationWorkflow` CRD (propagated to `WorkflowExecution.spec.serviceAccountName`). This enables least-privilege RBAC per workflow. If omitted, the execution namespace default ServiceAccount is used.
+
+- Job/Tekton: the service account name is set directly on the created Job/PipelineRun.
+- Ansible: the controller requests a short-lived token via the Kubernetes TokenRequest API for AWX credential injection.
+
+See [Security & RBAC -- Per-Workflow ServiceAccount](security-rbac.md#per-workflow-serviceaccount-v12) for details on TokenRequest scope, TTL validation, and fallback behavior.
 
 ## Parameter Injection
 
@@ -244,9 +249,9 @@ The executor injects system variables and passes through all parameters from the
 | Variable | Source |
 |---|---|
 | `TARGET_RESOURCE` | `wfe.Spec.TargetResource` (system-injected by WFE controller) |
-| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
 | Custom parameters | All remaining entries from `wfe.Spec.Parameters` (LLM-populated) |
 
 Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables (Jobs) or Tekton params (PipelineRuns).
@@ -255,9 +260,9 @@ Custom parameters use `UPPER_SNAKE_CASE` names and are injected as environment v
 
 | Variable | Source |
 |---|---|
-| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
-| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (HAPI-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAME` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_KIND` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
+| `TARGET_RESOURCE_NAMESPACE` | `wfe.Spec.Parameters` (KA-injected from K8s root_owner) |
 | `WFE_NAME` | `wfe.Name` (auto-injected) |
 | `WFE_NAMESPACE` | `wfe.Namespace` (auto-injected) |
 | `RR_NAME` | `wfe.Spec.RemediationRequestRef.Name` (auto-injected) |
@@ -275,8 +280,10 @@ The WFE controller reports status back to the Orchestrator through the CRD statu
 
 ```
 WFE Completed → RO creates EffectivenessAssessment → Verifying phase
-WFE Failed    → RO creates EA (for tracking) + NotificationRequest → Failed phase
+WFE Failed    → WFE handler creates ManualReview NR → RO transitionToFailed → Failed phase
 ```
+
+In v1.3, when a WorkflowExecution enters `PhaseFailed`, the WFE handler creates a **ManualReview NR** (`nr-manual-review-<rr-name>`) with `reviewSource=WorkflowExecution` and `priority=Critical` **before** calling `transitionToFailed`. The subsequent `transitionToFailed` Escalation NR is suppressed by the double-NR guard (a ManualReview NR already exists for this RR).
 
 For Ansible executions, the handoff is identical -- the AWX job status is mapped to the same WFE phases (`Completed`/`Failed`), so the Orchestrator does not need to distinguish between execution engines.
 

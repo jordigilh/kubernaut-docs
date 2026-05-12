@@ -6,6 +6,9 @@
 !!! abstract "CRD Reference"
     For the complete EffectivenessAssessment CRD specification, see [API Reference: CRDs](../api-reference/crds.md#effectivenessassessment).
 
+!!! note "Design Decision"
+    This architecture follows **ADR-EM-001** (Effectiveness Monitor service integration), which defines the multi-component scoring model, timing derivation, and assessment paths described below.
+
 The Effectiveness Monitor evaluates whether a remediation actually resolved the issue. It operates as a CRD controller watching `EffectivenessAssessment` resources created by the Orchestrator after workflow execution completes (or fails).
 
 ## CRD Specification
@@ -20,7 +23,7 @@ stateDiagram-v2
     Pending --> WaitingForPropagation : HashComputeDelay set
     Pending --> Stabilizing : No propagation delay
     Pending --> Assessing : Direct (edge case)
-    Pending --> Failed : Target not found
+    Pending --> Failed : Terminal failure
     WaitingForPropagation --> Stabilizing : Propagation delay elapsed
     WaitingForPropagation --> Failed : Error
     Stabilizing --> Assessing : Stabilization window elapsed
@@ -36,7 +39,39 @@ stateDiagram-v2
 | **Stabilizing** | Waiting for the stabilization window. Derived timing fields (`ValidityDeadline`, `PrometheusCheckAfter`, `AlertManagerCheckAfter`) are computed and persisted. |
 | **Assessing** | Actively running component scorers (health, hash, alerts, metrics) |
 | **Completed** | Assessment complete, results stored in status |
-| **Failed** | Assessment could not be completed (e.g., target not found) |
+| **Failed** | Terminal failure: the assessment could not be completed. Examples include the target resource no longer existing, unrecoverable errors during reconciliation, or dependencies such as Prometheus remaining unavailable after the configured retry budget. |
+
+On relevant phase transitions, the Effectiveness Monitor emits an `effectiveness.assessment.scheduled` audit event so operators and automation can observe when the next assessment step is expected.
+
+### EM controller assessment tuning
+
+The EM controller exposes assessment timing, concurrency, and external integration knobs:
+
+| Parameter | Purpose | Default |
+|---|---|---|
+| `stabilizationWindow` | Wait time before starting assessment scorers after EA creation. | `30s` |
+| `validityWindow` | Total window before the assessment expires. | `300s` (5m) |
+| `maxConcurrentReconciles` | Maximum number of EA reconciliations processed in parallel by the controller. | `5` |
+| `prometheusLookback` | Duration before EA creation to query Prometheus for baseline metrics. Min: 1m. | `30m` |
+| `scrapeInterval` | Prometheus scrape interval used to derive requeue timing for metric assessment. Min: 5s. | `60s` |
+| `connectionTimeout` | HTTP client timeout for Prometheus/AlertManager connections. | `10s` |
+
+### Assessment paths
+
+The Orchestrator creates an `EffectivenessAssessment` for **both successful and failed** workflow executions. This allows the EM to verify whether a failed workflow inadvertently resolved the issue (e.g., a restart that fixed a crash loop before the workflow itself failed) and feeds into the Orchestrator's `Inconclusive` outcome logic.
+
+Each completed assessment is classified with an **AssessmentReason** (PascalCase), reflecting how fully the EM could run the configured scorers within the validity window:
+
+| AssessmentReason | Meaning |
+|---|---|
+| `NoExecution` | No meaningful assessment run (e.g., prerequisites not met). |
+| `Partial` | Some components assessed; others skipped or incomplete before the deadline. |
+| `Full` | All applicable components assessed successfully within the window. |
+| `SpecDrift` | The spec changed *during* the assessment window, invalidating the evaluation (not the same as a deliberate remediation change). |
+| `Expired` | The validity window expired before all components could be assessed. |
+| `MetricsTimedOut` | Metrics scoring did not complete within the allowed window. |
+| `AlertDecayTimeout` | Alert decay handling exceeded the time budget. |
+| `Unrecoverable` | Assessment cannot proceed (e.g., dependencies unavailable after retries, target gone). |
 
 ## Timing Model
 
@@ -79,7 +114,7 @@ If the total check offset exceeds the ValidityWindow, the deadline is automatica
 
 ### Validity Window
 
-The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (`AssessmentReason: expired`).
+The validity window constrains the assessment timeline. If the deadline passes before all components are assessed, the assessment completes with partial results (`AssessmentReason: Expired`).
 
 | Parameter | Default |
 |---|---|
@@ -139,7 +174,9 @@ Compares pre-remediation and post-remediation metrics from Prometheus:
 - Clamped to [0.0, 1.0]
 - Overall score: average of per-metric improvements
 
-Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 10m) for the query range.
+Respects `PrometheusCheckAfter` deadline and uses `PrometheusLookback` (default: 30m) for the query range.
+
+**Reliability (v1.2+)**: The interaction between `ValidityWindow` and alert duration was corrected so metrics windows align with the assessment timeline. Metrics scoring is now reliable when both are configured.
 
 ### Spec Hash Comparison (DD-EM-002)
 
@@ -148,6 +185,30 @@ Compares the resource specification before and after remediation to detect drift
 1. **Pre-remediation hash**: From `EA.Spec.PreRemediationSpecHash` (captured by RO before execution) or queried from DataStorage
 2. **Post-remediation hash**: Computed live via `CanonicalSpecHash(target.Spec)`
 3. **Comparison**: `postHash == preHash` → `Match=true` (spec unchanged). `postHash != preHash` can mean the remediation intentionally changed the spec (normal) or an external actor modified it during the assessment window (spec drift). The assessment distinguishes these by tracking whether the spec changed *after* the stabilization window began.
+
+#### ConfigMap Composite Fingerprinting
+
+The spec hash includes content from ConfigMaps referenced by the target workload, producing a **composite fingerprint** that detects configuration drift even when the workload spec itself is unchanged.
+
+**Hash algorithm** (`ConfigMapDataHash`): SHA-256 over sorted `.data` entries (`d:key=value`) and `.binaryData` entries (`b:key=base64(...)`) → returns `sha256:<hex>`.
+
+**ConfigMap reference extraction** (`ExtractConfigMapRefs`): walks the pod-template spec to collect all referenced ConfigMap names from:
+
+- Volume mounts (`volumes[].configMap`)
+- Projected volume sources (`volumes[].projected.sources[].configMap`)
+- `envFrom[].configMapRef`
+- `env[].valueFrom.configMapKeyRef`
+
+**Composite hash** (`CompositeResourceFingerprint`): combines the target resource's canonical spec fingerprint with per-ConfigMap content hashes into a single `sha256:...` digest. If no ConfigMaps are referenced, the fingerprint is returned unchanged (backward compatible).
+
+| Component | Role |
+|---|---|
+| **RO** (Remediation Orchestrator) | Captures **pre-remediation** composite hash (`capturePreRemediationHash` → `resolveConfigMapHashes`) |
+| **EM** (Effectiveness Monitor) | Computes **post-remediation** composite hash and compares to pre; runs spec drift guard on subsequent reconciles (`assessHash` → `resolveConfigMapHashes`) |
+
+**Sentinel hashes**: When a ConfigMap cannot be read (forbidden, missing, transient error), a sentinel hash is used so the set of referenced names stays stable and intermittent API failures don't false-positive as drift.
+
+If a referenced ConfigMap changes between pre-capture and post-capture without any change to the workload spec, the composite hash will differ, triggering `SpecDrift` classification.
 
 #### Canonical Hash Algorithm
 
@@ -160,7 +221,7 @@ Compares the resource specification before and after remediation to detect drift
 
 When `HashComputeDelay` is set (async targets), the hash is not computed until the propagation delay elapses. The controller enters `WaitingForPropagation` and requeues with the remaining duration.
 
-If spec drift is detected (`assessment_status == "spec_drift"` — the spec changed *during* the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to **0.0** regardless of other component results. Note: `postHash != preHash` alone is **normal** for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.
+If spec drift is detected (assessment classifies as `SpecDrift` — the spec changed *during* the assessment window, invalidating the evaluation), DataStorage short-circuits the weighted score to **0.0** regardless of other component results. Note: `postHash != preHash` alone is **normal** for a successful remediation (the workflow intentionally changed the spec). The score-0 override triggers only when the spec is modified by an external actor during the assessment window, making the effectiveness data inconclusive.
 
 ## Weighted Scoring
 
@@ -176,17 +237,34 @@ Only assessed components with non-nil scores are included. Weights are redistrib
 
 **Spec drift override**: If the hash comparison detects drift, the overall score is set to 0.0.
 
+## Remediation outcome: Inconclusive (not an assessment reason) {: #remediation-outcome-inconclusive-not-an-assessment-reason }
+
+`Inconclusive` is a **RemediationRequest outcome** set by the **Remediation Orchestrator** when deriving the final RR result from the Effectiveness Assessment (EA). It is **not** an `AssessmentReason` from the Effectiveness Monitor.
+
+The RO uses `DeriveOutcomeFromEA` (post-verification) with this logic:
+
+- **AlertAssessed=true** and **AlertScore=0** (alert still firing) → **Inconclusive** (remediation did not clear the signal).
+- **AlertAssessed=true** and **AlertScore>0** (alert resolved) → **Remediated**.
+- **AlertAssessed=false** (AlertManager unavailable) → **Remediated** (fail-open; **not** Inconclusive).
+- **AlertManager disabled** in the EffectivenessMonitor config: **AlertAssessed=true**, **AlertScore=nil** → **Remediated**.
+
+## Spec hash: root owner vs direct resource (v1.3) {: #spec-hash-root-owner-vs-direct-resource-v13 }
+
+**Effectiveness (EM) path:** The **generic enricher** computes the canonical spec hash on the **direct remediation target** resource.
+
+**Investigation (HAPI) path:** The `get_namespaced_resource_context` tool resolves the **owner chain to the root owner first**, then computes `specHash` for that **root** resource. This keeps remediation history and configuration fingerprints aligned with the stable workload (e.g., Deployment) rather than an intermediate object.
+
 ## Feedback Loop
 
-EA results feed back into the remediation pipeline through the [Investigation Pipeline](hapi-investigation.md):
+EA results feed back into the remediation pipeline through the [Investigation Pipeline](kubernaut-agent-investigation.md):
 
 1. **Audit storage** -- EA completion events are stored in DataStorage with the correlation ID
 2. **Remediation history** -- DataStorage indexes EA results by spec hash and target resource
-3. **HAPI retrieval** -- During future investigations, HAPI queries remediation history using the tiered strategy (24h recent, then 90d historical)
+3. **KA retrieval** -- During future investigations, KA queries remediation history using the tiered strategy (24h recent, then 90d historical)
 4. **LLM prompt** -- History entries include effectiveness scores and outcomes, formatted as warnings in the LLM prompt
 5. **Decision influence** -- The LLM uses history to avoid repeating ineffective workflows and prefer historically successful ones
 
-See [Investigation Pipeline: Remediation History](hapi-investigation.md) for details on how the three-way hash comparison and formatted warnings work.
+See [Investigation Pipeline: Remediation History](kubernaut-agent-investigation.md) for details on how the three-way hash comparison and formatted warnings work.
 
 ## OCP Monitoring RBAC
 
@@ -196,5 +274,5 @@ On OpenShift clusters with `effectivenessmonitor.external.ocpMonitoringRbac: tru
 
 - [Async Propagation](async-propagation.md) -- The propagation delay model in detail
 - [Effectiveness Monitoring](../user-guide/effectiveness.md) -- User guide for operators
-- [Investigation Pipeline](hapi-investigation.md) -- How EA results influence future investigations
+- [Investigation Pipeline](kubernaut-agent-investigation.md) -- How EA results influence future investigations
 - [Configuration](../user-guide/configuration.md) -- Tuning stabilization and propagation delays

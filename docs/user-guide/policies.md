@@ -4,6 +4,12 @@ Kubernaut uses [OPA Rego](https://www.openpolicyagent.org/docs/latest/policy-lan
 
 All policies are deployed as ConfigMaps and can be customized. See [SignalProcessing Rego Policies](configmap-policies.md) for provisioning details.
 
+!!! info "Case-insensitive matching (v1.2)"
+    Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is **case-insensitive**. For example, `Production`, `production`, and `PRODUCTION` all match equivalently. The default policies use `lower()` for comparisons. Custom policies should follow the same pattern.
+
+!!! info "Embedded default SP Rego (v1.2)"
+    Starting with v1.2, the Helm chart ships a default `signalprocessing-policy.rego` so installations work without `--set-file`. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.
+
 ## Policy Overview
 
 | Policy File | Service | Purpose | Hot-Reload |
@@ -154,30 +160,30 @@ proactive_signal_mappings:
 
 Signal names that match a key in this map are classified as `proactive`; all others default to `reactive`. The mapped value is the base signal name used for workflow catalog lookup.
 
-Signal mode determines which prompt variant HolmesGPT uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/hapi-investigation.md#reactive-vs-proactive-mode) for details.
+Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md#reactive-vs-proactive-mode) for details.
 
 !!! info "Signal mode mappings are not hot-reloaded"
     Unlike Rego policies, the proactive signal mappings are loaded once at startup. Changes require a pod restart.
 
 ## AI Analysis Approval Policy
 
-The approval policy runs after HAPI returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.
+The approval policy runs after Kubernaut Agent returns a successful workflow selection. It determines whether the remediation requires human approval or can proceed automatically.
 
 **Package:** `aianalysis.approval`
 
-**ConfigMap:** `approval.rego` mounted via `charts/kubernaut/files/rego/aianalysis/approval.rego`
+**ConfigMap:** `aianalysis-policies`, key `approval.rego`. Operators install the policy via `--set-file aianalysis.policies.content=approval.rego` or by providing a pre-created ConfigMap with `aianalysis.policies.existingConfigMap`. See [AIAnalysis Approval Policy ConfigMap](configmap-approval.md) for the full reference.
 
 ### Input Fields
 
 | Field | Source | Description |
 |---|---|---|
 | `input.environment` | SP enrichment | `production`, `staging`, `development`, `qa`, `test` |
-| `input.confidence` | HAPI `SelectedWorkflow.Confidence` | LLM confidence score (0.0--1.0) |
+| `input.confidence` | Kubernaut Agent `SelectedWorkflow.Confidence` | LLM confidence score (0.0--1.0) |
 | `input.confidence_threshold` | Helm config (optional) | Overrides default 0.8 |
-| `input.remediation_target` | HAPI `RootCauseAnalysis.RemediationTarget` | `{kind, name, namespace}` |
-| `input.detected_labels` | HAPI `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
-| `input.failed_detections` | HAPI `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
-| `input.warnings` | HAPI investigation warnings | Array of warning strings |
+| `input.remediation_target` | Kubernaut Agent `RootCauseAnalysis.RemediationTarget` | `{kind, name, namespace}` |
+| `input.detected_labels` | Kubernaut Agent `PostRCAContext.DetectedLabels` | Infrastructure characteristics |
+| `input.failed_detections` | Kubernaut Agent `PostRCAContext.DetectedLabels.FailedDetections` | Detection errors |
+| `input.warnings` | Kubernaut Agent investigation warnings | Array of warning strings |
 
 ### Approval Rules
 
@@ -185,7 +191,7 @@ Three mandatory triggers:
 
 1. **Missing remediation target** -- If `remediation_target` is absent or has an empty `kind`, approval is always required. Safety net for incomplete RCA.
 
-2. **Production environment** -- All production remediations require human approval, regardless of confidence. Controlled by setting `kubernaut.ai/environment=production` on the namespace.
+2. **Production environment** -- All production remediations require human approval, regardless of confidence (case-insensitive match: `Production`, `production`, `PRODUCTION`). Controlled by setting `kubernaut.ai/environment=production` on the namespace.
 
 3. **Sensitive resource kinds** -- Remediations targeting `Node` or `StatefulSet` resources always require approval, regardless of environment. These are high-impact resources where automated remediation carries elevated risk.
 
@@ -318,6 +324,6 @@ The reload is **validated** -- if the new policy has a syntax error, the previou
 ## Next Steps
 
 - [Remediation Workflows](workflows.md) -- How policies feed into workflow discovery and scoring
-- [Investigation Pipeline](../architecture/hapi-investigation.md) -- How the approval policy integrates with the investigation outcomes
+- [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) -- How the approval policy integrates with the investigation outcomes
 - [Human Approval](approval.md) -- What happens when approval is required
 - [Configuration Reference](configuration.md) -- Other configurable aspects of Kubernaut

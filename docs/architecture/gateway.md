@@ -16,15 +16,44 @@ flowchart LR
 
 ## Signal Ingestion Endpoints
 
-| Endpoint | Method | Source | Description |
-|---|---|---|---|
-| `/api/v1/signals/prometheus` | POST | AlertManager | Prometheus AlertManager webhook receiver |
-| `/api/v1/signals/kubernetes-event` | POST | Event Exporter (external) | Kubernetes Event API webhook receiver. Requires a user-deployed Event Exporter -- not included in the chart since v1.1. |
-| `/health`, `/healthz` | GET | -- | Liveness probe (always 200) |
-| `/ready` | GET | -- | Readiness probe (checks K8s API + shutdown flag) |
-| `/metrics` | GET | -- | Prometheus metrics |
+Ingestion uses **port 8080** ( **HTTPS** when inter-service TLS is enabled). Health probes use **port 8081** (plain HTTP: `GET /healthz` liveness, `GET /readyz` readiness). Metrics are on **port 9090** at `GET /metrics` (plain HTTP). See [System Overview -- Port model](overview.md#port-model-v13).
+
+| Endpoint | Port | Method | Source | Description |
+|---|---|---|---|---|
+| `/api/v1/signals/prometheus` | 8080 | POST | AlertManager | Prometheus AlertManager webhook receiver |
+| `/api/v1/signals/kubernetes-event` | 8080 | POST | Event Exporter (external) | Kubernetes Event API webhook receiver. Requires a user-deployed Event Exporter -- not included in the chart since v1.1. |
+| `/healthz` | 8081 | GET | -- | Liveness (always 200) |
+| `/readyz` | 8081 | GET | -- | Readiness (K8s API + shutdown flag) |
+| `/metrics` | 9090 | GET | -- | Prometheus metrics |
 
 Each signal source uses a dedicated **adapter** that parses the source-specific payload format into a common `NormalizedSignal` structure. Adapters are registered at startup via `RegisterAdapter()`.
+
+## Expected Signal Labels
+
+### AlertManager Label Contract
+
+The Prometheus adapter expects alerts to carry standard Kubernetes labels for resource identification. The Gateway uses these labels to resolve the target resource:
+
+| Label | Required | Description |
+|---|---|---|
+| `namespace` | Yes (namespaced resources) | Target resource namespace |
+| `severity` | Recommended | Alert severity (normalized by SP Rego; defaults to `unknown` when absent) |
+| `alertname` | Yes | Alert name (becomes `SignalName`) |
+| One of: `horizontalpodautoscaler`, `poddisruptionbudget`, `persistentvolumeclaim`, `deployment`, `statefulset`, `daemonset`, `replicaset`, `node`, `service`, `job_name`, `cronjob`, `pod` | Yes | Target resource identity |
+
+The adapter uses a priority list to select the resource label: HPA > PDB > PVC > Deployment > StatefulSet > DaemonSet > ReplicaSet > Node > Service > Job (`job_name`) > CronJob > Pod.
+
+### Kubernetes Event Exporter Label Contract
+
+The Kubernetes Event adapter expects the Event Exporter to forward events with these fields:
+
+| Field | Required | Description |
+|---|---|---|
+| `involvedObject.kind` | Yes | Resource kind |
+| `involvedObject.name` | Yes | Resource name |
+| `involvedObject.namespace` | Recommended | Resource namespace |
+| `reason` | Yes | Event reason (becomes `SignalName`) |
+| `type` | Yes | `Warning` or `Error` (`Normal` events are filtered out) |
 
 ## Signal Adapters
 

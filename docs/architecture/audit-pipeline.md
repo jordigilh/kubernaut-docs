@@ -127,14 +127,14 @@ All audit events for a single remediation share a `correlation_id` set to the `R
 
 ## Emitting Services
 
-All 9 Go binaries (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage) and HolmesGPT API (Python) emit audit events:
+All 10 Go services (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent) emit audit events:
 
 | Service | Event Prefix | Key Events |
 |---|---|---|
 | **Gateway** | `gateway.*` | `signal.received`, `signal.deduplicated`, `crd.created`, `crd.failed` |
 | **Signal Processing** | `signalprocessing.*` | `enrichment.completed`, `classification.completed`, `phase.transition` |
 | **AI Analysis** | `aianalysis.*` | `investigation.submitted`, `analysis.completed`, `rego.evaluation`, `approval.decision` |
-| **HolmesGPT API** | `aiagent.*` | `enrichment.completed`, `enrichment.failed` |
+| **Kubernaut Agent** | `aiagent.*` | `enrichment.completed`, `enrichment.failed` |
 | **Remediation Orchestrator** | `orchestrator.*` | `lifecycle.created`, `phase.transition`, `child.created`, `timeout` |
 | **Workflow Execution** | `workflowexecution.*` | `selection.completed`, `execution.started`, `execution.completed`, `block.cleared` |
 | **Notification** | `notification.*` | `message.sent`, `message.failed`, `message.acknowledged`, `message.escalated` |

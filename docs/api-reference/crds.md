@@ -4,6 +4,8 @@ Kubernaut API reference for all Custom Resource Definitions.
 
 API Group: `kubernaut.ai/v1alpha1`
 
+!!! tip "Wide output columns"
+    All Kubernaut CRDs include additional printer columns visible with `kubectl get <resource> -o wide`. Key columns include: `PHASE`, `OUTCOME`, `AGE`, plus resource-specific fields like `SEVERITY`, `CONFIDENCE`, `WORKFLOW`, `ASSESSMENT-REASON`, and `DISPLAY-NAME`. Typed enums (e.g., `AssessmentReason`, notification `Type`/`Priority`) use **PascalCase** values. Duration fields use `metav1.Duration` format (e.g., `1h30m`, `5m`).
 
 ## AIAnalysis
 

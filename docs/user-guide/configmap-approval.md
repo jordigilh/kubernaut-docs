@@ -59,9 +59,9 @@ The policy must produce these outputs:
 
 ## Default Behavior
 
-The reference policy (`charts/kubernaut/examples/approval.rego`) implements:
+The reference policy (`charts/kubernaut/files/defaults/approval.rego`) implements:
 
-- **Production environments**: Always require approval (controlled via `kubernaut.ai/environment=production` namespace label)
+- **Production environments**: Always require approval (controlled via `kubernaut.ai/environment=production` namespace label). Environment matching is **case-insensitive** — `Production`, `production`, `PRODUCTION` all match.
 - **Sensitive resources** (Node, StatefulSet): Always require approval regardless of environment
 - **Missing remediation target**: Always require approval (safety default)
 - **Non-production**: Auto-approved unless critical safety conditions are met
@@ -103,7 +103,7 @@ default reason := "Auto-approved (testing mode)"
 
 ```rego
 require_approval if {
-  input.environment == "staging"
+  lower(input.environment) == "staging"
   input.confidence < 0.9
 }
 ```
@@ -130,4 +130,4 @@ The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). 
 
 ## Reference File
 
-A complete reference policy is available in the chart: `charts/kubernaut/examples/approval.rego`
+A complete reference policy is available in the chart: `charts/kubernaut/files/defaults/approval.rego`

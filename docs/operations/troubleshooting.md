@@ -10,6 +10,8 @@ The Orchestrator hasn't picked up the request.
 
 **Check**:
 
+As of v1.2, `kubectl get remediationrequest` / `rr` lists **Phase**, **Outcome**, **Alert**, **RCA Target**, **Workflow**, and **Confidence** by default. `kubectl get rr -owide` adds **Source**, **Signal NS**, **Signal Target**, and **RCA NS**.
+
 ```bash
 # Is the Orchestrator running?
 kubectl get pods -n kubernaut-system -l app=remediationorchestrator-controller
@@ -41,7 +43,7 @@ kubectl logs -n kubernaut-system -l app=signalprocessing-controller --tail=100
 
 ### Stuck in `Analyzing`
 
-AI Analysis is waiting for HolmesGPT.
+AI Analysis is waiting for Kubernaut Agent.
 
 **Check**:
 
@@ -52,12 +54,12 @@ kubectl get aianalysis -n kubernaut-system -o yaml
 # Check session status
 kubectl logs -n kubernaut-system -l app=aianalysis-controller --tail=100 | grep session
 
-# Is HolmesGPT healthy?
-kubectl get pods -n kubernaut-system -l app=holmesgpt-api
-kubectl logs -n kubernaut-system -l app=holmesgpt-api --tail=100
+# Is Kubernaut Agent healthy?
+kubectl get pods -n kubernaut-system -l app=kubernaut-agent
+kubectl logs -n kubernaut-system -l app=kubernaut-agent --tail=100
 ```
 
-**Common causes**: LLM provider unreachable, API key missing, HolmesGPT pod not running, session timeout.
+**Common causes**: LLM provider unreachable, API key missing, Kubernaut Agent pod not running, session timeout.
 
 ### Stuck in `AwaitingApproval`
 
@@ -116,11 +118,15 @@ kubectl get rr -n kubernaut-system
 
 ```bash
 $ kubectl get rr -n kubernaut-system
-NAME                       PHASE     OUTCOME   AGE
-rr-b157a3a9e42f-1c2b5576   Failed              18m
-rr-b157a3a9e42f-1fad7b25   Failed              20m
-rr-b157a3a9e42f-e40b4d97   Blocked             14m
-rr-b157a3a9e42f-efe8bb6b   Failed              16m
+NAME                       PHASE     OUTCOME   ALERT              RCA TARGET                 WORKFLOW                 CONFIDENCE   AGE
+rr-b157a3a9e42f-1c2b5576   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.88         18m
+rr-b157a3a9e42f-1fad7b25   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.85         14m
+rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    —            9m
+rr-b157a3a9e42f-efe8bb6b   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.90         4m
+
+$ kubectl get rr -n kubernaut-system -owide
+NAME                       PHASE     OUTCOME   ALERT              RCA TARGET      WORKFLOW               CONFIDENCE   AGE   SOURCE      SIGNAL NS   SIGNAL TARGET       RCA NS
+rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1   Cordon unhealthy node  —            9m    prometheus  default     Node/worker-1       default
 ```
 
 Inspecting the blocked RR:
@@ -147,7 +153,7 @@ AI Analysis completes but no workflow is selected.
 
 ```bash
 # List available workflows
-curl http://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
+curl https://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
 
 # Check AI analysis results — selected workflow, phase, and human review reason
 kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.phase}{"\n"}{.status.selectedWorkflow}{"\n"}{.status.humanReviewReason}{"\n"}'
@@ -162,8 +168,15 @@ kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCaus
 
 **Check**:
 
+As of v1.2, `kubectl get notificationrequest` shows **TYPE** and **PRIORITY** in **PascalCase** (for example `Completion`, `High`).
+
 ```bash
-# Check NotificationRequest status
+# Tabular status (v1.2 column layout)
+kubectl get notificationrequests -n kubernaut-system
+# NAME                        TYPE         PRIORITY   PHASE   ATTEMPTS   AGE
+# nr-sample-7d9f2             Completion   High       Sent    1          3m
+
+# Full resource YAML
 kubectl get notificationrequests -n kubernaut-system -o yaml
 
 # Check Notification controller logs
@@ -181,13 +194,29 @@ kubectl logs -n kubernaut-system -l app=notification-controller --tail=100
 kubectl get pods -n kubernaut-system -l app=postgresql
 
 # Is DataStorage healthy?
-kubectl exec -n kubernaut-system deploy/datastorage -- curl -s http://localhost:8080/health/ready
+kubectl exec -n kubernaut-system deploy/datastorage -- curl -s http://localhost:8081/readyz
 
 # Check DataStorage logs
 kubectl logs -n kubernaut-system -l app=datastorage --tail=100
 ```
 
 **Common causes**: PostgreSQL pod not running, incorrect credentials, migration not run.
+
+## Certificate rotation (runtime)
+
+At runtime, inter-service **server certificates** and **client CA** bundles are reloaded without necessarily restarting the process:
+
+- **`CertReloader`** -- watches the **server** certificate files and applies updates when the files change.
+- **`CAReloader`** -- watches the **client CA** (trust bundle) and applies updates when the files change.
+
+Both use **fsnotify**-based file watching via **`hotreload.NewFileWatcher`**. On Kubernetes, **Secret** volume mounts are updated **atomically** (symlink “flips” to a new directory), which generates the fsnotify events the reloaders listen for.
+
+| Mode | When material is renewed |
+|------|----------------------------|
+| **Helm hook** (`tls.mode: hook`) | The hook can regenerate certificates if they expire within 30 days, using a check such as `openssl x509 -checkend $((30*86400))` (30 days in seconds) before the next `helm upgrade`. |
+| **cert-manager** (`tls.mode: cert-manager`) | Automatic renewal according to the `Certificate` spec, e.g. **`renewBefore: 720h`** (30 days) with a typical **`duration: 8760h`** (365 days). |
+
+If clients still see `x509` errors after a rotation, ensure pods have picked up the new Secret mount (may require rollout) and that the CA file path matches `tls.interService.caFile`. See also [Configuration Reference -- TLS](../user-guide/configuration.md#tls-and-certificate-management).
 
 ## Webhook TLS Certificate Issues
 

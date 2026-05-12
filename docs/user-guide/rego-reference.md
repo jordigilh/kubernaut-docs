@@ -7,6 +7,9 @@ All policies are deployed as ConfigMaps and support hot-reload. See [Rego Polici
 !!! tip "Writing custom policies"
     Every `input.*` field listed below is available in your Rego rules. The default policies shipped with Kubernaut use only a subset -- you can reference any field to build richer logic tailored to your organization.
 
+!!! info "Case-insensitive matching (v1.2)"
+    Starting with v1.2, environment and severity matching in both workflow discovery filters and approval policies is case-insensitive. The default policies use `lower()` for all comparisons. Custom policies should follow the same pattern to ensure consistent behavior — e.g., `lower(input.environment) == "production"` instead of `input.environment == "production"`.
+
 ---
 
 ## Signal Processing Policy

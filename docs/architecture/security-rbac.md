@@ -72,13 +72,13 @@ See [Installation](../getting-started/installation.md#signal-source-authenticati
 
 Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).
 
-Four services (HolmesGPT API, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
+Four services (Kubernaut Agent, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to `security.istio.io` and `networking.istio.io` resources for service mesh awareness during investigation and remediation.
 
 | Controller | ServiceAccount | CRDs Managed | Additional Access | Notes |
 |---|---|---|---|---|
 | RemediationOrchestrator | `remediationorchestrator-controller` | All 7 child CRDs (full CRUD) | Pods, nodes, events, namespaces, services, deployments, statefulsets, daemonsets, jobs, cronjobs (read) | Broadest permissions -- creates and watches all child CRDs |
 | SignalProcessing | `signalprocessing-controller` | SignalProcessing, RemediationRequest | Pods, services, namespaces, nodes, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, network policies (read); leases (full) | Owner chain resolution and enrichment |
-| AIAnalysis | `aianalysis-controller` | AIAnalysis | Events (create) | Also bound to `holmesgpt-api-client` for HolmesGPT access and `data-storage-client` for DataStorage access |
+| AIAnalysis | `aianalysis-controller` | AIAnalysis | Events (create) | Also bound to `kubernaut-agent-client` for Kubernaut Agent access and `data-storage-client` for DataStorage access |
 | WorkflowExecution | `workflowexecution-controller` | WorkflowExecution | Tekton PipelineRuns (full), TaskRuns (read), Jobs (full), events (create); leases (full) | Creates Jobs and PipelineRuns in the execution namespace. When the ansible engine is enabled, also requires `get` on the AWX API token Secret -- see [Ansible Engine Setup](../user-guide/configuration.md#ansible-engine-awxaap). |
 | EffectivenessMonitor | `effectivenessmonitor-controller` | EffectivenessAssessment, RemediationRequest (read) | Pods, nodes, services, PVCs, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, jobs, cronjobs (read) | Post-remediation health checks |
 | Notification | `notification-controller` | NotificationRequest | Events (create) | Minimal scope |
@@ -92,7 +92,7 @@ If the `view` ClusterRole lacks read permission for a particular resource type (
 
 ## Workflow Execution
 
-Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the `kubernaut-workflows` namespace under the `kubernaut-workflow-runner` ServiceAccount. This is the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.
+Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the `kubernaut-workflows` namespace. By default, workflow executions run with the execution namespace default ServiceAccount. Many deployments bind that default to `kubernaut-workflow-runner`, which carries the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|
@@ -115,12 +115,37 @@ Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in 
 | (core) | `endpoints` | get, list | Check service endpoint health |
 | `batch` | `jobs` | get, list, create, delete | pg_dump/pg_restore Job lifecycle (disk-pressure-emptydir scenario) |
 
-The last four rules were added for production Ansible playbooks (DD-WE-007). In v1.2, per-workflow SA scoping ([#501](https://github.com/jordigilh/kubernaut/issues/501)) will replace the shared ClusterRole with schema-declared RBAC per execution.
+The last four rules were added for production Ansible playbooks (DD-WE-007).
 
 Additionally, a namespace-scoped `workflowexecution-dep-reader` Role grants `get`, `list`, `watch` on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.
 
-!!! info "Per-workflow scoped RBAC"
-    All workflows share the `kubernaut-workflow-runner` ServiceAccount. Per-workflow scoped RBAC (restricting each workflow to only the resources it needs) is planned for v1.2.
+### Per-Workflow ServiceAccount (v1.2)
+
+Starting with v1.2, workflows can declare a dedicated ServiceAccount via the `spec.execution.serviceAccountName` field on the `RemediationWorkflow` CRD. This value is propagated into `WorkflowExecution.spec.serviceAccountName`.
+
+- **Job/Tekton execution**: the service account name is set directly on the created Job or PipelineRun.
+- **Ansible execution**: the WE controller requests a short-lived token via the Kubernetes [TokenRequest API](https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-request-v1/) and injects it into AWX credentials.
+
+This enables least-privilege RBAC per workflow — each SA needs only the permissions required by its specific remediation.
+
+The WE controller's ClusterRole includes the following permissions for TokenRequest:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| (core) | `serviceaccounts` | get | Look up the per-workflow SA |
+| (core) | `serviceaccounts/token` | create | Create short-lived tokens via TokenRequest |
+
+**TTL validation (Ansible path):** The controller requests tokens with a **3600s (1 hour)** TTL by default. When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets `TokenTTLInsufficient` on the WorkflowExecution and emits a warning event (`TokenTTLShortened`).
+
+!!! warning "Cluster-level TTL constraints"
+    The Kubernetes API server flag `--service-account-max-token-expiration` (or OpenShift `ServiceAccountTokenMaxExpiration`) can silently cap token TTLs below the requested duration. If the cap is lower than the workflow execution timeout, Ansible jobs may receive **401 Unauthorized** errors mid-execution. Ensure the cluster-level maximum is at least **3600s** (or greater than your longest workflow execution timeout). Check for `TokenTTLShortened` warning events on WorkflowExecution CRDs if Ansible jobs fail unexpectedly with authentication errors.
+
+**Fallback behavior:** If `serviceAccountName` is not set:
+
+- Job/Tekton run with the execution namespace default ServiceAccount.
+- Ansible falls back to controller in-cluster credentials for AWX credential injection.
+
+For the Ansible executor (#501), TokenRequest tokens replace the controller's own in-cluster SA token for AWX credential injection, ensuring each playbook runs with the minimum permissions declared by the workflow author.
 
 ## OCP Monitoring RBAC
 
@@ -151,7 +176,7 @@ The credential type resolution follows a 6-step process:
 
 The v2 kubeconfig template conditionally includes `certificate-authority-data` when the cluster CA is available, or sets `insecure-skip-tls-verify: true` otherwise. AWX injects the rendered kubeconfig as a temp file and sets `K8S_AUTH_KUBECONFIG` to point to it, ensuring `kubernetes.core` modules use the injected credentials instead of in-cluster config.
 
-Ephemeral credentials are cleaned up after the AWX job completes. See [BR-WE-017](https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md) for the full shared SA model and the planned v1.2 transition to per-workflow ServiceAccounts.
+Ephemeral credentials are cleaned up after the AWX job completes. See [BR-WE-017](https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md) for the full shared SA model. In v1.2, workflows can declare a dedicated ServiceAccount via `spec.execution.serviceAccountName` — see [Per-Workflow ServiceAccount](#per-workflow-serviceaccount-v12) above.
 
 ## Internal Service Communication
 
@@ -166,13 +191,13 @@ DataStorage uses the same TokenReview + SAR pattern as the Gateway. The `data-st
 
 Clients must have `create` permission on `services/data-storage-service` (via the `data-storage-client` ClusterRole). The chart binds every Kubernaut service to this role:
 
-Gateway, SignalProcessing, RemediationOrchestrator, AIAnalysis, WorkflowExecution, EffectivenessMonitor, Notification, AuthWebhook, HolmesGPT API, and DataStorage itself.
+Gateway, SignalProcessing, RemediationOrchestrator, AIAnalysis, WorkflowExecution, EffectivenessMonitor, Notification, AuthWebhook, Kubernaut Agent, and DataStorage itself.
 
-### HolmesGPT API Access
+### Kubernaut Agent Access
 
-The AIAnalysis controller communicates with HolmesGPT API via the `holmesgpt-api-client` ClusterRole, which grants `create` and `get` on `services/holmesgpt-api`.
+The AIAnalysis controller communicates with Kubernaut Agent via the `kubernaut-agent-client` ClusterRole, which grants `create` and `get` on `services/kubernaut-agent`.
 
-HolmesGPT API itself has a broad **read-only** ClusterRole (`holmesgpt-api-investigator`) for its kubectl-based investigation:
+Kubernaut Agent itself has a broad **read-only** ClusterRole (`kubernaut-agent-investigator`) for its kubectl-based investigation:
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|

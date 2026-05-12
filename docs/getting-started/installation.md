@@ -141,7 +141,7 @@ gateway:
 
 ## Pre-Installation
 
-Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's `crds/` directory on first install -- no manual step is needed. For upgrades, see [Upgrading](#upgrading).
+Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's `crds/` directory on first install -- no manual step is needed. For reinstalls, see [Reinstalling](#reinstalling).
 
 ### 1. Create the Namespace
 
@@ -207,7 +207,7 @@ To use custom secret names for database/cache secrets, pass `--set postgresql.au
     With GCP Workload Identity the secret can be omitted.
 
     !!! note "Vertex AI requires an SDK config file"
-        The quickstart `--set kubernautAgent.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-kubernaut-agent.md#google-vertex-ai).
+        The quickstart `--set kubernautAgent.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-kubernaut-agent.md#google-vertex-ai-gemini).
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
@@ -228,6 +228,9 @@ kubectl create secret generic slack-webhook \
 Only required when Slack delivery is configured. When using console-only routing (default), no notification secret is needed. For advanced multi-receiver routing, use `notification.credentials[]` and `notification.routing.content` instead of the Slack shortcut.
 
 ## Install
+
+!!! warning "OCP-specific Helm chart deprecated (v1.4)"
+    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). Deploy OpenShift clusters with the **unified [`kubernaut`](https://quay.io/repository/kubernaut-ai/charts/kubernaut)** chart together with the **Kubernaut Operator** instead of a separate OCP-only chart artifact.
 
 The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
@@ -287,7 +290,7 @@ To pin a specific chart version, add `--version <version>`. Omitting `--version`
     The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
 
 !!! tip "Start with minimal toolsets"
-    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization-pre-v12) for details.
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization) for details.
 
 ### Quickstart
 
@@ -339,9 +342,11 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 See [Signals & Alert Routing](../user-guide/signals.md) for details on scope management.
 
-## Upgrading
+## Reinstalling
 
-See the [Upgrading Guide](../operations/upgrading/index.md) for general upgrade procedures, CRD schema change handling, and version-specific migration notes.
+Kubernaut does not support in-place upgrades. To move to a new version,
+perform a fresh install. See [What's New](../whats-new/index.md) for
+changes between releases.
 
 ## Uninstalling
 

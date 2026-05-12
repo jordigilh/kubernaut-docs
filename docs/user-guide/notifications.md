@@ -15,8 +15,9 @@ Kubernaut sends notifications at key points in the remediation lifecycle: when h
 | **File** | Implemented | Writes notification JSON/YAML to files (E2E/testing) |
 | **Log** | Implemented | Structured JSON Lines to stdout for log aggregation |
 | **Slack** | Implemented | Sends Block Kit messages via Incoming Webhooks |
+| **PagerDuty** | Implemented (v1.4) | Events API v2 delivery with circuit breaker |
+| **Microsoft Teams** | Implemented (v1.4) | Adaptive Card delivery with circuit breaker |
 | Email | Schema-defined | Not yet implemented |
-| Teams | Schema-defined | Not yet implemented |
 | SMS | Schema-defined | Not yet implemented |
 | Webhook | Schema-defined | Not yet implemented |
 
@@ -359,6 +360,99 @@ See [Notification Pipeline: NR Naming Conventions](../architecture/notification.
     ```
 
 Slack notifications will now be sent for any route that uses a `slackConfigs` receiver.
+
+## PagerDuty Setup (v1.4)
+
+PagerDuty delivery uses the [Events API v2](https://developer.pagerduty.com/docs/events-api-v2/overview/) to create incidents from Kubernaut notifications. The adapter includes a circuit breaker for graceful degradation under PagerDuty outages.
+
+### Configuration
+
+1. **Create the routing key secret:**
+
+    ```bash
+    kubectl create secret generic pagerduty-routing-key \
+      --namespace kubernaut-system \
+      --from-literal=routing-key="<your-pagerduty-routing-key>"
+    ```
+
+2. **Add the credential mount in Helm values:**
+
+    ```yaml
+    notification:
+      credentials:
+        - name: pagerduty-routing-key
+          secretName: pagerduty-routing-key
+          secretKey: routing-key
+    ```
+
+3. **Add a PagerDuty receiver to the routing config:**
+
+    ```yaml
+    receivers:
+      - name: pagerduty-critical
+        pagerdutyConfigs:
+          - routingKeyRef:
+              name: pagerduty-routing-key
+            severity: critical
+    ```
+
+4. **Route notifications to PagerDuty:**
+
+    ```yaml
+    route:
+      receiver: default
+      routes:
+        - match:
+            priority: critical
+          receiver: pagerduty-critical
+    ```
+
+## Microsoft Teams Setup (v1.4)
+
+Microsoft Teams delivery sends Adaptive Card messages via incoming webhooks. The adapter includes a circuit breaker matching the pattern used by Slack and PagerDuty.
+
+### Configuration
+
+1. **Create the webhook URL secret:**
+
+    ```bash
+    kubectl create secret generic teams-webhook \
+      --namespace kubernaut-system \
+      --from-literal=webhook-url="<your-teams-webhook-url>"
+    ```
+
+2. **Add the credential mount in Helm values:**
+
+    ```yaml
+    notification:
+      credentials:
+        - name: teams-webhook
+          secretName: teams-webhook
+          secretKey: webhook-url
+    ```
+
+3. **Add a Teams receiver to the routing config:**
+
+    ```yaml
+    receivers:
+      - name: teams-ops
+        teamsConfigs:
+          - webhookRef:
+              name: teams-webhook
+    ```
+
+4. **Route notifications to Teams:**
+
+    ```yaml
+    route:
+      receiver: default
+      routes:
+        - match:
+            type: ManualReview
+          receiver: teams-ops
+    ```
+
+The `teams` channel is available as an audit channel enum value for audit event routing.
 
 ## Next Steps
 

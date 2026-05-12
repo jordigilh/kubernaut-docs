@@ -33,7 +33,7 @@ toolsets:
 ```
 
 !!! tip "Token overhead from unused toolsets"
-    Each enabled toolset adds its full tool schema to every LLM context turn, even if none of its tools are called. This can add ~30% token overhead and bias the LLM toward irrelevant investigation paths. Enable only the toolsets your workload needs. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization-pre-v12) for guidance and an incident-type mapping table.
+    Each enabled toolset adds its full tool schema to every LLM context turn, even if none of its tools are called. This can add ~30% token overhead and bias the LLM toward irrelevant investigation paths. Enable only the toolsets your workload needs. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization) for guidance and an incident-type mapping table.
 
 The Helm chart supports three tiers for providing the SDK config -- see [Configuration Reference: Kubernaut Agent](../user-guide/configuration.md#kubernaut-agent-llm-integration).
 
@@ -46,7 +46,7 @@ The Helm chart supports three tiers for providing the SDK config -- see [Configu
 
 ## Pipeline Overview
 
-In **v1.3** the pipeline uses **two distinct LLM invocations** (new v1.3 architecture, superseding the v1.1 three-phase, single-session design). The sessions do not share model chat memory. The first performs RCA with full tool access; the second performs workflow selection from structured inputs only, then HAPI merges results.
+In **v1.3** the pipeline uses **two distinct LLM invocations** (new v1.3 architecture, superseding the v1.1 three-phase, single-session design). The sessions do not share model chat memory. The first performs RCA with full tool access; the second performs workflow selection from structured inputs only, then Kubernaut Agent merges results.
 
 ```mermaid
 flowchart LR
@@ -82,7 +82,7 @@ The LLM operates as an autonomous agent -- it calls Kubernetes tools iteratively
 
 ## LLM output resilience
 
-HAPI applies several **defense layers** (v1.3) so malformed or partial model output is handled predictably.
+Kubernaut Agent applies several **defense layers** (v1.3) so malformed or partial model output is handled predictably.
 
 | Defense | Purpose |
 |---|---|
@@ -376,7 +376,7 @@ Without Tier 2, this historical insight would be invisible -- the LLM would have
 
 ### Formatted History Warnings
 
-The HolmesGPT Python codebase (not the kubernaut Go repository) includes a `build_remediation_history_section()` module that converts raw history into structured warnings and reasoning guidance when history context is injected into the system prompt:
+The Kubernaut Agent Python codebase (not the kubernaut Go repository) includes a `build_remediation_history_section()` module that converts raw history into structured warnings and reasoning guidance when history context is injected into the system prompt:
 
 | Warning | Trigger | Guidance |
 |---|---|---|
@@ -523,7 +523,7 @@ The LLM cannot determine the root cause or current state. Sets `investigation_ou
 
 ### Outcome 4: No Matching Workflows
 
-The first invocation may identify a root cause, but the **workflow selection** step finds **no** suitable entry in the catalog. In the second invocation, the model completes with the **`submit_result_no_workflow`** sentinel tool, which is how HAPI encodes a **"no matching workflows"** path.
+The first invocation may identify a root cause, but the **workflow selection** step finds **no** suitable entry in the catalog. In the second invocation, the model completes with the **`submit_result_no_workflow`** sentinel tool, which is how Kubernaut Agent encodes a **"no matching workflows"** path.
 
 **Parser routing:** In **`applyOutcomeRouting`**, the response is classified with **`HumanReviewNeeded=true`**, **`HumanReviewReason="no_matching_workflows"`**.
 
@@ -646,9 +646,13 @@ If the Rego policy fails to load or evaluate, the evaluator returns `Degraded=tr
 | `ApprovalRequired=true` | Stores approval context (investigation summary, recommended workflow, evidence, alternatives) | Creates `RemediationApprovalRequest` + approval `NotificationRequest`, transitions RR to `AwaitingApproval` |
 | `ApprovalRequired=false` | Sets `AutoApproved` | Creates `WorkflowExecution` directly, transitions RR to `Executing` |
 
+## Parallel tool execution and batching (v1.4)
+
+When the LLM emits **multiple tool calls in one turn**, the investigation loop executes them **concurrently**, so independent tools finish in parallel instead of strictly one-after-another (#970). The investigation **system prompt** also instructs the model to **batch logically independent tool calls** in a single assistant message whenever safe, trimming LLM ↔ runtime round trips (#971).
+
 ## Tool output limits
 
-HAPI and the HolmesGPT SDK cap tool and audit text so the model context stays bounded (v1.3).
+Kubernaut Agent and the Kubernaut Agent SDK cap tool and audit text so the model context stays bounded (v1.3).
 
 - **`MaxToolOutputSize`:** default **100,000** characters. Excess output is **hard-truncated** and an **`[TRUNCATED]`** suffix is appended to the result passed to the LLM.
 - **`Summarizer.MaybeSummarize`:** optional **LLM-based summarization** of oversize tool output may run **before** a hard cap is applied, when the summarizer is enabled in configuration.

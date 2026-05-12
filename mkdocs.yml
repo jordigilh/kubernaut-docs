@@ -47,8 +47,8 @@ theme:
     - toc.follow
 
 extra:
-  chart_version: "1.3.0"
-  image_tag: "v1.3.0"
+  chart_version: "1.4.0"
+  image_tag: "v1.4.0"
   version:
     provider: mike
     default: latest
@@ -157,6 +157,8 @@ nav:
       - Disconnected Install: operations/disconnected-install.md
   - What's New:
       - whats-new/index.md
+  - What's Next:
+      - whats-next/index.md
   - Compliance:
       - SOC2 Alignment: user-guide/compliance.md
   - FAQ: faq.md

@@ -17,6 +17,11 @@ graph LR
     L1 --> L2 --> L3 --> L4
 ```
 
+<figure markdown="span">
+  ![Trust Ladder](../assets/images/trust-ladder.svg){ width="100%" }
+  <figcaption>Kubernaut Trust Ladder — four levels from observation to full automation</figcaption>
+</figure>
+
 | Level | Name | Human Involvement | Available |
 |---|---|---|---|
 | **1** | Observe | Operator sees what Kubernaut *would* do — no execution | v1.5 (dry-mode) |

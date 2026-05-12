@@ -10,6 +10,11 @@ Rule-based remediation tools improve this for **known, deterministic problems**.
 
 When the same symptom has multiple root causes, or the right fix depends on context the rule can't see, rule-based tools either pick the wrong action or do nothing.
 
+<figure markdown="span">
+  ![Depth of Kubernetes Remediation](../assets/images/domain-depth.svg){ width="100%" }
+  <figcaption>Most tools stop at the surface — Kubernaut investigates the full depth of Kubernetes remediation</figcaption>
+</figure>
+
 ## How Kubernaut Solves It
 
 Kubernaut turns remediation into a declarative, AI-driven, closed-loop process:

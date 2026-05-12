@@ -2,6 +2,11 @@
 
 Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
 
+!!! note "v1.4 configuration highlights"
+    - **Effectiveness Monitor — unified `monitoring` block.** Prometheus and AlertManager connection settings (`url`, enable flags, TLS CA, timeouts, scrape/lookback tuning, OpenShift RBAC bridges, and related options) are **grouped under a single `effectivenessmonitor.monitoring` YAML block**. Values that lived under legacy `effectivenessmonitor.external.*` paths **must migrate** when you upgrade Helm values files.
+    - **Standardized log levels (#875).** Verbosity/logging configuration now uses **the same YAML key naming pattern across services**, so Helm values and bundled ConfigMaps line up consistently when adjusting log noise during install or runtime.
+    - **Kubernaut Agent — camelCase and layout.** KA-mounted YAML migrated to **`camelCase`** fields per ADR-030 plus restructuring under **`runtime`**, **`ai`**, and **`integrations`**, supplied as separate **static** and **hot-reloadable** ConfigMaps. Rewrite existing manifests before rollout — details and samples are in **[Kubernaut Agent SDK config](configmap-kubernaut-agent.md)** (see the **v1.4 breaking YAML changes** warning at the top of that page).
+
 ## Namespace and Resource Labels
 
 Kubernaut uses `kubernaut.ai/*` labels on namespaces and resources to control scope, enrichment, and classification. These labels are the primary way operators integrate their workloads with Kubernaut.
@@ -103,12 +108,14 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 |---|---|---|
 | `kubernautAgent.replicas` | Number of replicas | `1` |
 | `kubernautAgent.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
-| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `kubernaut-agent-sdk-config` ConfigMap. | `""` |
+| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). The chart derives the Kubernetes ConfigMap objects that back the Agent SDK volumes from this file (**v1.4+**: split static + reloadable bundles). | `""` |
 | `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
-Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
+Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). From **v1.4**, the SDK surface is supplied as **two** mounted ConfigMaps: one **static** (read at startup) and one **hot-reloadable** (watched for AI/tool/integration changes — no pod restart required for supported fields — see **[Kubernaut Agent SDK config](configmap-kubernaut-agent.md#hot-reload)**). Helm values and chart templates reflect that split — follow **`values.schema.json`** and [`configmap-kubernaut-agent.md`](configmap-kubernaut-agent.md) when upgrading.
 
-1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `kubernaut-agent-sdk-config` ConfigMap from this content.
+The SDK config bundle is provided in one of two ways:
+
+1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the expected ConfigMaps from this content.
 2. **External ConfigMap**: Set `kubernautAgent.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
 
 One of these two options **must** be provided; the chart will fail at install time if neither is set.
@@ -170,6 +177,8 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | `workflowexecution.workflowNamespace` | Namespace for Job/PipelineRun execution | `kubernaut-workflows` |
 
 ### EffectivenessMonitor
+
+Beginning with **v1.4**, Prometheus and AlertManager knobs are flattened into a single Helm subtree: **`effectivenessmonitor.monitoring`**, replacing **`effectivenessmonitor.external.*`** (see the introductory **v1.4 configuration highlights** callout).
 
 | Parameter | Description | Default |
 |---|---|---|
@@ -442,7 +451,7 @@ These values control mTLS and HTTPS for internal service-to-service calls (for e
 
 | Parameter | Description | Default |
 |---|---|---|
-| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual--external-pki) below. | `hook` |
+| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual-external-pki) below. | `hook` |
 | `tls.interService.certDir` | Directory mounted in pods containing the server cert/key (and related material) for inter-service listeners. | `/etc/tls` |
 | `tls.interService.caFile` | Path to the PEM CA bundle used to **verify peer** certificates (client CA). | `/etc/tls-ca/ca.crt` |
 | `tls.certManager.issuerRef.name` | **Required** when `tls.mode=cert-manager` -- Issuer or ClusterIssuer that signs inter-service and webhook certificates. | -- |
@@ -584,7 +593,7 @@ Understanding which configuration changes take effect live vs which require a re
 | AA approval policy | Yes | fsnotify file watcher | ~60s |
 | Notification credentials | Yes | fsnotify file watcher | ~60s |
 | Notification routing | Yes | fsnotify file watcher | ~60s |
-| Kubernaut Agent config | Yes | file watcher (fsnotify) | ~60s |
+| Kubernaut Agent (**v1.4+**: hot-reloadable ConfigMap bundle; startup-only YAML stays fixed until restart) | Yes (reloadable tier) | fsnotify watcher on watched volume | ~60s |
 | Gateway config | No | Restart required | -- |
 | DataStorage config | No | Restart required | -- |
 | Proactive signal mappings | No | Restart required | -- |

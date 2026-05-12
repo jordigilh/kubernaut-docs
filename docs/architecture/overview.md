@@ -34,6 +34,11 @@ RemediationRequest (Gateway)
 
 All child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
 
+<figure markdown="span">
+  ![Kubernaut Pipeline Detail](../assets/images/pipeline-detail.svg){ width="100%" }
+  <figcaption>Detailed sub-phase breakdown showing all pipeline stages and tools</figcaption>
+</figure>
+
 ### Separation of Concerns
 
 Each service has a single responsibility:

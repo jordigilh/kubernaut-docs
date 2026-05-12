@@ -37,7 +37,7 @@ jobs:
       - name: Fetch generated CRD API reference
         run: |
           curl -fsSL \
-            https://raw.githubusercontent.com/jordigilh/kubernaut/main/docs/generated/crds.md \
+            https://raw.githubusercontent.com/jordigilh/kubernaut/release/v1.4.0/docs/generated/crds.md \
             -o docs/api-reference/crds.md
 
       - name: Configure git for mike
@@ -49,10 +49,10 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
-            VERSION="v1.3"
+            VERSION="v1.4"
           fi
 
-          if [ "$VERSION" = "v1.3" ]; then
+          if [ "$VERSION" = "v1.4" ]; then
             mike deploy --push --update-aliases "$VERSION" latest
           else
             mike deploy --push "$VERSION"

@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1920 1080">
+  <rect width="1920" height="1080" fill="#FFFFFF"/>
+
+  
+  <!-- Chrome -->
+  <line x1="71" y1="0" x2="71" y2="140" stroke="#EE0000" stroke-width="1.5"/>
+  <line x1="71" y1="1008" x2="71" y2="1080" stroke="#EE0000" stroke-width="1.5"/>
+  <text x="85" y="35" font-family="'Red Hat Display', Arial, sans-serif" font-weight="400" font-size="14px" fill="#6A6E73">Kubernaut</text>
+
+
+  <!-- ===== Section marker ===== -->
+
+  <!-- ===== Title ===== -->
+  <text x="139" y="180" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="34px" fill="#151515">Trust Ladder</text>
+  <text x="139" y="212" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="18px" fill="#6A6E73">Build confidence at your own pace — from observation to full automation</text>
+
+  <!-- ===== Ascending arrow hint ===== -->
+  <line x1="120" y1="825" x2="1730" y2="825" stroke="#F0F0F0" stroke-width="1"/>
+  <text x="120" y="842" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="11px" fill="#A3A6A9">Less autonomy</text>
+  <text x="1610" y="842" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="11px" fill="#A3A6A9">Full autonomy →</text>
+
+  <!-- Level 1: Observe -->
+  <rect x="120" y="540" width="380" height="280" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="1.5"/>
+  <rect x="120" y="540" width="380" height="280" rx="8" fill="#F5F5F5" opacity="0.3"/>
+  
+  <!-- Accent bar -->
+  <rect x="120" y="540" width="6" height="280" rx="3" fill="#EE0000"/>
+  
+  <!-- Level number + name -->
+  <text x="430" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L1</text>
+  <text x="144" y="572" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Observe</text>
+  
+  <!-- Version tag -->
+  <text x="144" y="592" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#EE0000">New in v1.5</text>
+  
+  <!-- Description -->
+  <text x="144" y="620" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">See what Kubernaut would do</text>
+  <text x="144" y="638" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">without any execution</text>
+  
+  <!-- Separator -->
+  <line x1="144" y1="652" x2="476" y2="652" stroke="#F0F0F0" stroke-width="1"/>
+  <text x="144" y="675" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">[DRY RUN] notifications with full RCA</text>
+  <text x="144" y="695" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Interactive review via RAR conversation</text>
+  <text x="144" y="715" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Zero-risk starting point</text>
+
+  <!-- Level 2: Selective Trust -->
+  <rect x="530" y="480" width="380" height="340" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="1.5"/>
+  <rect x="530" y="480" width="380" height="340" rx="8" fill="#F5F5F5" opacity="0.3"/>
+  
+  <!-- Accent bar -->
+  <rect x="530" y="480" width="6" height="340" rx="3" fill="#EE0000"/>
+  
+  <!-- Level number + name -->
+  <text x="840" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L2</text>
+  <text x="554" y="512" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Approve</text>
+  
+  <!-- Version tag -->
+  <text x="554" y="532" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  
+  <!-- Description -->
+  <text x="554" y="560" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">Every remediation goes through</text>
+  <text x="554" y="578" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">an approval gate (RAR)</text>
+  
+  <!-- Separator -->
+  <line x1="554" y1="592" x2="886" y2="592" stroke="#F0F0F0" stroke-width="1"/>
+  <text x="554" y="615" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">OPA/Rego policy per context</text>
+  <text x="554" y="635" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Confidence score, RCA, labels visible</text>
+  <text x="554" y="655" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Approve or reject each action</text>
+
+  <!-- Level 3: Approve -->
+  <rect x="940" y="420" width="380" height="400" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="1.5"/>
+  <rect x="940" y="420" width="380" height="400" rx="8" fill="#F5F5F5" opacity="0.3"/>
+  
+  <!-- Accent bar -->
+  <rect x="940" y="420" width="6" height="400" rx="3" fill="#EE0000"/>
+  
+  <!-- Level number + name -->
+  <text x="1250" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L3</text>
+  <text x="964" y="452" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Selective Autonomy</text>
+  
+  <!-- Version tag -->
+  <text x="964" y="472" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  
+  <!-- Description -->
+  <text x="964" y="500" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">Trusted workflows auto-approve;</text>
+  <text x="964" y="518" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">new ones still require approval</text>
+  
+  <!-- Separator -->
+  <line x1="964" y1="532" x2="1296" y2="532" stroke="#F0F0F0" stroke-width="1"/>
+  <text x="964" y="555" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Per-workflow approval overrides</text>
+  <text x="964" y="575" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Effectiveness scores drive graduation</text>
+  <text x="964" y="595" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Organic workflow library growth</text>
+
+  <!-- Level 4: Automate -->
+  <rect x="1350" y="360" width="380" height="460" rx="8" fill="#FFFFFF" stroke="#151515" stroke-width="1.5"/>
+  <rect x="1350" y="360" width="380" height="460" rx="8" fill="#F5F5F5" opacity="0.3"/>
+  
+  <!-- Accent bar -->
+  <rect x="1350" y="360" width="6" height="460" rx="3" fill="#EE0000"/>
+  
+  <!-- Level number + name -->
+  <text x="1660" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L4</text>
+  <text x="1374" y="392" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Full Autonomy</text>
+  
+  <!-- Version tag -->
+  <text x="1374" y="412" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  
+  <!-- Description -->
+  <text x="1374" y="440" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">All workflows execute</text>
+  <text x="1374" y="458" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">without human intervention</text>
+  
+  <!-- Separator -->
+  <line x1="1374" y1="472" x2="1706" y2="472" stroke="#F0F0F0" stroke-width="1"/>
+  <text x="1374" y="495" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">4-dimension effectiveness verification</text>
+  <text x="1374" y="515" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Structured feedback into future investigations</text>
+  <text x="1374" y="535" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#6A6E73">Rego policy rollback to L3 at any time</text>
+
+  <!-- Arrow L1 to L2 -->
+  <line x1="504" y1="680" x2="526" y2="680" stroke="#A3A6A9" stroke-width="1.5"/>
+  <polygon points="526,680 518,675 518,685" fill="#A3A6A9"/>
+
+  <!-- Arrow L2 to L3 -->
+  <line x1="914" y1="680" x2="936" y2="680" stroke="#A3A6A9" stroke-width="1.5"/>
+  <polygon points="936,680 928,675 928,685" fill="#A3A6A9"/>
+
+  <!-- Arrow L3 to L4 -->
+  <line x1="1324" y1="680" x2="1346" y2="680" stroke="#A3A6A9" stroke-width="1.5"/>
+  <polygon points="1346,680 1338,675 1338,685" fill="#A3A6A9"/>
+
+
+</svg>

@@ -6,6 +6,73 @@ Review the changes below to understand what differs from the version you are cur
 
 ---
 
+## v1.4
+
+### Prompt injection defense — Shadow Agent
+
+Kubernaut v1.4 introduces a **fail-closed shadow agent** that evaluates every LLM tool output for prompt injection. Two evaluation layers provide defense-in-depth:
+
+- **Per-step scanning** with random boundary markers and data exfiltration detection
+- **Full-context grounding review** at the RCA-to-workflow boundary that detects distributed "boiling frog" injection attacks
+
+Enforcement modes (`monitor` or `enforce`) control whether suspicious content is logged or triggers a circuit breaker that cancels the investigation. See [Security & RBAC: Shadow Agent](../architecture/security-rbac.md#prompt-injection-defense-shadow-agent-v14) for details.
+
+### Operator workflow overrides
+
+Operators can now **override the AI-selected workflow** when approving a `RemediationApprovalRequest`. The authwebhook validates that the override workflow exists and is active; the orchestrator merges the override with full audit trail. See [Human Approval: Overrides](../user-guide/approval.md#operator-workflow-overrides-v14).
+
+### PagerDuty and Microsoft Teams notifications
+
+Two new delivery channels join Slack:
+
+- **PagerDuty** — Events API v2 delivery with circuit breaker and `CredentialRef` config pattern
+- **Microsoft Teams** — Adaptive Card delivery with circuit breaker
+
+All delivery channels now share a generic circuit breaker pattern. See [Notification Channels](../user-guide/notifications.md#pagerduty-setup-v14).
+
+### NetworkPolicies
+
+12 NetworkPolicy templates with **default-deny** ingress posture are deployed for all Kubernaut services. Configurable CIDRs and per-service toggles via `networkPolicies.<service>.enabled`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14).
+
+### Breaking: Kubernaut Agent config restructured
+
+The Kubernaut Agent configuration has three breaking changes:
+
+1. **camelCase migration** (#908) — All YAML config fields migrated from `snake_case` to `camelCase`
+2. **Three-domain layout** — Config reorganized into `runtime`, `ai`, and `integrations` top-level domains
+3. **Config split** (#916) — Static ConfigMap (mounted at startup) and hot-reloadable ConfigMap (watched at runtime)
+
+See [Kubernaut Agent SDK Config](../user-guide/configmap-kubernaut-agent.md) for the updated reference.
+
+### Parallel tool execution
+
+The [investigation pipeline](../architecture/kubernaut-agent-investigation.md) now executes multiple LLM tool calls concurrently when the model returns batched requests. The investigation prompt also instructs the LLM to batch independent tool calls for reduced round-trips.
+
+### Platform hardening
+
+- **Inconclusive outcome exponential backoff** (#1091) — `Inconclusive` outcomes trigger exponential backoff (1m → 10m cap) and 3-strikes blocking, preventing RR flood for persistent alerts
+- **SA token refresh** (#1055) — Custom token path constructor with 401 cache invalidation for Kubernaut Agent
+- **CRD-aware engine registration** (#868) — Engine registration validates CRD availability; enters degraded status when required CRDs are missing
+- **Session hardening** (#1078) — Panic recovery, two-tier TTL eviction, 25-minute wall-clock investigation timeout
+- **Gateway security hardening** (#673) — 256KB body limits, generic RFC 7807 errors, header stripping, RBAC least-privilege, trusted proxy middleware
+- **Unified monitoring config** (#463) — Prometheus and AlertManager configuration unified into a single `monitoring` block
+- **Standardized log levels** (#875) — Log level configuration standardized across all services
+- **Verdict label rename** (#1077) — `VerdictClean` changed from `"clean"` to `"aligned"`. **Breaking**: update Prometheus queries
+
+### Dry-run mode
+
+When `dryRun` is enabled, the pipeline stops after AI analysis — no WorkflowExecution, RAR, or EA CRDs are created. The RemediationRequest completes with outcome `DryRun`.
+
+### Deprecated: OCP-specific Helm chart
+
+The OCP-specific Helm chart is deprecated (#848). Use the unified `kubernaut` chart with the Kubernaut Operator for OpenShift deployments.
+
+### Removed: Conversation API
+
+Conversational mode for Kubernaut Agent (#592) has been removed from v1.4 and deferred to v1.5 as part of the interactive session model.
+
+---
+
 ## v1.3
 
 ### Kubernaut Agent (formerly HolmesGPT)
@@ -20,7 +87,7 @@ The LLM integration component has been renamed from **HolmesGPT / HAPI** to **Ku
 
 ### Two-invocation investigation architecture
 
-The investigation pipeline has been redesigned from a single three-phase LLM session (v1.1/v1.2) into **two independent LLM invocations**:
+The [investigation pipeline](../architecture/kubernaut-agent-investigation.md) has been redesigned from a single three-phase LLM session (v1.1/v1.2) into **two independent LLM invocations**:
 
 1. **Invocation 1 — Root Cause Analysis**: A full tool-access session that performs live Kubernetes inspection and produces a structured RCA result.
 2. **Invocation 2 — Workflow Selection**: A separate session with no memory of Invocation 1, receiving only structured context fields. Selects a workflow or reports that none is applicable.
@@ -29,17 +96,17 @@ This separation improves reliability and makes each invocation independently tes
 
 ### mTLS and three-port model
 
-All inter-service communication can now be secured with **mutual TLS**. Each service exposes three ports:
+All inter-service communication can now be secured with **mutual TLS**. API-serving components (Gateway, DataStorage, Kubernaut Agent, AIAnalysis) expose three ports:
 
 - **HTTPS serving port** — mTLS-protected API traffic
 - **Health port** — plaintext liveness/readiness probes
 - **Metrics port** — plaintext Prometheus scrape target
 
-Certificate rotation is handled automatically when `tls.mode: hook` is set, or delegated to cert-manager.
+Certificate rotation is handled automatically when `tls.mode: hook` is set, or delegated to cert-manager. See [Monitoring](../operations/monitoring.md) for port details and probe configuration.
 
 ### SDK config hot-reload
 
-The Kubernaut Agent SDK config (LLM model, endpoint, API key, toolset settings) now supports **hot-reload** via `fsnotify`. Active investigations pin a config snapshot at session start, so in-flight work is unaffected. Provider-level settings (`llm.provider`, OAuth2 credentials) still require a pod restart.
+The [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md) (LLM model, endpoint, API key, toolset settings) now supports **hot-reload** via `fsnotify`. Active investigations pin a config snapshot at session start, so in-flight work is unaffected. Provider-level settings (`llm.provider`, OAuth2 credentials) still require a pod restart.
 
 ### Expanded LLM provider support
 
@@ -47,7 +114,7 @@ The Kubernaut Agent now supports **Vertex AI, OpenAI, Anthropic, Bedrock, Ollama
 
 ### Trust Ladder
 
-New operator guide documenting a four-level graduation path for building automation confidence:
+New [operator guide](../user-guide/trust-ladder.md) documenting a four-level graduation path for building automation confidence:
 
 | Level | Name | Description |
 |---|---|---|
@@ -62,13 +129,27 @@ New operator guide documenting a four-level graduation path for building automat
 - Configurable `connectionTimeout`, `prometheusLookback`, and `scrapeInterval`
 - Clarified stabilization window semantics (EM-internal vs RO-configured `EA.spec`)
 
+See [Effectiveness](../user-guide/effectiveness.md) for configuration details.
+
 ### Notification coverage
 
-Block reasons and terminal failure states now produce notifications (BR-ORCH-036), closing gaps where operators were not informed of remediation failures.
+Block reasons and terminal failure states now produce [notifications](../user-guide/notifications.md) (BR-ORCH-036), closing gaps where operators were not informed of remediation failures.
+
+### Prometheus metric rename
+
+Kubernaut Agent metrics have been renamed from the legacy `holmesgpt_*` namespace to `aiagent_api_*`. Update any Prometheus queries, alerting rules, or dashboards that reference the old metric names. See [Monitoring](../operations/monitoring.md) for the current metric reference.
+
+### New notification types
+
+v1.3 introduces additional notification types that may require [routing configuration](../user-guide/notifications.md) updates:
+
+- **Escalation** notifications for trust-ladder escalation events
+- **StatusUpdate** notifications for transient block conditions
+- **ManualReview** notifications now split by review-source for finer routing control
 
 ### Data persistence
 
-Comprehensive schema documentation rewritten from the live v1.3 database, including enrichment tables, metric baselines, and updated entity-relationship diagrams.
+Comprehensive [schema documentation](../architecture/data-persistence.md) rewritten from the live v1.3 database, including enrichment tables, metric baselines, and updated entity-relationship diagrams.
 
 ### Feature enrichments and metrics
 
@@ -96,7 +177,7 @@ Updated data access patterns, audit event documentation, and monitoring metric n
 
 ### Signal Processing and Gateway
 
-Rego policy entrypoint corrections, gateway label contract updates, and HAPI Tier-1 semantics fixes.
+Rego policy entrypoint corrections, gateway label contract updates, and investigation tier-1 semantics fixes.
 
 ---
 

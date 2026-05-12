@@ -6,7 +6,7 @@ In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt
 
 ## Health Checks
 
-**v1.3+ (three-port components):** Gateway, DataStorage, HolmesGPT API, Kubernaut Agent, and the AIAnalysis controller split traffic by port: **8080** (primary API; **HTTPS** when inter-service TLS is enabled), **8081** (health only -- **plain HTTP**), and **9090** (`/metrics` -- **plain HTTP**). Probes use **8081** with `GET /healthz` (liveness) and `GET /readyz` (readiness). **`/livez` is not a registered path** (do not use it in probes or docs).
+**v1.3+ (three-port components):** Gateway, DataStorage, Kubernaut Agent, and the AIAnalysis controller split traffic by port: **8080** (primary API; **HTTPS** when inter-service TLS is enabled), **8081** (health only -- **plain HTTP**), and **9090** (`/metrics` -- **plain HTTP**). Probes use **8081** with `GET /healthz` (liveness) and `GET /readyz` (readiness). **`/livez` is not a registered path** (do not use it in probes or docs).
 
 | Service Type | Liveness | Readiness | Port | Notes |
 |---|---|---|---|---|

@@ -73,6 +73,10 @@ Each completed assessment is classified with an **AssessmentReason** (PascalCase
 | `AlertDecayTimeout` | Alert decay handling exceeded the time budget. |
 | `Unrecoverable` | Assessment cannot proceed (e.g., dependencies unavailable after retries, target gone). |
 
+### `dryRun`, `CompletedWithoutVerification`, and false-alarm paths (v1.4)
+
+When **`dryRun`** is enabled on the remediation path, the pipeline **ends after AI analysis**: it does **not** create **`WorkflowExecution`**, **`RemediationApprovalRequest`**, or **`EffectivenessAssessment`** resources. The Remediation Request finishes with outcome **`DryRun`**. Conditional handling ties this early exit to **`CompletedWithoutVerification`** in the EA / verification policy (#736). The **false-alarm remediation** branch follows the same rule — with **`dryRun`**, no downstream execution or effectiveness CRDs are created (#712).
+
 ## Timing Model
 
 ```mermaid
@@ -248,11 +252,13 @@ The RO uses `DeriveOutcomeFromEA` (post-verification) with this logic:
 - **AlertAssessed=false** (AlertManager unavailable) → **Remediated** (fail-open; **not** Inconclusive).
 - **AlertManager disabled** in the EffectivenessMonitor config: **AlertAssessed=true**, **AlertScore=nil** → **Remediated**.
 
+**Repeated Inconclusive backoff (v1.4):** When the RR outcome resolves to **Inconclusive** repeatedly, the Orchestrator applies **exponential backoff** with delays **1m → 2m → 4m → 8m** (capped at **10m**) and **three-strikes** blocking after sustained inconclusive verdicts. This dampens RR churn when an alert stubbornly refuses to converge (#1091).
+
 ## Spec hash: root owner vs direct resource (v1.3) {: #spec-hash-root-owner-vs-direct-resource-v13 }
 
 **Effectiveness (EM) path:** The **generic enricher** computes the canonical spec hash on the **direct remediation target** resource.
 
-**Investigation (HAPI) path:** The `get_namespaced_resource_context` tool resolves the **owner chain to the root owner first**, then computes `specHash` for that **root** resource. This keeps remediation history and configuration fingerprints aligned with the stable workload (e.g., Deployment) rather than an intermediate object.
+**Investigation (Kubernaut Agent) path:** The `get_namespaced_resource_context` tool resolves the **owner chain to the root owner first**, then computes `specHash` for that **root** resource. This keeps remediation history and configuration fingerprints aligned with the stable workload (e.g., Deployment) rather than an intermediate object.
 
 ## Feedback Loop
 

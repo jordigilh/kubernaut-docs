@@ -2,14 +2,70 @@
 
 The Kubernaut Agent reads its LLM configuration from an **SDK config** ConfigMap. This page documents the schema, provisioning methods, and provider-specific examples.
 
+!!! warning "v1.4: breaking YAML changes for the Kubernaut Agent"
+    **CamelCase migration (ADR-030).** Every field in KA-facing YAML configs now uses **`camelCase`**. Older **`snake_case`** keys (`api_key`, `timeout_seconds`, `mcp_servers`, `prometheus_url`, and similar) **must be renamed** — existing ConfigMaps fail validation until updated.
+
+    **Three top-level domains.** Configuration is reorganized under **`runtime`**, **`ai`**, and **`integrations`**:
+
+    - **`runtime`** — operational/process settings (**`server`** and related knobs are nested here).
+    - **`ai`** — LLM/provider options (for example **`llm`** blocks live under **`ai`**).
+    - **`integrations`** — external surfaces (**`tools`** / toolsets and **`mcp_servers`** equivalents are nested here).
+
+    **Two ConfigMaps.** KA consumes a **static** ConfigMap mounted at **pod startup** (bootstrap and fields that cannot change safely at runtime) and a separate **hot-reloadable** ConfigMap **watched at runtime**. Edits to AI model, tooling, MCP, and other supported fields on the reloadable bundle take effect **without restarting the pod** (subject to watcher sync latency — see [Hot-Reload](#hot-reload)).
+
+    ### Before vs after (illustrative)
+
+    **Before (< v1.4, flat layout + snake_case):**
+
+    ```yaml
+    llm:
+      provider: openai
+      model: gpt-4o
+      timeout_seconds: 120
+      max_retries: 3
+
+    toolsets:
+      prometheus/metrics:
+        enabled: true
+        config:
+          prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+
+    mcp_servers: {}
+    ```
+
+    **After (v1.4, three domains + camelCase):**
+
+    ```yaml
+    runtime:
+      server: {}
+
+    ai:
+      llm:
+        provider: openai
+        model: gpt-4o
+        timeoutSeconds: 120
+        maxRetries: 3
+
+    integrations:
+      tools:
+        prometheus/metrics:
+          enabled: true
+          config:
+            prometheusUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+      mcpServers: {}
+    ```
+
+    Regenerate manifests from **`values.schema.json`** and the canonical chart examples when upgrading Helm releases — do not partially rename keys.
+
 ## Overview
 
 | Property | Value |
 |---|---|
-| ConfigMap name | `kubernaut-agent-sdk-config` |
-| Key | `sdk-config.yaml` |
-| Mount path | `/etc/kubernaut-agent/sdk/` |
-| Required | Yes — chart fails at install if no LLM configuration is provided |
+| Historical ConfigMap (**&lt; v1.4**) | `kubernaut-agent-sdk-config` with key `sdk-config.yaml` mounted under `/etc/kubernaut-agent/sdk/` |
+| v1.4+ manifests | Helm renders **paired** volumes: a **static** ConfigMap (startup) plus a **hot-reloadable** ConfigMap (runtime watcher); exact metadata keys and directories are defined alongside **`values.schema.json`** in the shipped chart templates — align upgrades with release examples instead of renaming keys ad hoc |
+| Required | Yes — chart fails at install when LLM / SDK prerequisites are missing |
+
+Re-read the **v1.4** upgrade warning at the top of this page before touching live manifests.
 
 ## Provisioning
 
@@ -250,7 +306,9 @@ The Secret is marked `optional: true` — the agent starts without it but all LL
 
 ## Hot-Reload
 
-The SDK config supports hot-reload. Changes to the ConfigMap are detected via an fsnotify file watcher (~60s kubelet sync delay). No pod restart required for most fields.
+From **v1.4** onward the agent watches only the **hot-reloadable** ConfigMap bundle; startup-only YAML remains on the **static** ConfigMap. On prior releases this page described a single mounted SDK bundle — treat AI/tool MCP fields as residing on the watched volume unless your chart splits them explicitly.
+
+Reloadable changes are detected via an **fsnotify** file watcher (**~60s** kubelet ConfigMap sync delay). No pod restart is required for most fields on that bundle.
 
 **Restart-required fields** (changes are rejected with a warning log):
 

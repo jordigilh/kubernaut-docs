@@ -5,6 +5,9 @@
 
 The Workflow Execution controller runs remediation workflows via **Kubernetes Jobs**, **Tekton Pipelines**, or **Ansible (AWX/AAP)**. It manages spec validation, dependency resolution, cooldown enforcement, deterministic locking, and failure reporting.
 
+!!! note "CRD-aware engine registration (v1.4)"
+    Engine registration verifies that **required CRDs** exist for each backend (Job, Tekton, Ansible/WF). When mandatory CRDs are missing, registration reports **degraded** status rather than behaving as if the engine is fully available (#868).
+
 ## CRD Specification
 
 ### Spec (Immutable)

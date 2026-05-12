@@ -5392,7 +5392,7 @@
 AIAnalysis represents an immutable event (AI investigation).
 Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 - Audit trail integrity (AI investigation matches original RCA request)
-- No tampering with RCA targets post-HAPI validation
+- No tampering with RCA targets post-KA validation
 - No workflow selection modification after AI recommendation</p>
 <p>To re-analyze, delete and recreate the AIAnalysis CRD.</p>
 <p><em>Appears in:</em>
@@ -5514,12 +5514,12 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>needsHumanReview</code></td>
 <td><em>boolean</em></td>
-<td>Set by HAPI when AI cannot produce reliable result<br />True if human review required (HAPI decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.</td>
+<td>Set by Kubernaut Agent when AI cannot produce reliable result<br />True if human review required (KA decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.</td>
 </tr>
 <tr>
 <td><code>humanReviewReason</code></td>
 <td><em>string</em></td>
-<td>Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts</td>
+<td>Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to KA's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts</td>
 </tr>
 <tr>
 <td><code>alignmentVerdict</code></td>
@@ -5549,7 +5549,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>validationAttemptsHistory</code></td>
 <td><em><a href="#validationattempt">ValidationAttempt</a> array</em></td>
-<td>ValidationAttemptsHistory contains complete history of all HAPI validation attempts<br />Per HAPI retries up to 3 times with LLM self-correction<br />This field provides audit trail for operator notifications and debugging</td>
+<td>ValidationAttemptsHistory contains complete history of all KA validation attempts<br />Per KA retries up to 3 times with LLM self-correction<br />This field provides audit trail for operator notifications and debugging</td>
 </tr>
 <tr>
 <td><code>degradedMode</code></td>
@@ -5569,12 +5569,12 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>investigationSession</code></td>
 <td><em><a href="#investigationsession">InvestigationSession</a></em></td>
-<td>Tracks the async submit/poll session with HAPI<br />InvestigationSession tracks the async HAPI session for submit/poll pattern</td>
+<td>Tracks the async submit/poll session with Kubernaut Agent<br />InvestigationSession tracks the async KA session for submit/poll pattern</td>
 </tr>
 <tr>
 <td><code>postRCAContext</code></td>
 <td><em><a href="#postrcacontext">PostRCAContext</a></em></td>
-<td>Runtime-computed cluster characteristics from HAPI<br />PostRCAContext holds data computed by HAPI after RCA (e.g., DetectedLabels).<br />Immutable once set — use CEL validation on the PostRCAContext type.</td>
+<td>Runtime-computed cluster characteristics from Kubernaut Agent<br />PostRCAContext holds data computed by Kubernaut Agent after RCA (e.g., DetectedLabels).<br />Immutable once set — use CEL validation on the PostRCAContext type.</td>
 </tr>
 <tr>
 <td><code>conditions</code></td>
@@ -6599,7 +6599,7 @@ Immutability is enforced by CEL validation (self == oldSelf) to prevent tamperin
 <tr>
 <td><code>remediationTarget</code></td>
 <td><em><a href="#targetresource">TargetResource</a></em></td>
-<td>RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.RemediationTarget (from HAPI RCA resolution).<br />Used by: spec hash computation, drift detection .</td>
+<td>RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.RemediationTarget (from KA RCA resolution).<br />Used by: spec hash computation, drift detection .</td>
 </tr>
 <tr>
 <td><code>config</code></td>
@@ -7009,9 +7009,9 @@ Lightweight summary for both Tekton PipelineRun and K8s Job backends</p>
 </tbody>
 </table>
 <h3 id="investigationsession">InvestigationSession<a class="headerlink" href="#investigationsession" title="Permanent link">&para;</a></h3>
-<p>InvestigationSession tracks the async HAPI session lifecycle.
+<p>InvestigationSession tracks the async Kubernaut Agent session lifecycle.
  AA controller session tracking
- Session regeneration on 404 (HAPI restart)</p>
+ Session regeneration on 404 (KA restart)</p>
 <p><em>Appears in:</em>
 - <a href="#aianalysisstatus">AIAnalysisStatus</a></p>
 <table>
@@ -7026,7 +7026,7 @@ Lightweight summary for both Tekton PipelineRun and K8s Job backends</p>
 <tr>
 <td><code>id</code></td>
 <td><em>string</em></td>
-<td>Session ID returned by HAPI on submit (cleared on session loss)</td>
+<td>Session ID returned by Kubernaut Agent on submit (cleared on session loss)</td>
 </tr>
 <tr>
 <td><code>generation</code></td>
@@ -7606,9 +7606,9 @@ perfect audit trail.</p>
 </tbody>
 </table>
 <h3 id="postrcacontext">PostRCAContext<a class="headerlink" href="#postrcacontext" title="Permanent link">&para;</a></h3>
-<p>PostRCAContext holds data computed by HAPI after the RCA phase.
- DetectedLabels are computed at runtime by HAPI's LabelDetector
-and returned in the HAPI response for storage in the AIAnalysis status.
+<p>PostRCAContext holds data computed by Kubernaut Agent after the RCA phase.
+ DetectedLabels are computed at runtime by KA's LabelDetector
+and returned in the KA response for storage in the AIAnalysis status.
 This data is used by Rego policies for approval gating (e.g., stateful
 workload detection) and is immutable once set.</p>
 <p><em>Appears in:</em>
@@ -7625,7 +7625,7 @@ workload detection) and is immutable once set.</p>
 <tr>
 <td><code>detectedLabels</code></td>
 <td><em>DetectedLabels</em></td>
-<td>DetectedLabels contains cluster characteristics computed by HAPI's<br />LabelDetector during get_namespaced_resource_context or get_cluster_resource_context tool invocations.</td>
+<td>DetectedLabels contains cluster characteristics computed by KA's<br />LabelDetector during get_namespaced_resource_context or get_cluster_resource_context tool invocations.</td>
 </tr>
 <tr>
 <td><code>setAt</code></td>
@@ -8954,7 +8954,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>humanReviewReason</code></td>
 <td><em>string</em></td>
-<td>HumanReviewReason from HAPI when needs_human_review=true .</td>
+<td>HumanReviewReason from Kubernaut Agent when needs_human_review=true .</td>
 </tr>
 <tr>
 <td><code>rootCauseAnalysis</code></td>
@@ -9022,7 +9022,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>severity</code></td>
 <td><em>string</em></td>
-<td>Severity determined by RCA <br /> Aligned with HAPI/workflow catalog (critical, high, medium, low, unknown)</td>
+<td>Severity determined by RCA <br /> Aligned with KA/workflow catalog (critical, high, medium, low, unknown)</td>
 </tr>
 <tr>
 <td><code>signalType</code></td>
@@ -9063,7 +9063,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>actionType</code></td>
 <td><em>string</em></td>
-<td>Action type from taxonomy (e.g., ScaleReplicas, RestartPod).<br />Propagated from HAPI three-step discovery protocol to RO audit events.</td>
+<td>Action type from taxonomy (e.g., ScaleReplicas, RestartPod).<br />Propagated from KA three-step discovery protocol to RO audit events.</td>
 </tr>
 <tr>
 <td><code>version</code></td>
@@ -9144,7 +9144,7 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <tr>
 <td><code>signalMode</code></td>
 <td><em>string</em></td>
-<td>SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Prompt Strategy<br />Copied from SignalProcessing status by RemediationOrchestrator.<br />Used by HAPI to switch investigation prompt (RCA vs. predict &amp; prevent).</td>
+<td>SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Prompt Strategy<br />Copied from SignalProcessing status by RemediationOrchestrator.<br />Used by Kubernaut Agent to switch investigation prompt (RCA vs. predict &amp; prevent).</td>
 </tr>
 <tr>
 <td><code>environment</code></td>
@@ -9423,7 +9423,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>severity</code></td>
 <td><em>string</em></td>
-<td>Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "medium", "low", or "unknown"<br />Aligned with HAPI/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.</td>
+<td>Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "medium", "low", or "unknown"<br />Aligned with KA/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.</td>
 </tr>
 <tr>
 <td><code>policyHash</code></td>
@@ -9438,7 +9438,7 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 <tr>
 <td><code>signalName</code></td>
 <td><em>string</em></td>
-<td>SignalName is the normalized signal name after proactive-to-base mapping.<br /> Signal Name Normalization<br />For proactive signals (e.g., "PredictedOOMKill"), this is the base name (e.g., "OOMKilled").<br />For reactive signals, this matches Spec.Signal.Name unchanged.<br />This is the AUTHORITATIVE signal name for all downstream consumers (RO, AA, HAPI).</td>
+<td>SignalName is the normalized signal name after proactive-to-base mapping.<br /> Signal Name Normalization<br />For proactive signals (e.g., "PredictedOOMKill"), this is the base name (e.g., "OOMKilled").<br />For reactive signals, this matches Spec.Signal.Name unchanged.<br />This is the AUTHORITATIVE signal name for all downstream consumers (RO, AA, KA).</td>
 </tr>
 <tr>
 <td><code>sourceSignalName</code></td>
@@ -9592,8 +9592,8 @@ Supports both global workflow timeout and per-phase timeouts for granular contro
 </tbody>
 </table>
 <h3 id="validationattempt">ValidationAttempt<a class="headerlink" href="#validationattempt" title="Permanent link">&para;</a></h3>
-<p>ValidationAttempt contains details of a single HAPI validation attempt
-Per HAPI retries up to 3 times with LLM self-correction
+<p>ValidationAttempt contains details of a single KA validation attempt
+Per KA retries up to 3 times with LLM self-correction
 Each attempt feeds validation errors back to the LLM for correction</p>
 <p><em>Appears in:</em>
 - <a href="#aianalysisstatus">AIAnalysisStatus</a></p>
@@ -9758,7 +9758,7 @@ Enables programmatic routing (e.g., inconclusive outcomes -&gt; escalation chann
 WorkflowExecution represents an immutable event (workflow execution attempt).
 Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 - Audit trail integrity (executed spec matches approved spec)
-- No parameter tampering after HAPI validation
+- No parameter tampering after KA validation
 - No target resource changes after routing decisions</p>
 <p>To change execution parameters, delete and recreate the WorkflowExecution.</p>
 <p><em>Appears in:</em>

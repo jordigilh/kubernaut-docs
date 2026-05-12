@@ -2,246 +2,238 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/contributing/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/faq/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/api-reference/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/api-reference/crds/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/api-reference/datastorage-api/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/api-reference/kubernaut-agent-api/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/ai-analysis/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/async-propagation/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/audit-pipeline/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/data-persistence/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/effectiveness/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/gateway/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/kubernaut-agent-investigation/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/notification/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/overview/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/remediation-routing/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/security-rbac/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/signal-processing/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/workflow-execution/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/architecture/workflow-selection/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/design-decisions/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/aiops-landscape/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/architecture-overview/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/installation/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/market-comparison/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/quickstart/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/getting-started/why-kubernaut/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/disconnected-install/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/event-exporter/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/monitoring/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/troubleshooting/</loc>
-         <lastmod>2026-04-25</lastmod>
-    </url>
-    <url>
-         <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/upgrading/</loc>
-         <lastmod>2026-04-25</lastmod>
-    </url>
-    <url>
-         <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/upgrading/1.1-to-1.2/</loc>
-         <lastmod>2026-04-25</lastmod>
-    </url>
-    <url>
-         <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/operations/upgrading/1.2-to-1.3/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/use-cases/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/use-cases/llm-judgment-approval-gate/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/use-cases/multi-path-remediation/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/use-cases/remediation-history-feedback/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/approval/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/audit-and-observability/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/compliance/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/concepts/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/configmap-approval/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/configmap-kubernaut-agent/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/configmap-notification/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/configmap-policies/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/configuration/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/data-lifecycle/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/effectiveness/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/notifications/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/policies/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/rego-reference/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/signals/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/trust-ladder/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/workflow-authoring/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/user-guide/workflows/</loc>
-         <lastmod>2026-04-25</lastmod>
+         <lastmod>2026-05-12</lastmod>
+    </url>
+    <url>
+         <loc>https://jordigilh.github.io/kubernaut-docs/v1.3/whats-new/</loc>
+         <lastmod>2026-05-12</lastmod>
     </url>
 </urlset>

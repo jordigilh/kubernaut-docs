@@ -13,9 +13,9 @@ Approval is determined by a **user-replaceable Rego policy** evaluated during th
 
 The shipped `approval.rego` makes decisions based on **environment**, **remediation target presence**, and **sensitive resource kinds**:
 
-- **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence
+- **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence. Environment matching is **case-insensitive** (e.g., `Production`, `production`, `PRODUCTION` all match).
 - **Sensitive resource kinds** (Node, StatefulSet) — always require approval, regardless of environment
-- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present and the resource kind is not sensitive
+- **Non-production namespaces** (`staging`, `development`, `qa`, `test`) — auto-approved when `remediation_target` is present and the resource kind is not sensitive. Environment matching is case-insensitive.
 - **Missing remediation target** — always requires approval (default-deny safety per ADR-055)
 
 When approval is required, a `RemediationApprovalRequest` CRD is created and the remediation enters the `AwaitingApproval` phase.
@@ -256,10 +256,10 @@ The approval decision is governed by the `aianalysis.approval` Rego policy. The 
 | `confidence` | AI Analysis result | LLM confidence score (0.0--1.0) |
 | `confidence_threshold` | Helm values (default: 0.8) | Auto-approval threshold |
 | `environment` | Signal Processing classification | `production`, `staging`, `development`, `qa`, `test` |
-| `detected_labels` | HAPI label detection | Infrastructure labels (e.g., `stateful`, `gitOpsManaged`) |
-| `failed_detections` | HAPI label detection | Labels where detection failed |
+| `detected_labels` | Kubernaut Agent label detection | Infrastructure labels (e.g., `stateful`, `gitOpsManaged`) |
+| `failed_detections` | Kubernaut Agent label detection | Labels where detection failed |
 | `remediation_target` | AI Analysis RCA result | Target resource `kind` and `name` |
-| `warnings` | HAPI investigation | Non-fatal investigation warnings |
+| `warnings` | Kubernaut Agent investigation | Non-fatal investigation warnings |
 
 The built-in policy behavior:
 

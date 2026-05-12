@@ -85,7 +85,7 @@ Most remediation tools operate in open loop: trigger, execute, done. Kubernaut c
 
 After every remediation, the [effectiveness monitor](../user-guide/effectiveness.md) evaluates whether the fix worked across four dimensions: pod health, alert resolution, metrics improvement, and spec drift detection. The result is an effectiveness score attached to the remediation record.
 
-When the same resource triggers a future alert, HolmesGPT receives the remediation history — including what was tried before and whether it worked. The LLM uses this to avoid repeating failed approaches and to select alternatives.
+When the same resource triggers a future alert, Kubernaut Agent receives the remediation history — including what was tried before and whether it worked. The LLM uses this to avoid repeating failed approaches and to select alternatives.
 
 This means Kubernaut gets better at remediating a specific resource over time, without any manual tuning of rules or weights.
 

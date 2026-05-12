@@ -33,7 +33,7 @@ The DataStorage scoring algorithm combines detected label boosts, custom label b
 
 - DetectedLabels (highest impact on ranking)
 - CustomLabels (operator-intent boost)
-- Mandatory label filters (severity, environment, component, priority) -- workflows that don't match are excluded entirely
+- Mandatory label filters: `severity`, `environment`, and `component` are string arrays in the API (`[]string` with `minItems: 1`); `priority` is a single string -- workflows that don't match are excluded entirely
 
 ### Step 3: Workflow Selection
 
@@ -218,9 +218,28 @@ Custom label matches add to the raw score (before normalization to 0-1). See [Wo
 
 This is a **tiebreaker/ordering influence**, not an override. It won't overcome a strong semantic mismatch in descriptions -- if the LLM strongly prefers a lower-ranked workflow based on its `whenToUse`, it will still pick it.
 
+## Per-Workflow ServiceAccount
+
+The optional `spec.execution.serviceAccountName` field on a `RemediationWorkflow` lets each workflow run with its own least-privilege ServiceAccount instead of the execution namespace default.
+
+```yaml
+spec:
+  execution:
+    serviceAccountName: my-workflow-sa
+    engine: job
+    bundle: registry.example.com/workflows/my-workflow@sha256:...
+```
+
+The ServiceAccount must exist in the `kubernaut-workflows` namespace (or the configured execution namespace) with only the RBAC permissions required by the workflow. If `serviceAccountName` is omitted:
+
+- Job/Tekton use the execution namespace default ServiceAccount.
+- Ansible falls back to controller in-cluster credentials unless `WorkflowExecution.spec.serviceAccountName` is set.
+
+TokenRequest is used by the Ansible path for AWX credential injection when the workflow specifies a service account. See [Security & RBAC -- Per-Workflow ServiceAccount](../architecture/security-rbac.md#per-workflow-serviceaccount-v12) for scope, TTL validation, and fallback behavior.
+
 ## Standard Resource Parameters
 
-Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **HAPI (HolmesGPT API)** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
+Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **Kubernaut Agent** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.
 
 | Parameter | Type | Description |
 |---|---|---|
@@ -230,7 +249,7 @@ Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that id
 
 ### Declaring Standard Parameters in Workflow Schemas
 
-Workflows that operate on the target resource should declare these as **required** parameters in their schema. HAPI validates that all required parameters in the workflow schema are satisfied during its workflow response validation step.
+Workflows that operate on the target resource should declare these as **required** parameters in their schema. Kubernaut Agent validates that all required parameters in the workflow schema are satisfied during its workflow response validation step.
 
 ```yaml
 parameters:
@@ -314,10 +333,11 @@ spec:
   labels:
     severity: [critical, high]
     environment: ["*"]
-    component: deployment
+    component: [deployment]
     priority: "*"
   customLabels:
     risk_tolerance: "high"
+  serviceAccountName: restart-pods-sa
   execution:
     engine: job
     bundle: registry.example.com/workflows/restart-pods@sha256:abc123...
@@ -325,15 +345,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -358,7 +378,7 @@ spec:
   labels:
     severity: [critical, high]
     environment: ["*"]
-    component: deployment
+    component: [deployment]
     priority: "*"
   customLabels:
     risk_tolerance: "low"
@@ -369,15 +389,15 @@ spec:
     - name: TARGET_RESOURCE_NAME
       type: string
       required: true
-      description: "Name of the root managing resource (HAPI-injected)"
+      description: "Name of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_KIND
       type: string
       required: true
-      description: "Kind of the root managing resource (HAPI-injected)"
+      description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
       required: true
-      description: "Namespace of the root managing resource (HAPI-injected)"
+      description: "Namespace of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -427,7 +447,7 @@ The ranking and the descriptions **reinforce each other**:
 2. **Check DataStorage ranking**: Query the DataStorage API directly to see how workflows are scored:
 
     ```bash
-    curl -s "http://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
+    curl -s "https://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
     ```
 
     If the wrong workflow is ranked higher, check label matching.
@@ -484,7 +504,7 @@ This is expected behavior in some cases. The LLM makes the final decision based 
 | Authoring Decision | Affects Step | Impact |
 |---|---|---|
 | Action type `whenToUse` | Step 1 (action type selection) | Determines which action category the LLM picks |
-| Mandatory labels (severity, environment, component, priority) | Step 2 (filtering) | Excludes workflows that don't match -- they never reach the LLM |
+| Mandatory labels (`severity`, `environment`, `component` as `[]string` with `minItems: 1`; `priority` as string) | Step 2 (filtering) | Excludes workflows that don't match -- they never reach the LLM |
 | DetectedLabels | Step 2 (scoring) | Highest-weight infrastructure boost |
 | CustomLabels | Step 2 (scoring) | Operator-intent boost |
 | Workflow `whenToUse` / `whenNotToUse` | Step 3 (LLM selection) | The LLM's primary decision input -- must reinforce the ranking |

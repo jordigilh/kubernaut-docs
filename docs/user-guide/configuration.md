@@ -97,19 +97,19 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `datastorage.resources` | CPU/memory requests and limits | See `values.yaml` |
 | `datastorage.service.type` | Kubernetes Service type | `ClusterIP` |
 
-### HolmesGPT API (LLM Integration)
+### Kubernaut Agent (LLM integration)
 
 | Parameter | Description | Default |
 |---|---|---|
-| `holmesgptApi.replicas` | Number of replicas | `1` |
-| `holmesgptApi.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
-| `holmesgptApi.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `holmesgpt-sdk-config` ConfigMap. | `""` |
-| `holmesgptApi.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
+| `kubernautAgent.replicas` | Number of replicas | `1` |
+| `kubernautAgent.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
+| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `kubernaut-agent-sdk-config` ConfigMap. | `""` |
+| `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
-HAPI uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
+Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
 
-1. **Inline content** (recommended): Provide full SDK config content via `--set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `holmesgpt-sdk-config` ConfigMap from this content.
-2. **External ConfigMap**: Set `holmesgptApi.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
+1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `kubernaut-agent-sdk-config` ConfigMap from this content.
+2. **External ConfigMap**: Set `kubernautAgent.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
 
 One of these two options **must** be provided; the chart will fail at install time if neither is set.
 
@@ -173,12 +173,16 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 
 | Parameter | Description | Default |
 |---|---|---|
-| `effectivenessmonitor.config.assessment.stabilizationWindow` | Wait time after remediation before assessment | `30s` |
-| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `120s` |
+| `effectivenessmonitor.config.assessment.stabilizationWindow` | EM-internal stabilization window (logged at startup). **Note:** the actual stabilization delay enforced by the EM reconciler is read from `EA.spec.config.stabilizationWindow`, which is set by the RO (default `5m` via `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`). | `30s` |
+| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `300s` |
+| `effectivenessmonitor.config.assessment.maxConcurrentReconciles` | Maximum concurrent EA reconciliations | `5` |
 | `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
 | `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
 | `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
 | `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `false` |
+| `effectivenessmonitor.external.connectionTimeout` | HTTP client timeout for Prometheus/AlertManager connections | `10s` |
+| `effectivenessmonitor.external.prometheusLookback` | Duration before EA creation to query Prometheus for baseline metrics. Min: `1m`. | `30m` |
+| `effectivenessmonitor.external.scrapeInterval` | Prometheus scrape interval used to derive requeue timing for metric assessment. Min: `5s`. | `60s` |
 | `effectivenessmonitor.external.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with `ocpMonitoringRbac`, set to `/etc/ssl/em/service-ca.crt` (auto-mounted). | `""` |
 | `effectivenessmonitor.external.ocpMonitoringRbac` | Create `cluster-monitoring-view` ClusterRoleBinding and (when `alertManagerEnabled`) a ClusterRole granting `monitoring.coreos.com/alertmanagers/api` access for OCP's `kube-rbac-proxy`. Also sets `IS_OPENSHIFT` env and auto-configures TLS CA trust via a service-CA ConfigMap. | `false` |
 
@@ -267,7 +271,7 @@ See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signa
 
 ## LLM Provider Setup
 
-LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [HolmesGPT SDK Config](configmap-holmesgpt.md) for the full schema and provider examples.
+LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) for the full schema and provider examples.
 
 **Quick setup:**
 
@@ -291,7 +295,7 @@ kubectl create secret generic llm-credentials \
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set-file holmesgptApi.sdkConfigContent=my-sdk-config.yaml \
+  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml \
   ...
 ```
 
@@ -313,7 +317,7 @@ The RemediationOrchestrator exposes per-phase timeouts and routing thresholds as
 |---|---|---|
 | `remediationorchestrator.config.timeouts.global` | `1h` | Total remediation timeout |
 | `remediationorchestrator.config.timeouts.processing` | `5m` | Signal Processing phase |
-| `remediationorchestrator.config.timeouts.analyzing` | `10m` | AI Analysis (HAPI investigation) |
+| `remediationorchestrator.config.timeouts.analyzing` | `10m` | AI Analysis (Kubernaut Agent investigation) |
 | `remediationorchestrator.config.timeouts.executing` | `30m` | Workflow execution |
 | `remediationorchestrator.config.timeouts.verifying` | `30m` | Effectiveness assessment |
 
@@ -430,9 +434,34 @@ For authoring ansible workflows, see [Ansible (AWX/AAP) in Remediation Workflows
 
 ## TLS and Certificate Management
 
-The Auth Webhook requires TLS certificates for Kubernetes admission webhook communication.
+Kubernaut configures **inter-service TLS** (REST between components) and **admission webhook TLS** (Auth Webhook). The Helm values below cover both surfaces; the following subsections describe how admission webhook certificates are generated in each mode.
 
-The chart supports three modes for managing TLS certificates used by the admission webhooks, controlled by `tls.mode`:
+### Inter-service TLS (Helm)
+
+These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under `tls.interService.certDir`, the primary API port (**8080**) uses HTTPS; health (**8081**) and metrics (**9090**) stay plain HTTP.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual--external-pki) below. | `hook` |
+| `tls.interService.certDir` | Directory mounted in pods containing the server cert/key (and related material) for inter-service listeners. | `/etc/tls` |
+| `tls.interService.caFile` | Path to the PEM CA bundle used to **verify peer** certificates (client CA). | `/etc/tls-ca/ca.crt` |
+| `tls.certManager.issuerRef.name` | **Required** when `tls.mode=cert-manager` -- Issuer or ClusterIssuer that signs inter-service and webhook certificates. | -- |
+| `tls.certManager.issuerRef.kind` | Issuer kind (`Issuer` or `ClusterIssuer`). | `ClusterIssuer` |
+| `tls.certManager.issuerRef.group` | API group for the Issuer reference. | `cert-manager.io` |
+
+When `tls.mode=cert-manager`, the chart creates **cert-manager** `Certificate` resources. Recommended renewal settings (align with the chart defaults): **`duration: 8760h`** (365 days), **`renewBefore: 720h`** (30 days before expiry).
+
+**Kubernaut Agent** (scraping / TLS to peers):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `kubernautAgent.prometheus.tls.enabled` | Enable TLS for Prometheus client connections from the agent. | (see `values.yaml`) |
+| `kubernautAgent.prometheus.tls.caConfigMapName` | ConfigMap name holding the CA to trust. | (see `values.yaml`) |
+| `kubernautAgent.prometheus.tls.caConfigMapKey` | Key within that ConfigMap for the PEM CA. | (see `values.yaml`) |
+
+### Admission webhook TLS modes
+
+The Auth Webhook requires a TLS server certificate for traffic from the Kubernetes API server. Inter-service and webhook TLS use the same `tls.mode` (and cert-manager issuer when applicable). The chart supports **three** modes for **admission** certificates, all selected with `tls.mode`:
 
 ### Hook Mode (`tls.mode: hook`) -- Default
 
@@ -555,7 +584,7 @@ Understanding which configuration changes take effect live vs which require a re
 | AA approval policy | Yes | fsnotify file watcher | ~60s |
 | Notification credentials | Yes | fsnotify file watcher | ~60s |
 | Notification routing | Yes | fsnotify file watcher | ~60s |
-| HolmesGPT config | Yes | Python watchdog | ~60s |
+| Kubernaut Agent config | Yes | file watcher (fsnotify) | ~60s |
 | Gateway config | No | Restart required | -- |
 | DataStorage config | No | Restart required | -- |
 | Proactive signal mappings | No | Restart required | -- |
@@ -571,13 +600,13 @@ All services implement graceful shutdown to ensure in-flight remediations are no
 | **Gateway** | Sets shutdown flag → readiness probe returns 503 → waits 5s for endpoint removal → drains in-flight requests → closes resources |
 | **DataStorage** | Same 4-step sequence as Gateway |
 | **CRD Controllers** (SP, AA, RO, WFE, EM, NT) | controller-runtime built-in signal handling; in-flight reconciles complete |
-| **HolmesGPT API** | Python SIGTERM handler; readiness returns 503; in-flight investigations complete |
+| **Kubernaut Agent** | Go graceful shutdown; readiness returns 503; in-flight investigations complete |
 
 This means `helm upgrade` and rolling updates do not disrupt in-flight remediations. The readiness probe change ensures no new traffic reaches the pod during drain.
 
 ## Next Steps
 
-- [HolmesGPT SDK Config](configmap-holmesgpt.md) -- LLM provider, toolsets, and MCP server configuration
+- [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) -- LLM provider, toolsets, and MCP server configuration
 - [SignalProcessing Rego Policies](configmap-policies.md) -- Policy bundle format and customization
 - [AIAnalysis Approval Policy](configmap-approval.md) -- Approval gates and risk factors
 - [Notification Routing](configmap-notification.md) -- Routing schema and Slack setup

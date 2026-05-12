@@ -179,7 +179,7 @@ sum(rate(kubernaut_remediationorchestrator_phase_transitions_total{to_phase=~"Co
 ### LLM Latency (p99)
 
 ```promql
-histogram_quantile(0.99, rate(aiagent_api_llm_call_duration_seconds_bucket[5m]))
+histogram_quantile(0.99, rate(aiagent_api_llm_request_duration_seconds_bucket[5m]))
 ```
 
 ### Signal Deduplication Rate

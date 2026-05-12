@@ -4,8 +4,6 @@ Kubernaut API reference for all Custom Resource Definitions.
 
 API Group: `kubernaut.ai/v1alpha1`
 
-!!! tip "Wide output columns"
-    All Kubernaut CRDs include additional printer columns visible with `kubectl get <resource> -o wide`. Key columns include: `PHASE`, `OUTCOME`, `AGE`, plus resource-specific fields like `SEVERITY`, `CONFIDENCE`, `WORKFLOW`, `ASSESSMENT-REASON`, and `DISPLAY-NAME`. Typed enums (e.g., `AssessmentReason`, notification `Type`/`Priority`) use **PascalCase** values. Duration fields use `metav1.Duration` format (e.g., `1h30m`, `5m`).
 
 ## AIAnalysis
 
@@ -22,6 +20,29 @@ AIAnalysis is the Schema for the aianalyses API.
 | `status`| _[AIAnalysisStatus](#aianalysisstatus)_||
 
 
+### AIAnalysisReason
+
+_Underlying type:_ _string_
+
+AIAnalysisReason represents the umbrella failure or completion reason.
+
+_Appears in:_
+- [AIAnalysisStatus](#aianalysisstatus)
+
+_Validation:_
+- Enum: [AnalysisCompleted WorkflowResolutionFailed WorkflowNotNeeded NoWorkflowSelected RegoEvaluationError TransientError APIError]
+
+| Value| Description|
+| ---| ---|
+| `AnalysisCompleted`||
+| `WorkflowResolutionFailed`||
+| `WorkflowNotNeeded`||
+| `NoWorkflowSelected`||
+| `RegoEvaluationError`||
+| `TransientError`||
+| `APIError`||
+
+
 ### AIAnalysisSpec
 
 
@@ -31,7 +52,7 @@ AIAnalysisSpec defines the desired state of AIAnalysis.
 AIAnalysis represents an immutable event (AI investigation).
 Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 - Audit trail integrity (AI investigation matches original RCA request)
-- No tampering with RCA targets post-HAPI validation
+- No tampering with RCA targets post-KA validation
 - No workflow selection modification after AI recommendation
 
 To re-analyze, delete and recreate the AIAnalysis CRD.
@@ -60,29 +81,30 @@ _Appears in:_
 | `observedGeneration`| _integer_| ObservedGeneration is the most recent generation observed by the controller.<br />Used to prevent duplicate reconciliations and ensure idempotency.<br />Per Standard pattern for all Kubernetes controllers.|
 | `phase`| _string_| Phase tracking (no "Approving" or "Recommending" phase - simplified 4-phase flow)|
 | `message`| _string_||
-| `reason`| _string_| Reason provides the umbrella failure category (e.g., "WorkflowResolutionFailed")|
-| `subReason`| _string_| SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from HolmesGPT-API<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes|
+| `reason`| _[AIAnalysisReason](#aianalysisreason)_| Reason provides the umbrella failure or completion category.|
+| `subReason`| _string_| SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from KA<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes|
 | `startedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Timestamps|
 | `completedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_||
 | `rootCause`| _string_| Identified root cause|
 | `rootCauseAnalysis`| _[RootCauseAnalysis](#rootcauseanalysis)_| Root cause analysis details|
 | `selectedWorkflow`| _[SelectedWorkflow](#selectedworkflow)_| Selected workflow for execution (populated when phase=Completed)|
-| `alternativeWorkflows`| _[AlternativeWorkflow](#alternativeworkflow) array_| ALTERNATIVE WORKFLOWS <br />Alternative workflows considered but not selected.<br />INFORMATIONAL ONLY - NOT for automatic execution.<br />Helps operators make informed approval decisions and provides audit trail.<br />Per HolmesGPT-API team: Alternatives are for CONTEXT, not EXECUTION.|
+| `alternativeWorkflows`| _[AlternativeWorkflow](#alternativeworkflow) array_| ALTERNATIVE WORKFLOWS <br />Alternative workflows considered but not selected.<br />INFORMATIONAL ONLY - NOT for automatic execution.<br />Helps operators make informed approval decisions and provides audit trail.<br />Per KA team: Alternatives are for CONTEXT, not EXECUTION.|
 | `approvalRequired`| _boolean_| True if approval is required (confidence < 80% or policy requires)|
 | `approvalReason`| _string_| Reason why approval is required (when ApprovalRequired=true)|
 | `approvalContext`| _[ApprovalContext](#approvalcontext)_| Rich context for approval notification|
-| `needsHumanReview`| _boolean_| Set by HAPI when AI cannot produce reliable result<br />True if human review required (HAPI decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.|
-| `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to HAPI's human_review_reason enum values|
+| `needsHumanReview`| _boolean_| Set by Kubernaut Agent when AI cannot produce reliable result<br />True if human review required (KA decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.|
+| `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to KA's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts|
+| `alignmentVerdict`| _[AlignmentVerdictStatus](#alignmentverdictstatus)_| Shadow agent alignment verdict from KA (, #1076).<br />When CircuitBreakerActivated=true, the investigation was terminated early<br />and LLM results (RootCauseAnalysis, SelectedWorkflow) may be incomplete<br />or compromised. Users should treat shadow findings as the primary content.|
 | `actionability`| _string_| #388: LLM's assessment of whether the alert warrants action.<br />Empty when not yet assessed (pre-investigation or error paths).<br />"Actionable" when the LLM determines the alert warrants action (default for all processed alerts).<br />"NotActionable" when the LLM determines the alert is benign (e.g., orphaned PVCs).|
-| `investigationId`| _string_| HolmesGPT investigation ID for correlation|
+| `investigationId`| _string_| KA investigation ID for correlation|
 | `investigationTime`| _integer_| Investigation duration in seconds|
-| `warnings`| _string array_| Non-fatal warnings from HolmesGPT-API (e.g., low confidence)|
-| `validationAttemptsHistory`| _[ValidationAttempt](#validationattempt) array_| ValidationAttemptsHistory contains complete history of all HAPI validation attempts<br />Per HAPI retries up to 3 times with LLM self-correction<br />This field provides audit trail for operator notifications and debugging|
+| `warnings`| _string array_| Non-fatal warnings from KA (e.g., low confidence)|
+| `validationAttemptsHistory`| _[ValidationAttempt](#validationattempt) array_| ValidationAttemptsHistory contains complete history of all KA validation attempts<br />Per KA retries up to 3 times with LLM self-correction<br />This field provides audit trail for operator notifications and debugging|
 | `degradedMode`| _boolean_| DegradedMode indicates if the analysis ran with degraded capabilities<br />(e.g., Rego policy evaluation failed, using safe defaults)|
 | `totalAnalysisTime`| _integer_| TotalAnalysisTime is the total duration of the analysis in seconds|
 | `consecutiveFailures`| _integer_| ConsecutiveFailures tracks retry attempts for exponential backoff<br /> Reset to 0 on success, increment on transient failure<br />Used with for retry logic with jitter|
-| `investigationSession`| _[InvestigationSession](#investigationsession)_| Tracks the async submit/poll session with HAPI<br />InvestigationSession tracks the async HAPI session for submit/poll pattern|
-| `postRCAContext`| _[PostRCAContext](#postrcacontext)_| Runtime-computed cluster characteristics from HAPI<br />PostRCAContext holds data computed by HAPI after RCA (e.g., DetectedLabels).<br />Immutable once set — use CEL validation on the PostRCAContext type.|
+| `investigationSession`| _[InvestigationSession](#investigationsession)_| Tracks the async submit/poll session with Kubernaut Agent<br />InvestigationSession tracks the async KA session for submit/poll pattern|
+| `postRCAContext`| _[PostRCAContext](#postrcacontext)_| Runtime-computed cluster characteristics from Kubernaut Agent<br />PostRCAContext holds data computed by Kubernaut Agent after RCA (e.g., DetectedLabels).<br />Immutable once set — use CEL validation on the PostRCAContext type.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions|
 
 
@@ -97,7 +119,7 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `investigatingTimeout`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Timeout for Investigating phase (HolmesGPT-API call)<br />Default: 60s if not specified|
+| `investigatingTimeout`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Timeout for Investigating phase (KA call)<br />Default: 60s if not specified|
 | `analyzingTimeout`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Timeout for Analyzing phase (Rego policy evaluation)<br />Default: 5s if not specified|
 
 
@@ -111,9 +133,24 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `service`| _string_| Service name (github, grafana, prometheus, kubernetes-dashboard, etc.)|
+| `service`| _[ActionLinkServiceType](#actionlinkservicetype)_| Service name (github, grafana, prometheus, kubernetes-dashboard, etc.)|
 | `url`| _string_| Action link URL|
 | `label`| _string_| Human-readable label for the link|
+
+
+### ActionLinkServiceType
+
+_Underlying type:_ _string_
+
+
+_Appears in:_
+- [ActionLink](#actionlink)
+
+
+| Value| Description|
+| ---| ---|
+| `grafana`||
+| `prometheus`||
 
 
 ## ActionType
@@ -178,24 +215,44 @@ _Appears in:_
 | `registeredBy`| _string_| RegisteredBy is the identity of the registrant (K8s SA or user).|
 | `previouslyExisted`| _boolean_| PreviouslyExisted indicates if this action type was re-enabled after being disabled.|
 | `activeWorkflowCount`| _integer_| ActiveWorkflowCount is the number of active RemediationWorkflows referencing this action type.<br />Best-effort, updated asynchronously by the RW admission webhook handler.|
-| `catalogStatus`| _string_| CatalogStatus reflects the DS catalog state (active, disabled).|
+| `catalogStatus`| _[CatalogStatus](#catalogstatus)_| CatalogStatus reflects the DS catalog lifecycle state.|
 
 
-### RemediationTarget
+### AlignmentFindingStatus
 
 
-RemediationTarget identifies the Kubernetes resource identified by the LLM as the
-actual target for remediation. This may differ from the signal's source resource
-(e.g., the signal comes from a Pod, but the Deployment should be patched).
+AlignmentFindingStatus captures a single suspicious step on the CRD.
 
 _Appears in:_
-- [RootCauseAnalysis](#rootcauseanalysis)
+- [AlignmentVerdictStatus](#alignmentverdictstatus)
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `kind`| _string_| Kind is the Kubernetes resource kind (e.g., "Deployment", "StatefulSet", "DaemonSet")|
-| `name`| _string_| Name is the resource name|
-| `namespace`| _string_| Namespace is the resource namespace. Empty for cluster-scoped resources (e.g., Node, PersistentVolume).|
+| `stepIndex`| _integer_| StepIndex is the zero-based index of the evaluated step.|
+| `stepKind`| _string_| StepKind is the kind of step (llm_reasoning, tool_result, signal_input).|
+| `tool`| _string_| Tool is the tool name if StepKind is tool_result.|
+| `explanation`| _string_| Explanation is the shadow agent's explanation for flagging this step.|
+
+
+### AlignmentVerdictStatus
+
+
+AlignmentVerdictStatus holds the shadow agent's alignment verdict on the CRD.
+Produced by KA (InvestigatorWrapper), mapped by AA (ResponseProcessor).
+, #1076: When CircuitBreakerActivated=true, primary LLM results
+may be incomplete or compromised; shadow findings are the primary content.
+
+_Appears in:_
+- [AIAnalysisStatus](#aianalysisstatus)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `result`| _string_| Result is the overall shadow agent verdict: "clean" or "suspicious".|
+| `circuitBreakerActivated`| _boolean_| CircuitBreakerActivated indicates the investigation was terminated early.|
+| `summary`| _string_| Summary is a narrative summary of the shadow agent evaluation.|
+| `flagged`| _integer_| Flagged is the number of steps flagged as suspicious.|
+| `total`| _integer_| Total is the total number of steps evaluated.|
+| `findings`| _[AlignmentFindingStatus](#alignmentfindingstatus) array_| Findings contains per-step suspicious findings.|
 
 
 ### AlternativeApproach
@@ -225,9 +282,24 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `workflowId`| _string_| Workflow identifier (catalog lookup key)|
-| `executionBundle`| _string_| Execution bundle OCI reference (digest-pinned) - resolved by HolmesGPT-API|
+| `executionBundle`| _string_| Execution bundle OCI reference (digest-pinned) - resolved by KA|
 | `confidence`| _float_| Confidence score (0.0-1.0) - shows why it wasn't selected|
 | `rationale`| _string_| Rationale explaining why this workflow was considered|
+
+
+### AnalysisContext
+
+
+AnalysisContext captures AI analysis results.
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `approvalReason`| _string_| ApprovalReason explains why approval was required.|
+| `rootCause`| _string_| RootCause is the AI-determined root cause summary.|
+| `outcome`| _string_| Outcome is the remediation outcome (e.g., "Success", "Failed").|
 
 
 ### AnalysisRequest
@@ -242,7 +314,26 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `signalContext`| _[SignalContextInput](#signalcontextinput)_| Signal context from SignalProcessing enrichment|
-| `analysisTypes`| _string array_| Analysis types to perform (e.g., "investigation", "root-cause", "workflow-selection")|
+| `analysisTypes`| _[AnalysisType](#analysistype) array_| Analysis types to perform|
+
+
+### AnalysisType
+
+_Underlying type:_ _string_
+
+AnalysisType represents a type of analysis to perform.
+
+_Appears in:_
+- [AnalysisRequest](#analysisrequest)
+
+_Validation:_
+- Enum: [Investigation RootCause WorkflowSelection]
+
+| Value| Description|
+| ---| ---|
+| `Investigation`||
+| `RootCause`||
+| `WorkflowSelection`||
 
 
 ### ApprovalAlternative
@@ -272,7 +363,7 @@ _Appears in:_
 | `reason`| _string_| Reason why approval is required|
 | `confidenceScore`| _float_| ConfidenceScore from AI analysis (0.0-1.0)|
 | `confidenceLevel`| _string_| ConfidenceLevel: "low" \| "medium" \| "high"|
-| `investigationSummary`| _string_| InvestigationSummary from HolmesGPT analysis|
+| `investigationSummary`| _string_| InvestigationSummary from KA analysis|
 | `evidenceCollected`| _string array_| EvidenceCollected that led to this conclusion|
 | `recommendedActions`| _[RecommendedAction](#recommendedaction) array_| RecommendedActions with rationale|
 | `alternativesConsidered`| _[AlternativeApproach](#alternativeapproach) array_| AlternativesConsidered with pros/cons|
@@ -312,7 +403,7 @@ _Appears in:_
 | ---| ---| ---|
 | `policyName`| _string_| Policy name that was evaluated|
 | `matchedRules`| _string array_| Rules that matched and triggered approval requirement|
-| `decision`| _string_| Policy decision|
+| `decision`| _string_| Policy decision (PascalCase per K8s enum convention, values from PolicyDecision type)|
 
 
 ### ApprovalRecommendedAction
@@ -347,6 +438,42 @@ _Appears in:_
 | `clearMethod`| _string_| ClearMethod indicates how the block was cleared<br />Annotation: Via kubernaut.ai/clear-execution-block annotation<br />APIEndpoint: Via dedicated clearing API endpoint (future)<br />StatusField: Via direct status field update (future)|
 
 
+### BlockReason
+
+_Underlying type:_ _string_
+
+BlockReason represents the reason why a RemediationRequest is blocked (non-terminal).
+
+_Appears in:_
+- [RemediationRequestStatus](#remediationrequeststatus)
+
+_Validation:_
+- Enum: [ConsecutiveFailures DuplicateInProgress ResourceBusy RecentlyRemediated ExponentialBackoff UnmanagedResource IneffectiveChain]
+
+| Value| Description|
+| ---| ---|
+| `ConsecutiveFailures`| BlockReasonConsecutiveFailures indicates remediation failed 3+ times consecutively.<br />This is a temporary block with a 1-hour cooldown period.|
+| `DuplicateInProgress`| BlockReasonDuplicateInProgress indicates another RR with the same fingerprint is active.<br />This prevents Gateway RR flood by keeping the duplicate in non-terminal Blocked state.|
+| `ResourceBusy`| BlockReasonResourceBusy indicates another WorkflowExecution is running on the same target.<br />This prevents concurrent modifications to the same Kubernetes resource.|
+| `RecentlyRemediated`| BlockReasonRecentlyRemediated indicates the same workflow+target was executed recently.<br />This enforces a cooldown period (default 5 minutes) to prevent redundant executions.|
+| `ExponentialBackoff`| BlockReasonExponentialBackoff indicates pre-execution failures require a backoff period.<br />This implements graduated retry for transient infrastructure failures.|
+| `UnmanagedResource`| BlockReasonUnmanagedResource indicates the target resource is not managed by Kubernaut.<br />The resource or namespace does not have the kubernaut.ai/managed=true label.<br />RO will retry with exponential backoff (5s → 10s → ... → 5min) until RR times out.|
+| `IneffectiveChain`| BlockReasonIneffectiveChain indicates consecutive remediations for the same target<br />have been ineffective (resource keeps reverting or health doesn't improve).<br />Escalates to human review via NotificationRequest.|
+
+
+### DedupContext
+
+
+DedupContext captures deduplication context .
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `duplicateCount`| _string_| DuplicateCount is the number of duplicate signals.|
+
+
 ### DeduplicationStatus
 
 
@@ -373,12 +500,40 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `channel`| _string_| Channel name|
+| `channel`| _[DeliveryChannelName](#deliverychannelname)_| Channel name|
 | `attempt`| _integer_| Attempt number (1-based)|
 | `timestamp`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Timestamp of this attempt|
-| `status`| _string_| Status of this attempt (success, failed, timeout, invalid)|
+| `status`| _[DeliveryAttemptStatus](#deliveryattemptstatus)_| Status of this attempt (success, failed, timeout, invalid)|
 | `error`| _string_| Error message if failed|
 | `durationSeconds`| _float_| Duration of delivery attempt in seconds|
+
+
+### DeliveryAttemptStatus
+
+_Underlying type:_ _string_
+
+
+_Appears in:_
+- [DeliveryAttempt](#deliveryattempt)
+
+_Validation:_
+- Enum: [success failed timeout invalid]
+
+| Value| Description|
+| ---| ---|
+| `success`||
+| `failed`||
+| `timeout`||
+| `invalid`||
+
+
+### DeliveryChannelName
+
+_Underlying type:_ _string_
+
+
+_Appears in:_
+- [DeliveryAttempt](#deliveryattempt)
 
 
 ### EAComponents
@@ -460,7 +615,7 @@ _Appears in:_
 | `correlationID`| _string_| CorrelationID is the name of the parent RemediationRequest.<br />Used as the correlation ID for audit events .|
 | `remediationRequestPhase`| _string_| RemediationRequestPhase is the RemediationRequest's OverallPhase at the time<br />the EA was created. Captured as an immutable spec field so the EM can branch<br />assessment logic based on the RR outcome (Verifying, Completed, Failed, TimedOut).<br />Verifying: happy path — WFE succeeded, EA created while RR awaits assessment .<br />Previously stored as the mutable label kubernaut.ai/rr-phase; moved to spec<br />for immutability and security.|
 | `signalTarget`| _[TargetResource](#targetresource)_| SignalTarget is the resource that triggered the alert.<br />Source: RR.Spec.TargetResource (from Gateway alert extraction).<br />Used by: health assessment, alert resolution, metrics queries .|
-| `remediationTarget`| _[TargetResource](#targetresource)_| RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.RemediationTarget — HAPI injects this from the K8s-verified `root_owner` (resolved via owner chain); the AA controller persists it into the CRD.<br />Used by: spec hash computation, drift detection .|
+| `remediationTarget`| _[TargetResource](#targetresource)_| RemediationTarget is the resource the workflow modified.<br />Source: AA.Status.RootCauseAnalysis.RemediationTarget (from KA RCA resolution).<br />Used by: spec hash computation, drift detection .|
 | `config`| _[EAConfig](#eaconfig)_| Config contains the assessment configuration parameters.|
 | `remediationCreatedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| RemediationCreatedAt is the creation timestamp of the parent RemediationRequest.<br />Set by the RO at EA creation time from rr.CreationTimestamp.<br />Used by the audit manager to compute resolution_time_seconds in the<br />assessment.completed event (CompletedAt - RemediationCreatedAt).|
 | `signalName`| _string_| SignalName is the original alert/signal name from the parent RemediationRequest.<br />Set by the RO at EA creation time from rr.Spec.SignalName.<br />Used by the audit manager to populate the signal_name field in assessment.completed<br />events (OBS-1: distinct from CorrelationID which is the RR name).|
@@ -507,13 +662,33 @@ _Appears in:_
 | `timeout`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Timeout for enrichment operations|
 
 
+### Environment
+
+_Underlying type:_ _string_
+
+Environment represents a canonical deployment environment.
+ 4 canonical environments + Unknown fallback.
+
+_Appears in:_
+- [EnvironmentClassification](#environmentclassification)
+
+_Validation:_
+- Enum: [Production Staging Development Test Unknown]
+
+| Value| Description|
+| ---| ---|
+| `Production`||
+| `Staging`||
+| `Development`||
+| `Test`||
+| `Unknown`||
+
+
 ### EnvironmentClassification
 
 
 EnvironmentClassification from .
 
- 4 canonical environments (production, staging, development, test)
- V1.1: Removed Confidence field (redundant with source)
  V2.0: Removed signal-labels source (security vulnerability)
 
 _Appears in:_
@@ -521,16 +696,16 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `environment`| _string_| Environment: production, staging, development, test|
-| `source`| _string_| Source of classification: namespace-labels, rego-inference, default<br />Valid sources per V2.0 (signal-labels removed for security)|
+| `environment`| _[Environment](#environment)_||
+| `source`| _string_| Source of classification: namespace-labels, rego-inference, default|
 | `classifiedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When classification was performed|
 
 
 ### ExecutionConfig
 
 
-ExecutionConfig contains minimal execution settings
-Note: Most execution logic is delegated to Tekton 
+ExecutionConfig contains minimal execution settings.
+ ServiceAccountName resolved at runtime from DS into Status.
 
 _Appears in:_
 - [WorkflowExecutionSpec](#workflowexecutionspec)
@@ -538,7 +713,24 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `timeout`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Timeout for the entire workflow (Tekton PipelineRun timeout)<br />Default: use global timeout from RemediationRequest or 30m|
-| `serviceAccountName`| _string_| ServiceAccountName for the PipelineRun<br />Default: "kubernaut-workflow-runner"|
+
+
+### ExecutionContext
+
+
+ExecutionContext captures execution and retry data.
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `retryCount`| _string_| RetryCount is the number of retries attempted.|
+| `maxRetries`| _string_| MaxRetries is the maximum number of retries allowed.|
+| `lastExitCode`| _string_| LastExitCode is the last exit code from the workflow execution.|
+| `previousExecution`| _string_| PreviousExecution is the name of the previous WorkflowExecution.|
+| `timeoutPhase`| _string_| TimeoutPhase is the phase that timed out.|
+| `phaseTimeout`| _string_| PhaseTimeout is the duration string for the phase timeout.|
 
 
 ### ExecutionStatusSummary
@@ -552,7 +744,7 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `status`| _string_| Status of the execution resource (Unknown, True, False)|
+| `status`| _[ConditionStatus](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#conditionstatus-v1-core)_| Status of the execution resource (Unknown, True, False)|
 | `reason`| _string_| Reason from the execution resource (e.g., "Succeeded", "Failed", "Running")|
 | `message`| _string_| Message from the execution resource|
 | `completedTasks`| _integer_| CompletedTasks count|
@@ -576,28 +768,87 @@ _Appears in:_
 | `message`| _string_| Message is human-readable error message (for logging/UI/notifications)|
 | `exitCode`| _integer_| ExitCode from container (if applicable)<br />Useful for script-based tasks that return specific exit codes|
 | `failedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| FailedAt is the timestamp when the failure occurred|
-| `executionTimeBeforeFailure`| _string_| ExecutionTimeBeforeFailure is how long the workflow ran before failing<br />Format: Go duration string (e.g., "2m30s")|
+| `executionTimeBeforeFailure`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| ExecutionTimeBeforeFailure is how long the workflow ran before failing|
 | `naturalLanguageSummary`| _string_| NaturalLanguageSummary is a human/LLM-readable failure description<br />Generated by WE controller from structured data above<br />Used by:<br /> - RO: Included in failure notifications<br /> - Notification: Included in user-facing failure alerts|
 | `wasExecutionFailure`| _boolean_| WasExecutionFailure indicates whether the failure occurred during workflow execution<br />true = workflow RAN and failed (non-idempotent actions may have occurred)<br />false = workflow failed BEFORE execution (validation, image pull, quota, etc.)<br />CRITICAL: Execution failures (true) block ALL future retries for this target<br /> Pre-execution failures (false) get exponential backoff|
+
+
+### FailurePhase
+
+_Underlying type:_ _string_
+
+FailurePhase represents the orchestration phase where a failure occurred.
+ PascalCase for CRD phase values.
+
+_Appears in:_
+- [RemediationRequestStatus](#remediationrequeststatus)
+
+_Validation:_
+- Enum: [Configuration SignalProcessing AIAnalysis Approval WorkflowExecution Blocked Deduplicated]
+
+| Value| Description|
+| ---| ---|
+| `Configuration`||
+| `SignalProcessing`||
+| `AIAnalysis`||
+| `Approval`||
+| `WorkflowExecution`||
+| `Blocked`||
+| `Deduplicated`| FailurePhaseDeduplicated indicates an RR that inherited a failure from a<br />deduplicated WorkflowExecution collision . Excluded from<br />consecutive failure counting per .|
 
 
 ### InvestigationSession
 
 
-InvestigationSession tracks the async HAPI session lifecycle.
+InvestigationSession tracks the async Kubernaut Agent session lifecycle.
  AA controller session tracking
- Session regeneration on 404 (HAPI restart)
+ Session regeneration on 404 (KA restart)
 
 _Appears in:_
 - [AIAnalysisStatus](#aianalysisstatus)
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `id`| _string_| Session ID returned by HAPI on submit (cleared on session loss)|
+| `id`| _string_| Session ID returned by Kubernaut Agent on submit (cleared on session loss)|
 | `generation`| _integer_| Generation counter tracking session regenerations (0 = first session, incremented on 404)|
 | `lastPolled`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| LastPolled timestamp of the last poll attempt|
 | `createdAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| CreatedAt timestamp when the current session was created|
 | `pollCount`| _integer_| PollCount tracks the number of poll attempts for observability<br /> Constant 15s poll interval (configurable 1s–5m)|
+
+
+### LineageContext
+
+
+LineageContext tracks parent resource references for audit correlation .
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `remediationRequest`| _string_| RemediationRequest is the name of the parent RemediationRequest.|
+| `aiAnalysis`| _string_| AIAnalysis is the name of the parent AIAnalysis.|
+
+
+### NotificationContext
+
+
+NotificationContext provides structured context for a notification,
+replacing the former unstructured Metadata map[string]string.
+
+_Appears in:_
+- [NotificationRequestSpec](#notificationrequestspec)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `lineage`| _[LineageContext](#lineagecontext)_| Lineage tracks parent resource references for audit correlation.|
+| `workflow`| _[WorkflowContext](#workflowcontext)_| Workflow captures selected workflow details (approval/completion notifications).|
+| `analysis`| _[AnalysisContext](#analysiscontext)_| Analysis captures AI analysis results (approval/completion notifications).|
+| `review`| _[ReviewContext](#reviewcontext)_| Review captures manual review context (manual-review notifications).|
+| `execution`| _[ExecutionContext](#executioncontext)_| Execution captures execution and retry context (manual-review WE source, timeout notifications).|
+| `dedup`| _[DedupContext](#dedupcontext)_| Dedup captures deduplication context (bulk duplicate notifications).|
+| `target`| _[TargetContext](#targetcontext)_| Target captures target resource context (timeout notifications).|
+| `verification`| _[VerificationContext](#verificationcontext)_| Verification captures EA verification results (completion notifications, #318).<br />Enables routing rules to match on verification outcome (e.g., inconclusive -> escalation).|
 
 
 ### NotificationPhase
@@ -630,14 +881,14 @@ _Appears in:_
 - [NotificationRequestSpec](#notificationrequestspec)
 
 _Validation:_
-- Enum: [critical high medium low]
+- Enum: [Critical High Medium Low]
 
 | Value| Description|
 | ---| ---|
-| `critical`||
-| `high`||
-| `medium`||
-| `low`||
+| `Critical`||
+| `High`||
+| `Medium`||
+| `Low`||
 
 
 ## NotificationRequest
@@ -683,8 +934,9 @@ _Appears in:_
 | `body`| _string_| Notification body content|
 | `severity`| _string_| Severity from the originating signal (used for routing)<br /> promoted from mutable label to immutable spec field|
 | `phase`| _string_| Phase that triggered this notification (for phase-timeout notifications)<br /> promoted from mutable label to immutable spec field|
-| `reviewSource`| _string_| ReviewSource indicates what triggered manual review (for manual-review notifications)<br /> promoted from mutable label to immutable spec field|
-| `metadata`| _object (keys:string, values:string)_| Refer to the Kubernetes API documentation for fields of `metadata`.|
+| `reviewSource`| _[ReviewSourceType](#reviewsourcetype)_| ReviewSource indicates what triggered manual review (for manual-review notifications)<br /> promoted from mutable label to immutable spec field|
+| `context`| _[NotificationContext](#notificationcontext)_| Context provides typed, structured notification context replacing the<br />former unstructured Metadata map. Each sub-struct is optional (nil means<br />not applicable for this notification type).|
+| `extensions`| _object (keys:string, values:string)_| Extensions holds arbitrary key-value pairs for routing and custom data<br />that don't fit the typed Context schema (e.g., test routing overrides,<br />vendor-specific tags). Routing rules can match on these keys.|
 | `actionLinks`| _[ActionLink](#actionlink) array_| Action links to external services|
 | `retryPolicy`| _[RetryPolicy](#retrypolicy)_| Retry policy for delivery|
 | `retentionDays`| _integer_| Retention period in days after completion|
@@ -710,8 +962,27 @@ _Appears in:_
 | `processingStartedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Time when processing started|
 | `completionTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Time when all deliveries completed (success or failure)|
 | `observedGeneration`| _integer_| Observed generation from spec|
-| `reason`| _string_| Reason for current phase|
+| `reason`| _[NotificationStatusReason](#notificationstatusreason)_| Reason for current phase|
 | `message`| _string_| Human-readable message about current state|
+
+
+### NotificationStatusReason
+
+_Underlying type:_ _string_
+
+
+_Appears in:_
+- [NotificationRequestStatus](#notificationrequeststatus)
+
+
+| Value| Description|
+| ---| ---|
+| `AllDeliveriesSucceeded`||
+| `PartialDeliverySuccess`||
+| `AllDeliveriesFailed`||
+| `NoChannelsResolved`||
+| `PartialFailureRetrying`||
+| `MaxRetriesExhausted`||
 
 
 ### NotificationType
@@ -723,16 +994,16 @@ _Appears in:_
 - [NotificationRequestSpec](#notificationrequestspec)
 
 _Validation:_
-- Enum: [escalation simple status-update approval manual-review completion]
+- Enum: [Escalation Simple StatusUpdate Approval ManualReview Completion]
 
 | Value| Description|
 | ---| ---|
-| `escalation`||
-| `simple`||
-| `status-update`||
-| `approval`| NotificationTypeApproval is used for approval request notifications <br />Added Dec 2025 per RO team request for explicit approval workflow support|
-| `manual-review`| NotificationTypeManualReview is used for manual intervention required notifications <br />Added Dec 2025 for ExhaustedRetries/PreviousExecutionFailed scenarios requiring operator action<br />Distinct from 'escalation' to enable spec-field-based routing rules |
-| `completion`| NotificationTypeCompletion is used for successful remediation completion notifications <br />Created when WorkflowExecution completes successfully and RR transitions to Completed phase<br />Enables operators to track successful autonomous remediations|
+| `Escalation`||
+| `Simple`||
+| `StatusUpdate`||
+| `Approval`| NotificationTypeApproval is used for approval request notifications <br />Added Dec 2025 per RO team request for explicit approval workflow support|
+| `ManualReview`| NotificationTypeManualReview is used for manual intervention required notifications <br />Added Dec 2025 for ExhaustedRetries/PreviousExecutionFailed scenarios requiring operator action<br />Distinct from 'escalation' to enable spec-field-based routing rules |
+| `Completion`| NotificationTypeCompletion is used for successful remediation completion notifications <br />Created when WorkflowExecution completes successfully and RR transitions to Completed phase<br />Enables operators to track successful autonomous remediations|
 
 
 ### ObjectRef
@@ -765,6 +1036,26 @@ _Appears in:_
 | `uid`| _string_| UID of the referent|
 
 
+### PolicyDecision
+
+_Underlying type:_ _string_
+
+PolicyDecision represents the Rego policy evaluation outcome.
+
+_Appears in:_
+- [PolicyEvaluation](#policyevaluation)
+
+_Validation:_
+- Enum: [Approved ManualReviewRequired Denied DegradedMode]
+
+| Value| Description|
+| ---| ---|
+| `Approved`||
+| `ManualReviewRequired`||
+| `Denied`||
+| `DegradedMode`||
+
+
 ### PolicyEvaluation
 
 
@@ -777,15 +1068,15 @@ _Appears in:_
 | ---| ---| ---|
 | `policyName`| _string_| Policy name that was evaluated|
 | `matchedRules`| _string array_| Rules that matched|
-| `decision`| _string_| Decision: approved, manual_review_required, denied|
+| `decision`| _[PolicyDecision](#policydecision)_| Decision from policy evaluation|
 
 
 ### PostRCAContext
 
 
-PostRCAContext holds data computed by HAPI after the RCA phase.
- DetectedLabels are computed at runtime by HAPI's LabelDetector
-and returned in the HAPI response for storage in the AIAnalysis status.
+PostRCAContext holds data computed by Kubernaut Agent after the RCA phase.
+ DetectedLabels are computed at runtime by KA's LabelDetector
+and returned in the KA response for storage in the AIAnalysis status.
 This data is used by Rego policies for approval gating (e.g., stateful
 workload detection) and is immutable once set.
 
@@ -794,8 +1085,29 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `detectedLabels`| _DetectedLabels_| DetectedLabels contains cluster characteristics computed by HAPI's<br />LabelDetector during the resource context tool invocation (`get_namespaced_resource_context` or `get_cluster_resource_context`).|
+| `detectedLabels`| _DetectedLabels_| DetectedLabels contains cluster characteristics computed by KA's<br />LabelDetector during get_namespaced_resource_context or get_cluster_resource_context tool invocations.|
 | `setAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| SetAt records when the PostRCAContext was populated.<br />Used as the immutability guard: once SetAt is non-nil, the entire<br />PostRCAContext becomes immutable via CEL validation.|
+
+
+### Priority
+
+_Underlying type:_ _string_
+
+Priority represents an operational priority level.
+
+
+_Appears in:_
+- [PriorityAssignment](#priorityassignment)
+
+_Validation:_
+- Enum: [P0 P1 P2 P3]
+
+| Value| Description|
+| ---| ---|
+| `P0`||
+| `P1`||
+| `P2`||
+| `P3`||
 
 
 ### PriorityAssignment
@@ -803,15 +1115,14 @@ _Appears in:_
 
 PriorityAssignment from .
 
- V1.1: Removed Confidence field (redundant with source)
 
 _Appears in:_
 - [SignalProcessingStatus](#signalprocessingstatus)
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `priority`| _string_| Priority level: P0, P1, P2, P3|
-| `source`| _string_| Source of assignment: rego-policy, severity-fallback, default<br />Per severity-fallback used when Rego fails (severity-only fallback)|
+| `priority`| _[Priority](#priority)_||
+| `source`| _string_| Source of assignment: rego-policy, severity-fallback, default|
 | `policyName`| _string_| Which Rego rule matched (if applicable)|
 | `assignedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When assignment was performed|
 
@@ -826,7 +1137,7 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `action`| _string_| Action type|
+| `workflowId`| _string_| WorkflowId is the catalog workflow identifier for this recommendation|
 | `rationale`| _string_| Rationale explaining why this action is recommended|
 
 
@@ -893,7 +1204,7 @@ _Appears in:_
 | `confidenceLevel`| _string_| Confidence level derived from score|
 | `reason`| _string_| Reason why approval is required|
 | `recommendedWorkflow`| _[RecommendedWorkflowSummary](#recommendedworkflowsummary)_| Recommended workflow from AI analysis|
-| `investigationSummary`| _string_| Investigation summary from HolmesGPT|
+| `investigationSummary`| _string_| Investigation summary from KA|
 | `evidenceCollected`| _string array_| Evidence collected during investigation|
 | `recommendedActions`| _[ApprovalRecommendedAction](#approvalrecommendedaction) array_| Recommended actions with rationale|
 | `alternativesConsidered`| _[ApprovalAlternative](#approvalalternative) array_| Alternative approaches considered|
@@ -916,6 +1227,7 @@ _Appears in:_
 | `decidedBy`| _string_| Who made the decision (username or "system" for timeout)|
 | `decidedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the decision was made|
 | `decisionMessage`| _string_| Optional message from the decision maker|
+| `workflowOverride`| _[WorkflowOverride](#workflowoverride)_| Operator workflow/parameter override (#594, ).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions represent the latest available observations<br />Standard condition types:<br />- "Approved" - Decision is Approved<br />- "Rejected" - Decision is Rejected<br />- "Expired" - Decision timed out|
 | `createdAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Time when the approval request was created|
 | `timeRemaining`| _string_| Time remaining until expiration (human-readable, e.g., "5m30s")<br />Updated by controller periodically|
@@ -950,7 +1262,7 @@ _Validation:_
 | `AwaitingApproval`| PhaseAwaitingApproval indicates human approval is required.|
 | `Executing`| PhaseExecuting indicates WorkflowExecution is running remediation.|
 | `Verifying`| PhaseVerifying indicates remediation succeeded and EffectivenessAssessment is running.<br />Non-terminal: Gateway deduplicates signals while EA assesses remediation effectiveness.<br />RO transitions to Completed when EA reaches a terminal state or VerificationDeadline expires.|
-| `Blocked`| PhaseBlocked indicates remediation cannot proceed due to external blocking condition.<br />This is a NON-terminal phase (Gateway deduplicates, prevents RR flood).<br />Unified blocking for 7 scenarios:<br />- ConsecutiveFailures: After cooldown → Failed <br />- ResourceBusy: When resource available → Proceeds to execute<br />- RecentlyRemediated: After cooldown → Proceeds to execute <br />- ExponentialBackoff: After backoff window → Retries execution <br />- DuplicateInProgress: When original completes → Inherits outcome<br />- UnmanagedResource: Retries until scope label added or RR times out<br />- IneffectiveChain: Consecutive ineffective remediations → Escalates to manual review|
+| `Blocked`| PhaseBlocked indicates remediation cannot proceed due to external blocking condition.<br />This is a NON-terminal phase (Gateway deduplicates, prevents RR flood).<br />V1.0: Unified blocking for 6 scenarios:<br />- ConsecutiveFailures: After cooldown → Failed <br />- ResourceBusy: When resource available → Proceeds to execute<br />- RecentlyRemediated: After cooldown → Proceeds to execute <br />- ExponentialBackoff: After backoff window → Retries execution <br />- DuplicateInProgress: When original completes → Inherits outcome<br />- UnmanagedResource: Retries until scope label added or RR times out|
 | `Completed`| PhaseCompleted is the terminal success state.|
 | `Failed`| PhaseFailed is the terminal failure state.|
 | `TimedOut`| PhaseTimedOut is the terminal timeout state.|
@@ -1006,12 +1318,6 @@ _Appears in:_
 | `targetResource`| _[ResourceIdentifier](#resourceidentifier)_| TargetResource identifies the Kubernetes resource that triggered this signal.<br />Populated by Gateway from NormalizedSignal.Resource - REQUIRED.<br />Used by SignalProcessing for context enrichment and RO for workflow routing.<br />For Kubernetes signals, this contains Kind, Name, Namespace of the affected resource.|
 | `firingTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Temporal Data<br />When the signal first started firing (from upstream source)|
 | `receivedTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When Gateway received the signal|
-| `deduplication`| _DeduplicationInfo_| Deduplication Metadata <br />Tracking information for duplicate signal suppression<br />Uses shared type for API contract alignment with SignalProcessing CRD<br /> DEPRECATED - Moved to status.deduplication|
-| `isStorm`| _boolean_| Storm Detection<br />True if this signal is part of a detected alert storm|
-| `stormType`| _string_| Storm type: "rate" (frequency-based) or "pattern" (similar alerts)|
-| `stormWindow`| _string_| Time window for storm detection (e.g., "5m")|
-| `stormAlertCount`| _integer_| Number of alerts in the storm|
-| `affectedResources`| _string array_| List of affected resources in an aggregated storm (e.g., "namespace:Pod:name")<br />Only populated for aggregated storm CRDs|
 | `signalLabels`| _object (keys:string, values:string)_| Signal labels and annotations extracted from provider-specific data<br />These are populated by Gateway Service after parsing providerData|
 | `signalAnnotations`| _object (keys:string, values:string)_||
 | `providerData`| _string_| Provider-specific fields in raw JSON format<br />Gateway adapter populates this based on signal source<br />Controllers parse this based on targetType/signalType<br />For Kubernetes (targetType="kubernetes"):<br /> \{"namespace": "...", "resource": \{"kind": "...", "name": "..."\}, "alertmanagerURL": "...", ...\}<br />For AWS (targetType="aws"):<br /> \{"region": "...", "accountId": "...", "instanceId": "...", "resourceType": "...", ...\}<br />For Datadog (targetType="datadog"):<br /> \{"monitorId": 123, "host": "...", "tags": [...], "metricQuery": "...", ...\}|
@@ -1046,22 +1352,23 @@ _Appears in:_
 | `effectivenessAssessmentRef`| _[ObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectreference-v1-core)_| EffectivenessAssessmentRef tracks the EffectivenessAssessment CRD created for this remediation.<br />Set by the RO after creating the EA CRD on terminal phase transitions.|
 | `preRemediationSpecHash`| _string_| PreRemediationSpecHash is the canonical spec hash of the target resource captured<br />by the RO BEFORE launching the remediation workflow. This enables the EM to compare<br />pre vs post-remediation state without querying DataStorage audit events.<br />Set once by the RO during the transition to WorkflowExecution phase; immutable after.|
 | `approvalNotificationSent`| _boolean_| Approval notification tracking <br />Prevents duplicate notifications when AIAnalysis requires approval|
-| `skipReason`| _string_| SkipReason indicates why this remediation was skipped<br />Valid values:<br />- "ResourceBusy": Another workflow executing on same target<br />- "RecentlyRemediated": Target recently remediated, cooldown period active<br />- "ExponentialBackoff": Pre-execution failures, backoff window active<br />- "ExhaustedRetries": Max consecutive failures reached<br />- "PreviousExecutionFailed": Previous execution failed during workflow run<br />Only set when OverallPhase = "Skipped" or "Failed"|
+| `skipReason`| _[SkipReason](#skipreason)_| SkipReason indicates why this remediation was skipped.<br />Only set when OverallPhase = Skipped or Failed.|
 | `skipMessage`| _string_| SkipMessage provides human-readable details about why remediation was skipped<br />Examples:<br />- "Same workflow executed recently. Cooldown: 3m15s remaining"<br />- "Another workflow is running on target: wfe-abc123"<br />- "Backoff active. Next allowed: 2025-12-15T10:30:00Z"<br />Only set when OverallPhase = "Skipped" or "Failed"|
 | `blockingWorkflowExecution`| _string_| BlockingWorkflowExecution references the WorkflowExecution causing the block<br />Set for block reasons: ResourceBusy, RecentlyRemediated, ExponentialBackoff<br />Nil for: ConsecutiveFailures, DuplicateInProgress<br />Enables operators to investigate the blocking WFE for troubleshooting|
 | `duplicateOf`| _string_| DuplicateOf references the parent RemediationRequest that this is a duplicate of<br />V1.0: Set when OverallPhase = "Blocked" with BlockReason = "DuplicateInProgress"<br />Old behavior: Set when OverallPhase = "Skipped" due to resource lock deduplication|
 | `duplicateCount`| _integer_| DuplicateCount tracks the number of duplicate remediations that were skipped<br />because this RR's workflow was already executing (resource lock)<br />Only populated on parent RRs that have duplicates|
 | `duplicateRefs`| _string array_| DuplicateRefs lists the names of RemediationRequests that were skipped<br />because they targeted the same resource as this RR<br />Only populated on parent RRs that have duplicates|
-| `blockReason`| _string_| BlockReason indicates why this remediation is blocked (non-terminal)<br />Valid values:<br />- "ConsecutiveFailures": Max consecutive failures reached, in cooldown <br />- "ResourceBusy": Another workflow is using the target resource<br />- "RecentlyRemediated": Target recently remediated, cooldown active <br />- "ExponentialBackoff": Pre-execution failures, backoff window active <br />- "DuplicateInProgress": Duplicate of an active remediation<br />- "UnmanagedResource": Target resource not managed by Kubernaut (missing `kubernaut.ai/managed=true`)<br />- "IneffectiveChain": Consecutive remediations for same target were ineffective<br />Only set when OverallPhase = "Blocked"|
+| `deduplicatedByWE`| _string_| DeduplicatedByWE stores the name of the original WorkflowExecution whose<br />outcome this RR is waiting to inherit . Set when the RR's own<br />WFE was marked Failed/Deduplicated. Used as a field index key for the<br />cross-WE watch to trigger reconciliation when the original WFE completes.<br />Immutable after initial assignment.|
+| `blockReason`| _[BlockReason](#blockreason)_| BlockReason indicates why this remediation is blocked (non-terminal)<br />Valid values:<br />- "ConsecutiveFailures": Max consecutive failures reached, in cooldown <br />- "ResourceBusy": Another workflow is using the target resource<br />- "RecentlyRemediated": Target recently remediated, cooldown active <br />- "ExponentialBackoff": Pre-execution failures, backoff window active <br />- "DuplicateInProgress": Duplicate of an active remediation<br />Only set when OverallPhase = "Blocked"|
 | `blockMessage`| _string_| BlockMessage provides human-readable details about why remediation is blocked<br />Examples:<br />- "Another workflow is running on target deployment/my-app: wfe-abc123"<br />- "Recently remediated. Cooldown: 3m15s remaining"<br />- "Backoff active. Next retry: 2025-12-15T10:30:00Z"<br />- "Duplicate of active remediation rr-original-abc123"<br />- "3 consecutive failures. Cooldown expires: 2025-12-15T11:00:00Z"<br />Only set when OverallPhase = "Blocked"|
 | `blockedUntil`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| BlockedUntil indicates when blocking expires (time-based blocks)<br />Set for: ConsecutiveFailures, RecentlyRemediated, ExponentialBackoff<br />Nil for: ResourceBusy, DuplicateInProgress (event-based, cleared when condition resolves)<br />After this time passes, RR will retry or transition to Failed (for ConsecutiveFailures)|
-| `nextAllowedExecution`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| NextAllowedExecution indicates when this RR can be retried after exponential backoff.<br />Set when RR fails due to pre-execution failures (infrastructure, validation, etc.).<br />Implements progressive delay: 1m, 2m, 4m, 8m, capped at 10m.<br />Formula: min(Base × 2^(failures-1), Max)<br />Nil means no exponential backoff is active.|
-| `consecutiveFailureCount`| _integer_| ConsecutiveFailureCount tracks how many times this fingerprint has failed consecutively.<br />Updated by RO when RR transitions to Failed phase.<br />Reset to 0 when RR completes successfully.|
-| `failurePhase`| _string_| FailurePhase indicates which phase failed (e.g., "ai_analysis", "workflow_execution")<br />Only set when OverallPhase = "failed"|
+| `nextAllowedExecution`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| NextAllowedExecution indicates when this RR can be retried after exponential backoff.<br />Set when RR transitions to Failed phase (pre-execution failures) or when EA<br />determines an Inconclusive outcome (alert still firing after remediation, #1091).<br />Implements progressive delay: 1m, 2m, 4m, 8m, capped at 10m.<br />Formula: min(Base × 2^(failures-1), Max)<br />Nil means no exponential backoff is active.|
+| `consecutiveFailureCount`| _integer_| ConsecutiveFailureCount tracks how many times this fingerprint has failed consecutively.<br />Updated by RO when RR transitions to Failed phase or completes with Outcome=Inconclusive<br />(EA confirms alert still firing, treated as functional failure per , #1091).<br />Reset to 0 when RR enters Verifying phase after successful remediation.|
+| `failurePhase`| _[FailurePhase](#failurephase)_| FailurePhase indicates which orchestration phase failed.<br />Only set when OverallPhase = Failed.|
 | `failureReason`| _string_| FailureReason provides a human-readable reason for the failure<br />Only set when OverallPhase = "failed"|
 | `requiresManualReview`| _boolean_| RequiresManualReview indicates that this remediation cannot proceed automatically<br />and requires operator intervention. Set when:<br />- WE skip reason is "ExhaustedRetries" (5+ consecutive pre-execution failures)<br />- WE skip reason is "PreviousExecutionFailed" (execution failure, cluster state unknown)<br />- AIAnalysis WorkflowResolutionFailed with LowConfidence or WorkflowNotFound|
-| `outcome`| _string_| Outcome indicates the remediation result when completed.<br />Values:<br />- "Remediated": Workflow executed successfully<br />- "NoActionRequired": AIAnalysis determined no action needed (problem self-resolved)<br />- "ManualReviewRequired": Requires operator intervention<br />- "VerificationTimedOut": EA assessment did not complete within deadline|
-| `timeoutPhase`| _string_| TimeoutPhase indicates which phase timed out<br />Only set when OverallPhase = "timeout"|
+| `outcome`| _string_| Outcome indicates the remediation result when completed.<br />Values:<br />- "Remediated": Workflow executed successfully and EA verified effectiveness<br />- "NoActionRequired": AIAnalysis determined no action needed (problem self-resolved)<br />- "ManualReviewRequired": Requires operator intervention<br />- "VerificationTimedOut": EA assessment did not complete within deadline <br />- "Inconclusive": EA completed but alert still firing (alertScore=0) <br />- "DryRun": Pipeline stopped after AI analysis; no WFE/EA created (dry-run mode) (#712, #736)|
+| `timeoutPhase`| _[RemediationPhase](#remediationphase)_| TimeoutPhase indicates which orchestration phase timed out.<br />Only set when OverallPhase = TimedOut.|
 | `timeoutTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| TimeoutTime records when the timeout occurred<br />Only set when OverallPhase = "timeout"|
 | `retentionExpiryTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| RetentionExpiryTime indicates when this CRD should be cleaned up (24 hours after completion)|
 | `notificationStatus`| _string_| NotificationStatus tracks the delivery status of notification(s) for this remediation.<br />Values: "Pending", "InProgress", "Sent", "Failed", "Cancelled"<br />Status Mapping from NotificationRequest.Status.Phase:<br />- NotificationRequest Pending → "Pending"<br />- NotificationRequest Sending → "InProgress"<br />- NotificationRequest Sent → "Sent"<br />- NotificationRequest Failed → "Failed"<br />- NotificationRequest deleted by user → "Cancelled"<br />For bulk notifications , this reflects the status of the consolidated notification.|
@@ -1072,6 +1379,29 @@ _Appears in:_
 | `currentProcessingRef`| _[ObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectreference-v1-core)_| CurrentProcessingRef references the current SignalProcessing CRD|
 | `selectedWorkflowRef`| _[WorkflowReference](#workflowreference)_| SelectedWorkflowRef captures the workflow selected by AI for this remediation.<br />Populated from workflowexecution.selection.completed audit event.|
 | `executionRef`| _[ObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectreference-v1-core)_| ExecutionRef references the WorkflowExecution CRD for this remediation.<br />Populated from workflowexecution.execution.started audit event.|
+| `remediationTarget`| _[ResourceIdentifier](#resourceidentifier)_| RemediationTarget identifies the Kubernetes resource the LLM determined should be<br />remediated. Populated from AIAnalysis.Status.RootCauseAnalysis.AffectedResource.<br />May differ from Spec.TargetResource (e.g., Deployment vs Pod).|
+| `targetDisplay`| _string_| TargetDisplay is the Kubernetes-idiomatic Kind/Name of the RCA target<br />(e.g., "Deployment/web-frontend"). Populated when RemediationTarget is set.|
+| `confidence`| _string_| Confidence is the AI analysis confidence score as a display string<br />(e.g., "0.97"). Populated from AIAnalysis.SelectedWorkflow.Confidence.|
+| `workflowDisplayName`| _string_| WorkflowDisplayName is the human-readable workflow identifier<br />(e.g., "GitRevertCommit:git-revert-v2"). Populated from AIAnalysis.SelectedWorkflow.|
+| `signalTargetDisplay`| _string_| SignalTargetDisplay is the Kubernetes-idiomatic Kind/Name of the signal target<br />(e.g., "Pod/web-frontend-cdbdbc4f8-6kn6j"). Populated from Spec.TargetResource.|
+
+
+### RemediationTarget
+
+
+RemediationTarget identifies the Kubernetes resource identified by the LLM as the
+actual target for remediation. This may differ from the signal's source resource
+(e.g., the signal comes from a Pod, but the Deployment should be patched).
+
+_Appears in:_
+- [RootCauseAnalysis](#rootcauseanalysis)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `kind`| _string_| Kind is the Kubernetes resource kind (e.g., "Deployment", "StatefulSet", "DaemonSet")|
+| `name`| _string_| Name is the resource name|
+| `namespace`| _string_| Namespace is the resource namespace. Empty for cluster-scoped resources (e.g., Node, PersistentVolume).|
+| `apiVersion`| _string_| APIVersion disambiguates the resource's API group when the Kind exists in<br />multiple groups (e.g. Route in route.openshift.io vs serving.knative.dev).<br />Format: "group/version" (e.g. "route.openshift.io/v1"). .|
 
 
 ## RemediationWorkflow
@@ -1134,6 +1464,7 @@ _Appears in:_
 | `bundle`| _string_| Bundle is the execution bundle or container image reference|
 | `bundleDigest`| _string_| BundleDigest is the digest of the execution bundle|
 | `engineConfig`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| EngineConfig holds engine-specific configuration|
+| `serviceAccountName`| _string_| ServiceAccountName is the pre-existing ServiceAccount for the execution<br />resource (Job, PipelineRun, or Ansible TokenRequest).<br /> Operators pre-create SAs with appropriate RBAC in the<br />execution namespace. If absent, K8s assigns the namespace's default SA<br />(Job/Tekton) or the Ansible executor uses the controller's in-cluster<br />credentials (#500 fallback).|
 
 
 ### RemediationWorkflowLabels
@@ -1148,7 +1479,7 @@ _Appears in:_
 | ---| ---| ---|
 | `severity`| _string array_| Severity is the severity level(s)|
 | `environment`| _string array_| Environment is the target environment(s)|
-| `component`| _string_| Component is the Kubernetes resource type|
+| `component`| _string array_| Component is the Kubernetes resource type(s)|
 | `priority`| _string_| Priority is the business priority level|
 
 
@@ -1205,7 +1536,7 @@ _Appears in:_
 
 
 RemediationWorkflowSpec defines the desired state of RemediationWorkflow.
-Maps to the spec content of a workflow-schema.yaml file per .
+Declared as a Kubernetes resource; registered via kubectl apply .
 Workflow name is derived from the CRD's metadata.name (not duplicated in spec).
 
 _Appears in:_
@@ -1237,7 +1568,7 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `workflowId`| _string_| WorkflowID is the UUID assigned by Data Storage upon registration|
-| `catalogStatus`| _string_| CatalogStatus reflects the DS catalog state (active, disabled, deprecated, archived)|
+| `catalogStatus`| _[CatalogStatus](#catalogstatus)_| CatalogStatus reflects the DS catalog lifecycle state.|
 | `registeredBy`| _string_| RegisteredBy is the identity of the registrant|
 | `registeredAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| RegisteredAt is the timestamp of initial registration|
 | `previouslyExisted`| _boolean_| PreviouslyExisted indicates if this workflow was re-registered after deletion|
@@ -1274,6 +1605,42 @@ _Appears in:_
 | `maxBackoffSeconds`| _integer_| Maximum backoff duration in seconds|
 
 
+### ReviewContext
+
+
+ReviewContext captures manual review details .
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `reason`| _string_| Reason is the high-level failure reason (e.g., "WorkflowResolutionFailed").|
+| `subReason`| _string_| SubReason provides granular detail (e.g., "WorkflowNotFound").|
+| `humanReviewReason`| _string_| HumanReviewReason from Kubernaut Agent when needs_human_review=true .|
+| `rootCauseAnalysis`| _string_| RootCauseAnalysis from AIAnalysis if available.|
+| `alignmentVerdict`| _string_| AlignmentVerdict is the shadow agent's overall verdict (aligned/suspicious).<br /> Present when shadow agent alignment check is enabled.|
+| `circuitBreakerActivated`| _boolean_| CircuitBreakerActivated indicates whether the circuit breaker terminated the investigation early.|
+
+
+### ReviewSourceType
+
+_Underlying type:_ _string_
+
+
+_Appears in:_
+- [NotificationRequestSpec](#notificationrequestspec)
+
+_Validation:_
+- Enum: [AIAnalysis WorkflowExecution RoutingEngine]
+
+| Value| Description|
+| ---| ---|
+| `AIAnalysis`||
+| `WorkflowExecution`||
+| `RoutingEngine`||
+
+
 ### RootCauseAnalysis
 
 
@@ -1285,7 +1652,7 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `summary`| _string_| Brief summary of root cause|
-| `severity`| _string_| Severity determined by RCA <br /> Aligned with HAPI/workflow catalog (critical, high, medium, low, unknown)|
+| `severity`| _string_| Severity determined by RCA <br /> Aligned with KA/workflow catalog (critical, high, medium, low, unknown)|
 | `signalType`| _string_| Signal type determined by RCA (may differ from input)|
 | `contributingFactors`| _string array_| Contributing factors|
 | `remediationTarget`| _[RemediationTarget](#remediationtarget)_| RemediationTarget identifies the actual resource the LLM determined should be remediated.<br /> The LLM may identify a higher-level resource (e.g., Deployment) rather than<br />the Pod that generated the signal. The WFE creator should prefer this over the RR's<br />TargetResource when available to ensure the correct resource is patched.|
@@ -1303,15 +1670,16 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `workflowId`| _string_| Workflow identifier (catalog lookup key)|
-| `actionType`| _string_| Action type from taxonomy (e.g., ScaleReplicas, RestartPod).<br />Propagated from HAPI three-step discovery protocol to RO audit events.|
+| `actionType`| _string_| Action type from taxonomy (e.g., ScaleReplicas, RestartPod).<br />Propagated from KA three-step discovery protocol to RO audit events.|
 | `version`| _string_| Workflow version|
-| `executionBundle`| _string_| Execution bundle OCI reference (digest-pinned) - resolved by HolmesGPT-API|
+| `executionBundle`| _string_| Execution bundle OCI reference (digest-pinned) - resolved by KA|
 | `executionBundleDigest`| _string_| Execution bundle digest for audit trail|
 | `confidence`| _float_| Confidence score (0.0-1.0)|
 | `parameters`| _object (keys:string, values:string)_| Workflow parameters (UPPER_SNAKE_CASE keys)|
 | `rationale`| _string_| Rationale explaining why this workflow was selected|
-| `executionEngine`| _string_| ExecutionEngine specifies the backend engine for workflow execution.<br />Populated from HolmesGPT-API workflow recommendation.<br />When empty, defaults to "tekton" for backwards compatibility.|
+| `executionEngine`| _string_| ExecutionEngine specifies the backend engine for workflow execution.<br />Populated from KA workflow recommendation.<br />When empty, defaults to "tekton" for backwards compatibility.|
 | `engineConfig`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| EngineConfig holds engine-specific configuration .<br />For ansible: \{"playbookPath": "...", "jobTemplateName": "...", "inventoryName": "..."\}.|
+| `serviceAccountName`| _string_| ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog . Propagated to the WFE for pod execution.|
 
 
 ### SignalContextInput
@@ -1328,11 +1696,12 @@ _Appears in:_
 | `fingerprint`| _string_| Signal fingerprint for correlation|
 | `severity`| _string_| Signal severity: critical, high, medium, low, unknown (normalized by SignalProcessing Rego - )|
 | `signalName`| _string_| Signal name (e.g., OOMKilled, CrashLoopBackOff)<br />Normalized by SignalProcessing: proactive names mapped to base names|
-| `signalMode`| _string_| SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Prompt Strategy<br />Copied from SignalProcessing status by RemediationOrchestrator.<br />Used by HAPI to switch investigation prompt (RCA vs. predict & prevent).|
+| `signalMode`| _string_| SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Prompt Strategy<br />Copied from SignalProcessing status by RemediationOrchestrator.<br />Used by Kubernaut Agent to switch investigation prompt (RCA vs. predict & prevent).|
 | `environment`| _string_| Environment classification<br />Examples: "production", "staging", "development", "qa-eu", "canary"|
 | `businessPriority`| _string_| Business priority<br />Best practice examples: P0 (critical), P1 (high), P2 (normal), P3 (low)|
 | `targetResource`| _[TargetResource](#targetresource)_| Target resource identification|
 | `enrichmentResults`| _EnrichmentResults_| Complete enrichment results from SignalProcessing|
+| `signalAnnotations`| _object (keys:string, values:string)_| SignalAnnotations from the original alert (e.g., description, summary from AlertManager).<br />Untrusted content — sanitized by KA prompt builder before reaching the LLM.|
 
 
 ### SignalData
@@ -1443,15 +1812,48 @@ _Appears in:_
 | `environmentClassification`| _[EnvironmentClassification](#environmentclassification)_| Categorization results|
 | `priorityAssignment`| _[PriorityAssignment](#priorityassignment)_||
 | `businessClassification`| _BusinessClassification_||
-| `severity`| _string_| Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "medium", "low", or "unknown"<br />Aligned with HAPI/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.|
+| `severity`| _string_| Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "medium", "low", or "unknown"<br />Aligned with KA/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.|
 | `policyHash`| _string_| PolicyHash is the SHA256 hash of the Rego policy used for severity determination<br />Provides audit trail and policy version tracking for compliance requirements<br />Expected format: 64-character hexadecimal string (SHA256 hash)|
 | `signalMode`| _string_| SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Classification<br /> Proactive Signal Mode Classification and Prompt Strategy<br />Set during the Classifying phase alongside severity, environment, and priority.<br />All signals MUST be classified — "reactive" is the default for unmapped types.|
-| `signalName`| _string_| SignalName is the normalized signal name after proactive-to-base mapping.<br /> Signal Name Normalization<br />For proactive signals (e.g., "PredictedOOMKill"), this is the base name (e.g., "OOMKilled").<br />For reactive signals, this matches Spec.Signal.Name unchanged.<br />This is the AUTHORITATIVE signal name for all downstream consumers (RO, AA, HAPI).|
+| `signalName`| _string_| SignalName is the normalized signal name after proactive-to-base mapping.<br /> Signal Name Normalization<br />For proactive signals (e.g., "PredictedOOMKill"), this is the base name (e.g., "OOMKilled").<br />For reactive signals, this matches Spec.Signal.Name unchanged.<br />This is the AUTHORITATIVE signal name for all downstream consumers (RO, AA, KA).|
 | `sourceSignalName`| _string_| SourceSignalName preserves the pre-normalization signal name for audit trail.<br /> Audit trail preservation (SOC2 CC7.4)<br />Only populated for proactive signals (e.g., "PredictedOOMKill").<br />Empty for reactive signals.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions for detailed status|
 | `error`| _string_| Error information|
 | `consecutiveFailures`| _integer_| ConsecutiveFailures tracks the number of consecutive transient failures.<br />Used with shared backoff for exponential retry delays .<br />Reset to 0 on successful phase transition.|
 | `lastFailureTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| LastFailureTime records when the last failure occurred.<br />Used to determine if enough time has passed for retry.|
+
+
+### SkipReason
+
+_Underlying type:_ _string_
+
+SkipReason represents the reason why a RemediationRequest was skipped.
+
+_Appears in:_
+- [RemediationRequestStatus](#remediationrequeststatus)
+
+_Validation:_
+- Enum: [RecentlyRemediated ResourceBusy ExhaustedRetries PreviousExecutionFailed]
+
+| Value| Description|
+| ---| ---|
+| `RecentlyRemediated`||
+| `ResourceBusy`||
+| `ExhaustedRetries`||
+| `PreviousExecutionFailed`||
+
+
+### TargetContext
+
+
+TargetContext captures target resource context.
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `targetResource`| _string_| TargetResource in "Kind/Name" format.|
 
 
 ### TargetResource
@@ -1467,6 +1869,7 @@ _Appears in:_
 | `kind`| _string_| Kind is the Kubernetes resource kind (e.g., "Deployment", "StatefulSet").|
 | `name`| _string_| Name is the resource name.|
 | `namespace`| _string_| Namespace is the resource namespace.<br />Empty for cluster-scoped resources (e.g., Node, PersistentVolume).|
+| `apiVersion`| _string_| APIVersion disambiguates the resource's API group when the Kind exists in<br />multiple groups (e.g. Route in route.openshift.io vs serving.knative.dev).<br />Format: "group/version" (e.g. "route.openshift.io/v1"). .|
 
 
 ### TimeoutConfig
@@ -1490,8 +1893,8 @@ _Appears in:_
 ### ValidationAttempt
 
 
-ValidationAttempt contains details of a single HAPI validation attempt
-Per HAPI retries up to 3 times with LLM self-correction
+ValidationAttempt contains details of a single KA validation attempt
+Per KA retries up to 3 times with LLM self-correction
 Each attempt feeds validation errors back to the LLM for correction
 
 _Appears in:_
@@ -1504,6 +1907,41 @@ _Appears in:_
 | `isValid`| _boolean_| Whether validation passed (always false for failed attempts in history)|
 | `errors`| _string array_| Validation errors encountered|
 | `timestamp`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When this attempt occurred|
+
+
+### VerificationContext
+
+
+VerificationContext captures EA verification results for completion notifications .
+Enables programmatic routing (e.g., inconclusive outcomes -> escalation channel).
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `assessed`| _boolean_| Assessed indicates whether verification was performed at all.|
+| `outcome`| _string_| Outcome is the high-level result: "passed", "completed", "partial", "inconclusive", "unavailable".<br />"completed" indicates all components were assessed but some scores < 1.0 .|
+| `reason`| _string_| Reason maps to EffectivenessAssessment.Status.AssessmentReason.|
+| `summary`| _string_| Summary is the operator-facing human-readable message.|
+| `degraded`| _boolean_| Degraded indicates that the EA was unable to reliably compare pre- and<br />post-remediation state because hash capture failed .<br />Routing rules can match on this to escalate degraded notifications.|
+| `degradedReason`| _string_| DegradedReason describes why the EA is degraded (e.g., RBAC Forbidden for<br />the target CRD). Empty when Degraded is false.|
+
+
+### WorkflowContext
+
+
+WorkflowContext captures selected workflow details.
+
+_Appears in:_
+- [NotificationContext](#notificationcontext)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `selectedWorkflow`| _string_| SelectedWorkflow is the ID of the workflow selected by AI.|
+| `confidence`| _string_| Confidence is the AI confidence score (as string, e.g. "0.95").|
+| `workflowId`| _string_| WorkflowID is the ID of the executed workflow.|
+| `executionEngine`| _string_| ExecutionEngine is the engine used to execute the workflow.|
 
 
 ## WorkflowExecution
@@ -1530,7 +1968,7 @@ WorkflowExecutionSpec defines the desired state of WorkflowExecution
 WorkflowExecution represents an immutable event (workflow execution attempt).
 Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 - Audit trail integrity (executed spec matches approved spec)
-- No parameter tampering after HAPI validation
+- No parameter tampering after KA validation
 - No target resource changes after routing decisions
 
 To change execution parameters, delete and recreate the WorkflowExecution.
@@ -1563,15 +2001,34 @@ _Appears in:_
 | `phase`| _string_| Phase tracks current execution stage<br />V1.0: Skipped phase removed - RO makes routing decisions before WFE creation|
 | `startTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| StartTime when execution started|
 | `completionTime`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| CompletionTime when execution completed (success or failure)|
-| `duration`| _string_| Duration of the execution|
+| `duration`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| Duration of the execution|
 | `executionRef`| _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_| ExecutionRef references the created execution resource (PipelineRun or Job)|
 | `executionStatus`| _[ExecutionStatusSummary](#executionstatussummary)_| ExecutionStatus mirrors key execution resource status fields|
 | `failureReason`| _string_| FailureReason explains why execution failed (if applicable)<br />DEPRECATED: Use FailureDetails for structured failure information|
 | `failureDetails`| _[FailureDetails](#failuredetails)_| FailureDetails contains structured failure information<br />Populated when Phase=Failed|
 | `blockClearance`| _[BlockClearanceDetails](#blockclearancedetails)_| BlockClearance tracks the clearing of PreviousExecutionFailed blocks<br />When set, allows new executions despite previous execution failure<br />Preserves audit trail of WHO cleared the block and WHY|
 | `ephemeralCredentialIDs`| _integer array_| EphemeralCredentialIDs stores AWX credential IDs created by the ansible<br />executor for cleanup after execution . Written via the status<br />subresource to avoid violating spec immutability .|
-| `executionEngine`| _string_| ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowExecutionEngine; immutable thereafter.<br />Values: "tekton", "job", "ansible".|
+| `executionEngine`| _string_| ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowSchemaMetadata; immutable thereafter.<br />Values: "tekton", "job", "ansible".|
+| `serviceAccountName`| _string_| ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog at runtime by the WE controller .<br />Set once during Pending phase via ResolveWorkflowCatalogMetadata; immutable<br />thereafter. If empty, K8s assigns the namespace's default SA (Job/Tekton)<br />or the Ansible executor falls back to the controller's in-cluster credentials.|
+| `deduplicatedBy`| _string_| DeduplicatedBy stores the name of the original WorkflowExecution that owns<br />the conflicting execution resource. Set atomically inside AtomicStatusUpdate<br />when FailureDetails.Reason == Deduplicated (, M5 constraint).<br />Immutable after initial assignment.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions provide detailed status information|
+
+
+### WorkflowOverride
+
+
+WorkflowOverride allows operators to override the AI-recommended workflow
+and/or parameters when approving a RemediationApprovalRequest .
+The RO resolves the final spec from either this override or the AIA default.
+
+_Appears in:_
+- [RemediationApprovalRequestStatus](#remediationapprovalrequeststatus)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `workflowName`| _string_| Name of a RemediationWorkflow CRD to use instead of the AI-recommended one.<br />If set, the webhook validates the RW exists and has CatalogStatus=Active.|
+| `parameters`| _object (keys:string, values:string)_| Override parameters for the workflow execution.<br />If non-nil (including empty map), replaces the AI-recommended parameters.<br />If nil, the AI-recommended parameters are preserved.|
+| `rationale`| _string_| Rationale for the override decision (audit trail).|
 
 
 ### WorkflowRef

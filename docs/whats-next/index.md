@@ -22,6 +22,10 @@ Goose runtime with MCP injection points for composing multi-step remediation rec
 
 Hub-and-spoke model using ACM (Advanced Cluster Management) for managing Kubernaut across multiple clusters from a central hub.
 
+## Natural Language Signal Intake
+
+Accept signals described in plain language — not just structured Prometheus alerts or Kubernetes events. Enables operators, chat bots, and external agents to trigger investigations by describing symptoms in natural language.
+
 ## Dry-run / Observe Mode
 
 Trust Ladder Level 1: see what Kubernaut would do without executing any remediation. Provides a safe onboarding path for new clusters.

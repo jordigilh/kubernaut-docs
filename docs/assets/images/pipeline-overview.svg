@@ -56,16 +56,15 @@
   <text x="698" y="274" text-anchor="middle" font-size="16" font-weight="700" fill="white">2</text>
   <text x="450" y="274" font-family="'Red Hat Display', Arial, sans-serif" font-size="18px" font-weight="700" fill="white">AI Analysis</text>
 
-  <text x="450" y="330" font-family="'Red Hat Text', Arial, sans-serif" font-size="15px" font-weight="600" fill="#EE0000">3-Phase Pipeline</text>
-  <text x="450" y="356" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">1. LLM investigates with 36</text>
+  <text x="450" y="330" font-family="'Red Hat Text', Arial, sans-serif" font-size="15px" font-weight="600" fill="#EE0000">Two-Invocation Pipeline</text>
+  <text x="450" y="356" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">1. First invocation: LLM investigates with 36</text>
   <text x="462" y="376" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">native Go tools (client-go)</text>
-  <text x="450" y="402" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">2. Server-side enrichment</text>
-  <text x="462" y="422" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">(context, history, metrics)</text>
-  <text x="450" y="448" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">3. LLM selects best workflow</text>
-  <text x="462" y="468" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">from user-declared catalog</text>
+  <text x="450" y="402" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">Server-side enrichment (context, history, metrics)</text>
+  <text x="450" y="428" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">2. Second invocation: LLM selects best workflow</text>
+  <text x="462" y="448" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">from user-declared catalog</text>
 
   <rect x="450" y="530" width="240" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="570" y="558" text-anchor="middle" font-family="'Red Hat Text', Arial, sans-serif" font-size="13px" font-weight="600" fill="#6A6E73">CRD: AiAnalysis</text>
+  <text x="570" y="558" text-anchor="middle" font-family="'Red Hat Text', Arial, sans-serif" font-size="13px" font-weight="600" fill="#6A6E73">CRD: AIAnalysis</text>
 
   <!-- Arrow 2-3 -->
   <line x1="730" y1="460" x2="768" y2="460" stroke="#A3A6A9" stroke-width="3"/>

@@ -58,6 +58,7 @@ The [investigation pipeline](../architecture/kubernaut-agent-investigation.md) n
 - **Unified monitoring config** (#463) — Prometheus and AlertManager configuration unified into a single `monitoring` block
 - **Standardized log levels** (#875) — Log level configuration standardized across all services
 - **Verdict label rename** (#1077) — `VerdictClean` changed from `"clean"` to `"aligned"`. **Breaking**: update Prometheus queries
+- **Audit event batching fix** (#1056) — Audit 401/403 errors reclassified as retryable; token source extracted for shared cache across all callers
 
 ### Dry-run mode
 
@@ -192,7 +193,7 @@ Initial documented release of Kubernaut.
 - Effectiveness assessment with four-dimensional scoring
 - Human approval gates via RemediationApprovalRequest CRDs
 - Rego-based policy evaluation for signal processing and approval
-- Multichannel notifications (Slack, PagerDuty, email, webhook)
+- Multichannel notifications (Slack, console, log, file)
 - Full audit trail with 7-year retention and CRD reconstruction
 - Demo content seeding via `demoContent.enabled`
 - Alert decay detection (DD-EM-003)

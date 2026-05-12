@@ -52,7 +52,7 @@
   <text x="718" y="460" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="13px" fill="#151515">LLM + 36 client-go tools, Prometheus queries, owner chain, remediation history</text>
   <text x="718" y="478" font-family="'Red Hat Text', Arial, sans-serif" font-size="12px" font-style="italic" fill="#6A6E73">Predictive AI covers this — Dynatrace Davis, Datadog Watchdog, Komodor Klaudia</text>
   <text x="718" y="496" font-family="'Red Hat Text', Arial, sans-serif" font-size="11px" fill="#A3A6A9">Statistical models correlate known patterns. GenAI (Kubernaut) reasons about novel failures.</text>
-  <text x="718" y="514" font-family="'Red Hat Text', Arial, sans-serif" font-size="11px" fill="#A3A6A9">HolmesGPT diagnoses but does not execute. Klaudia investigates with multi-agent architecture.</text>
+  <text x="718" y="514" font-family="'Red Hat Text', Arial, sans-serif" font-size="11px" fill="#A3A6A9">Kubernaut Agent diagnoses but does not execute. Klaudia investigates with multi-agent architecture.</text>
 
   <!-- Zone 3: Execution -->
   <rect x="700" y="588" width="4" height="100" rx="2" fill="#EE0000"/>

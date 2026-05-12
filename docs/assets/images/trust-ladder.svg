@@ -53,10 +53,10 @@
   
   <!-- Level number + name -->
   <text x="840" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L2</text>
-  <text x="554" y="512" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Approve</text>
+  <text x="554" y="512" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Selective Trust</text>
   
   <!-- Version tag -->
-  <text x="554" y="532" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  <text x="554" y="532" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">New in v1.5</text>
   
   <!-- Description -->
   <text x="554" y="560" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">Every remediation goes through</text>
@@ -77,10 +77,10 @@
   
   <!-- Level number + name -->
   <text x="1250" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L3</text>
-  <text x="964" y="452" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Selective Autonomy</text>
+  <text x="964" y="452" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Approve</text>
   
   <!-- Version tag -->
-  <text x="964" y="472" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  <text x="964" y="472" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Available today</text>
   
   <!-- Description -->
   <text x="964" y="500" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">Trusted workflows auto-approve;</text>
@@ -101,10 +101,10 @@
   
   <!-- Level number + name -->
   <text x="1660" y="800" text-anchor="end" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="60px" fill="#151515" opacity="0.06">L4</text>
-  <text x="1374" y="392" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Full Autonomy</text>
+  <text x="1374" y="392" font-family="'Red Hat Display', Arial, sans-serif" font-weight="700" font-size="20px" fill="#151515">Automate</text>
   
   <!-- Version tag -->
-  <text x="1374" y="412" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Since v1.3</text>
+  <text x="1374" y="412" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="12px" fill="#6A6E73">Available today</text>
   
   <!-- Description -->
   <text x="1374" y="440" font-family="'Red Hat Text', Arial, sans-serif" font-weight="400" font-size="14px" fill="#151515">All workflows execute</text>

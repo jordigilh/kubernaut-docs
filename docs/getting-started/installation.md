@@ -232,6 +232,9 @@ Only required when Slack delivery is configured. When using console-only routing
 !!! warning "OCP-specific Helm chart deprecated (v1.4)"
     The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). Deploy OpenShift clusters with the **unified [`kubernaut`](https://quay.io/repository/kubernaut-ai/charts/kubernaut)** chart together with the **Kubernaut Operator** instead of a separate OCP-only chart artifact.
 
+!!! info "NetworkPolicies (v1.4)"
+    Kubernaut v1.4 deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
+
 The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
 ### Kind / Vanilla Kubernetes

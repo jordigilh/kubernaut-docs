@@ -1,15 +1,57 @@
 # Installation
 
-This guide walks you through installing Kubernaut on a Kubernetes cluster using Helm.
+## Deployment Methods
 
-## Prerequisites
+Kubernaut offers two deployment methods:
+
+| Method | Use Case | Platform |
+|---|---|---|
+| **[Kubernaut Operator](#kubernaut-operator-production)** | **Production** — full lifecycle management, OLM integration, status reporting | OpenShift 4.18+ |
+| **[Helm Chart](#helm-chart-developmenttesting)** | **Development, testing, CI** — quick setup for evaluation and local development | Any Kubernetes 1.32+ |
+
+!!! warning "Production deployments"
+    The **Kubernaut Operator** is the only supported production deployment method. The Helm chart does not provide lifecycle management, status reporting, or OLM integration required for production operations. Use the Helm chart for development, testing, and CI environments only.
+
+## Kubernaut Operator (Production)
+
+The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 10 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
+
+### Installation
+
+The operator is available through OLM (Operator Lifecycle Manager) or direct deployment:
+
+1. **OperatorHub (recommended)** — Install from the OperatorHub catalog in the OpenShift Console
+2. **Custom CatalogSource** — For disconnected or custom environments, create a `CatalogSource` pointing to the operator index image
+
+For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
+
+### What the Operator manages
+
+- Validates BYO PostgreSQL and Valkey secrets before deployment
+- Runs embedded database schema migrations
+- Installs and upgrades the 9 Kubernaut workload CRDs
+- Deploys all 10 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Configures OCP Routes and service-serving CA TLS
+- Reports per-service readiness status on the `Kubernaut` CR
+- Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)
+
+---
+
+## Helm Chart (Development/Testing)
+
+This section walks you through installing Kubernaut using the Helm chart for development, testing, and CI environments.
+
+!!! info "Not for production"
+    The Helm chart is intended for development, testing, and CI. For production deployments, use the [Kubernaut Operator](#kubernaut-operator-production).
+
+### Prerequisites
 
 | Requirement | Version | Notes |
 |---|---|---|
 | Kubernetes | 1.32+ | selectableFields GA in 1.32; required for CRD field selectors |
 | Helm | 3.12+ | |
 | StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
-| cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
+| cert-manager | 1.12+ (optional) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
 
 **LLM provider** (required for AI investigation):
 
@@ -229,8 +271,8 @@ Only required when Slack delivery is configured. When using console-only routing
 
 ## Install
 
-!!! warning "OCP-specific Helm chart deprecated (v1.4)"
-    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). Deploy OpenShift clusters with the **unified [`kubernaut`](https://quay.io/repository/kubernaut-ai/charts/kubernaut)** chart together with the **Kubernaut Operator** instead of a separate OCP-only chart artifact.
+!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator (v1.4)"
+    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
 
 !!! info "NetworkPolicies (v1.4)"
     Kubernaut v1.4 deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.

@@ -1,53 +1,126 @@
 # Supported Scenarios
 
-Kubernaut validates remediation end to end against a **catalog of real-world scenarios**. Each scenario is mapped to an [ITIL](https://en.wikipedia.org/wiki/ITIL)-style support tier (L0–L3): from autonomous platform triage through known-error fixes, specialist remediation, and problem-management style root-cause work. Coverage is **37 validated scenarios** plus **6 planned** (see table). The catalog below is tagged **v1.4**.
+Kubernaut validates remediation end to end against a catalog of real-world **OpenShift Container Platform (OCP)** incident scenarios. Each scenario is mapped to an ITIL-style support tier (L0–L3) reflecting how OCP operations teams typically triage and escalate platform issues — from autonomous detection through known-error resolution, specialist investigation, and deep root-cause analysis.
 
-| ITIL tier | Subgroup | Scenario | Status |
-|-----------|----------|----------|--------|
-| L0 — Automated Detection & Triage | — | Signal classification & severity normalization | Validated |
-| L0 — Automated Detection & Triage | — | Duplicate Alert Suppression | Validated |
-| L0 — Automated Detection & Triage | — | Concurrent Cross-Namespace | Validated |
-| L0 — Automated Detection & Triage | — | Prompt Injection | Planned |
-| L1 — Known Error Resolution | — | CrashLoopBackOff | Validated |
-| L1 — Known Error Resolution | — | CrashLoopBackOff (Helm) | Validated |
-| L1 — Known Error Resolution | — | Stuck Rollout | Validated |
-| L1 — Known Error Resolution | — | Certificate Failure | Validated |
-| L1 — Known Error Resolution | — | NetworkPolicy Block | Validated |
-| L1 — Known Error Resolution | — | Orphaned PVCs (no-action) | Validated |
-| L1 — Known Error Resolution | — | Image Pull Failure | Validated |
-| L1 — Known Error Resolution | — | Route Misconfiguration | Validated |
-| L1 — Known Error Resolution | — | Build Failure (S2I) | Validated |
-| L1 — Known Error Resolution | — | SCC Violation | Validated |
-| L1 — Known Error Resolution | — | Operator Health (OLM) | Validated |
-| L1 — Known Error Resolution | — | RBAC Failure | Validated |
-| L1 — Known Error Resolution | — | VM Boot Failure | Planned |
-| L2 — Specialist Remediation | Capacity & Availability | Memory Leak (Proactive) | Validated |
-| L2 — Specialist Remediation | Capacity & Availability | Memory Escalation | Validated |
-| L2 — Specialist Remediation | Capacity & Availability | SLO Burn Rate | Validated |
-| L2 — Specialist Remediation | Capacity & Availability | HPA Maxed Out | Validated |
-| L2 — Specialist Remediation | Capacity & Availability | PDB Deadlock | Validated |
-| L2 — Specialist Remediation | Infrastructure | Pending Taint | Validated |
-| L2 — Specialist Remediation | Infrastructure | Node NotReady | Validated |
-| L2 — Specialist Remediation | Infrastructure | Mesh Routing Failure | Validated |
-| L2 — Specialist Remediation | Infrastructure | GitOps Drift (ArgoCD) | Validated |
-| L2 — Specialist Remediation | Advanced Diagnostics | Cross-Namespace Dependency | Validated |
-| L2 — Specialist Remediation | Advanced Diagnostics | Severity Misdirection | Validated |
-| L2 — Specialist Remediation | Advanced Diagnostics | Red-Herring Noise | Validated |
-| L2 — Specialist Remediation | Advanced Diagnostics | Alert Misdirection | Validated |
-| L2 — Specialist Remediation | OpenShift Virtualization | VM Migration Failure | Planned |
-| L2 — Specialist Remediation | OpenShift Virtualization | VM Network Post-Migration | Planned |
-| L3 — Problem Management / Root-Cause Analysis | Capacity & Storage | Autoscale (cluster) | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Capacity & Storage | StatefulSet PVC Failure | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Capacity & Storage | DiskPressure Migration † | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Capacity & Storage | PVC Capacity Forecast | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Root-Cause & Cascade | Resource Contention | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Root-Cause & Cascade | DB Connection Saturation | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Root-Cause & Cascade | Cascading Service Failure | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Root-Cause & Cascade | etcd Defrag Forecast | Validated |
-| L3 — Problem Management / Root-Cause Analysis | Platform Behavior | ResourceQuota Exhaustion | Validated |
-| L3 — Problem Management / Root-Cause Analysis | OpenShift Virtualization | VM Storage Degradation | Planned |
-| L3 — Problem Management / Root-Cause Analysis | OpenShift Virtualization | VM Cascading Migration Drain | Planned |
+Coverage as of v1.4: **38 validated scenarios** with E2E golden transcript testing, plus **8 planned** for future releases (OpenShift Virtualization, prompt injection defense, interactive forensic post-mortems, and TSM incident record creation).
 
-† **DiskPressure Migration** spans multiple L3 sub-categories (storage, infrastructure, proactive, GitOps-aware), with OCP and Ansible Automation Platform integration.
+## L0 — Automated Detection & Triage
 
-Planned rows follow the Kubernaut v1.4 ITIL mapping appendix: additional L0/L1 items and OpenShift Virtualization scenarios are targeted for **v1.5**. Scenarios are **E2E tested with golden transcripts** as part of validation.
+Platform handles autonomously — no human trigger required.
+
+| Scenario | Status |
+|----------|--------|
+| Signal classification & severity normalization | Validated |
+| Duplicate Alert Suppression | Validated |
+| Concurrent Cross-Namespace | Validated |
+| Prompt Injection | Planned (v1.5) |
+
+## L1 — Known Error Resolution
+
+Standard workflow from catalog — first-line OCP support applies a documented fix.
+
+| Scenario | Status |
+|----------|--------|
+| CrashLoopBackOff | Validated |
+| CrashLoopBackOff (Helm) | Validated |
+| Stuck Rollout | Validated |
+| Certificate Failure | Validated |
+| NetworkPolicy Block | Validated |
+| Orphaned PVCs (no-action) | Validated |
+| Image Pull Failure | Validated |
+| Route Misconfiguration | Validated |
+| Build Failure (S2I) | Validated |
+| SCC Violation | Validated |
+| Operator Health (OLM) | Validated |
+| RBAC Failure | Validated |
+| VM Boot Failure | Planned (v1.5) |
+
+## L2 — Specialist Remediation
+
+Deep investigation with targeted remediation — OCP resolver group level.
+
+### Capacity & Availability
+
+| Scenario | Status |
+|----------|--------|
+| Memory Leak (Proactive) | Validated |
+| Memory Escalation | Validated |
+| SLO Burn Rate | Validated |
+| HPA Maxed Out | Validated |
+| PDB Deadlock | Validated |
+
+### Infrastructure
+
+| Scenario | Status |
+|----------|--------|
+| Pending Taint | Validated |
+| Node NotReady | Validated |
+| Mesh Routing Failure | Validated |
+| GitOps Drift (ArgoCD) | Validated |
+
+### Advanced Diagnostics
+
+| Scenario | Status |
+|----------|--------|
+| Cross-Namespace Dependency | Validated |
+| Severity Misdirection | Validated |
+| Red-Herring Noise | Validated |
+| Alert Misdirection | Validated |
+
+### OpenShift Virtualization
+
+| Scenario | Status |
+|----------|--------|
+| VM Migration Failure | Planned (v1.5) |
+| VM Network Post-Migration | Planned (v1.5) |
+
+## L3 — Problem Management / Root-Cause Analysis
+
+Deep RCA, capacity planning, and cascading failure analysis across the OCP platform.
+
+### Capacity & Storage
+
+| Scenario | Status |
+|----------|--------|
+| Autoscale (cluster) | Validated |
+| StatefulSet PVC Failure | Validated |
+| DiskPressure Migration | Validated |
+| PVC Capacity Forecast | Validated |
+
+### Root-Cause & Cascade
+
+| Scenario | Status |
+|----------|--------|
+| Resource Contention | Validated |
+| DB Connection Saturation | Validated |
+| Cascading Service Failure | Validated |
+| etcd Defrag Forecast | Validated |
+
+### Platform Behavior
+
+| Scenario | Status |
+|----------|--------|
+| ResourceQuota Exhaustion | Validated |
+
+### Post-Incident Review
+
+| Scenario | Status |
+|----------|--------|
+| Post Incident Review | Validated |
+| Interactive forensic post-mortem | Planned (v1.5) |
+| Incident record creation (TSM) | Planned (v1.6+) |
+
+### OpenShift Virtualization
+
+| Scenario | Status |
+|----------|--------|
+| VM Storage Degradation | Planned (v1.5) |
+| VM Cascading Migration Drain | Planned (v1.5) |
+
+---
+
+!!! note "DiskPressure Migration"
+    DiskPressure Migration spans multiple L3 sub-categories (storage, infrastructure, proactive, GitOps-aware) with OCP and Ansible Automation Platform (AAP) integration.
+
+!!! info "Validation methodology"
+    All validated scenarios are E2E tested with **golden transcripts** — recorded investigation and remediation sessions that serve as regression baselines. Planned scenarios for v1.5 focus on OpenShift Virtualization workloads, prompt injection defense at the signal intake tier, and interactive forensic post-mortems. Incident record creation via TSM integration is targeted for v1.6+.

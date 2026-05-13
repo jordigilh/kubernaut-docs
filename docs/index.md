@@ -120,7 +120,7 @@ Select a phase to learn more:
 
     **CRD:** `AIAnalysis`
 
-    Two-phased pipeline:
+    Three-phased pipeline:
 
     - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
     - **Select** — Using the RCA and server-side enrichment (historical context, detectable labels), the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
@@ -132,7 +132,7 @@ Select a phase to learn more:
     Policy-gated safety checkpoint:
 
     - **Auto-approve** low-risk actions based on OPA/Rego policies and confidence thresholds.
-    - **Manual review** via Slack or Console for higher-risk remediations.
+    - **Operator notified** via Slack, Teams, or PagerDuty for higher-risk remediations.
     - **Operator overrides** allow substituting workflow parameters via the `WorkflowOverride` CRD, with authwebhook validation and full audit trail.
 
 === "4 · Execution"

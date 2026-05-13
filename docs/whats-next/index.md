@@ -4,11 +4,6 @@ hide:
   - toc
 ---
 
----
-hide:
-  - navigation
----
-
 # What's Next
 
 Kubernaut v1.5 is the next major milestone, focused on agentic architecture and interactive sessions. The features below are in active development.

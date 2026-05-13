@@ -1,0 +1,212 @@
+/* Kubernaut upstream design language — service family colors */
+:root {
+  --kn-primary: #0891B2;
+  --kn-accent: #D97706;
+  --kn-navy: #1a1a2e;
+  --kn-sp: #0891B2;
+  --kn-aa: #6366F1;
+  --kn-ro: #0F172A;
+  --kn-wfe: #D97706;
+  --kn-em: #059669;
+  --kn-notif: #DC2626;
+  --kn-gw: #0891B2;
+  --kn-support: #64748B;
+}
+
+/* Mermaid: transparent background for any remaining diagrams */
+.mermaid,
+.mermaid svg {
+  background: transparent !important;
+}
+
+.mermaid svg > rect {
+  fill: transparent !important;
+}
+
+/* How It Works — two-panel layout */
+.how-it-works-panel {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+  margin: 1.5rem 0;
+}
+
+.how-it-works-diagram {
+  max-width: 100%;
+}
+
+.how-it-works-diagram svg {
+  width: 100%;
+  height: auto;
+}
+
+.how-it-works-phases dt {
+  font-size: 0.88rem;
+  margin-top: 0.8rem;
+}
+
+.how-it-works-phases dt:first-of-type {
+  margin-top: 0;
+}
+
+.how-it-works-phases dd {
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: #444;
+  margin-left: 0;
+}
+
+.how-it-works-phases dd ul {
+  margin: 0.3rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.how-it-works-phases dd ul li {
+  font-size: 0.82rem;
+  margin: 0.15rem 0;
+}
+
+@media (max-width: 960px) {
+  .how-it-works-panel {
+    grid-template-columns: 1fr;
+  }
+  .how-it-works-diagram {
+    max-width: 500px;
+    margin: 0 auto;
+  }
+}
+
+/* Interactive session chat mockup */
+.kn-chat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.kn-msg {
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  max-width: 92%;
+}
+
+.kn-msg.kn-user {
+  background: #F1F5F9;
+  border: 1px solid #CBD5E1;
+  align-self: flex-end;
+}
+
+.kn-msg.kn-agent {
+  background: #F0FDFA;
+  border: 1px solid var(--kn-primary);
+  align-self: flex-start;
+}
+
+.kn-msg.kn-system {
+  background: #FFFBEB;
+  border: 1px solid var(--kn-accent);
+  align-self: flex-start;
+  font-style: italic;
+}
+
+.kn-badge {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.1em 0.5em;
+  border-radius: 4px;
+  background: var(--kn-primary);
+  color: white;
+  vertical-align: middle;
+  margin-left: 0.3em;
+}
+
+.kn-badge-ok {
+  background: var(--kn-em);
+}
+
+.kn-choices {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.kn-choice {
+  flex: 1;
+  padding: 0.6rem 0.8rem;
+  border: 2px solid #E2E8F0;
+  border-radius: 8px;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+
+.kn-choice:hover {
+  border-color: var(--kn-primary);
+}
+
+.kn-choice strong {
+  font-size: 0.85rem;
+}
+
+.kn-choice-meta {
+  font-size: 0.72rem;
+  color: #94A3B8;
+}
+
+.kn-thinking {
+  font-size: 0.78rem;
+  color: #94A3B8;
+  font-style: italic;
+}
+
+/* macOS-style window frame for chat mockups */
+.kn-window {
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 0.8rem 0;
+}
+
+.kn-window-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.55rem 0.9rem;
+  background: #F1F5F9;
+  border-bottom: 1px solid #E2E8F0;
+}
+
+.kn-window-dots {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.kn-window-dots span {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.kn-window-dots span:nth-child(1) { background: #FF5F56; }
+.kn-window-dots span:nth-child(2) { background: #FFBD2E; }
+.kn-window-dots span:nth-child(3) { background: #27C93F; }
+
+.kn-window-title {
+  font-size: 0.75rem;
+  color: #94A3B8;
+  letter-spacing: 0.02em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.kn-window > .kn-chat {
+  padding: 0.8rem;
+}

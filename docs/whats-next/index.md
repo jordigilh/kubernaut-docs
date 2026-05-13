@@ -27,7 +27,7 @@ Streaming, conversational MCP interface enabling any consuming agent to interact
     <div class="kn-window">
     <div class="kn-window-bar">
     <div class="kn-window-dots"><span></span><span></span><span></span></div>
-    <span class="kn-window-title">Backstage &nbsp;&gt;&nbsp; Kubernaut &nbsp;&gt;&nbsp; inv-7f3a</span>
+    <span class="kn-window-title">Backstage &nbsp;&gt;&nbsp; Kubernaut &nbsp;&gt;&nbsp; rr-b83e19d4a7f1-5c2d09ae</span>
     </div>
     <div class="kn-chat">
     <div class="kn-msg kn-user"><strong>Operator</strong><br>What's going on with <code>checkout-service</code> in <code>prod-us-east</code>? I see alerts firing.</div>
@@ -69,7 +69,7 @@ Streaming, conversational MCP interface enabling any consuming agent to interact
     <div class="kn-window">
     <div class="kn-window-bar">
     <div class="kn-window-dots"><span></span><span></span><span></span></div>
-    <span class="kn-window-title">Backstage &nbsp;&gt;&nbsp; Kubernaut &nbsp;&gt;&nbsp; inv-a29c</span>
+    <span class="kn-window-title">Backstage &nbsp;&gt;&nbsp; Kubernaut &nbsp;&gt;&nbsp; rr-d47f62c1e8a3-91b3f07c</span>
     </div>
     <div class="kn-chat">
     <div class="kn-msg kn-user"><strong>Operator</strong><br>The payment processing in <code>prod-eu-west</code> feels sluggish since this morning. Customers are complaining about timeouts at checkout.</div>

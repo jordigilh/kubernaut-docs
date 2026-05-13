@@ -34,6 +34,24 @@ RemediationRequest (Gateway)
 
 All child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
 
+??? note "Detailed sub-phase breakdown"
+
+    | Phase | Sub-phase | Details |
+    |---|---|---|
+    | **Signal Processing** | Ingest | AlertManager webhooks, Kubernetes Events, scope validation |
+    | | Enrich | Owner chain resolution, namespace labels, workload metadata |
+    | | Classify | OPA/Rego severity, environment, priority, signal mode, business classification |
+    | **AI Analysis** | Invocation 1 — RCA | 36 native Go tools (client-go): pod logs, events, resource state, Prometheus metrics, remediation history, config inspection |
+    | | Server-side enrichment | Context injection, history lookup, metric baselines |
+    | | Invocation 2 — Workflow Selection | LLM selects from declarative workflow catalog with confidence scoring |
+    | **Approval** | Policy evaluation | OPA/Rego approval policy (environment, confidence, resource kind) |
+    | | Human review | Slack/Console notification, operator approve/reject/override |
+    | **Execution** | Engine dispatch | Tekton PipelineRun, Kubernetes Job, or Ansible (AWX/AAP) |
+    | | Security | Per-workflow ServiceAccount, short-lived TokenRequest, namespace isolation |
+    | **Effectiveness** | Verify | Pre/post spec hash comparison, alert resolution, pod readiness, metric thresholds |
+    | | Score | Four-dimensional health score (0–100%), cooldown monitoring |
+    | | Learn | Outcomes persisted to remediation history, feed future RCA investigations |
+
 ### Separation of Concerns
 
 Each service has a single responsibility:
@@ -151,7 +169,7 @@ An internal admission webhook validates and audits:
 
 - **DataStorage** -- Kubernetes TokenReview + SubjectAccessReview middleware (DD-AUTH-014)
 - **Gateway** -- Kubernetes TokenReview + SubjectAccessReview middleware for signal ingestion (see [Security & RBAC](security-rbac.md#signal-ingestion))
-- **NetworkPolicies** -- Not included in Helm chart ([GitHub #285](https://github.com/jordigilh/kubernaut/issues/285)); recommended for production deployments
+- **NetworkPolicies** -- Default-deny ingress posture for all services (v1.4); see [Security & RBAC](security-rbac.md#networkpolicies-v14)
 - **TLS (inter-service)** -- v1.3+ supports HTTPS and mutual TLS for internal REST traffic when certificate material is present; see [Configuration Reference -- TLS](../user-guide/configuration.md#tls-and-certificate-management)
 
 ## Port model (v1.3+)

@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 125 1680 850">
+  <rect x="120" y="125" width="1680" height="850" fill="#FFFFFF"/>
+  <defs>
+    <filter id="ws" x="-2%" y="-1%" width="104%" height="104%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="rhH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0891B2"/><stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+    <filter id="sh" x="-2%" y="-4%" width="104%" height="112%">
+      <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#1E293B" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+
+  <!-- Backstage Window -->
+  <g filter="url(#ws)">
+    <rect x="139" y="140" width="1642" height="820" rx="8" fill="#222427"/>
+  </g>
+  <rect x="139" y="140" width="1642" height="44" rx="8" fill="url(#rhH)"/>
+  <rect x="139" y="170" width="1642" height="14" fill="url(#rhH)"/>
+  <text x="180" y="169" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="15px" fill="#FFFFFF">Backstage</text>
+
+  <!-- Sidebar -->
+  <rect x="139" y="184" width="220" height="776" fill="#222427"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#FFFFFF" fill-opacity="0.65">
+    <text x="178" y="224">Home</text>
+    <text x="178" y="256">Catalog</text>
+    <text x="178" y="288">APIs</text>
+    <text x="178" y="320">Docs</text>
+  </g>
+  <line x1="160" y1="340" x2="340" y2="340" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1"/>
+  <rect x="139" y="355" width="4" height="30" fill="#0891B2"/>
+  <rect x="143" y="355" width="216" height="30" fill="#3C3F42"/>
+  <text x="178" y="376" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="600" font-size="13px" fill="#FFFFFF">Kubernaut</text>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" fill="#FFFFFF" fill-opacity="0.45">
+    <text x="194" y="408">Fleet Overview</text>
+    <text x="194" y="432">Investigations</text>
+    <text x="194" y="456" fill="#FFFFFF" fill-opacity="1" font-weight="600">Workflows</text>
+    <text x="194" y="480">Clusters</text>
+    <text x="194" y="504">Policies</text>
+  </g>
+  <rect x="359" y="184" width="1422" height="776" fill="#F8F8F8"/>
+  <rect x="359" y="184" width="1422" height="42" fill="#FFFFFF"/>
+  <line x1="359" y1="226" x2="1781" y2="226" stroke="#C7C7C7" stroke-width="1"/>
+  <text x="390" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#757575">Kubernaut</text>
+  <text x="457" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#757575">/</text>
+  <text x="471" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#151515">Workflows</text>
+
+  <!-- NL command bar -->
+  <rect x="400" y="240" width="1340" height="52" rx="26" fill="#FFFFFF" stroke="#0891B2" stroke-width="2"/>
+  <circle cx="430" cy="266" r="12" fill="#0891B2" opacity="0.1"/>
+  <text x="430" y="271" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#0891B2">&#x2728;</text>
+  <text x="454" y="272" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">show me all rollback workflows</text>
+  <rect x="1666" y="252" width="60" height="28" rx="14" fill="#0891B2"/>
+  <text x="1696" y="271" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="600" font-size="11px" fill="#FFFFFF">Ask</text>
+
+  <!-- Kubernaut response -->
+  <rect x="400" y="304" width="1340" height="40" rx="10" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <circle cx="418" cy="324" r="12" fill="#0891B2" opacity="0.1"/>
+  <text x="418" y="329" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" font-weight="700" fill="#0891B2">K</text>
+  <text x="438" y="328" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" fill="#151515">Found <tspan font-weight="600">5 rollback workflows</tspan> across 32 total.  Showing filtered results below.</text>
+  <text x="1726" y="328" text-anchor="end" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#A3A6A9">just now</text>
+
+  <rect x="676" y="358" width="148" height="54" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <rect x="676" y="358" width="148" height="3" rx="1" fill="#1F5493"/>
+  <text x="690" y="378" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Total Workflows</text>
+  <text x="690" y="400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="20px" fill="#1F5493">32</text>
+
+  <rect x="836" y="358" width="148" height="54" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <rect x="836" y="358" width="148" height="3" rx="1" fill="#0F766E"/>
+  <text x="850" y="378" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Action Types</text>
+  <text x="850" y="400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="20px" fill="#0F766E">16</text>
+
+  <rect x="996" y="358" width="148" height="54" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <rect x="996" y="358" width="148" height="3" rx="1" fill="#475569"/>
+  <text x="1010" y="378" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Job Engine</text>
+  <text x="1010" y="400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="20px" fill="#475569">28</text>
+
+  <rect x="1156" y="358" width="148" height="54" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <rect x="1156" y="358" width="148" height="3" rx="1" fill="#0891B2"/>
+  <text x="1170" y="378" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Tekton Engine</text>
+  <text x="1170" y="400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="20px" fill="#0891B2">3</text>
+
+  <rect x="1316" y="358" width="148" height="54" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <rect x="1316" y="358" width="148" height="3" rx="1" fill="#7B2BF9"/>
+  <text x="1330" y="378" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Ansible Engine</text>
+  <text x="1330" y="400" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="20px" fill="#7B2BF9">1</text>
+
+  <!-- Filter chips -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px">
+    <rect x="400" y="426" width="40" height="22" rx="11" fill="#0891B2"/>
+    <text x="420" y="441" text-anchor="middle" fill="#FFFFFF" font-weight="600">All</text>
+    <rect x="450" y="426" width="48" height="22" rx="11" fill="#F0F0F0"/>
+    <text x="474" y="441" text-anchor="middle" fill="#475569">Job</text>
+    <rect x="508" y="426" width="62" height="22" rx="11" fill="#F0F0F0"/>
+    <text x="539" y="441" text-anchor="middle" fill="#475569">Tekton</text>
+    <rect x="580" y="426" width="66" height="22" rx="11" fill="#F0F0F0"/>
+    <text x="613" y="441" text-anchor="middle" fill="#475569">Ansible</text>
+  </g>
+
+  <!-- Workflow table -->
+  <rect x="400" y="460" width="1340" height="490" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+
+  <!-- Table header -->
+  <rect x="400" y="460" width="1340" height="30" rx="6" fill="#FAFAFA"/>
+  <rect x="400" y="484" width="1340" height="6" fill="#FAFAFA"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" font-weight="600" fill="#757575">
+    <text x="418" y="480">WORKFLOW</text>
+    <text x="680" y="480">ACTION TYPE</text>
+    <text x="960" y="480">ENGINE</text>
+    <text x="1080" y="480">RISK</text>
+    <text x="1180" y="480">DESCRIPTION</text>
+  </g>
+  <line x1="400" y1="490" x2="1740" y2="490" stroke="#E0E0E0" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px">
+    <text x="418" y="508" fill="#0891B2" font-weight="600">crashloop-rollback-v1</text>
+    <text x="680" y="508" fill="#151515">RollbackDeployment</text>
+    <rect x="960" y="496" width="34" height="18" rx="4" fill="#F0F0F0"/>
+    <text x="968" y="508" fill="#475569" font-size="10px">Job</text>
+    <circle cx="1085" cy="504" r="4" fill="#1DB954"/>
+    <text x="1095" y="508" fill="#475569" font-size="10px">Low</text>
+    <text x="1180" y="508" fill="#757575" font-size="10px">Rollback deployment after CrashLoopBackOff</text>
+  </g>
+  <line x1="418" y1="516" x2="1722" y2="516" stroke="#F0F0F0" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px">
+    <text x="418" y="536" fill="#0891B2" font-weight="600">rollback-deployment-v1</text>
+    <text x="680" y="536" fill="#151515">RollbackDeployment</text>
+    <rect x="960" y="524" width="34" height="18" rx="4" fill="#F0F0F0"/>
+    <text x="968" y="536" fill="#475569" font-size="10px">Job</text>
+    <circle cx="1085" cy="532" r="4" fill="#FF9800"/>
+    <text x="1095" y="536" fill="#475569" font-size="10px">Med</text>
+    <text x="1180" y="536" fill="#757575" font-size="10px">Rollback stuck rollout past progressDeadline</text>
+  </g>
+  <line x1="418" y1="544" x2="1722" y2="544" stroke="#F0F0F0" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px">
+    <text x="418" y="564" fill="#0891B2" font-weight="600">helm-rollback-v1</text>
+    <text x="680" y="564" fill="#151515">HelmRollback</text>
+    <rect x="960" y="552" width="34" height="18" rx="4" fill="#F0F0F0"/>
+    <text x="968" y="564" fill="#475569" font-size="10px">Job</text>
+    <circle cx="1085" cy="560" r="4" fill="#FF9800"/>
+    <text x="1095" y="564" fill="#475569" font-size="10px">Med</text>
+    <text x="1180" y="564" fill="#757575" font-size="10px">Rollback Helm release to previous revision</text>
+  </g>
+  <line x1="418" y1="572" x2="1722" y2="572" stroke="#F0F0F0" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px">
+    <text x="418" y="592" fill="#0891B2" font-weight="600">proactive-rollback-v1</text>
+    <text x="680" y="592" fill="#151515">ProactiveRollback</text>
+    <rect x="960" y="580" width="52" height="18" rx="4" fill="#E7F1FF"/>
+    <text x="968" y="592" fill="#0891B2" font-size="10px">Tekton</text>
+    <circle cx="1085" cy="588" r="4" fill="#FF9800"/>
+    <text x="1095" y="592" fill="#475569" font-size="10px">Med</text>
+    <text x="1180" y="592" fill="#757575" font-size="10px">SLO burn-driven deployment rollback</text>
+  </g>
+  <line x1="418" y1="600" x2="1722" y2="600" stroke="#F0F0F0" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px">
+    <text x="418" y="620" fill="#0891B2" font-weight="600">crashloop-rollback-risk-v1</text>
+    <text x="680" y="620" fill="#151515">RollbackDeployment</text>
+    <rect x="960" y="608" width="34" height="18" rx="4" fill="#F0F0F0"/>
+    <text x="968" y="620" fill="#475569" font-size="10px">Job</text>
+    <circle cx="1085" cy="616" r="4" fill="#1DB954"/>
+    <text x="1095" y="620" fill="#475569" font-size="10px">Low</text>
+    <text x="1180" y="620" fill="#757575" font-size="10px">Rollback with risk_tolerance=low guard</text>
+  </g>
+  <line x1="418" y1="628" x2="1722" y2="628" stroke="#F0F0F0" stroke-width="1"/>
+
+  <!-- Pagination -->
+  <rect x="400" y="920" width="1340" height="30" fill="#FAFAFA"/>
+  <text x="418" y="940" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Showing 5 of 5 rollback workflows  &#xb7;  32 total in catalog</text>
+  <text x="1722" y="940" text-anchor="end" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#0891B2" font-weight="600">Clear filter &#xd7;</text>
+
+  <!-- Legend -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="139" y="982" font-size="11px" fill="#6A6E73">
+      <tspan font-weight="600" fill="#151515">Execution engines:</tspan>
+      <tspan dx="4">Job (K8s-native, in-cluster)</tspan>
+      <tspan dx="8" fill="#0891B2" font-weight="600">Tekton</tspan>
+      <tspan dx="4">(pipeline-based, multi-step)</tspan>
+      <tspan dx="8" fill="#7B2BF9" font-weight="600">Ansible</tspan>
+      <tspan dx="4">(AAP, cross-cluster / external).</tspan>
+      <tspan dx="8">Workflows are declarative CRs &#x2014; SREs define them, Kubernaut orchestrates.</tspan>
+    </text>
+  </g>
+</svg>

@@ -119,7 +119,7 @@ fi
 
 ### Step 3: Build the Execution Bundle
 
-Create `Dockerfile.exec`:
+Create `Containerfile.exec`:
 
 ```dockerfile
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
@@ -134,8 +134,8 @@ ENTRYPOINT ["/scripts/remediate.sh"]
 Build and push:
 
 ```bash
-docker build -f Dockerfile.exec -t registry.example.com/workflows/restart-deployment:v1.0.0 .
-docker push registry.example.com/workflows/restart-deployment:v1.0.0
+podman build -f Containerfile.exec -t registry.example.com/workflows/restart-deployment:v1.0.0 .
+podman push registry.example.com/workflows/restart-deployment:v1.0.0
 ```
 
 Note the image digest from the push output -- update the `execution.bundle` field in the CRD with the digest-pinned reference.
@@ -168,7 +168,6 @@ Mandatory labels control when a workflow is eligible during discovery:
 | `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` (array, `minItems: 1`) |
 | `component` | string[] | Yes | Resource kind(s): `pod`, `deployment`, `node`, or `"*"` (array, `minItems: 1`) |
 | `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` (single value) |
-| `signalName` | string | No | Optional metadata for workflow authors. Not used for matching -- the LLM selects by `actionType` |
 
 Labels support:
 
@@ -432,39 +431,7 @@ The executor automatically injects the WE controller's in-cluster ServiceAccount
 
 Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (`what`, `whenToUse`, `whenNotToUse`, `preconditions`) that the LLM reads during the `list_available_actions` step.
 
-### Demo Action Types
-
-When `demoContent.enabled: true` (the default), the chart seeds the following action types:
-
-| Action Type | What It Does |
-|---|---|
-| `ScaleReplicas` | Horizontally scale a workload by adjusting the replica count |
-| `RestartPod` | Kill and recreate one or more pods |
-| `IncreaseCPULimits` | Increase CPU resource limits on containers |
-| `IncreaseMemoryLimits` | Increase memory resource limits on containers |
-| `RollbackDeployment` | Revert a deployment to its previous stable revision |
-| `DrainNode` | Drain and cordon a Kubernetes node, evicting all pods |
-| `CordonNode` | Cordon a node to prevent new pod scheduling |
-| `RestartDeployment` | Perform a rolling restart of all pods in a workload |
-| `CleanupNode` | Reclaim disk space on a node by purging temporary files |
-| `DeletePod` | Delete specific pods without waiting for graceful termination |
-| `GitRevertCommit` | Revert a bad commit in a Git repository managed by GitOps |
-| `ProvisionNode` | Request provisioning of a new Kubernetes node |
-| `GracefulRestart` | Perform a graceful rolling restart to reset runtime state |
-| `CleanupPVC` | Remove old or unnecessary files from a PVC |
-| `RemoveTaint` | Remove a taint from a Kubernetes node |
-| `PatchHPA` | Patch an HPA to increase maxReplicas or adjust thresholds |
-| `RelaxPDB` | Temporarily relax a PDB to unblock a pending node drain |
-| `ProactiveRollback` | Proactively roll back based on predictive SLO burn rate analysis |
-| `CordonDrainNode` | Cordon a node, then drain existing pods to other nodes |
-| `FixCertificate` | Recreate a missing or corrupted CA Secret for cert-manager |
-| `HelmRollback` | Roll back a Helm release to its previous healthy revision |
-| `FixAuthorizationPolicy` | Remove or fix a Linkerd AuthorizationPolicy blocking traffic |
-| `FixStatefulSetPVC` | Recreate a missing PVC for a StatefulSet and restart the stuck pod |
-| `FixNetworkPolicy` | Remove a deny-all NetworkPolicy blocking legitimate ingress |
-| `MigrateEmptyDirToPVC` | Migrate a stateful workload from ephemeral emptyDir storage to a persistent volume claim |
-
-### Registering Custom Action Types
+### Registering Action Types
 
 The taxonomy is **user-extensible**. Operators register custom action types by applying an `ActionType` CRD:
 
@@ -623,36 +590,11 @@ All classification rules live in a single `policy.rego` file under `package sign
 
 The `final_score` determines the order in which workflows are presented to the LLM, but the **LLM makes the final selection** based on descriptions, remediation history, and context. A workflow ranked #2 by score can still be selected if its description better matches the root cause.
 
-## Demo Workflows
+## Example Workflows
 
-When `demoContent.enabled: true` (the default), the chart seeds the following demo workflows:
+The [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository contains a library of reference workflows covering common remediation patterns (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, node drain, certificate repair, etc.). These are ready-to-use starting points that operators can adapt to their environment.
 
-| Workflow | Action Type |
-|---|---|
-| `crashloop-rollback-v1` | RollbackDeployment |
-| `crashloop-rollback-risk-v1` | RollbackDeployment |
-| `restart-pod-v1` | RestartPod |
-| `rollback-deployment-v1` | RollbackDeployment |
-| `increase-memory-limits-v1` | IncreaseMemoryLimits |
-| `increase-memory-limits-gitops-v1` | IncreaseMemoryLimits |
-| `graceful-restart-v1` | GracefulRestart |
-| `git-revert-v2` | GitRevertCommit |
-| `provision-node-v1` | ProvisionNode |
-| `proactive-rollback-v1` | ProactiveRollback |
-| `patch-hpa-v1` | PatchHPA |
-| `relax-pdb-v1` | RelaxPDB |
-| `remove-taint-v1` | RemoveTaint |
-| `cleanup-pvc-v1` | CleanupPVC |
-| `cordon-drain-v1` | CordonDrainNode |
-| `fix-certificate-v1` | FixCertificate |
-| `fix-certificate-gitops-v1` | GitRevertCommit |
-| `helm-rollback-v1` | HelmRollback |
-| `fix-authz-policy-v1` | FixAuthorizationPolicy |
-| `fix-statefulset-pvc-v1` | FixStatefulSetPVC |
-| `fix-network-policy-v1` | FixNetworkPolicy |
-| `migrate-emptydir-to-pvc-gitops-v1` | MigrateEmptyDirToPVC |
-
-These are starting points. Operators supplement them with custom workflows using custom or existing action types.
+Operators register workflows by applying `RemediationWorkflow` CRDs — see [Authoring Workflows](workflow-authoring.md) for guidelines.
 
 ## CRUD Operations
 

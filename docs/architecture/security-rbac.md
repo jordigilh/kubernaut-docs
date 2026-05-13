@@ -1,6 +1,11 @@
 # Security & RBAC
 
-Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources created by the Helm chart.
+Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources.
+
+!!! info "Helm vs Operator RBAC"
+    The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the **Operator** prefixes each name with the CR's namespace (e.g., `kubernaut-system-gateway-role`) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates **13** baseline ClusterRoles, plus **2** additional ones (`alertmanager-view`, `gateway-signal-source`) when `spec.monitoring.enabled: true`. An optional `workflowexecution-awx` ClusterRole is created when Ansible integration is enabled.
+
+    The Operator also supports `spec.kubernautAgent.additionalClusterRoleBindings` — a list of pre-existing ClusterRole names to bind to the Kubernaut Agent ServiceAccount (max 64). **Use with caution**: any writable cluster-scoped privileges referenced here are granted to the agent, creating a privilege escalation path. Restrict who may edit the Kubernaut CR via cluster RBAC. See the [Operator threat model](https://github.com/jordigilh/kubernaut-operator/blob/main/docs/security/threat-model.md) for details.
 
 ## Signal Ingestion
 
@@ -237,6 +242,107 @@ The shared hook ServiceAccount (`kubernaut-hook-sa`) and its ClusterRole are use
 | `batch` | `jobs` | get, list | Migration job monitoring |
 
 Hook jobs only run during `helm install`, `helm upgrade`, and `helm delete`. They do not have long-lived pods.
+
+## Prompt Injection Defense — Shadow Agent (v1.4) {: #shadow-agent }
+
+Kubernaut v1.4 introduces a **shadow agent** that evaluates every LLM tool output for prompt injection attacks. The shadow agent runs as a fail-closed defense layer inside Kubernaut Agent.
+
+### Architecture
+
+The shadow agent operates at two levels:
+
+1. **Per-step evaluation** — After each tool call, the shadow agent scans the tool output using random boundary markers, head+tail truncation, and data exfiltration detection patterns. This catches injection attempts embedded in Kubernetes resource data (ConfigMaps, Secrets, annotations).
+
+2. **Full-context grounding review** — At the RCA-to-workflow boundary, a second evaluation layer reviews the entire investigation conversation through the shadow LLM. This detects distributed injection ("boiling frog" attacks) where individually benign tool outputs combine into a malicious instruction. Runs in parallel with workflow discovery for zero added latency.
+
+### Enforcement modes
+
+The shadow agent supports two modes controlled by the Kubernaut Agent configuration:
+
+| Mode | Behavior |
+|---|---|
+| **Monitor** | Log alignment verdicts and emit audit events, but do not block investigations |
+| **Enforce** | Cancel the investigation via circuit breaker when suspicious content is detected |
+
+In enforce mode, a positive detection triggers `context.WithCancelCause(ErrCircuitBreaker)`, immediately terminating the primary investigation. The `kubernaut_alignment_circuit_breaker_total` Prometheus counter tracks activations.
+
+### Alignment verdicts
+
+Shadow agent results are propagated through the system:
+
+- **`alignment_verdict`** field on the Kubernaut Agent `IncidentResponse` (OpenAPI) and `AIAnalysisStatus` (CRD) carrying the verdict (`result`, `circuit_breaker_activated`, `summary`, `findings`)
+- **NotificationRequest `ReviewContext`** includes `alignmentVerdict` and `circuitBreakerActivated` fields for routing rule support
+- **Manual review notifications** render shadow agent findings prominently when `alignment_check_failed` SubReason escalates to `NotificationPriorityCritical`
+
+### Observability
+
+| Metric | Type | Description |
+|---|---|---|
+| `kubernaut_alignment_grounding_total` | Counter | Grounding review invocations |
+| `kubernaut_alignment_grounding_duration_seconds` | Histogram | Grounding review latency |
+| `kubernaut_alignment_circuit_breaker_total` | Counter | Circuit breaker activations |
+
+Per-step audit events include shadow LLM request/response payloads and token counts for cost tracking (`aiagent.alignment.step`).
+
+### False positive handling
+
+v1.4 includes targeted fixes to reduce false positives:
+
+- Well-known Kubernetes/OpenShift annotation namespaces, container commands, probe commands, event messages, RBAC verbs, and registry URLs are whitelisted (CLEAN classification)
+- The shadow agent evaluates **raw** tool output (post-sanitizer, pre-summarizer) to avoid false positives from LLM-generated analysis content
+
+## NetworkPolicies (v1.4)
+
+Kubernaut v1.4 deploys **12 NetworkPolicy templates** covering all services with a **default-deny** ingress posture. Each policy restricts ingress to only the expected callers.
+
+### Default behavior
+
+The default depends on your deployment method:
+
+| Deployment | Default | How to change |
+|---|---|---|
+| **Helm** | Enabled for all services | Set `networkPolicies.<service>.enabled: false` per service |
+| **Operator** | **Disabled** (`spec.networkPolicies.enabled: false`) | Set `spec.networkPolicies.enabled: true` in the Kubernaut CR |
+
+!!! warning "Operator users: NetworkPolicies are off by default"
+    If you deploy via the Kubernaut Operator and expect network segmentation, you must explicitly enable it. The Operator uses a single toggle (`spec.networkPolicies.enabled`) rather than per-service toggles.
+
+Verify your cluster's CNI plugin supports NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters with CNI plugins that do not enforce NetworkPolicies silently ignore them.
+
+### Configuration
+
+=== "Helm"
+
+    Per-service toggle via Helm values:
+
+    ```yaml
+    networkPolicies:
+      gateway:
+        enabled: true
+      dataStorage:
+        enabled: true
+      kubernautAgent:
+        enabled: true
+      # ... per-service toggle for all 12 services
+    ```
+
+=== "Operator"
+
+    Global toggle in the Kubernaut CR:
+
+    ```yaml
+    apiVersion: kubernaut.ai/v1alpha1
+    kind: Kubernaut
+    spec:
+      networkPolicies:
+        enabled: true
+        apiServerCIDR: "10.0.0.0/16"
+        monitoringNamespace: "openshift-monitoring"
+        gatewayIngressNamespaces:
+          - "openshift-monitoring"
+    ```
+
+Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).
 
 ## Next Steps
 

@@ -157,7 +157,7 @@ For each resolved channel:
 1. **Skip** if channel already succeeded (persisted or in-memory)
 2. **Skip** if channel has a permanent error
 3. **Skip** if attempt count ≥ `MaxAttempts`
-4. **Circuit breaker** pre-check (Slack only) -- if open, emit `CircuitBreakerOpen` event and skip
+4. **Circuit breaker** pre-check -- if open, emit `CircuitBreakerOpen` event and skip
 5. **Increment** in-flight attempt counter
 6. **Deliver** via singleflight (dedup key: `{notificationUID}:{channel}`)
 7. **Decrement** in-flight counter
@@ -227,9 +227,9 @@ Stored with the prefix `permanent failure:` in the `DeliveryAttempt.Error` field
 | HTTP 4xx (other) | Permanent |
 | Network errors (non-TLS) | Retryable |
 
-## Circuit Breaker (Slack)
+## Circuit Breaker
 
-The Slack channel uses a Sony gobreaker circuit breaker to prevent hammering a failing webhook:
+All delivery channels use a generic Sony gobreaker (v2) circuit breaker to prevent hammering a failing endpoint:
 
 | Setting | Value |
 |---|---|
@@ -248,8 +248,10 @@ When the circuit breaker is open, the controller emits a `CircuitBreakerOpen` Ku
 | **Log** | Structured JSON Lines to stdout with notification fields | Always succeeds |
 | **File** | Writes JSON/YAML to a directory. Filename: `notification-{name}-{timestamp}.{format}`. Atomic write (temp + rename). E2E/debug use (DD-NOT-002) | Directory/write errors → retryable |
 | **Slack** | Webhook POST with Block Kit formatting. Default timeout: 10s | See error classification above |
+| **PagerDuty** | Events API v2 delivery with circuit breaker and hot-reload routing (v1.4) | HTTP error classification |
+| **Microsoft Teams** | Adaptive Card delivery with circuit breaker and hot-reload routing (v1.4) | HTTP error classification |
 
-Channels for `email`, `teams`, `sms`, and `webhook` are defined in the CRD schema but not yet implemented.
+Channels for `email`, `sms`, and `webhook` are defined in the CRD schema but not yet implemented.
 
 ## Credential Management
 

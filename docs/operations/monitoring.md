@@ -6,7 +6,7 @@ In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt
 
 ## Health Checks
 
-**v1.3+ (three-port components):** Gateway, DataStorage, HolmesGPT API, Kubernaut Agent, and the AIAnalysis controller split traffic by port: **8080** (primary API; **HTTPS** when inter-service TLS is enabled), **8081** (health only -- **plain HTTP**), and **9090** (`/metrics` -- **plain HTTP**). Probes use **8081** with `GET /healthz` (liveness) and `GET /readyz` (readiness). **`/livez` is not a registered path** (do not use it in probes or docs).
+**v1.3+ (three-port components):** Gateway, DataStorage, Kubernaut Agent, and the AIAnalysis controller split traffic by port: **8080** (primary API; **HTTPS** when inter-service TLS is enabled), **8081** (health only -- **plain HTTP**), and **9090** (`/metrics` -- **plain HTTP**). Probes use **8081** with `GET /healthz` (liveness) and `GET /readyz` (readiness). **`/livez` is not a registered path** (do not use it in probes or docs).
 
 | Service Type | Liveness | Readiness | Port | Notes |
 |---|---|---|---|---|
@@ -68,6 +68,11 @@ scrape_configs:
 | `aianalysis_approval_decisions_total` | Counter | `decision`, `environment` | Approval decisions (auto-approved, approval-required) |
 | `aianalysis_failures_total` | Counter | `reason`, `sub_reason` | Analysis failures by reason |
 | `aianalysis_rego_evaluations_total` | Counter | `outcome`, `degraded` | Rego policy evaluations |
+| `kubernaut_alignment_grounding_total` | Counter | `result` | Shadow agent grounding review verdicts (v1.4) |
+| `kubernaut_alignment_grounding_duration_seconds` | Histogram | | Grounding review latency (v1.4) |
+| `alignmentCircuitBreakerTotal` | Counter | | Investigations cancelled by alignment circuit breaker (v1.4) |
+| `aiagent_api_llm_circuit_breaker_state` | Gauge | | LLM HTTP client circuit breaker state (v1.4) |
+| `aiagent_api_ds_circuit_breaker_state` | Gauge | | DataStorage HTTP client circuit breaker state (v1.4) |
 
 ## Remediation Orchestrator Metrics
 
@@ -179,7 +184,7 @@ sum(rate(kubernaut_remediationorchestrator_phase_transitions_total{to_phase=~"Co
 ### LLM Latency (p99)
 
 ```promql
-histogram_quantile(0.99, rate(aiagent_api_llm_call_duration_seconds_bucket[5m]))
+histogram_quantile(0.99, rate(aiagent_api_llm_request_duration_seconds_bucket[5m]))
 ```
 
 ### Signal Deduplication Rate
@@ -211,8 +216,8 @@ histogram_quantile(0.5, rate(kubernaut_effectivenessmonitor_component_scores_buc
 ### Notification Circuit Breaker
 
 ```promql
-# Alert when Slack circuit breaker opens
-kubernaut_notification_channel_circuit_breaker_state{channel="slack"} > 0
+# Alert when any channel circuit breaker opens
+kubernaut_notification_channel_circuit_breaker_state > 0
 ```
 
 ### LLM Token Cost Tracking
@@ -251,6 +256,28 @@ kubectl run must-gather \
 ```
 
 This gathers CRDs, logs, Tekton resources, DataStorage state, events, and metrics into a single archive for troubleshooting.
+
+## Operator Monitoring Configuration
+
+When deploying via the Kubernaut Operator, monitoring integration is controlled by `spec.monitoring.enabled` (default: `true`). When enabled, the operator:
+
+1. **Auto-derives** Prometheus and AlertManager URLs from the OCP monitoring stack
+2. **Creates 2 additional ClusterRoles**: `{namespace}-alertmanager-view` and `{namespace}-gateway-signal-source`
+3. **Binds** the Effectiveness Monitor and Kubernaut Agent ServiceAccounts to `cluster-monitoring-view` for Prometheus query access
+4. **Binds** the OCP AlertManager ServiceAccount to `gateway-signal-source` for signal ingestion
+
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: Kubernaut
+spec:
+  monitoring:
+    enabled: true   # default; set to false to disable monitoring RBAC
+```
+
+!!! warning "Disabling monitoring"
+    Setting `spec.monitoring.enabled: false` removes the 2 monitoring ClusterRoles and their bindings. The Effectiveness Monitor will not be able to query Prometheus for post-remediation health checks, and AlertManager will not have RBAC to send alerts to the Gateway.
+
+See the [Operator CR API Reference](../api-reference/operator-cr.md#monitoringspec) for all monitoring-related fields.
 
 ## Next Steps
 

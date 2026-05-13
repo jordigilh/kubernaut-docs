@@ -24,6 +24,7 @@ Configure the provider in the Kubernaut Agent SDK config. See [Configuration Ref
 
 Yes, with multiple layers of safety:
 
+- **Dry-run mode (v1.4)** — Global dry-run lets you see what Kubernaut *would* do without executing any remediation, providing a zero-risk starting point
 - **Human approval gates** — Workflows can require operator approval before execution via `RemediationApprovalRequest` CRDs
 - **OPA/Rego policies** — Constrain which remediations are permitted for which resources and conditions
 - **Scope management** — Only resources labeled `kubernaut.ai/managed=true` are eligible for remediation

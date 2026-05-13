@@ -280,6 +280,48 @@ When a `RemediationApprovalRequest` is created, it includes rich context to help
 - **Evidence collected** — Supporting data from the investigation
 - **Alternatives considered** — Other workflows the system evaluated
 
+## Operator Workflow Overrides (v1.4)
+
+Starting with v1.4, operators can **override the AI-selected workflow** when approving a `RemediationApprovalRequest`. This allows the operator to substitute a different remediation workflow while preserving the full audit trail.
+
+### How it works
+
+1. The operator reviews the RAR and decides that a different workflow is more appropriate
+2. The operator patches the RAR status with the override workflow reference
+3. The **authwebhook** validates that the override workflow exists and is in `Active` status
+4. The **Orchestrator** merges the override: the RAR override takes precedence over the AIA-selected workflow in `ResolveWorkflow`
+
+### Overriding a workflow
+
+```bash
+kubectl patch rar <name> -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{
+    "status": {
+      "decision": "Approved",
+      "decidedBy": "operator-name",
+      "decisionMessage": "Overriding to manual-pvc-fix workflow",
+      "workflowOverride": {
+        "workflowName": "manual-pvc-fix",
+        "parameters": {"targetSize": "50Gi"},
+        "rationale": "AI selected auto-resize but StorageClass does not support volume expansion"
+      }
+    }
+  }'
+```
+
+### Validation
+
+The authwebhook validates override requests at admission time:
+
+- The referenced workflow must exist in the DataStorage catalog
+- The workflow must be in `Active` status (not `Deprecated` or `Draft`)
+- Invalid overrides are rejected with a descriptive admission error
+
+### Audit trail
+
+Override decisions are fully captured in the audit trail, including the original AI recommendation, the operator's override choice, and the stated reason. This ensures compliance visibility when operators diverge from AI recommendations.
+
 ## Audit Trail
 
 All approval decisions are captured in the audit trail:
@@ -287,6 +329,7 @@ All approval decisions are captured in the audit trail:
 - **Who** approved or rejected (operator identity via admission webhook)
 - **When** the decision was made
 - **What** reason was provided
+- **Override details** if the operator substituted a different workflow (v1.4)
 - The full context at the time of decision
 
 See [Audit & Observability](audit-and-observability.md) for details.

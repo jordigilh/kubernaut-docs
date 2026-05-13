@@ -1,6 +1,11 @@
 # Configuration Reference
 
-Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
+Kubernaut is configured via **Helm values** (for Helm deployments) or the **Kubernaut CR** (for Operator deployments), plus per-service **ConfigMaps**. This page documents the configuration surfaces — from deployment-specific values to namespace labels, signal sources, LLM providers, and operational tuning.
+
+!!! note "v1.4 configuration highlights"
+    - **Effectiveness Monitor — unified `monitoring` block.** Prometheus and AlertManager connection settings (`url`, enable flags, TLS CA, timeouts, scrape/lookback tuning, OpenShift RBAC bridges, and related options) are **grouped under a single `effectivenessmonitor.monitoring` YAML block**. Values that lived under legacy `effectivenessmonitor.external.*` paths **must migrate** when you upgrade Helm values files.
+    - **Standardized log levels (#875).** Verbosity/logging configuration now uses **the same YAML key naming pattern across services**, so Helm values and bundled ConfigMaps line up consistently when adjusting log noise during install or runtime.
+    - **Kubernaut Agent — camelCase and layout.** KA-mounted YAML migrated to **`camelCase`** fields per ADR-030 plus restructuring under **`runtime`**, **`ai`**, and **`integrations`**, supplied as separate **static** and **hot-reloadable** ConfigMaps. Rewrite existing manifests before rollout — details and samples are in **[Kubernaut Agent SDK config](configmap-kubernaut-agent.md)** (see the **v1.4 breaking YAML changes** warning at the top of that page).
 
 ## Namespace and Resource Labels
 
@@ -50,6 +55,23 @@ metadata:
 ```
 
 See [Rego Policies](policies.md) for how each label feeds into enrichment, and [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for how labels affect workflow discovery.
+
+## Operator CR Configuration {: #operator-cr }
+
+When deploying via the Kubernaut Operator, all configuration is expressed through the `Kubernaut` CR (`kubernaut.ai/v1alpha1`). The operator maps CR fields to the underlying ConfigMaps, Deployments, and RBAC resources.
+
+For the complete CR field reference, see the [Operator CR API Reference](../api-reference/operator-cr.md).
+
+Key differences from Helm:
+
+| Concern | Helm | Operator CR |
+|---|---|---|
+| NetworkPolicies | Enabled by default, per-service toggles | Disabled by default (`spec.networkPolicies.enabled`) |
+| Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | Controlled by `spec.monitoring.enabled` (default: `true`) |
+| Database | In-chart PostgreSQL option | BYO only — `spec.postgresql.host` + `spec.postgresql.secretName` |
+| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.llm.runtimeConfigMapName` for BYO hot-reloadable config |
+| Image references | Standard Helm `image.repository`/`image.tag` | `RELATED_IMAGE_*` env vars for disconnected installs |
+| Agent RBAC extension | Manual ClusterRoleBinding creation | `spec.kubernautAgent.additionalClusterRoleBindings` (max 64) |
 
 ## Helm Values
 
@@ -103,12 +125,14 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 |---|---|---|
 | `kubernautAgent.replicas` | Number of replicas | `1` |
 | `kubernautAgent.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
-| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). Used to create the `kubernaut-agent-sdk-config` ConfigMap. | `""` |
+| `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). The chart derives the Kubernetes ConfigMap objects that back the Agent SDK volumes from this file (**v1.4+**: split static + reloadable bundles). | `""` |
 | `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
-Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). The SDK config is provided in one of two ways:
+Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). From **v1.4**, the SDK surface is supplied as **two** mounted ConfigMaps: one **static** (read at startup) and one **hot-reloadable** (watched for AI/tool/integration changes — no pod restart required for supported fields — see **[Kubernaut Agent SDK config](configmap-kubernaut-agent.md#hot-reload)**). Helm values and chart templates reflect that split — follow **`values.schema.json`** and [`configmap-kubernaut-agent.md`](configmap-kubernaut-agent.md) when upgrading.
 
-1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the `kubernaut-agent-sdk-config` ConfigMap from this content.
+The SDK config bundle is provided in one of two ways:
+
+1. **Inline content** (recommended): Provide full SDK config content via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml`. The chart creates the expected ConfigMaps from this content.
 2. **External ConfigMap**: Set `kubernautAgent.existingSdkConfigMap` to reference a pre-existing ConfigMap (takes priority over `sdkConfigContent`).
 
 One of these two options **must** be provided; the chart will fail at install time if neither is set.
@@ -170,6 +194,8 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 | `workflowexecution.workflowNamespace` | Namespace for Job/PipelineRun execution | `kubernaut-workflows` |
 
 ### EffectivenessMonitor
+
+Beginning with **v1.4**, Prometheus and AlertManager knobs are flattened into a single Helm subtree: **`effectivenessmonitor.monitoring`**, replacing **`effectivenessmonitor.external.*`** (see the introductory **v1.4 configuration highlights** callout).
 
 | Parameter | Description | Default |
 |---|---|---|
@@ -440,9 +466,18 @@ Kubernaut configures **inter-service TLS** (REST between components) and **admis
 
 These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under `tls.interService.certDir`, the primary API port (**8080**) uses HTTPS; health (**8081**) and metrics (**9090**) stay plain HTTP.
 
+!!! note "TLS Security Profiles (v1.4)"
+    The `tls.profile` field (v1.4) selects a built-in cipher/protocol profile applied to all inter-service listeners:
+
+    | Profile | TLS Versions | Description |
+    |---|---|---|
+    | **Modern** | TLS 1.3 only | Strictest — recommended for new deployments |
+    | **Intermediate** (default) | TLS 1.2–1.3 | Balanced — compatible with most clients |
+    | **Old** | TLS 1.0–1.3 | Legacy — use only for backward-compatible environments |
+
 | Parameter | Description | Default |
 |---|---|---|
-| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual--external-pki) below. | `hook` |
+| `tls.mode` | How TLS is provisioned: **`hook`** (default) or **`cert-manager`**. A separate **`manual`** mode exists for **admission webhook** certificates only; see [Manual Mode](#manual-mode-tlsmode-manual-external-pki) below. | `hook` |
 | `tls.interService.certDir` | Directory mounted in pods containing the server cert/key (and related material) for inter-service listeners. | `/etc/tls` |
 | `tls.interService.caFile` | Path to the PEM CA bundle used to **verify peer** certificates (client CA). | `/etc/tls-ca/ca.crt` |
 | `tls.certManager.issuerRef.name` | **Required** when `tls.mode=cert-manager` -- Issuer or ClusterIssuer that signs inter-service and webhook certificates. | -- |
@@ -584,7 +619,7 @@ Understanding which configuration changes take effect live vs which require a re
 | AA approval policy | Yes | fsnotify file watcher | ~60s |
 | Notification credentials | Yes | fsnotify file watcher | ~60s |
 | Notification routing | Yes | fsnotify file watcher | ~60s |
-| Kubernaut Agent config | Yes | file watcher (fsnotify) | ~60s |
+| Kubernaut Agent (**v1.4+**: hot-reloadable ConfigMap bundle; startup-only YAML stays fixed until restart) | Yes (reloadable tier) | fsnotify watcher on watched volume | ~60s |
 | Gateway config | No | Restart required | -- |
 | DataStorage config | No | Restart required | -- |
 | Proactive signal mappings | No | Restart required | -- |

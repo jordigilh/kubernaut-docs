@@ -1,6 +1,6 @@
 # Design Decisions
 
-This section documents the key architectural decisions made during Kubernaut's development. Decisions marked **(v1.1)** are new in {{ image_tag }}.
+This section documents the key architectural decisions made during Kubernaut's development. Decisions marked with a version tag (e.g. **(v1.1)**) indicate the release that introduced them.
 
 ## Architecture
 
@@ -30,7 +30,7 @@ This section documents the key architectural decisions made during Kubernaut's d
 | Decision | Summary |
 |---|---|
 | **DD-WORKFLOW-016** | Workflow catalog architecture — searchable catalog in DataStorage; API-based seeding via AuthWebhook **(updated v1.1)** |
-| **DD-WORKFLOW-017** | Workflow registration — embedded demo content via `demoContent.enabled` replaces the v1.0 seed-workflows hook **(updated v1.1)** |
+| **DD-WORKFLOW-017** | Workflow registration — operators register ActionType and RemediationWorkflow CRDs directly; Auth Webhook syncs to catalog **(updated v1.4)** |
 | **DD-WE-003** | Resource lock persistence — deterministic naming with pre-execution cleanup and ownership-verified deletion **(v1.1)** |
 
 ## Gateway

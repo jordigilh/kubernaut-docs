@@ -1,15 +1,93 @@
 # Installation
 
-This guide walks you through installing Kubernaut on a Kubernetes cluster using Helm.
+## Deployment Methods
 
-## Prerequisites
+Kubernaut offers two deployment methods:
+
+| Method | Use Case | Platform |
+|---|---|---|
+| **[Kubernaut Operator](#kubernaut-operator-production)** | **Production** — full lifecycle management, OLM integration, status reporting | OpenShift 4.18+ |
+| **[Helm Chart](#helm-chart-developmenttesting)** | **Development, testing, CI** — quick setup for evaluation and local development | Any Kubernetes 1.32+ |
+
+!!! warning "Production deployments"
+    The **Kubernaut Operator** is the only supported production deployment method. The Helm chart does not provide lifecycle management, status reporting, or OLM integration required for production operations. Use the Helm chart for development, testing, and CI environments only.
+
+## Kubernaut Operator (Production)
+
+The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 10 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
+
+### Installation
+
+The operator is available through OLM (Operator Lifecycle Manager) or direct deployment:
+
+1. **OperatorHub (recommended)** — Install from the OperatorHub catalog in the OpenShift Console
+2. **Custom CatalogSource** — For disconnected or custom environments, create a `CatalogSource` pointing to the operator index image
+
+For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
+
+### Prerequisites (Operator)
+
+| Requirement | Version | Notes |
+|---|---|---|
+| OpenShift | 4.18+ | OLM and operator-framework support required |
+| PostgreSQL | 15+ | **BYO** — the operator does not deploy a database; provide connection details via `spec.postgresql` |
+| Valkey / Redis | 7+ | **BYO** — provide connection details via `spec.valkey` |
+| LLM provider | — | Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output |
+
+**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:1.4.0` (note: no `v` prefix, unlike component images which use `v1.4.0`).
+
+**Minimal Kubernaut CR:**
+
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: Kubernaut
+metadata:
+  name: kubernaut
+  namespace: kubernaut-system
+spec:
+  postgresql:
+    host: postgres.database.svc.cluster.local
+    secretName: kubernaut-postgresql
+  valkey:
+    host: valkey.cache.svc.cluster.local
+    secretName: kubernaut-valkey
+  kubernautAgent:
+    llm:
+      provider: openai
+      model: gpt-4o
+      credentialsSecretName: kubernaut-llm
+```
+
+!!! note "Disconnected installs"
+    For air-gapped environments, mirror all component images and set `RELATED_IMAGE_*` environment variables on the operator Deployment. See the [operator installation guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation) for the full image list.
+
+### What the Operator manages
+
+- Validates BYO PostgreSQL and Valkey secrets before deployment
+- Runs embedded database schema migrations
+- Installs and upgrades the 9 Kubernaut workload CRDs
+- Deploys all 10 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Configures OCP Routes and service-serving CA TLS
+- Reports per-service readiness status on the `Kubernaut` CR
+- Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)
+
+---
+
+## Helm Chart (Development/Testing)
+
+This section walks you through installing Kubernaut using the Helm chart for development, testing, and CI environments.
+
+!!! info "Not for production"
+    The Helm chart is intended for development, testing, and CI. For production deployments, use the [Kubernaut Operator](#kubernaut-operator-production).
+
+### Prerequisites
 
 | Requirement | Version | Notes |
 |---|---|---|
 | Kubernetes | 1.32+ | selectableFields GA in 1.32; required for CRD field selectors |
 | Helm | 3.12+ | |
 | StorageClass | dynamic provisioning | For PostgreSQL and Valkey PVCs |
-| cert-manager | 1.12+ (production) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
+| cert-manager | 1.12+ (optional) | Required when `tls.mode=cert-manager`. Optional for dev (`tls.mode=hook` is default). |
 
 **LLM provider** (required for AI investigation):
 
@@ -141,7 +219,7 @@ gateway:
 
 ## Pre-Installation
 
-Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's `crds/` directory on first install -- no manual step is needed. For upgrades, see [Upgrading](#upgrading).
+Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's `crds/` directory on first install -- no manual step is needed. For reinstalls, see [Reinstalling](#reinstalling).
 
 ### 1. Create the Namespace
 
@@ -207,7 +285,7 @@ To use custom secret names for database/cache secrets, pass `--set postgresql.au
     With GCP Workload Identity the secret can be omitted.
 
     !!! note "Vertex AI requires an SDK config file"
-        The quickstart `--set kubernautAgent.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-kubernaut-agent.md#google-vertex-ai).
+        The quickstart `--set kubernautAgent.llm.provider=...` path only supports OpenAI and Anthropic. Vertex AI requires `gcp_project_id` and `gcp_region`, which must be provided via `sdkConfigContent` or `existingSdkConfigMap`. See [Advanced Configuration](#advanced-configuration) and the [Vertex AI SDK config example](../user-guide/configmap-kubernaut-agent.md#google-vertex-ai-gemini).
 
 | Chart Value | Secret Name | Required Keys |
 |---|---|---|
@@ -228,6 +306,12 @@ kubectl create secret generic slack-webhook \
 Only required when Slack delivery is configured. When using console-only routing (default), no notification secret is needed. For advanced multi-receiver routing, use `notification.credentials[]` and `notification.routing.content` instead of the Slack shortcut.
 
 ## Install
+
+!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator (v1.4)"
+    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
+
+!!! info "NetworkPolicies (v1.4)"
+    Kubernaut v1.4 deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
 
 The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
@@ -283,11 +367,8 @@ See the [sdk-config.yaml.example](https://github.com/jordigilh/kubernaut-demo-sc
 
 To pin a specific chart version, add `--version <version>`. Omitting `--version` pulls the latest release.
 
-!!! tip "Production: disable demo fixtures"
-    The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
-
 !!! tip "Start with minimal toolsets"
-    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization-pre-v12) for details.
+    The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization) for details.
 
 ### Quickstart
 
@@ -319,15 +400,11 @@ kubectl get remediationworkflows -A
 
 ## Post-Installation
 
-### Action Types and Workflows (Demo Content)
+### Action Types and Workflows
 
-When `demoContent.enabled: true` (the default), the chart seeds demo ActionType definitions and RemediationWorkflows into the catalog as a convenience path for getting started quickly. These are not built-in product features -- they are reusable demo content covering common remediation scenarios (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, etc.). No manual loading is required.
+Kubernaut uses an **ActionType taxonomy** to organize remediation capabilities. Operators register `ActionType` CRDs that describe what each remediation does, when to use it, and under what preconditions. `RemediationWorkflow` CRDs reference ActionTypes by name.
 
-To disable demo content for production, add `--set demoContent.enabled=false` during install. See the [production tip](#install) in the Install section.
-
-### Custom Remediation Workflows
-
-Each RemediationWorkflow references an ActionType by name. When `demoContent.enabled: true` (default), demo ActionTypes are available in the catalog. For production deployments with `demoContent.enabled=false`, register your own ActionType CRs before creating RemediationWorkflows. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for the full list.
+Register your own ActionType CRs and RemediationWorkflows to build a catalog tailored to your environment. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for registration details.
 
 ## Resource Scope
 
@@ -339,9 +416,11 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 See [Signals & Alert Routing](../user-guide/signals.md) for details on scope management.
 
-## Upgrading
+## Reinstalling
 
-See the [Upgrading Guide](../operations/upgrading/index.md) for general upgrade procedures, CRD schema change handling, and version-specific migration notes.
+Kubernaut does not support in-place upgrades. To move to a new version,
+perform a fresh install. See [What's New](../whats-new/index.md) for
+changes between releases.
 
 ## Uninstalling
 

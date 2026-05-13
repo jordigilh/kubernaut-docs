@@ -120,7 +120,7 @@ Select a phase to learn more:
 
     **CRD:** `AIAnalysis`
 
-    Two-phased pipeline:
+    Three-phased pipeline:
 
     - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
     - **Select** — Using the RCA and server-side enrichment (historical context, detectable labels), the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.

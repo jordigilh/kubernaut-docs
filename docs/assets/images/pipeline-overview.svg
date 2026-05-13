@@ -82,7 +82,7 @@
 
   <text x="810" y="330" font-family="'Red Hat Text', Arial, sans-serif" font-size="15px" font-weight="600" fill="#EE0000">Policy-Gated</text>
   <text x="810" y="356" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">Auto-approve low-risk actions</text>
-  <text x="810" y="378" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">Manual review via Slack/Console</text>
+  <text x="810" y="378" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">Notified via Slack, Teams or PagerDuty</text>
   <text x="810" y="400" font-family="'Red Hat Text', Arial, sans-serif" font-size="14px" fill="#151515">Operator can override params</text>
 
   <line x1="810" y1="420" x2="1050" y2="420" stroke="#F0F0F0" stroke-width="1"/>

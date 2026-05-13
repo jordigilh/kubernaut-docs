@@ -198,9 +198,9 @@ Hub-and-spoke deployment using [OCM](https://open-cluster-management.io/) (Open 
 
 Accept signals described in plain language — not just structured Prometheus alerts or Kubernetes events. Operators, chat bots, and external agents can trigger investigations by describing symptoms conversationally. Kubernaut resolves the intent (cluster, service, symptom) and opens an investigation automatically. See the "Starting from a natural language signal" example under [Interactive Sessions](#interactive-sessions).
 
-## Selective Trust — Trust Ladder Level 2
+## Observe Mode (Trust Ladder Level 2)
 
-v1.4 shipped **global dry-run** (Level 1 — Observe), where the entire pipeline runs through AI analysis but stops before execution. Level 2 builds on this by introducing **per-workflow dry-run overrides**: trusted workflows that have been validated in observe mode graduate to real execution, while new or untested workflows remain in dry-run. Combined with the Backstage console, operators get dashboard visibility and a guided onboarding path for new clusters.
+Building on v1.4's global dry-run mode, v1.5 adds operator dashboard visibility through the Backstage console and a guided onboarding path for new clusters.
 
 ---
 

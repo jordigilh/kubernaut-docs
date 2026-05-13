@@ -7,136 +7,165 @@
 
   <rect x="40" y="220" width="1840" height="400" fill="white"/>
 
-  <!-- Phase 1: Signal Processing -->
+  <!-- Phase 1: Signal Processing (x=60, w=270) -->
   <g filter="url(#sh)">
-    <rect x="60" y="240" width="300" height="370" rx="14" fill="white"/>
+    <rect x="60" y="240" width="270" height="370" rx="14" fill="white"/>
   </g>
-  <rect x="60" y="240" width="300" height="56" rx="14" fill="#0891B2"/>
-  <rect x="60" y="282" width="300" height="14" fill="#0891B2"/>
-  <circle cx="338" cy="268" r="16" fill="white" opacity="0.2"/>
-  <text x="338" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">1</text>
-  <text x="90" y="274" font-size="20px" font-weight="700" fill="white">Signal Processing</text>
+  <rect x="60" y="240" width="270" height="56" rx="14" fill="#0891B2"/>
+  <rect x="60" y="282" width="270" height="14" fill="#0891B2"/>
+  <circle cx="308" cy="268" r="16" fill="white" opacity="0.2"/>
+  <text x="308" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">1</text>
+  <text x="86" y="274" font-size="18px" font-weight="700" fill="white">Signal Processing</text>
 
-  <text x="90" y="330" font-size="17px" font-weight="600" fill="#0891B2">Ingest</text>
-  <text x="90" y="354" font-size="16px" fill="#151515">AlertManager webhooks</text>
-  <text x="90" y="376" font-size="16px" fill="#151515">Kubernetes Events</text>
+  <text x="86" y="330" font-size="16px" font-weight="600" fill="#0891B2">Ingest</text>
+  <text x="86" y="354" font-size="15px" fill="#151515">AlertManager webhooks</text>
+  <text x="86" y="374" font-size="15px" fill="#151515">Kubernetes Events</text>
 
-  <line x1="90" y1="418" x2="330" y2="418" stroke="#F0F0F0" stroke-width="1"/>
+  <line x1="86" y1="410" x2="306" y2="410" stroke="#F0F0F0" stroke-width="1"/>
 
-  <text x="90" y="446" font-size="17px" font-weight="600" fill="#0891B2">Classify</text>
-  <text x="90" y="470" font-size="16px" fill="#151515">OPA/Rego severity classification</text>
-  <text x="90" y="492" font-size="16px" fill="#151515">Category-to-workflow mapping</text>
+  <text x="86" y="436" font-size="16px" font-weight="600" fill="#0891B2">Classify</text>
+  <text x="86" y="460" font-size="15px" fill="#151515">OPA/Rego severity classification</text>
+  <text x="86" y="480" font-size="15px" fill="#151515">Category-to-workflow mapping</text>
 
-  <rect x="90" y="530" width="240" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="210" y="558" text-anchor="middle" font-size="15px" font-weight="600" fill="#6A6E73">CRD: RemediationRequest</text>
+  <rect x="86" y="530" width="220" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="196" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: RemediationRequest</text>
 
-  <!-- Arrow 1-2 -->
-  <line x1="370" y1="460" x2="408" y2="460" stroke="#A3A6A9" stroke-width="3"/>
-  <polygon points="408,460 398,454 398,466" fill="#A3A6A9"/>
+  <!-- Arrow 1→2 -->
+  <line x1="340" y1="460" x2="368" y2="460" stroke="#A3A6A9" stroke-width="3"/>
+  <polygon points="368,460 358,454 358,466" fill="#A3A6A9"/>
 
-  <!-- Phase 2: AI Analysis -->
+  <!-- Phase 2: AI Analysis (x=378, w=270) -->
   <g filter="url(#sh)">
-    <rect x="420" y="240" width="300" height="370" rx="14" fill="white"/>
+    <rect x="378" y="240" width="270" height="370" rx="14" fill="white"/>
   </g>
-  <rect x="420" y="240" width="300" height="56" rx="14" fill="#6366F1"/>
-  <rect x="420" y="282" width="300" height="14" fill="#6366F1"/>
-  <circle cx="698" cy="268" r="16" fill="white" opacity="0.2"/>
-  <text x="698" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">2</text>
-  <text x="450" y="274" font-size="20px" font-weight="700" fill="white">AI Analysis</text>
+  <rect x="378" y="240" width="270" height="56" rx="14" fill="#6366F1"/>
+  <rect x="378" y="282" width="270" height="14" fill="#6366F1"/>
+  <circle cx="626" cy="268" r="16" fill="white" opacity="0.2"/>
+  <text x="626" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">2</text>
+  <text x="404" y="274" font-size="18px" font-weight="700" fill="white">AI Analysis</text>
 
-  <text x="450" y="330" font-size="17px" font-weight="600" fill="#6366F1">Three-phased pipeline</text>
-  <text x="450" y="356" font-size="16px" fill="#151515">1. LLM investigates with 36</text>
-  <text x="462" y="376" font-size="16px" fill="#151515">native Go tools (client-go)</text>
-  <text x="450" y="402" font-size="16px" fill="#151515">2. Server-side enrichment</text>
-  <text x="462" y="422" font-size="16px" fill="#151515">(context, history, metrics)</text>
-  <text x="450" y="448" font-size="16px" fill="#151515">3. LLM selects best workflow</text>
-  <text x="462" y="468" font-size="16px" fill="#151515">from user-declared catalog</text>
+  <text x="404" y="330" font-size="16px" font-weight="600" fill="#6366F1">Three-phased pipeline</text>
+  <text x="404" y="354" font-size="15px" fill="#151515">1. LLM investigates with 36</text>
+  <text x="416" y="374" font-size="15px" fill="#151515">native Go tools (client-go)</text>
+  <text x="404" y="398" font-size="15px" fill="#151515">2. Server-side enrichment</text>
+  <text x="416" y="418" font-size="15px" fill="#151515">(context, history, metrics)</text>
+  <text x="404" y="442" font-size="15px" fill="#151515">3. LLM selects best workflow</text>
+  <text x="416" y="462" font-size="15px" fill="#151515">from user-declared catalog</text>
 
-  <rect x="450" y="530" width="240" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="570" y="558" text-anchor="middle" font-size="15px" font-weight="600" fill="#6A6E73">CRD: AiAnalysis</text>
+  <rect x="404" y="530" width="220" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="514" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: AiAnalysis</text>
 
-  <!-- Arrow 2-3 -->
-  <line x1="730" y1="460" x2="768" y2="460" stroke="#A3A6A9" stroke-width="3"/>
-  <polygon points="768,460 758,454 758,466" fill="#A3A6A9"/>
+  <!-- Arrow 2→3 -->
+  <line x1="658" y1="460" x2="686" y2="460" stroke="#A3A6A9" stroke-width="3"/>
+  <polygon points="686,460 676,454 676,466" fill="#A3A6A9"/>
 
-  <!-- Phase 3: Approval -->
+  <!-- Phase 3: Approval (x=696, w=270) -->
   <g filter="url(#sh)">
-    <rect x="780" y="240" width="300" height="370" rx="14" fill="white"/>
+    <rect x="696" y="240" width="270" height="370" rx="14" fill="white"/>
   </g>
-  <rect x="780" y="240" width="300" height="56" rx="14" fill="#0F172A"/>
-  <rect x="780" y="282" width="300" height="14" fill="#0F172A"/>
-  <circle cx="1058" cy="268" r="16" fill="white" opacity="0.2"/>
-  <text x="1058" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">3</text>
-  <text x="810" y="274" font-size="20px" font-weight="700" fill="white">Approval</text>
+  <rect x="696" y="240" width="270" height="56" rx="14" fill="#0F172A"/>
+  <rect x="696" y="282" width="270" height="14" fill="#0F172A"/>
+  <circle cx="944" cy="268" r="16" fill="white" opacity="0.2"/>
+  <text x="944" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">3</text>
+  <text x="722" y="274" font-size="18px" font-weight="700" fill="white">Approval</text>
 
-  <text x="810" y="330" font-size="17px" font-weight="600" fill="#0891B2">Policy-Gated</text>
-  <text x="810" y="356" font-size="16px" fill="#151515">Auto-approve low-risk actions</text>
-  <text x="810" y="378" font-size="16px" fill="#151515">Notified via Slack, Teams or PagerDuty</text>
-  <text x="810" y="400" font-size="16px" fill="#151515">Operator can override params</text>
+  <text x="722" y="330" font-size="16px" font-weight="600" fill="#0891B2">Policy-Gated</text>
+  <text x="722" y="354" font-size="15px" fill="#151515">Auto-approve low-risk actions</text>
+  <text x="722" y="374" font-size="15px" fill="#151515">Notified via Slack, Teams</text>
+  <text x="722" y="394" font-size="15px" fill="#151515">or PagerDuty</text>
+  <text x="722" y="418" font-size="15px" fill="#151515">Operator can override params</text>
 
-  <line x1="810" y1="420" x2="1050" y2="420" stroke="#F0F0F0" stroke-width="1"/>
+  <line x1="722" y1="438" x2="942" y2="438" stroke="#F0F0F0" stroke-width="1"/>
 
-  <text x="810" y="448" font-size="17px" font-weight="600" fill="#0891B2">Safety</text>
-  <text x="810" y="472" font-size="16px" fill="#151515">OPA/Rego policy enforcement</text>
-  <text x="810" y="494" font-size="16px" fill="#151515">Confidence thresholds</text>
+  <text x="722" y="462" font-size="16px" font-weight="600" fill="#0891B2">Safety</text>
+  <text x="722" y="484" font-size="15px" fill="#151515">OPA/Rego policy enforcement</text>
+  <text x="722" y="504" font-size="15px" fill="#151515">Confidence thresholds</text>
 
-  <rect x="810" y="530" width="240" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="930" y="558" text-anchor="middle" font-size="15px" font-weight="600" fill="#6A6E73">CRD: RemediationApprovalReq</text>
+  <rect x="722" y="530" width="220" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="832" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: RemediationApprovalReq</text>
 
-  <!-- Arrow 3-4 -->
-  <line x1="1090" y1="460" x2="1128" y2="460" stroke="#A3A6A9" stroke-width="3"/>
-  <polygon points="1128,460 1118,454 1118,466" fill="#A3A6A9"/>
+  <!-- Arrow 3→4 -->
+  <line x1="976" y1="460" x2="1004" y2="460" stroke="#A3A6A9" stroke-width="3"/>
+  <polygon points="1004,460 994,454 994,466" fill="#A3A6A9"/>
 
-  <!-- Phase 4: Execution -->
+  <!-- Phase 4: Execution (x=1014, w=270) -->
   <g filter="url(#sh)">
-    <rect x="1140" y="240" width="300" height="370" rx="14" fill="white"/>
+    <rect x="1014" y="240" width="270" height="370" rx="14" fill="white"/>
   </g>
-  <rect x="1140" y="240" width="300" height="56" rx="14" fill="#D97706"/>
-  <rect x="1140" y="282" width="300" height="14" fill="#D97706"/>
-  <circle cx="1418" cy="268" r="16" fill="white" opacity="0.2"/>
-  <text x="1418" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">4</text>
-  <text x="1170" y="274" font-size="20px" font-weight="700" fill="white">Execution</text>
+  <rect x="1014" y="240" width="270" height="56" rx="14" fill="#D97706"/>
+  <rect x="1014" y="282" width="270" height="14" fill="#D97706"/>
+  <circle cx="1262" cy="268" r="16" fill="white" opacity="0.2"/>
+  <text x="1262" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">4</text>
+  <text x="1040" y="274" font-size="18px" font-weight="700" fill="white">Execution</text>
 
-  <text x="1170" y="330" font-size="17px" font-weight="600" fill="#D97706">3 Engines</text>
-  <text x="1170" y="358" font-size="16px" fill="#151515">Tekton Pipelines</text>
-  <text x="1170" y="380" font-size="16px" fill="#151515">Kubernetes Jobs</text>
-  <text x="1170" y="402" font-size="16px" fill="#151515">Ansible / AWX</text>
+  <text x="1040" y="330" font-size="16px" font-weight="600" fill="#D97706">3 Engines</text>
+  <text x="1040" y="356" font-size="15px" fill="#151515">Tekton Pipelines</text>
+  <text x="1040" y="376" font-size="15px" fill="#151515">Kubernetes Jobs</text>
+  <text x="1040" y="396" font-size="15px" fill="#151515">Ansible / AWX</text>
 
-  <line x1="1170" y1="422" x2="1410" y2="422" stroke="#F0F0F0" stroke-width="1"/>
+  <line x1="1040" y1="416" x2="1260" y2="416" stroke="#F0F0F0" stroke-width="1"/>
 
-  <text x="1170" y="450" font-size="17px" font-weight="600" fill="#D97706">Security Model</text>
-  <text x="1170" y="474" font-size="16px" fill="#151515">Per-workflow ServiceAccount</text>
-  <text x="1170" y="496" font-size="16px" fill="#151515">Short-lived TokenRequest auth</text>
+  <text x="1040" y="442" font-size="16px" font-weight="600" fill="#D97706">Security Model</text>
+  <text x="1040" y="466" font-size="15px" fill="#151515">Per-workflow ServiceAccount</text>
+  <text x="1040" y="486" font-size="15px" fill="#151515">Short-lived TokenRequest auth</text>
 
-  <rect x="1170" y="530" width="240" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="1290" y="558" text-anchor="middle" font-size="15px" font-weight="600" fill="#6A6E73">CRD: WorkflowExecution</text>
+  <rect x="1040" y="530" width="220" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="1150" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: WorkflowExecution</text>
 
-  <!-- Arrow 4-5 -->
-  <line x1="1450" y1="460" x2="1488" y2="460" stroke="#A3A6A9" stroke-width="3"/>
-  <polygon points="1488,460 1478,454 1478,466" fill="#A3A6A9"/>
+  <!-- Arrow 4→5 -->
+  <line x1="1294" y1="460" x2="1322" y2="460" stroke="#A3A6A9" stroke-width="3"/>
+  <polygon points="1322,460 1312,454 1312,466" fill="#A3A6A9"/>
 
-  <!-- Phase 5: Effectiveness -->
+  <!-- Phase 5: Effectiveness (x=1332, w=270) -->
   <g filter="url(#sh)">
-    <rect x="1500" y="240" width="360" height="370" rx="14" fill="white"/>
+    <rect x="1332" y="240" width="270" height="370" rx="14" fill="white"/>
   </g>
-  <rect x="1500" y="240" width="360" height="56" rx="14" fill="#059669"/>
-  <rect x="1500" y="282" width="360" height="14" fill="#059669"/>
-  <circle cx="1838" cy="268" r="16" fill="white" opacity="0.2"/>
-  <text x="1838" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">5</text>
-  <text x="1530" y="274" font-size="20px" font-weight="700" fill="white">Effectiveness</text>
+  <rect x="1332" y="240" width="270" height="56" rx="14" fill="#059669"/>
+  <rect x="1332" y="282" width="270" height="14" fill="#059669"/>
+  <circle cx="1580" cy="268" r="16" fill="white" opacity="0.2"/>
+  <text x="1580" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">5</text>
+  <text x="1358" y="274" font-size="18px" font-weight="700" fill="white">Effectiveness</text>
 
-  <text x="1530" y="330" font-size="17px" font-weight="600" fill="#059669">Verify</text>
-  <text x="1530" y="356" font-size="16px" fill="#151515">Alert resolution confirmed</text>
-  <text x="1530" y="378" font-size="16px" fill="#151515">Drift detection after fix</text>
-  <text x="1530" y="400" font-size="16px" fill="#151515">Cooldown monitoring</text>
+  <text x="1358" y="330" font-size="16px" font-weight="600" fill="#059669">Verify</text>
+  <text x="1358" y="354" font-size="15px" fill="#151515">Alert resolution confirmed</text>
+  <text x="1358" y="374" font-size="15px" fill="#151515">Drift detection after fix</text>
+  <text x="1358" y="394" font-size="15px" fill="#151515">Cooldown monitoring</text>
 
-  <line x1="1530" y1="420" x2="1830" y2="420" stroke="#F0F0F0" stroke-width="1"/>
+  <line x1="1358" y1="414" x2="1578" y2="414" stroke="#F0F0F0" stroke-width="1"/>
 
-  <text x="1530" y="448" font-size="17px" font-weight="600" fill="#059669">Learn</text>
-  <text x="1530" y="474" font-size="16px" fill="#151515">Health scoring (0-100%)</text>
-  <text x="1530" y="496" font-size="16px" fill="#151515">Outcomes feed future RCA</text>
+  <text x="1358" y="440" font-size="16px" font-weight="600" fill="#059669">Learn</text>
+  <text x="1358" y="464" font-size="15px" fill="#151515">Health scoring (0-100%)</text>
+  <text x="1358" y="484" font-size="15px" fill="#151515">Outcomes feed future RCA</text>
 
-  <rect x="1530" y="530" width="300" height="44" rx="8" fill="#F5F5F5"/>
-  <text x="1680" y="558" text-anchor="middle" font-size="15px" font-weight="600" fill="#6A6E73">CRD: EffectivenessAssessment</text>
+  <rect x="1358" y="530" width="220" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="1468" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: EffectivenessAssessment</text>
+
+  <!-- Arrow 5→6 -->
+  <line x1="1612" y1="460" x2="1640" y2="460" stroke="#A3A6A9" stroke-width="3"/>
+  <polygon points="1640,460 1630,454 1630,466" fill="#A3A6A9"/>
+
+  <!-- Phase 6: Notification (x=1650, w=270) -->
+  <g filter="url(#sh)">
+    <rect x="1650" y="240" width="220" height="370" rx="14" fill="white"/>
+  </g>
+  <rect x="1650" y="240" width="220" height="56" rx="14" fill="#7C3AED"/>
+  <rect x="1650" y="282" width="220" height="14" fill="#7C3AED"/>
+  <circle cx="848" cy="268" r="16" fill="white" opacity="0.2" transform="translate(800,0)"/>
+  <text x="1848" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">6</text>
+  <text x="1676" y="274" font-size="18px" font-weight="700" fill="white">Notification</text>
+
+  <text x="1676" y="330" font-size="16px" font-weight="600" fill="#7C3AED">Channels</text>
+  <text x="1676" y="354" font-size="15px" fill="#151515">Slack, PagerDuty, Teams</text>
+  <text x="1676" y="374" font-size="15px" fill="#151515">Console, log, file</text>
+
+  <line x1="1676" y1="394" x2="1846" y2="394" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="1676" y="418" font-size="16px" font-weight="600" fill="#7C3AED">Reliability</text>
+  <text x="1676" y="442" font-size="15px" fill="#151515">Label-based routing</text>
+  <text x="1676" y="462" font-size="15px" fill="#151515">Circuit-breaker retry</text>
+  <text x="1676" y="482" font-size="15px" fill="#151515">Delivery audit trail</text>
+
+  <rect x="1676" y="530" width="170" height="44" rx="8" fill="#F5F5F5"/>
+  <text x="1761" y="558" text-anchor="middle" font-size="14px" font-weight="600" fill="#6A6E73">CRD: NotificationRequest</text>
 
 </svg>

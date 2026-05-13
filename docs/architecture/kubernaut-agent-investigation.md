@@ -646,6 +646,10 @@ If the Rego policy fails to load or evaluate, the evaluator returns `Degraded=tr
 | `ApprovalRequired=true` | Stores approval context (investigation summary, recommended workflow, evidence, alternatives) | Creates `RemediationApprovalRequest` + approval `NotificationRequest`, transitions RR to `AwaitingApproval` |
 | `ApprovalRequired=false` | Sets `AutoApproved` | Creates `WorkflowExecution` directly, transitions RR to `Executing` |
 
+## apiVersion Validation Gate (v1.4)
+
+When a CRD Kind exists in multiple API groups (e.g., a custom `Certificate` kind alongside `cert-manager.io/Certificate`), `kubectl` operations may target the wrong group. The apiVersion validation gate (#1044) detects these ambiguous Kinds during investigation and halts execution — the `RemediationRequest` transitions to **ManualReviewRequired** with a notification explaining the collision. This prevents incorrect remediation actions against the wrong API resource.
+
 ## Parallel tool execution and batching (v1.4)
 
 When the LLM emits **multiple tool calls in one turn**, the investigation loop executes them **concurrently**, so independent tools finish in parallel instead of strictly one-after-another (#970). The investigation **system prompt** also instructs the model to **batch logically independent tool calls** in a single assistant message whenever safe, trimming LLM ↔ runtime round trips (#971).

@@ -64,6 +64,22 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     [:octicons-arrow-right-24: API Reference](api-reference/index.md)
 
+-   :material-new-box:{ .lg .middle } **What's New in v1.4**
+
+    ---
+
+    Dry-run mode, Shadow Agent prompt injection defense, operator workflow overrides, and more.
+
+    [:octicons-arrow-right-24: Release Highlights](whats-new/index.md)
+
+-   :material-crystal-ball:{ .lg .middle } **What's Next**
+
+    ---
+
+    v1.5 roadmap — interactive sessions, Backstage console, MCP/A2A integration, fleet operations.
+
+    [:octicons-arrow-right-24: Roadmap](whats-next/index.md)
+
 -   :material-frequently-asked-questions:{ .lg .middle } **FAQ**
 
     ---
@@ -78,16 +94,82 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
 ## How It Works
 
-Kubernaut automates the entire incident response lifecycle through a six-stage pipeline:
+Kubernaut automates the entire incident response lifecycle through a CRD-native pipeline.
 
-![Kubernaut Pipeline Overview](assets/images/pipeline-overview.svg){ .pipeline-overview }
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
+<img src="assets/images/pipeline-phases.svg" alt="Kubernaut Remediation Pipeline — 5 phases" style="width:100%">
+</div>
 
-1. **Signal Deduplication** — Receives alerts from Prometheus AlertManager and Kubernetes Events, validates resource scope, deduplicates and suppresses noise, and creates a `RemediationRequest`.
-2. **Signal Categorization** — Enriches the signal with Kubernetes context (owner chain, namespace labels, workload details), environment classification, priority assignment, business classification, severity normalization, and signal mode.
-3. **LLM Investigation** — The Kubernaut Agent investigates the incident live using Kubernetes inspection tools (logs, events, resource state) and optionally Prometheus for live metrics. It produces a root cause analysis, resolves the target resource's owner chain and remediation history, detects infrastructure labels (GitOps, Helm, service mesh, HPA, PDB), and searches the workflow catalog for a matching remediation.
-4. **Remediation Execution** — Runs the selected remediation via Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP).
-5. **Effectiveness Assessment** — Evaluates whether the fix actually worked via spec hash comparison, health checks, alert resolution, and effectiveness scoring.
-6. **Multichannel Notification** — Notifies the team with the full remediation outcome, including the effectiveness assessment results.
+Select a phase to learn more:
+
+=== "1 · Signal Processing"
+
+    **CRD:** `SignalProcessing`
+
+    AlertManager webhooks and Kubernetes Events are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:
+
+    - **Severity** — normalized to a standard scale (critical, high, medium, low).
+    - **Environment** — inferred from namespace labels (production, staging, development).
+    - **Priority** — P0–P3 based on policy evaluation.
+    - **Signal mode** — reactive (active incident) or proactive (predicted issue).
+    - **Business classification** — service owner, criticality, SLA requirements.
+
+    Each signal is fingerprinted for deduplication at the Gateway before entering the pipeline.
+
+=== "2 · AI Analysis"
+
+    **CRD:** `AIAnalysis`
+
+    Two-phased pipeline:
+
+    - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
+    - **Select** — Using the RCA and server-side enrichment (historical context, detectable labels), the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
+
+=== "3 · Approval"
+
+    **CRD:** `RemediationApprovalRequest`
+
+    Policy-gated safety checkpoint:
+
+    - **Auto-approve** low-risk actions based on OPA/Rego policies and confidence thresholds.
+    - **Manual review** via Slack or Console for higher-risk remediations.
+    - **Operator overrides** allow substituting workflow parameters via the `WorkflowOverride` CRD, with authwebhook validation and full audit trail.
+
+=== "4 · Execution"
+
+    **CRD:** `WorkflowExecution`
+
+    Three execution engines:
+
+    - **Tekton Pipelines** — cloud-native CI/CD pipelines for complex multi-step workflows.
+    - **Kubernetes Jobs** — lightweight, single-task remediation actions.
+    - **Ansible (AWX/AAP)** — infrastructure-level remediation beyond the cluster boundary.
+
+    Each workflow runs under a dedicated ServiceAccount with short-lived TokenRequest authentication, ensuring no standing privileges.
+
+=== "5 · Effectiveness"
+
+    **CRD:** `EffectivenessAssessment`
+
+    Post-remediation verification:
+
+    - **Alert resolution** — confirms the original alert has cleared.
+    - **Drift detection** — checks for spec changes after the fix.
+    - **Cooldown monitoring** — watches for alert recurrence within a configurable window.
+    - **Health scoring** — four-dimensional assessment (0–100%) combining alert status, metrics, health, and spec stability.
+
+    Outcomes feed back into the Kubernaut Agent so the LLM avoids repeating failed remediations.
+
+=== "6 · Notification"
+
+    **CRD:** `NotificationRequest`
+
+    Multi-channel delivery with full lifecycle tracking:
+
+    - **Channels:** Slack, PagerDuty, Microsoft Teams, console, log, file.
+    - **Routing:** Label-based rules with regex matching and fan-out to multiple channels.
+    - **Reliability:** Circuit-breaker retry with exponential backoff per channel.
+    - **Audit:** Every delivery attempt (success or failure) is recorded with correlation IDs linking back to the originating `RemediationRequest`.
 
 ---
 

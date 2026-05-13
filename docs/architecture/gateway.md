@@ -256,6 +256,21 @@ The Gateway's responsibility ends with CRD creation. The `RemediationRequest` is
 Gateway creates RR → RO watches RR → RO creates SP CRD → SP enriches signal
 ```
 
+## Security Hardening (v1.4)
+
+The v1.4 release addressed 14 security audit findings:
+
+| Control | Detail |
+|---|---|
+| **Request body limit** | 256 KB via `MaxBytesReader` on all ingestion endpoints |
+| **Error responses** | Generic RFC 7807 problem details — internal state never leaked |
+| **Header stripping** | `X-Auth-Request-User` stripped from inbound requests to prevent impersonation |
+| **RBAC** | Least-privilege ClusterRole scoped to required verbs only |
+| **API timeouts** | 15-second per-handler timeout on all Kubernetes API calls |
+| **Trusted proxy** | RealIP middleware with fail-closed behavior (rejects if no trusted proxy configured) |
+| **CORS** | Restrictive default — no wildcard origins |
+| **Prometheus label denylist** | `namespace` and Prometheus-reserved labels (`__name__`, `__address__`, etc.) excluded from dynamic kind resolution to prevent misrouting (#1045, #1067) |
+
 ## Next Steps
 
 - [Signals & Alert Routing](../user-guide/signals.md) -- Signal modes, scope management, and alert routing for operators

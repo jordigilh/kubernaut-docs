@@ -5,6 +5,54 @@
 
 After a remediation workflow completes, Kubernaut evaluates whether the fix actually resolved the issue. This is handled by the **Effectiveness Monitor** — a CRD controller that watches `EffectivenessAssessment` resources.
 
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 400" style="width:100%;height:auto" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" aria-label="Diagram: LLM learns from failure across two cycles">
+  <rect width="860" height="400" fill="#FFFFFF"/>
+  <defs>
+    <clipPath id="eff-card-p1"><rect x="16" y="16" width="400" height="310" rx="10"/></clipPath>
+    <clipPath id="eff-card-p2"><rect x="444" y="16" width="400" height="310" rx="10"/></clipPath>
+  </defs>
+  <rect x="16" y="16" width="400" height="310" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="16" y="16" width="400" height="5" fill="#0F172A" clip-path="url(#eff-card-p1)"/>
+  <text x="28" y="43" fill="#0F172A" font-size="16" font-weight="700">Cycle 1: Automated Fix</text>
+  <line x1="28" y1="54" x2="404" y2="54" stroke="#F0F0F0"/>
+  <text x="28" y="72" fill="#0891B2" font-size="12" font-weight="700">Signal</text>
+  <text x="28" y="88" fill="#0F172A" font-size="12">OOMKill on ml-worker (64 Mi limit)</text>
+  <line x1="28" y1="96" x2="404" y2="96" stroke="#F0F0F0"/>
+  <text x="28" y="114" fill="#0891B2" font-size="12" font-weight="700">AI Action</text>
+  <text x="28" y="130" fill="#0F172A" font-size="12">LLM investigates with 36 tools</text>
+  <text x="28" y="146" fill="#0F172A" font-size="12">Selects: IncreaseMemoryLimits</text>
+  <text x="28" y="162" fill="#0F172A" font-size="12">Patches limit: 64 Mi &#x2192; 128 Mi</text>
+  <line x1="28" y1="170" x2="404" y2="170" stroke="#F0F0F0"/>
+  <text x="28" y="188" fill="#0891B2" font-size="12" font-weight="700">Result</text>
+  <rect x="28" y="196" width="352" height="48" rx="6" fill="#FEF2F2" stroke="#DC2626"/>
+  <text x="40" y="214" fill="#DC2626" font-size="12" font-weight="700">healthScore = 0</text>
+  <text x="40" y="232" fill="#334155" font-size="10">OOMKill recurs after 16s (leak at 8 Mi/s)</text>
+  <text x="28" y="318" fill="#94A3B8" font-size="9">Outcome persisted for next investigation</text>
+  <rect x="444" y="16" width="400" height="310" rx="10" fill="#FFFFFF" stroke="#E2E8F0"/>
+  <rect x="444" y="16" width="400" height="5" fill="#DC2626" clip-path="url(#eff-card-p2)"/>
+  <text x="456" y="43" fill="#DC2626" font-size="16" font-weight="700">Cycle 2: Escalation</text>
+  <line x1="456" y1="54" x2="832" y2="54" stroke="#F0F0F0"/>
+  <text x="456" y="72" fill="#DC2626" font-size="12" font-weight="700">LLM Reads History</text>
+  <text x="456" y="88" fill="#0F172A" font-size="12">Previous fix scored 0 &#x2014; regression detected</text>
+  <text x="456" y="104" fill="#0F172A" font-size="12">&quot;Do NOT repeat failed workflows&quot;</text>
+  <line x1="456" y1="112" x2="832" y2="112" stroke="#F0F0F0"/>
+  <text x="456" y="130" fill="#DC2626" font-size="12" font-weight="700">AI Decision</text>
+  <text x="456" y="146" fill="#0F172A" font-size="12">Evaluates all candidate workflows</text>
+  <text x="456" y="162" fill="#0F172A" font-size="12">Rejects each: &quot;memory limits can&apos;t fix leaks&quot;</text>
+  <line x1="456" y1="170" x2="832" y2="170" stroke="#F0F0F0"/>
+  <text x="456" y="188" fill="#DC2626" font-size="12" font-weight="700">Outcome</text>
+  <rect x="456" y="196" width="352" height="48" rx="6" fill="#F8FAFC" stroke="#94A3B8"/>
+  <text x="468" y="214" fill="#0F172A" font-size="12" font-weight="700">ManualReviewRequired</text>
+  <text x="468" y="232" fill="#334155" font-size="10">Notification sent to human via Slack/PagerDuty</text>
+  <text x="456" y="318" fill="#94A3B8" font-size="9">Total: 2 cycles, ~8 min, 216K tokens, 37 tool calls</text>
+  <text x="430" y="178" fill="#94A3B8" font-size="24" font-weight="700" text-anchor="middle">&#x2192;</text>
+  <text x="430" y="194" fill="#DC2626" font-size="10" font-weight="700" text-anchor="middle">recurs</text>
+  <rect x="16" y="340" width="828" height="44" rx="8" fill="#0891B2"/>
+  <text x="430" y="368" fill="#FFFFFF" font-size="14" font-weight="700" text-anchor="middle">The platform knows when to stop automating and hand off to a human.</text>
+</svg>
+</div>
+
 ## Phase state and tuning
 
 Assessments normally progress through pending, propagation, stabilization, and active scoring to **Completed**. If the EM cannot finish — for example the target resource was deleted, or Prometheus stays unavailable after retries — the CRD moves to a terminal **`Failed`** phase. See [Architecture: Phase State Machine](../architecture/effectiveness.md#phase-state-machine).

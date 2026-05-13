@@ -6,36 +6,31 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
 
 ```mermaid
 graph LR
-    subgraph Available["Available Today"]
+    subgraph v14["Available (v1.4)"]
+        L1["Level 1<br/><b>Observe</b><br/><small>Global dry-run</small>"]
         L3["Level 3<br/><b>Approve</b><br/><small>RAR gate</small>"]
         L4["Level 4<br/><b>Automate</b><br/><small>Full autonomous</small>"]
     end
-    subgraph Planned["Planned (v1.5)"]
-        L1["Level 1<br/><b>Observe</b><br/><small>Dry-mode global</small>"]
-        L2["Level 2<br/><b>Selective Trust</b><br/><small>Dry-mode per-workflow</small>"]
+    subgraph v15["Planned (v1.5)"]
+        L2["Level 2<br/><b>Selective Trust</b><br/><small>Per-workflow dry-run</small>"]
     end
     L1 --> L2 --> L3 --> L4
 ```
 
-<figure markdown="span">
-  ![Trust Ladder](../assets/images/trust-ladder.svg){ width="100%" }
-  <figcaption>Kubernaut Trust Ladder — four levels from observation to full automation</figcaption>
-</figure>
-
 | Level | Name | Human Involvement | Available |
 |---|---|---|---|
-| **1** | Observe | Operator sees what Kubernaut *would* do — no execution | v1.5 (dry-mode) |
-| **2** | Selective Trust | Trusted workflows execute; new ones go through review | v1.5 (dry-mode per-workflow) |
-| **3** | **Approve** | All matched workflows proposed via RAR — operator approves/rejects | **Now** |
-| **4** | **Automate** | Matched workflows execute without human intervention | **Now** |
+| **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution | **v1.4** (global dry-run) |
+| **2** | Selective Trust | Trusted workflows execute; new ones stay in dry-run | v1.5 (per-workflow dry-run) |
+| **3** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects | **v1.4** |
+| **4** | **Automate** | Matched workflows execute without human intervention | **v1.4** |
 
-Operators typically start at Level 3 and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
+Operators typically start at Level 1 (observe) or Level 3 (approve) and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
 
 ---
 
 ## Level 3: Approve (Available Now) {: #level-3-approve }
 
-At this level, every remediation goes through a **RemediationApprovalRequest (RAR)** before execution. The operator reviews Kubernaut's recommendation — the selected workflow, confidence score, root cause analysis, and detected infrastructure labels — and either approves or rejects it.
+At this level, the Rego approval policy determines which remediations require human review. When `require_approval` evaluates to `true`, a **RemediationApprovalRequest (RAR)** is created before execution. The operator reviews Kubernaut's recommendation — the selected workflow, confidence score, root cause analysis, and detected infrastructure labels — and either approves or rejects it.
 
 ### How it works
 
@@ -43,25 +38,28 @@ At this level, every remediation goes through a **RemediationApprovalRequest (RA
 2. Kubernaut Agent selects a workflow with a confidence score
 3. The [Rego approval policy](approval.md) evaluates the selection and creates a **RAR** if approval is needed
 4. Operator receives a notification with the full RCA and proposed remediation
-5. Operator **approves** (execution proceeds) or **rejects** (remediation stops)
-6. If no action is taken within the configured timeout, the RAR expires
+5. Operator **approves** (execution proceeds), **rejects** (remediation stops), or **overrides** (substitutes workflow parameters via `WorkflowOverride`)
+6. If no action is taken within the configured timeout, the RAR expires (default: **15 minutes**, configurable via `spec.requiredBy`)
 
 ### Configuration
 
-The approval gate is controlled entirely by the Rego policy in the `aianalysis-policies` ConfigMap. The default policy requires approval for:
+The approval gate is controlled by the Rego policy deployed in the `aianalysis-policies` ConfigMap. The Helm chart does not ship a default policy — operators must supply one via `aianalysis.policies.content` or `aianalysis.policies.existingConfigMap`.
+
+A typical starter policy requires approval for:
 
 - **Production namespaces** (case-insensitive)
 - **Sensitive resource kinds** (Node, StatefulSet)
 - **Missing remediation targets** (safety net)
+- **Low-confidence selections** (below `aianalysis.rego.confidenceThreshold`, default **0.8**)
 
-Non-production namespaces with a valid remediation target auto-approve by default.
+Non-production namespaces with a valid remediation target and high confidence auto-approve.
 
 To **require approval for everything** (strictest Level 3), replace the default policy with:
 
 ```rego
 package aianalysis.approval
 
-default requires_approval := true
+default require_approval := true
 ```
 
 To adjust the confidence threshold for approval:
@@ -69,9 +67,17 @@ To adjust the confidence threshold for approval:
 ```yaml
 # Helm values
 aianalysis:
-  approval:
-    confidenceThreshold: "0.9"  # Require approval below 90% confidence
+  rego:
+    confidenceThreshold: "0.9"  # Require approval below 90% confidence (default: 0.8)
 ```
+
+### Operator workflow overrides (v1.4)
+
+When approving a RAR, operators can substitute the AI-selected workflow or adjust its parameters via `status.workflowOverride`. Override requests are validated by the authwebhook and recorded in the audit trail. See [Operator Workflow Overrides](approval.md#operator-workflow-overrides-v14) for details.
+
+### Alignment gate (v1.4)
+
+When shadow-agent alignment is enabled, Kubernaut runs a secondary AI evaluation to verify the primary agent's recommendation. If alignment fails, the pipeline creates a **ManualReviewRequired** notification and stops execution — even if the Rego policy would have auto-approved. This provides an additional safety layer independent of the trust level.
 
 ### Graduation signals
 
@@ -105,7 +111,7 @@ At this level, matched workflows execute without human intervention. The operato
 
 ### Configuration
 
-Auto-approval happens when the Rego policy returns `requires_approval := false`. With the default policy, this occurs for:
+Auto-approval happens when the Rego policy returns `require_approval := false`. With the default policy, this occurs for:
 
 - Non-production namespaces (`staging`, `development`, `qa`, `test`)
 - Non-sensitive resource kinds (anything other than Node/StatefulSet)
@@ -118,17 +124,17 @@ package aianalysis.approval
 
 import rego.v1
 
-default requires_approval := true
+default require_approval := true
 
-requires_approval := false if {
+require_approval := false if {
     not is_production
 }
 
-requires_approval := false if {
+require_approval := false if {
     is_production
     input.remediation_target.kind != "Node"
     input.remediation_target.kind != "StatefulSet"
-    input.detected_labels.workflow_name in trusted_production_workflows
+    input.detected_labels["workflow_name"] in trusted_production_workflows
 }
 
 trusted_production_workflows := {
@@ -166,19 +172,31 @@ To move a workflow (or all workflows) back to Level 3, update the Rego policy to
 
 ---
 
-## Level 1: Observe (Planned — v1.5) {: #level-1-observe }
+## Level 1: Observe (Available — v1.4) {: #level-1-observe }
 
-!!! note "Not yet available"
-    Level 1 depends on **dry-mode** ([kubernaut#116](https://github.com/jordigilh/kubernaut/issues/116)), planned for v1.5.
+At this level, Kubernaut runs the full pipeline through AI Analysis — investigating root cause and selecting a workflow — but **stops before execution**. No `WorkflowExecution`, `RemediationApprovalRequest`, or `EffectivenessAssessment` CRDs are created. The `RemediationRequest` completes with outcome **`DryRun`**.
 
-At this level, every matched workflow goes through a **DryRun RAR** instead of executing. The operator sees exactly what Kubernaut *would* do — the selected workflow, parameters, and target resource — without any changes to the cluster.
+### How it works
 
-**Planned capabilities:**
+1. Alert arrives → Signal Processing enriches it → Kubernaut Agent investigates root cause
+2. Kubernaut Agent selects a workflow with a confidence score
+3. Pipeline **stops** — the RR completes with outcome `DryRun`
+4. A `dryRunHoldPeriod` is set on the RR to suppress re-triggering for the same signal fingerprint (default: 1 hour)
+5. Operator reviews the RCA and selected workflow via audit events or notifications
 
-- `[DRY RUN]` notifications showing the proposed remediation
-- Interactive review via the RAR: "Why this workflow?", "Show me the parameters"
-- Operator can approve (execute for real) or dismiss
-- Full audit trail of dry-run decisions
+### Configuration
+
+Enable dry-run mode in the Remediation Orchestrator config:
+
+```yaml
+# remediationorchestrator-config ConfigMap
+remediationOrchestrator:
+  dryRun: true
+  dryRunHoldPeriod: "1h"  # minimum: 5m
+```
+
+- **`dryRun`** — When `true`, the pipeline stops after AI Analysis. Default: `false`.
+- **`dryRunHoldPeriod`** — Duration to suppress new RR creation for the same signal fingerprint after a dry-run completion. Minimum: `5m`. Default: `1h`.
 
 **Goal:** Understand Kubernaut's decision-making without any risk. This is the recommended starting point for new installations.
 
@@ -187,14 +205,14 @@ At this level, every matched workflow goes through a **DryRun RAR** instead of e
 ## Level 2: Selective Trust (Planned — v1.5) {: #level-2-selective-trust }
 
 !!! note "Not yet available"
-    Level 2 depends on **per-workflow dry-mode overrides** ([kubernaut#116](https://github.com/jordigilh/kubernaut/issues/116)), planned for v1.5.
+    Level 2 depends on **per-workflow dry-run overrides** ([kubernaut#116](https://github.com/jordigilh/kubernaut/issues/116)), planned for v1.5. Global dry-run (Level 1) is available in v1.4.
 
-At this level, trusted workflows that have been validated in dry-mode graduate to real execution, while new or untested workflows continue to go through DryRun RAR review.
+At this level, trusted workflows that have been validated in dry-run mode graduate to real execution, while new or untested workflows continue to complete with outcome `DryRun`.
 
 **Planned capabilities:**
 
-- Per-workflow dry-mode overrides (disable dry-mode for trusted workflows)
-- New workflows automatically enter dry-mode until explicitly graduated
+- Per-workflow dry-run overrides (disable dry-run for trusted workflows)
+- New workflows automatically enter dry-run until explicitly graduated
 - Effectiveness Monitor data drives graduation confidence
 
 **Goal:** Graduate individual workflows as confidence grows, building a library of trusted automations.
@@ -211,10 +229,10 @@ When no workflow matches an alert — at **any** trust level — Kubernaut will 
 **Planned capabilities:**
 
 - LLM-generated remediation steps when no catalog workflow matches
-- Interactive conversation via RAR to refine the suggestion
+- Natural language investigation via MCP/A2A protocols to refine the suggestion
 - Option to convert a validated suggestion into a new registered workflow
 
-**Goal:** Novel incidents become automated workflows through operator-LLM collaboration. The workflow library grows organically.
+**Goal:** Novel incidents become automated workflows through operator-AI collaboration. The workflow library grows organically.
 
 ---
 
@@ -224,13 +242,12 @@ For teams new to Kubernaut, we recommend the following progression:
 
 | Phase | Timeline | What to do |
 |---|---|---|
-| **Week 1–2** | Deployment | Install with default Rego policy (Level 3). All production remediations require approval. Non-production auto-approves. |
-| **Week 2–4** | Validate | Review RAR decisions. Check Effectiveness Monitor scores. Build familiarity with Kubernaut's recommendations. |
+| **Week 1** | Observe | Install with `dryRun: true` (Level 1). Kubernaut investigates and selects workflows but does not execute. Review RCAs and workflow selections via audit events. |
+| **Week 2–3** | Approve | Disable dry-run, deploy a Rego approval policy (Level 3). Production remediations require human approval; non-production auto-approves based on your policy. |
+| **Week 3–4** | Validate | Review RAR decisions. Check Effectiveness Monitor scores. Build familiarity with Kubernaut's recommendations. |
 | **Month 2** | Graduate non-prod | Confirm non-production workflows are consistently effective. Monitor autonomous execution. |
 | **Month 2–3** | Graduate prod workflows | Customize the Rego policy to auto-approve specific, well-validated production workflows (e.g., `crashloop-rollback-v1`). |
 | **Month 3+** | Expand | Add new workflow types in Level 3 (approval). Graduate to Level 4 as confidence grows. |
-
-When v1.5 lands with dry-mode support, new installations can start at **Level 1** for zero-risk observation before progressing through the ladder.
 
 ---
 

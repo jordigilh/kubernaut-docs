@@ -7,16 +7,14 @@ Kubernaut has a two-tier data model: **CRDs** in Kubernetes for active remediati
 
 ## CRD Retention
 
-Custom Resources (CRDs) represent the active state of a remediation. The CRD type definition includes a `retentionExpiryTime` field intended for automatic cleanup after terminal phases, but **CRD TTL enforcement is not yet implemented** — terminal CRDs remain in Kubernetes indefinitely until manually deleted.
-
-!!! note "Planned Feature"
-    Automatic CRD cleanup (24h TTL after terminal phase) is planned but depends on full CRD reconstruction support being implemented first, ensuring no data loss.
+Custom Resources (CRDs) represent the active state of a remediation. From **v1.4**, Kubernaut enforces a **24-hour retention TTL** on terminal `RemediationRequest` CRDs (#265). When a remediation reaches a terminal phase (Completed, Failed, Blocked, TimedOut, Skipped, Cancelled), the `retentionExpiryTime` field is set to 24 hours from completion. After expiry, the CRD is automatically cleaned up.
 
 This means:
 
 - **Active remediations** are always visible via `kubectl get remediationrequests`
-- **Completed remediations** persist until manually deleted
-- **No data is lost** because every stage is persisted as audit events in PostgreSQL
+- **Completed remediations** are retained for 24 hours, then cleaned up automatically
+- **No data is lost** because every stage is persisted as audit events in PostgreSQL before CRD cleanup
+- The retention period is configurable via `retention.period` in Helm values
 
 ## PostgreSQL as the System of Record
 
@@ -24,7 +22,7 @@ While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every serv
 
 | Storage | Lifetime | Purpose |
 |---|---|---|
-| Kubernetes CRDs | Indefinite (TTL cleanup planned) | Active state, `kubectl` visibility, controller reconciliation |
+| Kubernetes CRDs | 24h after terminal phase (v1.4, configurable) | Active state, `kubectl` visibility, controller reconciliation |
 | PostgreSQL `audit_events` | 7 years (configured default; deletion not yet enforced — see [kubernaut#485](https://github.com/jordigilh/kubernaut/issues/485)) | Compliance, reconstruction, analytics, post-mortems |
 
 ## RemediationRequest Reconstruction

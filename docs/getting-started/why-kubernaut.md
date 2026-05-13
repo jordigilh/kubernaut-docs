@@ -10,10 +10,78 @@ Rule-based remediation tools improve this for **known, deterministic problems**.
 
 When the same symptom has multiple root causes, or the right fix depends on context the rule can't see, rule-based tools either pick the wrong action or do nothing.
 
-<figure markdown="span">
-  ![Depth of Kubernetes Remediation](../assets/images/domain-depth.svg){ width="100%" }
-  <figcaption>Most tools stop at the surface — Kubernaut investigates the full depth of Kubernetes remediation</figcaption>
-</figure>
+### Depth of Kubernetes Remediation
+
+Most remediation tools operate at the **surface level** — they detect a symptom and apply a static rule. Kubernaut goes deeper:
+
+| Depth | What happens | Who typically does this |
+|---|---|---|
+| **Surface** | Alert fires, symptom detected | Monitoring tools |
+| **Triage** | Classify severity, deduplicate, route | Rule-based automation |
+| **Investigation** | Read logs, correlate events, inspect resources, check metrics, trace owner chains | SRE (manual) or Kubernaut Agent (automated) |
+| **Root-Cause Analysis** | Identify *why* it happened, not just *what* happened | Senior SRE or Kubernaut Agent with 36 inspection tools |
+| **Remediation** | Select and execute the right fix from a catalog | Kubernaut workflow engine |
+| **Verification** | Confirm the fix worked — alert resolved, no drift, health score | Kubernaut Effectiveness Monitor |
+| **Learning** | Feed outcomes back so the same mistake isn't repeated | Kubernaut remediation history |
+
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 480" style="width:100%;height:auto" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" aria-label="Depth of Kubernetes Remediation as an iceberg diagram">
+  <defs>
+    <clipPath id="kn-ice-z1" clipPathUnits="userSpaceOnUse">
+      <polygon points="190,40 240,180 140,180"/>
+    </clipPath>
+    <clipPath id="kn-ice-z2" clipPathUnits="userSpaceOnUse">
+      <polygon points="140,180 240,180 261.429,240 118.571,240"/>
+    </clipPath>
+    <clipPath id="kn-ice-z3" clipPathUnits="userSpaceOnUse">
+      <polygon points="118.571,240 261.429,240 300.714,350 79.286,350"/>
+    </clipPath>
+    <clipPath id="kn-ice-z4" clipPathUnits="userSpaceOnUse">
+      <polygon points="79.286,350 300.714,350 340,460 40,460"/>
+    </clipPath>
+  </defs>
+  <rect width="860" height="480" fill="#FFFFFF"/>
+  <g clip-path="url(#kn-ice-z1)">
+    <rect x="0" y="0" width="860" height="480" fill="#0891B2" fill-opacity="0.08"/>
+  </g>
+  <g clip-path="url(#kn-ice-z2)">
+    <rect x="0" y="0" width="860" height="480" fill="#0891B2" fill-opacity="0.12"/>
+  </g>
+  <g clip-path="url(#kn-ice-z3)">
+    <rect x="0" y="0" width="860" height="480" fill="#0F172A" fill-opacity="0.06"/>
+  </g>
+  <g clip-path="url(#kn-ice-z4)">
+    <rect x="0" y="0" width="860" height="480" fill="#0F172A" fill-opacity="0.12"/>
+  </g>
+  <polygon points="190,40 340,460 40,460" fill="none" stroke="#94A3B8" stroke-width="1.5" stroke-linejoin="round"/>
+  <line x1="24" y1="240" x2="376" y2="240" stroke="#64748B" stroke-width="1.5" stroke-dasharray="8 6"/>
+  <text x="448" y="266" font-size="10" font-style="italic" fill="#64748B">waterline &#x2014; what the market covers today</text>
+  <rect x="380" y="40" width="4" height="140" fill="#64748B" rx="1"/>
+  <text x="392" y="56" font-size="14" font-weight="700" fill="#0F172A">1. Signal Intake</text>
+  <text x="392" y="76" font-size="11" fill="#334155">AlertManager webhooks, K8s Events, Rego</text>
+  <text x="392" y="91" font-size="11" fill="#334155">classification, fingerprint dedup</text>
+  <text x="392" y="112" font-size="10" font-style="italic" fill="#64748B">Industry standard &#x2014; every monitoring</text>
+  <text x="392" y="126" font-size="10" font-style="italic" fill="#64748B">platform does this</text>
+  <rect x="380" y="180" width="4" height="60" fill="#64748B" rx="1"/>
+  <text x="392" y="194" font-size="14" font-weight="700" fill="#0F172A">2. Investigation</text>
+  <text x="392" y="211" font-size="11" fill="#334155">LLM + 36 client-go tools, Prometheus</text>
+  <text x="392" y="226" font-size="11" fill="#334155">queries, owner chain, remediation history</text>
+  <text x="392" y="242" font-size="10" font-style="italic" fill="#64748B">Predictive AI covers this &#x2014; Dynatrace</text>
+  <text x="392" y="252" font-size="10" font-style="italic" fill="#64748B">Davis, Datadog Watchdog</text>
+  <rect x="380" y="240" width="4" height="110" fill="#0891B2" rx="1"/>
+  <text x="392" y="290" font-size="14" font-weight="700" fill="#0F172A">3. Execution</text>
+  <text x="392" y="308" font-size="11" fill="#334155">Tekton, K8s Jobs, Ansible &#x2014; policy-gated</text>
+  <text x="392" y="323" font-size="11" fill="#334155">(OPA/Rego), declarative CRD workflows</text>
+  <text x="392" y="344" font-size="10" font-weight="700" font-style="italic" fill="#0891B2">Few solutions &#x2014; no pre-approved catalog,</text>
+  <text x="392" y="358" font-size="10" font-weight="700" font-style="italic" fill="#0891B2">no per-remediation approval</text>
+  <rect x="380" y="350" width="4" height="110" fill="#0F172A" rx="1"/>
+  <text x="392" y="376" font-size="14" font-weight="700" fill="#0F172A">4. Closing the Loop</text>
+  <text x="392" y="394" font-size="11" fill="#334155">4-dimension effectiveness scoring,</text>
+  <text x="392" y="409" font-size="11" fill="#334155">structured feedback loop, audit trail</text>
+  <text x="392" y="430" font-size="10" font-weight="700" font-style="italic" fill="#0891B2">Kubernaut unique &#x2014; no competitor</text>
+  <text x="392" y="444" font-size="10" font-weight="700" font-style="italic" fill="#0891B2">covers this</text>
+</svg>
+</div>
 
 ## How Kubernaut Solves It
 

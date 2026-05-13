@@ -11,7 +11,7 @@ This guide walks you through the **CrashLoopBackOff remediation demo** — Kuber
 | **Prometheus + AlertManager** | Fires `KubePodCrashLooping` alert | kube-prometheus-stack via Helm |
 | **kube-state-metrics** | Exposes `kube_pod_container_status_restarts_total` | Included in kube-prometheus-stack |
 | **LLM provider** | Root cause analysis | API key in an `llm-credentials` Secret |
-| **Workflow catalog** | `crashloop-rollback-v1` workflow registered | Embedded in chart via `demoContent.enabled` (default) |
+| **Workflow catalog** | `crashloop-rollback-v1` workflow registered | Via `ActionType` + `RemediationWorkflow` CRDs (see [demo scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios)) |
 
 ### Automated Setup
 
@@ -104,7 +104,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
 ```
 
 !!! tip "What the chart handles automatically"
-    The chart embeds default Rego policies for signal processing and AI analysis approval, and seeds demo ActionTypes and RemediationWorkflows when `demoContent.enabled: true` (the default).
+    The chart embeds default Rego policies for signal processing and AI analysis approval. ActionTypes and RemediationWorkflows are registered separately via CRDs — see [Registering Action Types](../user-guide/workflows.md#registering-action-types).
 
 For advanced LLM configurations (Vertex AI, Azure, local models), see [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md).
 

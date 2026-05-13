@@ -4,10 +4,83 @@ Kubernaut is a microservices platform with 10 services that communicate through 
 
 ## System Diagram
 
-<figure markdown="span">
-  ![Kubernaut Layered Architecture](../assets/diagrams/kubernaut-layered-architecture.svg){ width="100%" }
-  <figcaption>Kubernaut layered architecture — 10 services communicating through Kubernetes CRDs</figcaption>
-</figure>
+<div style="max-width:100%;overflow-x:auto">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 270" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" style="width:100%;height:auto">
+  <defs>
+    <marker id="ka" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#B0B0B0"/>
+    </marker>
+  </defs>
+  <rect width="820" height="270" fill="white"/>
+  <!-- Gateway (entry point) -->
+  <rect x="16" y="16" width="148" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="16" y="16" width="148" height="5" rx="3" fill="#0891B2"/>
+  <text x="90" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Gateway</text>
+  <text x="90" y="54" text-anchor="middle" font-size="9" fill="#888">Webhook intake + dedup</text>
+  <!-- Arrow: Gateway -> RO -->
+  <line x1="168" y1="40" x2="192" y2="40" stroke="#B0B0B0" stroke-width="1.5" marker-end="url(#ka)"/>
+  <text x="180" y="34" text-anchor="middle" font-size="8" fill="#B0B0B0">RR</text>
+  <!-- RO Hub -->
+  <rect x="196" y="10" width="410" height="60" rx="10" fill="white" stroke="#0F172A" stroke-width="2"/>
+  <rect x="196" y="10" width="410" height="6" rx="3" fill="#0F172A"/>
+  <text x="401" y="38" text-anchor="middle" font-size="14" font-weight="700" fill="#0F172A">Remediation Orchestrator</text>
+  <text x="401" y="54" text-anchor="middle" font-size="9" fill="#888">Owns RR lifecycle &#x2014; creates child CRDs for each phase</text>
+  <!-- Spoke lines: RO bottom (y=70) to box top (y=108) -->
+  <line x1="250" y1="70" x2="106" y2="104" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#ka)"/>
+  <line x1="325" y1="70" x2="258" y2="104" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#ka)"/>
+  <line x1="401" y1="70" x2="410" y2="104" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#ka)"/>
+  <line x1="477" y1="70" x2="562" y2="104" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#ka)"/>
+  <line x1="552" y1="70" x2="714" y2="104" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#ka)"/>
+  <!-- Order numbers on spokes -->
+  <circle cx="172" cy="84" r="8" fill="white" stroke="#B0B0B0" stroke-width="1"/>
+  <text x="172" y="88" text-anchor="middle" font-size="8" font-weight="700" fill="#888">1</text>
+  <circle cx="286" cy="84" r="8" fill="white" stroke="#B0B0B0" stroke-width="1"/>
+  <text x="286" y="88" text-anchor="middle" font-size="8" font-weight="700" fill="#888">2</text>
+  <circle cx="406" cy="84" r="8" fill="white" stroke="#B0B0B0" stroke-width="1"/>
+  <text x="406" y="88" text-anchor="middle" font-size="8" font-weight="700" fill="#888">3</text>
+  <circle cx="524" cy="84" r="8" fill="white" stroke="#B0B0B0" stroke-width="1"/>
+  <text x="524" y="88" text-anchor="middle" font-size="8" font-weight="700" fill="#888">4</text>
+  <circle cx="640" cy="84" r="8" fill="white" stroke="#B0B0B0" stroke-width="1"/>
+  <text x="640" y="88" text-anchor="middle" font-size="8" font-weight="700" fill="#888">5</text>
+  <!-- Spoke 1: Signal Processor -->
+  <rect x="38" y="108" width="136" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="38" y="108" width="136" height="5" rx="3" fill="#0891B2"/>
+  <text x="106" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Signal Processor</text>
+  <text x="106" y="148" text-anchor="middle" font-size="9" fill="#888">Rego classification</text>
+  <!-- Spoke 2: AI Analysis -->
+  <rect x="190" y="108" width="136" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="190" y="108" width="136" height="5" rx="3" fill="#6366F1"/>
+  <text x="258" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">AI Analysis</text>
+  <text x="258" y="148" text-anchor="middle" font-size="9" fill="#888">LLM investigation + selection</text>
+  <!-- Spoke 3: Workflow Execution -->
+  <rect x="342" y="108" width="136" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="342" y="108" width="136" height="5" rx="3" fill="#D97706"/>
+  <text x="410" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Workflow Exec.</text>
+  <text x="410" y="148" text-anchor="middle" font-size="9" fill="#888">Tekton / Job / Ansible</text>
+  <!-- Spoke 4: Effectiveness -->
+  <rect x="494" y="108" width="136" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="494" y="108" width="136" height="5" rx="3" fill="#059669"/>
+  <text x="562" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Effectiveness</text>
+  <text x="562" y="148" text-anchor="middle" font-size="9" fill="#888">Health scoring + drift</text>
+  <!-- Spoke 5: Notification -->
+  <rect x="646" y="108" width="136" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="646" y="108" width="136" height="5" rx="3" fill="#DC2626"/>
+  <text x="714" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Notification</text>
+  <text x="714" y="148" text-anchor="middle" font-size="9" fill="#888">Slack / PagerDuty / Teams</text>
+  <!-- Support Services -->
+  <rect x="30" y="182" width="760" height="80" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
+  <rect x="30" y="182" width="6" height="80" rx="3" fill="#64748B"/>
+  <text x="50" y="200" font-size="11" font-weight="700" fill="#64748B">Support Services</text>
+  <rect x="42" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="42" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="60" y="228" font-size="12" font-weight="600" fill="#1a1a1a">DataStorage</text>
+  <text x="60" y="242" font-size="9" fill="#888">PostgreSQL + Valkey</text>
+  <rect x="418" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="418" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="436" y="228" font-size="12" font-weight="600" fill="#1a1a1a">AuthWebhook</text>
+  <text x="436" y="242" font-size="9" fill="#888">RAR override validation</text>
+</svg>
+</div>
 
 The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history.
 
@@ -15,10 +88,13 @@ The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and crea
 
 The pipeline processes signals through five CRD-native phases:
 
-<figure markdown="span">
-  ![Kubernaut Pipeline Overview](../assets/images/pipeline-overview.svg){ width="100%" }
-  <figcaption>Five-phase remediation pipeline — from signal ingestion through effectiveness assessment</figcaption>
-</figure>
+| Phase | What it does | CRD |
+|---|---|---|
+| **1. Signal Processing** | Ingest alerts (AlertManager, K8s Events), classify severity via OPA/Rego, map to workflow categories | `SignalProcessing` |
+| **2. AI Analysis** | Two-invocation LLM pipeline: first invocation investigates with 36 Go tools; second selects workflow from catalog | `AIAnalysis` |
+| **3. Approval** | Policy-gated review — auto-approve low-risk, manual review via Slack/Console, operator param override | `RemediationApprovalRequest` |
+| **4. Execution** | Run remediation via Tekton Pipelines, Kubernetes Jobs, or Ansible (AWX/AAP) with per-workflow SA | `WorkflowExecution` |
+| **5. Effectiveness** | Verify fix via alert resolution, spec drift detection, cooldown monitoring; health score feeds future RCA | `EffectivenessAssessment` |
 
 For a detailed breakdown of all sub-phases and tools, see the [Architecture: Investigation Pipeline](../architecture/kubernaut-agent-investigation.md).
 

@@ -2,7 +2,7 @@
 
 Kubernaut validates remediation end to end against a catalog of real-world **OpenShift Container Platform (OCP)** incident scenarios. Each scenario is mapped to an ITIL-style support tier (L0–L3) reflecting how OCP operations teams typically triage and escalate platform issues — from autonomous detection through known-error resolution, specialist investigation, and deep root-cause analysis.
 
-Coverage as of v1.4: **38 validated scenarios** with E2E golden transcript testing, plus **8 planned** for future releases (OpenShift Virtualization, prompt injection defense, interactive forensic post-mortems, and TSM incident record creation).
+Coverage as of v1.4: **39 validated scenarios** with E2E golden transcript testing, plus **7 planned** for future releases (OpenShift Virtualization, interactive forensic post-mortems, and TSM incident record creation).
 
 ## L0 — Automated Detection & Triage
 
@@ -13,7 +13,7 @@ Platform handles autonomously — no human trigger required.
 | Signal classification & severity normalization | Validated |
 | Duplicate Alert Suppression | Validated |
 | Concurrent Cross-Namespace | Validated |
-| Prompt Injection | Planned (v1.5) |
+| Prompt Injection | Validated |
 
 ## L1 — Known Error Resolution
 
@@ -123,4 +123,4 @@ Deep RCA, capacity planning, and cascading failure analysis across the OCP platf
     DiskPressure Migration spans multiple L3 sub-categories (storage, infrastructure, proactive, GitOps-aware) with OCP and Ansible Automation Platform (AAP) integration.
 
 !!! info "Validation methodology"
-    All validated scenarios are E2E tested with **golden transcripts** — recorded investigation and remediation sessions that serve as regression baselines. Planned scenarios for v1.5 focus on OpenShift Virtualization workloads, prompt injection defense at the signal intake tier, and interactive forensic post-mortems. Incident record creation via TSM integration is targeted for v1.6+.
+    All validated scenarios are E2E tested with **golden transcripts** from the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository — recorded investigation and remediation sessions that serve as regression baselines. Planned scenarios for v1.5 focus on OpenShift Virtualization workloads and interactive forensic post-mortems. Incident record creation via TSM integration is targeted for v1.6+.

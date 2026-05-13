@@ -1,6 +1,6 @@
 # Configuration Reference
 
-Kubernaut is configured via **Helm values** and per-service **ConfigMaps**. This page documents the operator-facing configuration surfaces -- from Helm values to namespace labels, signal sources, LLM providers, and operational tuning.
+Kubernaut is configured via **Helm values** (for Helm deployments) or the **Kubernaut CR** (for Operator deployments), plus per-service **ConfigMaps**. This page documents the configuration surfaces — from deployment-specific values to namespace labels, signal sources, LLM providers, and operational tuning.
 
 !!! note "v1.4 configuration highlights"
     - **Effectiveness Monitor — unified `monitoring` block.** Prometheus and AlertManager connection settings (`url`, enable flags, TLS CA, timeouts, scrape/lookback tuning, OpenShift RBAC bridges, and related options) are **grouped under a single `effectivenessmonitor.monitoring` YAML block**. Values that lived under legacy `effectivenessmonitor.external.*` paths **must migrate** when you upgrade Helm values files.
@@ -55,6 +55,23 @@ metadata:
 ```
 
 See [Rego Policies](policies.md) for how each label feeds into enrichment, and [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for how labels affect workflow discovery.
+
+## Operator CR Configuration {: #operator-cr }
+
+When deploying via the Kubernaut Operator, all configuration is expressed through the `Kubernaut` CR (`kubernaut.ai/v1alpha1`). The operator maps CR fields to the underlying ConfigMaps, Deployments, and RBAC resources.
+
+For the complete CR field reference, see the [Operator CR API Reference](../api-reference/operator-cr.md).
+
+Key differences from Helm:
+
+| Concern | Helm | Operator CR |
+|---|---|---|
+| NetworkPolicies | Enabled by default, per-service toggles | Disabled by default (`spec.networkPolicies.enabled`) |
+| Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | Controlled by `spec.monitoring.enabled` (default: `true`) |
+| Database | In-chart PostgreSQL option | BYO only — `spec.postgresql.host` + `spec.postgresql.secretName` |
+| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.llm.runtimeConfigMapName` for BYO hot-reloadable config |
+| Image references | Standard Helm `image.repository`/`image.tag` | `RELATED_IMAGE_*` env vars for disconnected installs |
+| Agent RBAC extension | Manual ClusterRoleBinding creation | `spec.kubernautAgent.additionalClusterRoleBindings` (max 64) |
 
 ## Helm Values
 
@@ -448,6 +465,15 @@ Kubernaut configures **inter-service TLS** (REST between components) and **admis
 ### Inter-service TLS (Helm)
 
 These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under `tls.interService.certDir`, the primary API port (**8080**) uses HTTPS; health (**8081**) and metrics (**9090**) stay plain HTTP.
+
+!!! note "TLS Security Profiles (v1.4)"
+    The `tls.profile` field (v1.4) selects a built-in cipher/protocol profile applied to all inter-service listeners:
+
+    | Profile | TLS Versions | Description |
+    |---|---|---|
+    | **Modern** | TLS 1.3 only | Strictest — recommended for new deployments |
+    | **Intermediate** (default) | TLS 1.2–1.3 | Balanced — compatible with most clients |
+    | **Old** | TLS 1.0–1.3 | Legacy — use only for backward-compatible environments |
 
 | Parameter | Description | Default |
 |---|---|---|

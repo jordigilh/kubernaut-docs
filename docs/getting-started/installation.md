@@ -25,6 +25,42 @@ The operator is available through OLM (Operator Lifecycle Manager) or direct dep
 
 For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
 
+### Prerequisites (Operator)
+
+| Requirement | Version | Notes |
+|---|---|---|
+| OpenShift | 4.18+ | OLM and operator-framework support required |
+| PostgreSQL | 15+ | **BYO** — the operator does not deploy a database; provide connection details via `spec.postgresql` |
+| Valkey / Redis | 7+ | **BYO** — provide connection details via `spec.valkey` |
+| LLM provider | — | Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output |
+
+**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:1.4.0` (note: no `v` prefix, unlike component images which use `v1.4.0`).
+
+**Minimal Kubernaut CR:**
+
+```yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: Kubernaut
+metadata:
+  name: kubernaut
+  namespace: kubernaut-system
+spec:
+  postgresql:
+    host: postgres.database.svc.cluster.local
+    secretName: kubernaut-postgresql
+  valkey:
+    host: valkey.cache.svc.cluster.local
+    secretName: kubernaut-valkey
+  kubernautAgent:
+    llm:
+      provider: openai
+      model: gpt-4o
+      credentialsSecretName: kubernaut-llm
+```
+
+!!! note "Disconnected installs"
+    For air-gapped environments, mirror all component images and set `RELATED_IMAGE_*` environment variables on the operator Deployment. See the [operator installation guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation) for the full image list.
+
 ### What the Operator manages
 
 - Validates BYO PostgreSQL and Valkey secrets before deployment
@@ -331,9 +367,6 @@ See the [sdk-config.yaml.example](https://github.com/jordigilh/kubernaut-demo-sc
 
 To pin a specific chart version, add `--version <version>`. Omitting `--version` pulls the latest release.
 
-!!! tip "Production: disable demo fixtures"
-    The chart seeds demo ActionTypes and RemediationWorkflows by default (`demoContent.enabled: true`) as a convenience path for getting started quickly. For production deployments where you want only your own workflows, add `--set demoContent.enabled=false`. See [Action Types and Workflows (Demo Content)](#action-types-and-workflows-demo-content) for details.
-
 !!! tip "Start with minimal toolsets"
     The default SDK config ships with `toolsets: {}` (no optional toolsets). This is the recommended starting point — the Kubernetes core toolset is always available and handles most incident types (CrashLoopBackOff, config errors, OOMKilled). Enable additional toolsets like `prometheus/metrics` only for workloads that require metric-driven investigation. Unused toolsets add ~30% token overhead per investigation. See [Toolset Optimization](../user-guide/configmap-kubernaut-agent.md#toolset-optimization) for details.
 
@@ -367,15 +400,11 @@ kubectl get remediationworkflows -A
 
 ## Post-Installation
 
-### Action Types and Workflows (Demo Content)
+### Action Types and Workflows
 
-When `demoContent.enabled: true` (the default), the chart seeds demo ActionType definitions and RemediationWorkflows into the catalog as a convenience path for getting started quickly. These are not built-in product features -- they are reusable demo content covering common remediation scenarios (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, etc.). No manual loading is required.
+Kubernaut uses an **ActionType taxonomy** to organize remediation capabilities. Operators register `ActionType` CRDs that describe what each remediation does, when to use it, and under what preconditions. `RemediationWorkflow` CRDs reference ActionTypes by name.
 
-To disable demo content for production, add `--set demoContent.enabled=false` during install. See the [production tip](#install) in the Install section.
-
-### Custom Remediation Workflows
-
-Each RemediationWorkflow references an ActionType by name. When `demoContent.enabled: true` (default), demo ActionTypes are available in the catalog. For production deployments with `demoContent.enabled=false`, register your own ActionType CRs before creating RemediationWorkflows. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for the full list.
+Register your own ActionType CRs and RemediationWorkflows to build a catalog tailored to your environment. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for registration details.
 
 ## Resource Scope
 

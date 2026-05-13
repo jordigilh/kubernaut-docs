@@ -12,20 +12,9 @@ theme:
   name: material
   custom_dir: overrides
   palette:
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: indigo
-      accent: deep purple
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: indigo
-      accent: deep purple
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
+    scheme: default
+    primary: teal
+    accent: amber
   font:
     text: Inter
     code: JetBrains Mono
@@ -45,10 +34,12 @@ theme:
     - content.code.copy
     - content.code.annotate
     - toc.follow
+    - toc.integrate
 
 extra:
   chart_version: "1.4.0"
   image_tag: "v1.4.0"
+  operator_image_tag: "1.4.0"
   version:
     provider: mike
     default: latest
@@ -142,6 +133,7 @@ nav:
   - API Reference:
       - api-reference/index.md
       - Custom Resources: api-reference/crds.md
+      - Operator CR: api-reference/operator-cr.md
       - DataStorage API: api-reference/datastorage-api.md
       - Kubernaut Agent API: api-reference/kubernaut-agent-api.md
   - Use Cases:

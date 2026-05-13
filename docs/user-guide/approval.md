@@ -302,8 +302,9 @@ kubectl patch rar <name> -n kubernaut-system \
       "decidedBy": "operator-name",
       "decisionMessage": "Overriding to manual-pvc-fix workflow",
       "workflowOverride": {
-        "workflowId": "<alternative-workflow-uuid>",
-        "reason": "AI selected auto-resize but StorageClass does not support volume expansion"
+        "workflowName": "manual-pvc-fix",
+        "parameters": {"targetSize": "50Gi"},
+        "rationale": "AI selected auto-resize but StorageClass does not support volume expansion"
       }
     }
   }'

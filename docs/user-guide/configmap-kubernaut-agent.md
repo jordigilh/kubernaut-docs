@@ -110,43 +110,55 @@ helm install kubernaut charts/kubernaut/ \
 
 ## Schema Reference
 
+!!! warning "v1.4 camelCase / 3-domain structure"
+    The schema below reflects the **v1.4** structure. If you are migrating from v1.3 or earlier, see the breaking YAML changes warning at the top of this page.
+
 ```yaml
-llm:
-  provider: ""              # Required. One of: openai, ollama, azure, vertex,
-                            #   vertex_ai, anthropic, bedrock, huggingface, mistral
-  model: ""                 # Required. e.g., "gpt-4o", "gemini-2.5-pro"
-  endpoint: ""              # Server origin without /v1 (required for ollama, azure, mistral)
-  api_key: ""               # Provider API key
-  azure_api_version: ""     # Azure-specific
-  vertex_project: ""        # Vertex-specific (vertex and vertex_ai)
-  vertex_location: ""       # Vertex-specific
-  bedrock_region: ""        # Bedrock-specific
-  structured_output: false  # Reserved; KA always enables JSON mode internally (see note below)
-  temperature: 0.7          # Creativity vs determinism (0.0--1.0)
-  max_retries: 3            # LLM call retry count
-  timeout_seconds: 120      # Per-call timeout
-  custom_headers:            # Optional custom HTTP headers
-    - name: "X-Custom"
-      value: "..."
-  oauth2:                    # Optional OAuth2 client credentials
-    enabled: false
-    token_url: ""            # Must use https:// when enabled
-    client_id: ""
-    client_secret: ""
-    scopes: ["scope1"]
+runtime:
+  server: {}                  # Internal server settings (generally left at defaults)
+  maxTurns: 40                # Max LLM tool-call turns per investigation (v1.4: increased from 15)
 
-toolsets: {}                # Optional: data source toolsets
-  # prometheus/metrics:
-  #   enabled: true
-  #   config:
-  #     prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+ai:
+  llm:
+    provider: ""              # Required. One of: openai, ollama, azure, vertex,
+                              #   vertexAi, anthropic, bedrock, huggingface, mistral
+    model: ""                 # Required. e.g., "gpt-4o", "gemini-2.5-pro"
+    endpoint: ""              # Server origin without /v1 (required for ollama, azure, mistral)
+    apiKey: ""                # Provider API key
+    azureApiVersion: ""       # Azure-specific
+    vertexProject: ""         # Vertex-specific (vertex and vertexAi)
+    vertexLocation: ""        # Vertex-specific
+    bedrockRegion: ""         # Bedrock-specific
+    structuredOutput: false   # Reserved; KA always enables JSON mode internally (see note below)
+    temperature: 0.7          # Creativity vs determinism (0.0--1.0)
+    maxRetries: 3             # LLM call retry count
+    timeoutSeconds: 120       # Per-call timeout
+    customHeaders:            # Optional custom HTTP headers
+      - name: "X-Custom"
+        value: "..."
+    oauth2:                   # Optional OAuth2 client credentials
+      enabled: false
+      tokenUrl: ""            # Must use https:// when enabled
+      clientId: ""
+      clientSecret: ""
+      scopes: ["scope1"]
 
-mcp_servers: {}             # Optional: Model Context Protocol servers
+integrations:
+  toolsets: {}              # Optional: data source toolsets
+    # prometheus/metrics:
+    #   enabled: true
+    #   config:
+    #     prometheusUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+
+  mcpServers: {}            # Optional: Model Context Protocol servers
 ```
+
+!!! info "Operator: BYO runtime ConfigMap"
+    When deploying via the Kubernaut Operator, set `spec.kubernautAgent.llm.runtimeConfigMapName` to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.
 
 ## Supported Providers
 
-| Config `llm.provider` | Backend | Implementation |
+| Config `ai.llm.provider` | Backend | Implementation |
 |---|---|---|
 | `openai` | OpenAI or OpenAI-compatible API | LangChainGo `llms/openai` |
 | `ollama` | Ollama | LangChainGo `llms/ollama` |
@@ -312,10 +324,10 @@ Reloadable changes are detected via an **fsnotify** file watcher (**~60s** kubel
 
 **Restart-required fields** (changes are rejected with a warning log):
 
-- `llm.provider`
-- `llm.oauth2.token_url`, `llm.oauth2.client_id`, `llm.oauth2.client_secret`
+- `ai.llm.provider`
+- `ai.llm.oauth2.tokenUrl`, `ai.llm.oauth2.clientId`, `ai.llm.oauth2.clientSecret`
 
-**Hot-reloadable fields**: `model`, `endpoint`, `api_key`, `azure_api_version`, `vertex_project`, `vertex_location`, `bedrock_region`, `temperature`, `max_retries`, `timeout_seconds`, `custom_headers`, `oauth2.scopes`
+**Hot-reloadable fields**: `model`, `endpoint`, `apiKey`, `azureApiVersion`, `vertexProject`, `vertexLocation`, `bedrockRegion`, `temperature`, `maxRetries`, `timeoutSeconds`, `customHeaders`, `oauth2.scopes`
 
 Active investigations are pinned to the client/model snapshot at start — reload only affects new investigations.
 

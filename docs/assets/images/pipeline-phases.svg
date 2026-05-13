@@ -44,7 +44,7 @@
   <text x="698" y="274" text-anchor="middle" font-size="18" font-weight="700" fill="white">2</text>
   <text x="450" y="274" font-size="20px" font-weight="700" fill="white">AI Analysis</text>
 
-  <text x="450" y="330" font-size="17px" font-weight="600" fill="#6366F1">Two-phased pipeline</text>
+  <text x="450" y="330" font-size="17px" font-weight="600" fill="#6366F1">Three-phased pipeline</text>
   <text x="450" y="356" font-size="16px" fill="#151515">1. LLM investigates with 36</text>
   <text x="462" y="376" font-size="16px" fill="#151515">native Go tools (client-go)</text>
   <text x="450" y="402" font-size="16px" fill="#151515">2. Server-side enrichment</text>

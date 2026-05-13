@@ -74,6 +74,38 @@
   <text x="1440" y="498" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#6A6E73">MCP + klusterlet + Prometheus</text>
   <text x="1440" y="516" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#0891B2">No Kubernaut CRDs, no controllers</text>
 
+  <!-- ====== STEP ANNOTATIONS ====== -->
+
+  <!-- Step 1: Remote Prometheus → Thanos -->
+  <circle cx="390" cy="420" r="12" fill="#0891B2"/>
+  <text x="390" y="425" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">1</text>
+
+  <!-- Step 2: Alertmanager → Kubernaut Engine -->
+  <line x1="540" y1="265" x2="600" y2="265" stroke="#D97706" stroke-width="2"/>
+  <polygon points="600,265 592,260 592,270" fill="#D97706"/>
+  <circle cx="570" cy="245" r="12" fill="#D97706"/>
+  <text x="570" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">2</text>
+
+  <!-- Step 3: Engine → Keycloak (JWT for investigation) -->
+  <line x1="1020" y1="265" x2="1080" y2="265" stroke="#6366F1" stroke-width="2"/>
+  <polygon points="1080,265 1072,260 1072,270" fill="#6366F1"/>
+  <circle cx="1050" cy="245" r="12" fill="#6366F1"/>
+  <text x="1050" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">3</text>
+
+  <!-- Step 4: Engine → Remote cluster (MCP investigation) -->
+  <circle cx="810" cy="420" r="12" fill="#0891B2"/>
+  <text x="810" y="425" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">4</text>
+
+  <!-- Step 5: Engine → Keycloak (JWT for remediation) -->
+  <circle cx="1050" cy="295" r="12" fill="#6366F1"/>
+  <text x="1050" y="300" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">5</text>
+
+  <!-- Step 6: Engine → AWX (dispatch playbook) -->
+  <line x1="1300" y1="265" x2="1360" y2="265" stroke="#059669" stroke-width="2"/>
+  <polygon points="1360,265 1352,260 1352,270" fill="#059669"/>
+  <circle cx="1330" cy="245" r="12" fill="#059669"/>
+  <text x="1330" y="250" text-anchor="middle" font-family="Inter, sans-serif" font-size="12px" font-weight="700" fill="white">6</text>
+
   <!-- Zero credentials bar -->
   <rect x="200" y="570" width="1520" height="46" rx="10" fill="#0891B2" opacity="0.04" stroke="#0891B2" stroke-width="1"/>
   <text x="960" y="599" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" font-weight="600" fill="#0891B2">Zero persistent credentials on remote clusters &#x2014; ephemeral SAs with OCM-managed lifecycle</text>

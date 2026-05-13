@@ -132,7 +132,7 @@ Select a phase to learn more:
     Policy-gated safety checkpoint:
 
     - **Auto-approve** low-risk actions based on OPA/Rego policies and confidence thresholds.
-    - **Manual review** via Slack or Console for higher-risk remediations.
+    - **Operator notified** via Slack, Teams, or PagerDuty for higher-risk remediations.
     - **Operator overrides** allow substituting workflow parameters via the `WorkflowOverride` CRD, with authwebhook validation and full audit trail.
 
 === "4 · Execution"

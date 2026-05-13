@@ -4,4 +4,4 @@ __pycache__/
 .venv/
 venv/
 .cache/
-docs/assets/.DS_Store
+.DS_Store

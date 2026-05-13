@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3113,7 +3113,7 @@
 </div>
 <div class="tabbed-block">
 <p><strong>CRD:</strong> <code>AIAnalysis</code></p>
-<p>Two-phased pipeline:</p>
+<p>Three-phased pipeline:</p>
 <ul>
 <li><strong>Investigate</strong> — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).</li>
 <li><strong>Select</strong> — Using the RCA and server-side enrichment (historical context, detectable labels), the LLM selects a workflow from the existing user-created <code>RemediationWorkflow</code> catalog.</li>
@@ -3124,7 +3124,7 @@
 <p>Policy-gated safety checkpoint:</p>
 <ul>
 <li><strong>Auto-approve</strong> low-risk actions based on OPA/Rego policies and confidence thresholds.</li>
-<li><strong>Manual review</strong> via Slack or Console for higher-risk remediations.</li>
+<li><strong>Operator notified</strong> via Slack, Teams, or PagerDuty for higher-risk remediations.</li>
 <li><strong>Operator overrides</strong> allow substituting workflow parameters via the <code>WorkflowOverride</code> CRD, with authwebhook validation and full audit trail.</li>
 </ul>
 </div>

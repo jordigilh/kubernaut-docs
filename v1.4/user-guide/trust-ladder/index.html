@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -1031,207 +1031,8 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#operator-workflow-overrides-v14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operator workflow overrides (v1.4)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#alignment-gate-v14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Alignment gate (v1.4)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#graduation-signals" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Graduation signals
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#level-4-automate" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level 4: Automate (Available Now)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Level 4: Automate (Available Now)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#monitoring-autonomous-remediations" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Monitoring autonomous remediations
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rollback-to-level-3" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rollback to Level 3
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#references_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#level-1-observe" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level 1: Observe (Available — v1.4)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Level 1: Observe (Available — v1.4)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration_2" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#level-2-selective-trust" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level 2: Selective Trust (Planned — v1.5)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#suggestions" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Suggestions: Always-On Safety Net (Planned — v1.5)
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#recommended-adoption-path" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Recommended Adoption Path
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#agentic-enhancements" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Future: Agentic Enhancements (v1.5+)
-      
-    </span>
-  </a>
   
 </li>
       
@@ -3308,16 +3109,17 @@
 </ul>
 <p>Non-production namespaces with a valid remediation target and high confidence auto-approve.</p>
 <p>To <strong>require approval for everything</strong> (strictest Level 3), replace the default policy with:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">true</span>
-</span></code></pre></div>
+<p>```rego
+package aianalysis.approval</p>
+<p>default require_approval := true
+```</p>
 <p>To adjust the confidence threshold for approval:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Helm values</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="nt">aianalysis</span><span class="p">:</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">rego</span><span class="p">:</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;0.9&quot;</span><span class="w">  </span><span class="c1"># Require approval below 90% confidence (default: 0.8)</span>
-</span></code></pre></div>
+<p>```yaml</p>
+<h1 id="helm-values">Helm values<a class="headerlink" href="#helm-values" title="Permanent link">&para;</a></h1>
+<p>aianalysis:
+  rego:
+    confidenceThreshold: "0.9"  # Require approval below 90% confidence (default: 0.8)
+```</p>
 <h3 id="operator-workflow-overrides-v14">Operator workflow overrides (v1.4)<a class="headerlink" href="#operator-workflow-overrides-v14" title="Permanent link">&para;</a></h3>
 <p>When approving a RAR, operators can substitute the AI-selected workflow or adjust its parameters via <code>status.workflowOverride</code>. Override requests are validated by the authwebhook and recorded in the audit trail. See <a href="../approval/#operator-workflow-overrides-v14">Operator Workflow Overrides</a> for details.</p>
 <h3 id="alignment-gate-v14">Alignment gate (v1.4)<a class="headerlink" href="#alignment-gate-v14" title="Permanent link">&para;</a></h3>
@@ -3356,33 +3158,28 @@
 <li>Valid remediation target present</li>
 </ul>
 <p>To allow <strong>specific production workflows</strong> to run autonomously, customize the Rego policy:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">true</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_production</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="n">is_production</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;Node&quot;</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">detected_labels</span><span class="p">[</span><span class="s2">&quot;workflow_name&quot;</span><span class="p">]</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">trusted_production_workflows</span>
-</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="p">}</span>
-</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a>
-</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="n">trusted_production_workflows</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">    </span><span class="s2">&quot;crashloop-rollback-v1&quot;</span><span class="p">,</span>
-</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">    </span><span class="s2">&quot;restart-pod-v1&quot;</span><span class="p">,</span>
-</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="s2">&quot;increase-memory-limits-v1&quot;</span><span class="p">,</span>
-</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="p">}</span>
-</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a>
-</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="n">is_production</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="w">    </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
-</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+package aianalysis.approval</p>
+<p>import rego.v1</p>
+<p>default require_approval := true</p>
+<p>require_approval := false if {
+    not is_production
+}</p>
+<p>require_approval := false if {
+    is_production
+    input.remediation_target.kind != "Node"
+    input.remediation_target.kind != "StatefulSet"
+    input.detected_labels["workflow_name"] in trusted_production_workflows
+}</p>
+<p>trusted_production_workflows := {
+    "crashloop-rollback-v1",
+    "restart-pod-v1",
+    "increase-memory-limits-v1",
+}</p>
+<p>is_production if {
+    lower(input.environment) == "production"
+}
+```</p>
 <h3 id="monitoring-autonomous-remediations">Monitoring autonomous remediations<a class="headerlink" href="#monitoring-autonomous-remediations" title="Permanent link">&para;</a></h3>
 <p>At Level 4, monitoring replaces manual review:</p>
 <table>
@@ -3442,11 +3239,12 @@
 </ol>
 <h3 id="configuration_2">Configuration<a class="headerlink" href="#configuration_2" title="Permanent link">&para;</a></h3>
 <p>Enable dry-run mode in the Remediation Orchestrator config:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># remediationorchestrator-config ConfigMap</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">remediationOrchestrator</span><span class="p">:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">dryRun</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">dryRunHoldPeriod</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1h&quot;</span><span class="w">  </span><span class="c1"># minimum: 5m</span>
-</span></code></pre></div>
+<p>```yaml</p>
+<h1 id="remediationorchestrator-config-configmap">remediationorchestrator-config ConfigMap<a class="headerlink" href="#remediationorchestrator-config-configmap" title="Permanent link">&para;</a></h1>
+<p>remediationOrchestrator:
+  dryRun: true
+  dryRunHoldPeriod: "1h"  # minimum: 5m
+```</p>
 <ul>
 <li><strong><code>dryRun</code></strong> — When <code>true</code>, the pipeline stops after AI Analysis. Default: <code>false</code>.</li>
 <li><strong><code>dryRunHoldPeriod</code></strong> — Duration to suppress new RR creation for the same signal fingerprint after a dry-run completion. Minimum: <code>5m</code>. Default: <code>1h</code>.</li>

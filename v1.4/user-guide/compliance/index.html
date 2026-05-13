@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3344,8 +3344,7 @@
 <hr />
 <h2 id="reconstruction-and-evidence-production">Reconstruction and Evidence Production<a class="headerlink" href="#reconstruction-and-evidence-production" title="Permanent link">&para;</a></h2>
 <p>For audits and compliance reviews, Kubernaut can <strong>reconstruct a complete RemediationRequest</strong> from audit data -- even after the Kubernetes CRD has been deleted:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct
-</span></code></pre></div>
+<p><code>POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct</code></p>
 <p>This produces the full remediation record: what signal triggered it, what the LLM investigated, what workflow was selected, who approved it, what the execution did, and whether it was effective. See <a href="../data-lifecycle/#remediationrequest-reconstruction">Data Lifecycle: Reconstruction</a> for details.</p>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <table>

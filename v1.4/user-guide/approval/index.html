@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -1274,216 +1274,6 @@
         
       </ul>
     </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-approval-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Approval Flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#approving-or-rejecting" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approving or Rejecting
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#walkthrough-reviewing-a-remediationapprovalrequest" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Walkthrough: Reviewing a RemediationApprovalRequest
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Walkthrough: Reviewing a RemediationApprovalRequest">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-list-pending-rars" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. List Pending RARs
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-inspect-the-rar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Inspect the RAR
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-review-the-key-fields" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Review the Key Fields
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-approve-or-reject" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. Approve or Reject
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#5-verify-the-decision" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        5. Verify the Decision
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#expiration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Expiration
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#rego-policy-evaluation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Rego Policy Evaluation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#approval-context" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approval Context
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#operator-workflow-overrides-v14" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operator Workflow Overrides (v1.4)
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Operator Workflow Overrides (v1.4)">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-it-works" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How it works
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#overriding-a-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Overriding a workflow
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#validation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Validation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#audit-trail" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Audit trail
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#audit-trail_1" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Audit Trail
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
   
 </li>
       
@@ -3310,11 +3100,12 @@
 </tbody>
 </table>
 <h3 id="configuring-the-confidence-threshold">Configuring the Confidence Threshold<a class="headerlink" href="#configuring-the-confidence-threshold" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># values.yaml</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">aianalysis</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">rego</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
-</span></code></pre></div>
+<p>```yaml</p>
+<h1 id="valuesyaml">values.yaml<a class="headerlink" href="#valuesyaml" title="Permanent link">&para;</a></h1>
+<p>aianalysis:
+  rego:
+    confidenceThreshold: 0.85
+```</p>
 <p>When <code>confidenceThreshold</code> is <code>null</code> (default), the Rego policy's built-in default of 0.8 applies.</p>
 <div class="admonition note">
 <p class="admonition-title">Default policy does not use confidence for approval</p>
@@ -3342,19 +3133,18 @@
     end</code></pre>
 <h2 id="approving-or-rejecting">Approving or Rejecting<a class="headerlink" href="#approving-or-rejecting" title="Permanent link">&para;</a></h2>
 <p>Operators approve or reject via <code>kubectl</code>. The RAR uses a Kubernetes <strong>status subresource</strong>, so the <code>--subresource=status</code> flag is required for patch commands.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># List pending approvals</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Approve</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Approved&quot;,&quot;decidedBy&quot;:&quot;operator-name&quot;,&quot;decisionMessage&quot;:&quot;RCA looks correct&quot;}}&#39;</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="c1"># Reject</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Rejected&quot;,&quot;decidedBy&quot;:&quot;operator-name&quot;,&quot;decisionMessage&quot;:&quot;Wrong root cause identified&quot;}}&#39;</span>
-</span></code></pre></div>
+<p>```bash</p>
+<h1 id="list-pending-approvals">List pending approvals<a class="headerlink" href="#list-pending-approvals" title="Permanent link">&para;</a></h1>
+<p>kubectl get rar -n kubernaut-system</p>
+<h1 id="approve">Approve<a class="headerlink" href="#approve" title="Permanent link">&para;</a></h1>
+<p>kubectl patch rar <name> -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{"status":{"decision":"Approved","decidedBy":"operator-name","decisionMessage":"RCA looks correct"}}'</p>
+<h1 id="reject">Reject<a class="headerlink" href="#reject" title="Permanent link">&para;</a></h1>
+<p>kubectl patch rar <name> -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{"status":{"decision":"Rejected","decidedBy":"operator-name","decisionMessage":"Wrong root cause identified"}}'
+```</p>
 <div class="admonition warning">
 <p class="admonition-title">Use <code>--subresource=status</code></p>
 <p>Omitting <code>--subresource=status</code> targets the main resource spec, which is immutable. The decision must be written to the status subresource for the Orchestrator to detect it.</p>
@@ -3362,86 +3152,86 @@
 <h2 id="walkthrough-reviewing-a-remediationapprovalrequest">Walkthrough: Reviewing a RemediationApprovalRequest<a class="headerlink" href="#walkthrough-reviewing-a-remediationapprovalrequest" title="Permanent link">&para;</a></h2>
 <p>This section walks through a complete approval lifecycle.</p>
 <h3 id="1-list-pending-rars">1. List Pending RARs<a class="headerlink" href="#1-list-pending-rars" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>NAMESPACE<span class="w">          </span>NAME<span class="w">                           </span>AIANALYSIS<span class="w">                    </span>CONFIDENCE<span class="w">   </span>DECISION<span class="w">   </span>EXPIRED<span class="w">   </span>REQUIREDBY<span class="w">             </span>AGE
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>kubernaut-system<span class="w">   </span>rar-rr-b4f71c8b83b7-5e9c6266<span class="w">   </span>ai-rr-b4f71c8b83b7-5e9c6266<span class="w">   </span><span class="m">0</span>.85<span class="w">                              </span><span class="m">2026</span>-03-10T01:13:44Z<span class="w">   </span>44s
-</span></code></pre></div>
+<p><code>bash
+$ kubectl get rar -n kubernaut-system
+NAMESPACE          NAME                           AIANALYSIS                    CONFIDENCE   DECISION   EXPIRED   REQUIREDBY             AGE
+kubernaut-system   rar-rr-b4f71c8b83b7-5e9c6266   ai-rr-b4f71c8b83b7-5e9c6266   0.85                              2026-03-10T01:13:44Z   44s</code></p>
 <p>A blank <code>DECISION</code> column indicates a pending RAR awaiting operator action.</p>
 <h3 id="2-inspect-the-rar">2. Inspect the RAR<a class="headerlink" href="#2-inspect-the-rar" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>rar-rr-b4f71c8b83b7-5e9c6266<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>yaml
-</span></code></pre></div>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RemediationApprovalRequest</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">metadata</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rar-rr-b4f71c8b83b7-5e9c6266</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-system</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="nt">ownerReferences</span><span class="p">:</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="nt">blockOwnerDeletion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">      </span><span class="nt">controller</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RemediationRequest</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rr-b4f71c8b83b7-5e9c6266</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="nt">uid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0b6599e5-d8fa-4fef-8ae6-e118c6977372</span>
-</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">  </span><span class="nt">remediationRequestRef</span><span class="p">:</span>
-</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">    </span><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
-</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">    </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RemediationRequest</span>
-</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rr-b4f71c8b83b7-5e9c6266</span>
-</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-system</span>
-</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">    </span><span class="nt">uid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0b6599e5-d8fa-4fef-8ae6-e118c6977372</span>
-</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">  </span><span class="nt">aiAnalysisRef</span><span class="p">:</span>
-</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-rr-b4f71c8b83b7-5e9c6266</span>
-</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">  </span><span class="nt">confidence</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.85</span>
-</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">  </span><span class="nt">confidenceLevel</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
-</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">  </span><span class="nt">reason</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Production</span><span class="nv"> </span><span class="s">environment</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">sensitive</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">kind</span><span class="nv"> </span><span class="s">-</span><span class="nv"> </span><span class="s">requires</span><span class="nv"> </span><span class="s">manual</span><span class="nv"> </span><span class="s">approval&quot;</span>
-</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">  </span><span class="nt">investigationSummary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
-</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">    </span><span class="no">StatefulSet replica mismatch caused by missing StorageClass</span>
-</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">    </span><span class="no">&#39;broken-storage-class&#39; preventing PVC provisioning for pod kv-store-2</span>
-</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">  </span><span class="nt">recommendedWorkflow</span><span class="p">:</span>
-</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">    </span><span class="nt">workflowId</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">f2ed351f-ccc5-41d2-bcf5-de999ed55528</span>
-</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">    </span><span class="nt">version</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1.0.2&quot;</span>
-</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">    </span><span class="nt">executionBundle</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-cicd/test-workflows/fix-statefulset-pvc-job@sha256:d5b0c73ab0fb4093e1e291974013660dd2e5d8e0b2016eaf94d78cf9759be500</span>
-</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">    </span><span class="nt">rationale</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
-</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">      </span><span class="no">The workflow can recreate the missing PVC with proper StorageClass</span>
-</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">      </span><span class="no">configuration to resolve the scheduling issue for kv-store-2</span>
-</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">  </span><span class="nt">evidenceCollected</span><span class="p">:</span>
-</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;StorageClass</span><span class="nv"> </span><span class="s">&#39;broken-storage-class&#39;</span><span class="nv"> </span><span class="s">does</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">exist</span><span class="nv"> </span><span class="s">in</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">cluster&quot;</span>
-</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;PVC</span><span class="nv"> </span><span class="s">kv-store-data-kv-store-2</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">Pending</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">ProvisioningFailed</span><span class="nv"> </span><span class="s">event&quot;</span>
-</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;StatefulSet</span><span class="nv"> </span><span class="s">kv-store</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">2/3</span><span class="nv"> </span><span class="s">ready</span><span class="nv"> </span><span class="s">replicas;</span><span class="nv"> </span><span class="s">pod</span><span class="nv"> </span><span class="s">kv-store-2</span><span class="nv"> </span><span class="s">unschedulable&quot;</span>
-</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">  </span><span class="nt">alternativesConsidered</span><span class="p">:</span>
-</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">approach</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Manual</span><span class="nv"> </span><span class="s">PVC</span><span class="nv"> </span><span class="s">creation</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">existing</span><span class="nv"> </span><span class="s">StorageClass&quot;</span>
-</span><span id="__span-4-41"><a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="w">      </span><span class="nt">prosCons</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Pros:</span><span class="nv"> </span><span class="s">Immediate</span><span class="nv"> </span><span class="s">fix.</span><span class="nv"> </span><span class="s">Cons:</span><span class="nv"> </span><span class="s">Diverges</span><span class="nv"> </span><span class="s">from</span><span class="nv"> </span><span class="s">volumeClaimTemplate;</span><span class="nv"> </span><span class="s">future</span><span class="nv"> </span><span class="s">scale-ups</span><span class="nv"> </span><span class="s">repeat</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">issue&quot;</span>
-</span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="w">  </span><span class="nt">recommendedActions</span><span class="p">:</span>
-</span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">action</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Review</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">recommended</span><span class="nv"> </span><span class="s">workflow</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">approve</span><span class="nv"> </span><span class="s">if</span><span class="nv"> </span><span class="s">appropriate&quot;</span>
-</span><span id="__span-4-44"><a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="w">      </span><span class="nt">rationale</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Production</span><span class="nv"> </span><span class="s">environment</span><span class="nv"> </span><span class="s">with</span><span class="nv"> </span><span class="s">sensitive</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">kind</span><span class="nv"> </span><span class="s">-</span><span class="nv"> </span><span class="s">requires</span><span class="nv"> </span><span class="s">manual</span><span class="nv"> </span><span class="s">approval&quot;</span>
-</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="w">  </span><span class="nt">whyApprovalRequired</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;-</span>
-</span><span id="__span-4-46"><a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="w">    </span><span class="no">Production environment with sensitive resource kind - requires manual approval</span>
-</span><span id="__span-4-47"><a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="w">  </span><span class="nt">policyEvaluation</span><span class="p">:</span>
-</span><span id="__span-4-48"><a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="w">    </span><span class="nt">policyName</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;aianalysis.approval&quot;</span>
-</span><span id="__span-4-49"><a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="w">    </span><span class="nt">matchedRules</span><span class="p">:</span>
-</span><span id="__span-4-50"><a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;is_production&quot;</span>
-</span><span id="__span-4-51"><a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="w">    </span><span class="nt">decision</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;manual_review_required&quot;</span>
-</span><span id="__span-4-52"><a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="w">  </span><span class="nt">requiredBy</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T01:13:44Z&quot;</span>
-</span><span id="__span-4-53"><a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="nt">status</span><span class="p">:</span>
-</span><span id="__span-4-54"><a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="w">  </span><span class="nt">createdAt</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T00:58:44Z&quot;</span>
-</span><span id="__span-4-55"><a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="w">  </span><span class="nt">timeRemaining</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;14m29s&quot;</span>
-</span><span id="__span-4-56"><a id="__codelineno-4-56" name="__codelineno-4-56" href="#__codelineno-4-56"></a><span class="w">  </span><span class="nt">conditions</span><span class="p">:</span>
-</span><span id="__span-4-57"><a id="__codelineno-4-57" name="__codelineno-4-57" href="#__codelineno-4-57"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ApprovalPending</span>
-</span><span id="__span-4-58"><a id="__codelineno-4-58" name="__codelineno-4-58" href="#__codelineno-4-58"></a><span class="w">      </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;True&quot;</span>
-</span><span id="__span-4-59"><a id="__codelineno-4-59" name="__codelineno-4-59" href="#__codelineno-4-59"></a><span class="w">      </span><span class="nt">lastTransitionTime</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T00:58:44Z&quot;</span>
-</span><span id="__span-4-60"><a id="__codelineno-4-60" name="__codelineno-4-60" href="#__codelineno-4-60"></a><span class="w">      </span><span class="nt">reason</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">AwaitingDecision</span>
-</span><span id="__span-4-61"><a id="__codelineno-4-61" name="__codelineno-4-61" href="#__codelineno-4-61"></a><span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Awaiting</span><span class="nv"> </span><span class="s">decision,</span><span class="nv"> </span><span class="s">expires</span><span class="nv"> </span><span class="s">2026-03-10T01:13:44Z&quot;</span>
-</span><span id="__span-4-62"><a id="__codelineno-4-62" name="__codelineno-4-62" href="#__codelineno-4-62"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ApprovalDecided</span>
-</span><span id="__span-4-63"><a id="__codelineno-4-63" name="__codelineno-4-63" href="#__codelineno-4-63"></a><span class="w">      </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;False&quot;</span>
-</span><span id="__span-4-64"><a id="__codelineno-4-64" name="__codelineno-4-64" href="#__codelineno-4-64"></a><span class="w">      </span><span class="nt">lastTransitionTime</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T00:58:44Z&quot;</span>
-</span><span id="__span-4-65"><a id="__codelineno-4-65" name="__codelineno-4-65" href="#__codelineno-4-65"></a><span class="w">      </span><span class="nt">reason</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PendingDecision</span>
-</span><span id="__span-4-66"><a id="__codelineno-4-66" name="__codelineno-4-66" href="#__codelineno-4-66"></a><span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;No</span><span class="nv"> </span><span class="s">decision</span><span class="nv"> </span><span class="s">yet&quot;</span>
-</span><span id="__span-4-67"><a id="__codelineno-4-67" name="__codelineno-4-67" href="#__codelineno-4-67"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ApprovalExpired</span>
-</span><span id="__span-4-68"><a id="__codelineno-4-68" name="__codelineno-4-68" href="#__codelineno-4-68"></a><span class="w">      </span><span class="nt">status</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;False&quot;</span>
-</span><span id="__span-4-69"><a id="__codelineno-4-69" name="__codelineno-4-69" href="#__codelineno-4-69"></a><span class="w">      </span><span class="nt">lastTransitionTime</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T00:58:44Z&quot;</span>
-</span><span id="__span-4-70"><a id="__codelineno-4-70" name="__codelineno-4-70" href="#__codelineno-4-70"></a><span class="w">      </span><span class="nt">reason</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NotExpired</span>
-</span><span id="__span-4-71"><a id="__codelineno-4-71" name="__codelineno-4-71" href="#__codelineno-4-71"></a><span class="w">      </span><span class="nt">message</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Approval</span><span class="nv"> </span><span class="s">has</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">expired&quot;</span>
-</span></code></pre></div>
+<p><code>bash
+kubectl get rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system -o yaml</code></p>
+<p><code>yaml
+apiVersion: kubernaut.ai/v1alpha1
+kind: RemediationApprovalRequest
+metadata:
+  name: rar-rr-b4f71c8b83b7-5e9c6266
+  namespace: kubernaut-system
+  ownerReferences:
+    - apiVersion: kubernaut.ai/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: RemediationRequest
+      name: rr-b4f71c8b83b7-5e9c6266
+      uid: 0b6599e5-d8fa-4fef-8ae6-e118c6977372
+spec:
+  remediationRequestRef:
+    apiVersion: kubernaut.ai/v1alpha1
+    kind: RemediationRequest
+    name: rr-b4f71c8b83b7-5e9c6266
+    namespace: kubernaut-system
+    uid: 0b6599e5-d8fa-4fef-8ae6-e118c6977372
+  aiAnalysisRef:
+    name: ai-rr-b4f71c8b83b7-5e9c6266
+  confidence: 0.85
+  confidenceLevel: high
+  reason: "Production environment with sensitive resource kind - requires manual approval"
+  investigationSummary: &gt;-
+    StatefulSet replica mismatch caused by missing StorageClass
+    'broken-storage-class' preventing PVC provisioning for pod kv-store-2
+  recommendedWorkflow:
+    workflowId: f2ed351f-ccc5-41d2-bcf5-de999ed55528
+    version: "1.0.2"
+    executionBundle: quay.io/kubernaut-cicd/test-workflows/fix-statefulset-pvc-job@sha256:d5b0c73ab0fb4093e1e291974013660dd2e5d8e0b2016eaf94d78cf9759be500
+    rationale: &gt;-
+      The workflow can recreate the missing PVC with proper StorageClass
+      configuration to resolve the scheduling issue for kv-store-2
+  evidenceCollected:
+    - "StorageClass 'broken-storage-class' does not exist in the cluster"
+    - "PVC kv-store-data-kv-store-2 is Pending with ProvisioningFailed event"
+    - "StatefulSet kv-store has 2/3 ready replicas; pod kv-store-2 unschedulable"
+  alternativesConsidered:
+    - approach: "Manual PVC creation with existing StorageClass"
+      prosCons: "Pros: Immediate fix. Cons: Diverges from volumeClaimTemplate; future scale-ups repeat the issue"
+  recommendedActions:
+    - action: "Review the recommended workflow and approve if appropriate"
+      rationale: "Production environment with sensitive resource kind - requires manual approval"
+  whyApprovalRequired: &gt;-
+    Production environment with sensitive resource kind - requires manual approval
+  policyEvaluation:
+    policyName: "aianalysis.approval"
+    matchedRules:
+      - "is_production"
+    decision: "manual_review_required"
+  requiredBy: "2026-03-10T01:13:44Z"
+status:
+  createdAt: "2026-03-10T00:58:44Z"
+  timeRemaining: "14m29s"
+  conditions:
+    - type: ApprovalPending
+      status: "True"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
+      reason: AwaitingDecision
+      message: "Awaiting decision, expires 2026-03-10T01:13:44Z"
+    - type: ApprovalDecided
+      status: "False"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
+      reason: PendingDecision
+      message: "No decision yet"
+    - type: ApprovalExpired
+      status: "False"
+      lastTransitionTime: "2026-03-10T00:58:44Z"
+      reason: NotExpired
+      message: "Approval has not expired"</code></p>
 <h3 id="3-review-the-key-fields">3. Review the Key Fields<a class="headerlink" href="#3-review-the-key-fields" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3490,29 +3280,29 @@
 </tbody>
 </table>
 <h3 id="4-approve-or-reject">4. Approve or Reject<a class="headerlink" href="#4-approve-or-reject" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Approve with rationale</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>rar-rr-b4f71c8b83b7-5e9c6266<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Approved&quot;,&quot;decidedBy&quot;:&quot;jgil&quot;,&quot;decisionMessage&quot;:&quot;RCA confirmed: StorageClass issue matches PVC events&quot;}}&#39;</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="c1"># Or reject</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>rar-rr-b4f71c8b83b7-5e9c6266<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Rejected&quot;,&quot;decidedBy&quot;:&quot;jgil&quot;,&quot;decisionMessage&quot;:&quot;Wrong root cause — issue is node affinity, not StorageClass&quot;}}&#39;</span>
-</span></code></pre></div>
+<p>```bash</p>
+<h1 id="approve-with-rationale">Approve with rationale<a class="headerlink" href="#approve-with-rationale" title="Permanent link">&para;</a></h1>
+<p>kubectl patch rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{"status":{"decision":"Approved","decidedBy":"jgil","decisionMessage":"RCA confirmed: StorageClass issue matches PVC events"}}'</p>
+<h1 id="or-reject">Or reject<a class="headerlink" href="#or-reject" title="Permanent link">&para;</a></h1>
+<p>kubectl patch rar rar-rr-b4f71c8b83b7-5e9c6266 -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{"status":{"decision":"Rejected","decidedBy":"jgil","decisionMessage":"Wrong root cause — issue is node affinity, not StorageClass"}}'
+```</p>
 <div class="admonition tip">
 <p class="admonition-title">Quick approval of the first pending RAR</p>
 <p>To approve the first pending RAR without copy-pasting the name:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span><span class="k">$(</span>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>name<span class="w"> </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="k">)</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>--subresource<span class="o">=</span>status<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Approved&quot;,&quot;decidedBy&quot;:&quot;operator&quot;,&quot;decisionMessage&quot;:&quot;Approved after review&quot;}}&#39;</span>
-</span></code></pre></div>
+<p><code>bash
+kubectl patch rar $(kubectl get rar -n kubernaut-system -o name | head -1) \
+  -n kubernaut-system --type=merge --subresource=status \
+  -p '{"status":{"decision":"Approved","decidedBy":"operator","decisionMessage":"Approved after review"}}'</code></p>
 </div>
 <h3 id="5-verify-the-decision">5. Verify the Decision<a class="headerlink" href="#5-verify-the-decision" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>NAMESPACE<span class="w">          </span>NAME<span class="w">                           </span>AIANALYSIS<span class="w">                    </span>CONFIDENCE<span class="w">   </span>DECISION<span class="w">   </span>EXPIRED<span class="w">   </span>REQUIREDBY<span class="w">             </span>AGE
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>kubernaut-system<span class="w">   </span>rar-rr-b4f71c8b83b7-5e9c6266<span class="w">   </span>ai-rr-b4f71c8b83b7-5e9c6266<span class="w">   </span><span class="m">0</span>.85<span class="w">         </span>Approved<span class="w">             </span><span class="m">2026</span>-03-10T01:13:44Z<span class="w">   </span>5m
-</span></code></pre></div>
+<p><code>bash
+$ kubectl get rar -n kubernaut-system
+NAMESPACE          NAME                           AIANALYSIS                    CONFIDENCE   DECISION   EXPIRED   REQUIREDBY             AGE
+kubernaut-system   rar-rr-b4f71c8b83b7-5e9c6266   ai-rr-b4f71c8b83b7-5e9c6266   0.85         Approved             2026-03-10T01:13:44Z   5m</code></p>
 <p>After approval, the Orchestrator transitions the <code>RemediationRequest</code> from <code>AwaitingApproval</code> to <code>Executing</code> and creates a <code>WorkflowExecution</code> CRD.</p>
 <h2 id="expiration">Expiration<a class="headerlink" href="#expiration" title="Permanent link">&para;</a></h2>
 <p>If no decision is made before <code>requiredBy</code>, the RAR expires:</p>
@@ -3598,21 +3388,21 @@
 <li>The <strong>Orchestrator</strong> merges the override: the RAR override takes precedence over the AIA-selected workflow in <code>ResolveWorkflow</code></li>
 </ol>
 <h3 id="overriding-a-workflow">Overriding a workflow<a class="headerlink" href="#overriding-a-workflow" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="s1">    &quot;status&quot;: {</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="s1">      &quot;decision&quot;: &quot;Approved&quot;,</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="s1">      &quot;decidedBy&quot;: &quot;operator-name&quot;,</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="s1">      &quot;decisionMessage&quot;: &quot;Overriding to manual-pvc-fix workflow&quot;,</span>
-</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="s1">      &quot;workflowOverride&quot;: {</span>
-</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="s1">        &quot;workflowName&quot;: &quot;manual-pvc-fix&quot;,</span>
-</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="s1">        &quot;parameters&quot;: {&quot;targetSize&quot;: &quot;50Gi&quot;},</span>
-</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="s1">        &quot;rationale&quot;: &quot;AI selected auto-resize but StorageClass does not support volume expansion&quot;</span>
-</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="s1">      }</span>
-</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="s1">    }</span>
-</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a><span class="s1">  }&#39;</span>
-</span></code></pre></div>
+<p><code>bash
+kubectl patch rar &lt;name&gt; -n kubernaut-system \
+  --subresource=status --type=merge \
+  -p '{
+    "status": {
+      "decision": "Approved",
+      "decidedBy": "operator-name",
+      "decisionMessage": "Overriding to manual-pvc-fix workflow",
+      "workflowOverride": {
+        "workflowName": "manual-pvc-fix",
+        "parameters": {"targetSize": "50Gi"},
+        "rationale": "AI selected auto-resize but StorageClass does not support volume expansion"
+      }
+    }
+  }'</code></p>
 <h3 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h3>
 <p>The authwebhook validates override requests at admission time:</p>
 <ul>

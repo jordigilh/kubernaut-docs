@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3194,19 +3194,19 @@
 </table>
 <h2 id="provisioning">Provisioning<a class="headerlink" href="#provisioning" title="Permanent link">&para;</a></h2>
 <h3 id="option-a-inline-content-via-set-file-recommended">Option A: Inline content via --set-file (recommended)<a class="headerlink" href="#option-a-inline-content-via-set-file-recommended" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>...
-</span></code></pre></div>
+<p><code>bash
+helm install kubernaut charts/kubernaut/ \
+  --set-file aianalysis.policies.content=my-approval.rego \
+  ...</code></p>
 <h3 id="option-b-pre-existing-configmap">Option B: Pre-existing ConfigMap<a class="headerlink" href="#option-b-pre-existing-configmap" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>aianalysis-policies<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--from-file<span class="o">=</span>approval.rego<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--set<span class="w"> </span>aianalysis.policies.existingConfigMap<span class="o">=</span>aianalysis-policies<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>...
-</span></code></pre></div>
+<p>```bash
+kubectl create configmap aianalysis-policies \
+  --from-file=approval.rego=my-approval.rego \
+  -n kubernaut-system</p>
+<p>helm install kubernaut charts/kubernaut/ \
+  --set aianalysis.policies.existingConfigMap=aianalysis-policies \
+  ...
+```</p>
 <h2 id="input-contract">Input Contract<a class="headerlink" href="#input-contract" title="Permanent link">&para;</a></h2>
 <p>The approval policy receives this input from the AIAnalysis controller:</p>
 <table>
@@ -3322,33 +3322,33 @@
 <p>The highest-scoring factor determines the approval reason.</p>
 <h2 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">&para;</a></h2>
 <h3 id="always-require-approval">Always Require Approval<a class="headerlink" href="#always-require-approval" title="Permanent link">&para;</a></h3>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">true</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="k">default</span><span class="w"> </span><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;All remediations require manual approval&quot;</span>
-</span></code></pre></div>
+<p><code>rego
+package aianalysis.approval
+import rego.v1
+default require_approval := true
+default reason := "All remediations require manual approval"</code></p>
 <h3 id="auto-approve-everything-testing-only">Auto-Approve Everything (testing only)<a class="headerlink" href="#auto-approve-everything-testing-only" title="Permanent link">&para;</a></h3>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="k">default</span><span class="w"> </span><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;Auto-approved (testing mode)&quot;</span>
-</span></code></pre></div>
+<p><code>rego
+package aianalysis.approval
+import rego.v1
+default require_approval := false
+default reason := "Auto-approved (testing mode)"</code></p>
 <h3 id="environment-specific-thresholds">Environment-Specific Thresholds<a class="headerlink" href="#environment-specific-thresholds" title="Permanent link">&para;</a></h3>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.9</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<p><code>rego
+require_approval if {
+  lower(input.environment) == "staging"
+  input.confidence &lt; 0.9
+}</code></p>
 <h3 id="crd-safety-gate">CRD Safety Gate<a class="headerlink" href="#crd-safety-gate" title="Permanent link">&para;</a></h3>
 <p>Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+require_approval if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+}</p>
+<p>risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+}
+```</p>
 <p>For GitOps-managed clusters, combine with <code>detected_labels</code> — see <a href="../policies/#crd-safety-policy">CRD Safety Policy</a> for the full pattern.</p>
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). If the new policy has a syntax error, the previous policy is kept and an error is logged.</p>

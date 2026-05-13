@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3407,8 +3407,7 @@
 </table>
 <h3 id="hash-chain-tamper-detection">Hash Chain (Tamper Detection)<a class="headerlink" href="#hash-chain-tamper-detection" title="Permanent link">&para;</a></h3>
 <p>Events form a hash chain for integrity verification:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>event_hash = SHA256(previous_event_hash + canonical_event_json)
-</span></code></pre></div>
+<p><code>event_hash = SHA256(previous_event_hash + canonical_event_json)</code></p>
 <p>Fields excluded from the hash: <code>event_hash</code>, <code>previous_event_hash</code>, <code>event_date</code>, <code>legal_hold</code> fields. This enables after-the-fact detection of any audit event modification.</p>
 <h2 id="correlation">Correlation<a class="headerlink" href="#correlation" title="Permanent link">&para;</a></h2>
 <p>All audit events for a single remediation share a <code>correlation_id</code> set to the <code>RemediationRequest</code> name (DD-AUDIT-CORRELATION-002). This enables:</p>

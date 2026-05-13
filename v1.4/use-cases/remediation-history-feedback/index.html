@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3193,11 +3193,10 @@ making, indefinitely. What happened next is where Kubernaut diverges.</p>
 investigation pipeline served the LLM additional context: <strong>remediation history</strong> for
 the target resource.</p>
 <h3 id="what-datastorage-served">What DataStorage Served<a class="headerlink" href="#what-datastorage-served" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Remediation history context served
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  target_resource: demo-quota/Deployment/api-server
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  tier1_count: 2
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  regression_detected: true
-</span></code></pre></div>
+<p><code>Remediation history context served
+  target_resource: demo-quota/Deployment/api-server
+  tier1_count: 2
+  regression_detected: true</code></p>
 <p>The LLM received:</p>
 <ul>
 <li><strong>Prior workflow</strong>: <code>IncreaseMemoryLimits</code> was tried for this exact resource</li>
@@ -3207,11 +3206,10 @@ the target resource.</p>
 <h3 id="what-the-llm-did">What the LLM Did<a class="headerlink" href="#what-the-llm-did" title="Permanent link">&para;</a></h3>
 <p>The LLM performed the full 3-step discovery again. In Step 2 (<code>list_workflows</code>),
 DataStorage returned the same <code>IncreaseMemoryLimits</code> workflow:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Workflows listed by action type
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>  action_type: IncreaseMemoryLimits
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>  total_count: 1
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>  returned_count: 1
-</span></code></pre></div>
+<p><code>Workflows listed by action type
+  action_type: IncreaseMemoryLimits
+  total_count: 1
+  returned_count: 1</code></p>
 <p>The workflow was <strong>found</strong>. The LLM did not fail to find it.</p>
 <p>But this time, the LLM <strong>deliberately chose not to select it</strong>:</p>
 <blockquote>
@@ -3220,11 +3218,10 @@ memory limits -- it's a resource quota exhaustion problem."</p>
 </blockquote>
 <p>The LLM returned no selected workflow. Kubernaut Agent mapped this to the <code>no_matching_workflows</code>
 outcome:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>incident_analysis_completed
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>  has_workflow: false
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>  needs_human_review: true
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a>  validation_attempts: 1
-</span></code></pre></div>
+<p><code>incident_analysis_completed
+  has_workflow: false
+  needs_human_review: true
+  validation_attempts: 1</code></p>
 <p>RemediationRequest outcome: <strong>ManualReviewRequired</strong> -- escalated to a human operator.</p>
 <h2 id="why-this-matters">Why This Matters<a class="headerlink" href="#why-this-matters" title="Permanent link">&para;</a></h2>
 <h3 id="the-self-correction-mechanism">The Self-Correction Mechanism<a class="headerlink" href="#the-self-correction-mechanism" title="Permanent link">&para;</a></h3>

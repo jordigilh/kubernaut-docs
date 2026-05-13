@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3184,14 +3184,13 @@
 </ul>
 <h3 id="orchestrator-pattern">Orchestrator Pattern<a class="headerlink" href="#orchestrator-pattern" title="Permanent link">&para;</a></h3>
 <p>The <strong>Remediation Orchestrator</strong> is the central coordinator. It watches <code>RemediationRequest</code> CRDs and drives the lifecycle by creating child CRDs in sequence:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>RemediationRequest (Gateway)
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  └─ SignalProcessing (Orchestrator → SP Controller)
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  └─ AIAnalysis (Orchestrator → AA Controller → Kubernaut Agent)
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>  └─ RemediationApprovalRequest (Orchestrator, when approval needed)
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  └─ WorkflowExecution (Orchestrator → WE Controller)
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  └─ EffectivenessAssessment (Orchestrator → EM Controller)
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  └─ NotificationRequest (Orchestrator → Notification Controller)
-</span></code></pre></div>
+<p><code>RemediationRequest (Gateway)
+  └─ SignalProcessing (Orchestrator → SP Controller)
+  └─ AIAnalysis (Orchestrator → AA Controller → Kubernaut Agent)
+  └─ RemediationApprovalRequest (Orchestrator, when approval needed)
+  └─ WorkflowExecution (Orchestrator → WE Controller)
+  └─ EffectivenessAssessment (Orchestrator → EM Controller)
+  └─ NotificationRequest (Orchestrator → Notification Controller)</code></p>
 <p>All child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its <a href="../remediation-routing/#phase-state-machine">phase state machine</a>.</p>
 <details class="note">
 <summary>Detailed sub-phase breakdown</summary>

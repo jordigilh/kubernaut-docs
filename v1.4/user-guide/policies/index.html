@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/logo.svg">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -3286,10 +3286,10 @@
 <p>The severity value produced by these rules feeds into Layer 1 mandatory label filtering in DataStorage. If this maps an alert to <code>"unknown"</code> and no workflow declares <code>severity: ["unknown"]</code> or <code>severity: ["*"]</code>, no workflows will be found. Ensure your severity mappings cover all values your alert sources produce.</p>
 </div>
 <p><strong>Customization example:</strong> To add support for a PagerDuty P0--P4 scheme, add rules in <code>policy.rego</code>:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="n">lower</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">severity</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;p0&quot;</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="p">}</span>
-</span></code></pre></div>
+<p><code>rego
+severity := "critical" if {
+    lower(input.signal.severity) == "p0"
+}</code></p>
 <h3 id="priority-rules">Priority Rules<a class="headerlink" href="#priority-rules" title="Permanent link">&para;</a></h3>
 <p>Assigns a priority level (P0--P3) using a composite score from severity and environment. Priority rules can reference the <code>severity</code> and <code>environment</code> rules directly via Rego cross-rule references.</p>
 <p><strong>Rule name:</strong> <code>priority</code></p>
@@ -3366,11 +3366,11 @@
 </table>
 <p><strong>Example:</strong> A <code>critical</code> alert in <code>production</code> = 3 + 3 = 6 = <strong>P0</strong>. A <code>warning</code> alert in <code>development</code> = 2 + 1 = 3 = <strong>P3</strong>.</p>
 <p><strong>Cross-rule referencing:</strong> Priority rules can reference <code>environment.environment</code> and <code>severity</code> directly:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<p><code>rego
+priority := {"priority": "P0", "policy_name": "production-critical"} if {
+    environment.environment == "production"
+    severity == "critical"
+}</code></p>
 <h3 id="environment-rules">Environment Rules<a class="headerlink" href="#environment-rules" title="Permanent link">&para;</a></h3>
 <p>Classifies the environment from namespace metadata. Used for workflow filtering, approval decisions, and cross-referenced by priority rules.</p>
 <p><strong>Rule name:</strong> <code>environment</code></p>
@@ -3386,32 +3386,32 @@
 <p>The Rego input includes <code>input.workload.labels</code> from the target resource. Custom environment rules can use these for cluster-scoped resources (e.g., Nodes) where namespace labels are not available. The default policy does not use workload labels, but operators can extend it to classify environments based on workload metadata.</p>
 </div>
 <p><strong>Customization:</strong> Add rules in <code>policy.rego</code> for your namespace naming conventions:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace-name&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;kubernaut.ai/environment&quot;</span><span class="p">]</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="n">endswith</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;-prod&quot;</span><span class="p">)</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<p><code>rego
+environment := {"environment": "production", "source": "namespace-name"} if {
+    not input.namespace.labels["kubernaut.ai/environment"]
+    endswith(input.namespace.name, "-prod")
+}</code></p>
 <h3 id="custom-labels-rules">Custom Labels Rules<a class="headerlink" href="#custom-labels-rules" title="Permanent link">&para;</a></h3>
 <p>Extracts operator-defined labels from namespace labels with the <code>kubernaut.ai/label-</code> prefix.</p>
 <p><strong>Rule name:</strong> <code>labels</code></p>
 <p><strong>Output:</strong> map of key-value pairs (map[string][]string)</p>
 <p><strong>Example:</strong> A namespace with:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">labels</span><span class="p">:</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">kubernaut.ai/label-team</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">payments</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">kubernaut.ai/label-tier</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gold</span>
-</span></code></pre></div>
+<p><code>yaml
+labels:
+  kubernaut.ai/label-team: payments
+  kubernaut.ai/label-tier: gold</code></p>
 <p>Produces: <code>{"team": ["payments"], "tier": ["gold"]}</code></p>
 <p>These labels feed into Layer 2 scoring at +0.15 per exact match. See <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a>.</p>
 <h2 id="signal-mode-configuration">Signal Mode Configuration<a class="headerlink" href="#signal-mode-configuration" title="Permanent link">&para;</a></h2>
 <p>Signal mode is configured via YAML (not Rego). A mapping file determines which alert names are treated as proactive vs reactive.</p>
 <p><strong>ConfigMap:</strong> <code>signalprocessing-proactive-signal-mappings</code></p>
 <p><strong>Default mappings:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">proactive_signal_mappings</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">PredictedOOMKill</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OOMKilled</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">PredictedCPUThrottling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPUThrottling</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">PredictedDiskPressure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DiskPressure</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">PredictedNodeNotReady</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NodeNotReady</span>
-</span></code></pre></div>
+<p><code>yaml
+proactive_signal_mappings:
+  PredictedOOMKill: OOMKilled
+  PredictedCPUThrottling: CPUThrottling
+  PredictedDiskPressure: DiskPressure
+  PredictedNodeNotReady: NodeNotReady</code></p>
 <p>Signal names that match a key in this map are classified as <code>proactive</code>; all others default to <code>reactive</code>. The mapped value is the base signal name used for workflow catalog lookup.</p>
 <p>Signal mode determines which prompt variant Kubernaut Agent uses during investigation (reactive: "Investigate the Incident" vs proactive: "Investigate the Anticipated Incident"). See <a href="../../architecture/kubernaut-agent-investigation/#reactive-vs-proactive-mode">Investigation Pipeline</a> for details.</p>
 <div class="admonition info">
@@ -3484,21 +3484,20 @@
 </ol>
 <p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present and the resource kind is not sensitive.</p>
 <h3 id="confidence-threshold">Confidence Threshold<a class="headerlink" href="#confidence-threshold" title="Permanent link">&para;</a></h3>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">default</span><span class="w"> </span><span class="n">confidence_threshold</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="m">0.8</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">confidence_threshold</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence_threshold</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence_threshold</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="p">}</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="n">is_high_confidence</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&gt;=</span><span class="w"> </span><span class="n">confidence_threshold</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+default confidence_threshold := 0.8</p>
+<p>confidence_threshold := input.confidence_threshold if {
+    input.confidence_threshold
+}</p>
+<p>is_high_confidence if {
+    input.confidence &gt;= confidence_threshold
+}
+```</p>
 <p>The default threshold is <strong>0.8</strong> (80%). Override via Helm:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">aianalysis</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">rego</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span><span class="w">  </span><span class="c1"># Require 90% confidence</span>
-</span></code></pre></div>
+<p><code>yaml
+aianalysis:
+  rego:
+    confidenceThreshold: 0.9  # Require 90% confidence</code></p>
 <p>The <code>is_high_confidence</code> helper is defined but not currently used in the approval rules. It is available for operators to add custom rules.</p>
 <h3 id="risk-factors">Risk Factors<a class="headerlink" href="#risk-factors" title="Permanent link">&para;</a></h3>
 <p>Scored risk factors determine the human-readable reason shown in the <code>RemediationApprovalRequest</code>:</p>
@@ -3531,47 +3530,46 @@
 <p>The highest-scoring factor becomes the approval reason. Scores affect the reason text only, not the approval decision.</p>
 <h3 id="customization-examples">Customization Examples<a class="headerlink" href="#customization-examples" title="Permanent link">&para;</a></h3>
 <p><strong>Require approval for StatefulSet remediations in staging:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="p">}</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">60</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Staging StatefulSet remediation requires approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;staging&quot;</span>
-</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;StatefulSet&quot;</span>
-</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+require_approval if {
+    input.environment == "staging"
+    input.remediation_target.kind == "StatefulSet"
+}</p>
+<p>risk_factors contains {"score": 60, "reason": "Staging StatefulSet remediation requires approval"} if {
+    input.environment == "staging"
+    input.remediation_target.kind == "StatefulSet"
+}
+```</p>
 <p><strong>Require approval when confidence is below threshold in any environment:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_high_confidence</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="p">}</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">65</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Low confidence remediation requires approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">    </span><span class="k">not</span><span class="w"> </span><span class="n">is_high_confidence</span>
-</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+require_approval if {
+    not is_high_confidence
+}</p>
+<p>risk_factors contains {"score": 65, "reason": "Low confidence remediation requires approval"} if {
+    not is_high_confidence
+}
+```</p>
 <h3 id="crd-safety-policy">CRD Safety Policy<a class="headerlink" href="#crd-safety-policy" title="Permanent link">&para;</a></h3>
 <p>Automated modifications to CustomResourceDefinitions are high-risk operations — a CRD change cascades to every CR of that type across the cluster. The approval policy can gate CRD remediations to require human review.</p>
 <p><strong>Require approval for all CRD modifications:</strong></p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="p">}</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="n">is_sensitive_resource</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="p">}</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-9-10"><a id="__codelineno-9-10" name="__codelineno-9-10" href="#__codelineno-9-10"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-9-11"><a id="__codelineno-9-11" name="__codelineno-9-11" href="#__codelineno-9-11"></a><span class="p">}</span>
-</span></code></pre></div>
+<p>```rego
+require_approval if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+}</p>
+<p>is_sensitive_resource if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+}</p>
+<p>risk_factors contains {"score": 95, "reason": "CRD modification — cascades to all CRs of this type"} if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+}
+```</p>
 <p><strong>Elevated risk for GitOps-managed CRDs:</strong></p>
 <p>When the LLM detects that the target resource is managed by ArgoCD or Flux, direct modification conflicts with the GitOps reconciliation loop. Combine <code>remediation_target.kind</code> with <code>detected_labels</code> for a stricter gate:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification under GitOps management — requires human approval&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">detected_labels</span><span class="p">.</span><span class="n">git_ops_managed</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="k">true</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="p">}</span>
-</span></code></pre></div>
+<p><code>rego
+risk_factors contains {"score": 95, "reason": "CRD modification under GitOps management — requires human approval"} if {
+    input.remediation_target.kind == "CustomResourceDefinition"
+    input.detected_labels.git_ops_managed == true
+}</code></p>
 <p>See the <a href="../rego-reference/#ai-analysis-approval-policy">Rego Reference</a> for the full list of <code>detected_labels</code> fields available in approval rules.</p>
 <h2 id="deployment-and-update">Deployment and Update<a class="headerlink" href="#deployment-and-update" title="Permanent link">&para;</a></h2>
 <h3 id="where-policies-live">Where Policies Live<a class="headerlink" href="#where-policies-live" title="Permanent link">&para;</a></h3>

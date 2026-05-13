@@ -94,7 +94,7 @@ _Appears in:_
 | `approvalContext`| _[ApprovalContext](#approvalcontext)_| Rich context for approval notification|
 | `needsHumanReview`| _boolean_| Set by Kubernaut Agent when AI cannot produce reliable result<br />True if human review required (KA decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.|
 | `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to KA's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts|
-| `alignmentVerdict`| _[AlignmentVerdictStatus](#alignmentverdictstatus)_| Shadow agent alignment verdict from KA (, #1076).<br />When CircuitBreakerActivated=true, the investigation was terminated early<br />and LLM results (RootCauseAnalysis, SelectedWorkflow) may be incomplete<br />or compromised. Users should treat shadow findings as the primary content.|
+| `alignmentVerdict`| _[AlignmentVerdictStatus](#alignmentverdictstatus)_| Shadow agent alignment verdict from KA (#1076).<br />When CircuitBreakerActivated=true, the investigation was terminated early<br />and LLM results (RootCauseAnalysis, SelectedWorkflow) may be incomplete<br />or compromised. Users should treat shadow findings as the primary content.|
 | `actionability`| _string_| #388: LLM's assessment of whether the alert warrants action.<br />Empty when not yet assessed (pre-investigation or error paths).<br />"Actionable" when the LLM determines the alert warrants action (default for all processed alerts).<br />"NotActionable" when the LLM determines the alert is benign (e.g., orphaned PVCs).|
 | `investigationId`| _string_| KA investigation ID for correlation|
 | `investigationTime`| _integer_| Investigation duration in seconds|
@@ -247,7 +247,7 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `result`| _string_| Result is the overall shadow agent verdict: "clean" or "suspicious".|
+| `result`| _string_| Result is the overall shadow agent verdict: "aligned" or "suspicious".|
 | `circuitBreakerActivated`| _boolean_| CircuitBreakerActivated indicates the investigation was terminated early.|
 | `summary`| _string_| Summary is a narrative summary of the shadow agent evaluation.|
 | `flagged`| _integer_| Flagged is the number of steps flagged as suspicious.|
@@ -1227,7 +1227,7 @@ _Appears in:_
 | `decidedBy`| _string_| Who made the decision (username or "system" for timeout)|
 | `decidedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the decision was made|
 | `decisionMessage`| _string_| Optional message from the decision maker|
-| `workflowOverride`| _[WorkflowOverride](#workflowoverride)_| Operator workflow/parameter override (#594, ).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.|
+| `workflowOverride`| _[WorkflowOverride](#workflowoverride)_| Operator workflow/parameter override (#594).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions represent the latest available observations<br />Standard condition types:<br />- "Approved" - Decision is Approved<br />- "Rejected" - Decision is Rejected<br />- "Expired" - Decision timed out|
 | `createdAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Time when the approval request was created|
 | `timeRemaining`| _string_| Time remaining until expiration (human-readable, e.g., "5m30s")<br />Updated by controller periodically|
@@ -2010,7 +2010,7 @@ _Appears in:_
 | `ephemeralCredentialIDs`| _integer array_| EphemeralCredentialIDs stores AWX credential IDs created by the ansible<br />executor for cleanup after execution . Written via the status<br />subresource to avoid violating spec immutability .|
 | `executionEngine`| _string_| ExecutionEngine is the backend engine resolved from the DS workflow catalog<br />at runtime by the WE controller. Set once during Pending phase via<br />WorkflowQuerier.GetWorkflowSchemaMetadata; immutable thereafter.<br />Values: "tekton", "job", "ansible".|
 | `serviceAccountName`| _string_| ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog at runtime by the WE controller .<br />Set once during Pending phase via ResolveWorkflowCatalogMetadata; immutable<br />thereafter. If empty, K8s assigns the namespace's default SA (Job/Tekton)<br />or the Ansible executor falls back to the controller's in-cluster credentials.|
-| `deduplicatedBy`| _string_| DeduplicatedBy stores the name of the original WorkflowExecution that owns<br />the conflicting execution resource. Set atomically inside AtomicStatusUpdate<br />when FailureDetails.Reason == Deduplicated (, M5 constraint).<br />Immutable after initial assignment.|
+| `deduplicatedBy`| _string_| DeduplicatedBy stores the name of the original WorkflowExecution that owns<br />the conflicting execution resource. Set atomically inside AtomicStatusUpdate<br />when FailureDetails.Reason == Deduplicated (M5 constraint).<br />Immutable after initial assignment.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions provide detailed status information|
 
 

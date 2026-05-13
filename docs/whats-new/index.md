@@ -15,7 +15,7 @@ Kubernaut v1.4 introduces a **fail-closed shadow agent** that evaluates every LL
 - **Per-step scanning** with random boundary markers and data exfiltration detection
 - **Full-context grounding review** at the RCA-to-workflow boundary that detects distributed "boiling frog" injection attacks
 
-Enforcement modes (`monitor` or `enforce`) control whether suspicious content is logged or triggers a circuit breaker that cancels the investigation. See [Security & RBAC: Shadow Agent](../architecture/security-rbac.md#prompt-injection-defense-shadow-agent-v14) for details.
+Enforcement modes (`monitor` or `enforce`) control whether suspicious content is logged or triggers a circuit breaker that cancels the investigation. See [Security & RBAC: Shadow Agent](../architecture/security-rbac.md#shadow-agent) for details.
 
 ### Operator workflow overrides
 
@@ -59,10 +59,25 @@ The [investigation pipeline](../architecture/kubernaut-agent-investigation.md) n
 - **Standardized log levels** (#875) — Log level configuration standardized across all services
 - **Verdict label rename** (#1077) — `VerdictClean` changed from `"clean"` to `"aligned"`. **Breaking**: update Prometheus queries
 - **Audit event batching fix** (#1056) — Audit 401/403 errors reclassified as retryable; token source extracted for shared cache across all callers
+- **API version validation gate** (#1044) — Detects when the LLM omits `api_version` for ambiguous Kubernetes Kinds (e.g., `Event` in both `v1` and `events.k8s.io/v1`), retries with a correction listing all conflicting API groups, and escalates to human review on exhaustion to prevent incorrect RBAC grants
+- **CRD TTL enforcement** (#265) — Terminal `RemediationRequest` resources are garbage-collected after 24h (configurable via `retention.period`), preventing CRD accumulation in high-volume clusters
 
 ### Dry-run mode
 
 When `dryRun` is enabled, the pipeline stops after AI analysis — no WorkflowExecution, RAR, or EA CRDs are created. The RemediationRequest completes with outcome `DryRun`.
+
+### Kubernaut Operator
+
+The [Kubernaut Operator](https://github.com/jordigilh/kubernaut-operator) — introduced in v1.3 — is the recommended deployment method for OpenShift. v1.4 adds:
+
+- **OLM lifecycle management** — Install, upgrade, and uninstall via Operator Lifecycle Manager with automatic CRD installation and cleanup
+- **Supply chain security** — Container images ship with SBOM, Cosign signatures, and SLSA provenance attestations
+- **`postgresql.sslMode`** — Configurable SSL mode for PostgreSQL connections (`disable`, `require`, `verify-ca`, `verify-full`)
+- **`notification.routing` BYO** — Bring-your-own routing ConfigMap with hot-reload support
+- **`runtimeConfigMapName`** — Separate hot-reloadable ConfigMap for Kubernaut Agent runtime configuration
+- **Init image mirroring** — `RELATED_IMAGE_*` environment variables for disconnected/air-gapped installs
+
+See the [Operator installation guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation) for deployment instructions.
 
 ### Deprecated: OCP-specific Helm chart
 
@@ -112,17 +127,6 @@ The [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md) (LL
 ### Expanded LLM provider support
 
 The Kubernaut Agent now supports **Vertex AI, OpenAI, Anthropic, Bedrock, Ollama**, and additional providers via **LangChainGo**.
-
-### Trust Ladder
-
-New [operator guide](../user-guide/trust-ladder.md) documenting a four-level graduation path for building automation confidence:
-
-| Level | Name | Description |
-|---|---|---|
-| 1 | Observe | See what Kubernaut *would* do — no execution (planned for v1.5) |
-| 2 | Selective Trust | Trusted workflows execute; new ones go through review (planned for v1.5) |
-| 3 | **Approve** | All matched workflows proposed via RAR — operator approves or rejects |
-| 4 | **Automate** | Matched workflows execute without human intervention |
 
 ### Effectiveness Monitor improvements
 
@@ -195,7 +199,7 @@ Initial documented release of Kubernaut.
 - Rego-based policy evaluation for signal processing and approval
 - Multichannel notifications (Slack, console, log, file)
 - Full audit trail with 7-year retention and CRD reconstruction
-- Demo content seeding via `demoContent.enabled`
+- ActionType and RemediationWorkflow CRD registration via Auth Webhook
 - Alert decay detection (DD-EM-003)
 - Resource lock persistence with deterministic naming (DD-WE-003)
 

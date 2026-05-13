@@ -80,7 +80,7 @@ Routes match on notification attributes:
 - **First matching route wins** (depth-first evaluation)
 - Child routes are evaluated before the parent
 - The **default receiver** is used when no route matches
-- Routing configuration supports **hot-reload** -- changes to the ConfigMap take effect without pod restart
+- Routing configuration supports **hot-reload** via `fsnotify` FileWatcher (#244) — when the projected ConfigMap volume is synced by the kubelet (~60s), the watcher detects the change and reloads routing rules without pod restart
 
 ## Per-Channel Setup
 
@@ -260,9 +260,9 @@ spec:
     maxBackoffSeconds: 120
 ```
 
-## Routing New v1.3 Notification Types
+## Routing Block and Terminal Failure Notifications
 
-v1.3 introduces notifications for block reasons and terminal failures that were previously silent. Operators with existing routing rules should add routes for these new NR types.
+Since v1.3, Kubernaut emits notifications for block reasons and terminal failures that were previously silent. Operators should ensure routing rules cover these NR types.
 
 ### Escalation NRs (block reasons and terminal failures)
 

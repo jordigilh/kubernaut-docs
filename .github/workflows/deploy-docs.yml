@@ -58,7 +58,7 @@ jobs:
             VERSION="v1.5"
           fi
 
-          if [ "$VERSION" = "v1.5" ]; then
+          if [ "$VERSION" = "v1.4" ]; then
             mike deploy --push --update-aliases "$VERSION" latest
           else
             mike deploy --push "$VERSION"

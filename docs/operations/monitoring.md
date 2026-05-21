@@ -133,11 +133,17 @@ scrape_configs:
 
 | Metric | Type | Labels | Description |
 |---|---|---|---|
-| `af_tool_calls_total` | Counter | `tool`, `status` | MCP/A2A tool invocations by tool name and outcome |
-| `af_a2a_tasks_total` | Counter | `task_type`, `status` | A2A task executions by type and outcome |
-| `af_session_active` | Gauge | -- | Currently active API sessions |
-| `af_session_duration_seconds` | Histogram | -- | Session duration from connect to disconnect |
-| `af_http_request_duration_seconds` | Histogram | `endpoint`, `method`, `status` | HTTP request duration |
+| `af_http_requests_total` | Counter | `method`, `path`, `status` | Total HTTP requests |
+| `af_http_request_duration_seconds` | Histogram | `method`, `path`, `status` | HTTP request latency distribution |
+| `af_http_panics_total` | Counter | -- | HTTP handler panics recovered |
+| `af_tool_calls_total` | Counter | `tool`, `result` | MCP/A2A tool invocations by tool name and result |
+| `af_tool_call_duration_seconds` | Histogram | `tool`, `type` | Tool execution latency by tool name and type |
+| `af_downstream_request_duration_seconds` | Histogram | `dependency`, `status_class` | Downstream HTTP request duration (KA, DS) |
+| `af_auth_duration_seconds` | Histogram | `result` | Authentication latency distribution |
+| `af_rate_limit_rejections_total` | Counter | `tier`, `reason` | Rate limit rejections |
+| `af_sse_active_connections` | Gauge | -- | Currently active SSE connections |
+| `af_llm_tokens_total` | Counter | `direction` | LLM tokens consumed (input/output) |
+| `af_sessions_active` | Gauge | `phase` | Active InvestigationSessions by phase |
 
 ## Kubernaut Agent Metrics
 

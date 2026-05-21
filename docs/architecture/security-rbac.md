@@ -237,14 +237,7 @@ The `list` verb (new in v1.5) is required for `ReconcileOrphanedLeases` — on s
 
 ### API Frontend RBAC (v1.5+)
 
-The API Frontend ServiceAccount requires:
-
-| apiGroup | Resources | Verbs | Purpose |
-|---|---|---|---|
-| `authentication.k8s.io` | `tokenreviews` | create | Validate OIDC bearer tokens |
-| `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
-
-The AF also needs `create` on `services/kubernaut-agent` and `services/data-storage-service` for proxying MCP tool calls to backend services.
+The API Frontend ServiceAccount requires permissions for authentication and downstream service access. The AF authenticates users via JWKS (OIDC) and proxies MCP/A2A calls to the Kubernaut Agent and DataStorage.
 
 ## Infrastructure and Hooks
 
@@ -368,65 +361,21 @@ Verify your cluster's CNI plugin supports NetworkPolicy enforcement (Calico, Cil
 
 Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).
 
-## Tool Authorization (v1.5) {: #tool-authorization-v15 }
+## Tool Authorization {: #tool-authorization-v15 }
 
-v1.5 replaces the API Frontend's file-based `rbac_roles.yaml` with **Kubernetes-native SubjectAccessReview (SAR)** authorization. Every MCP tool call triggers a SAR check before execution.
+### Current model (v1.5)
 
-### How it works
+The API Frontend uses a **file-based RBAC model** via `rbac_roles.yaml` ConfigMap. Roles are mapped to MCP tool access and loaded at startup.
 
-1. Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT
-2. On each tool invocation, AF issues a SAR: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
-3. The Kubernetes API server evaluates the user's ClusterRoleBindings
-4. If denied (or if the SAR API is unreachable), the tool call is rejected — **fail-closed**
+### Planned: SAR-based authorization
 
-### Pre-built ClusterRoles
+!!! info "Planned — not yet implemented"
+    [Issue #1221](https://github.com/jordigilh/kubernaut/issues/1221) proposes replacing the file-based model with Kubernetes-native SubjectAccessReview (SAR) authorization. This work is in progress and will ship in a future release. The design calls for:
 
-The Helm chart and Operator ship six ClusterRoles:
-
-| ClusterRole | Tools | Use case |
-|---|---|---|
-| `kubernaut-tool-sre` | All 20 tools | Full SRE access |
-| `kubernaut-tool-orchestrator` | Orchestration + triage | Automated agent orchestration |
-| `kubernaut-tool-approver` | Approve + read | Human approval workflows |
-| `kubernaut-tool-viewer` | Read-only tools | Dashboards, monitoring |
-| `kubernaut-tool-cicd` | list, get, watch | CI/CD pipeline integration |
-| `kubernaut-tool-audit` | Audit, history, effectiveness | Compliance and auditing |
-
-### Binding example
-
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: sre-team-kubernaut-tools
-subjects:
-  - kind: Group
-    name: sre-team
-    apiGroup: rbac.authorization.k8s.io
-roleRef:
-  kind: ClusterRole
-  name: kubernaut-tool-sre
-  apiGroup: rbac.authorization.k8s.io
-```
-
-### SAR caching
-
-Authorization results are cached for a configurable TTL (default 30s) to avoid per-call SAR overhead:
-
-```yaml
-apifrontend:
-  rbac:
-    sarCacheTTL: 30s
-```
-
-### Migration from rbac_roles.yaml
-
-If you customized the file-based `rbac_roles.yaml` in v1.4:
-
-1. Identify which tools each role had access to
-2. Map those to the closest pre-built ClusterRole (or create a custom one)
-3. Create ClusterRoleBindings for your users/groups
-4. Remove the `rbac_roles.yaml` ConfigMap — it is no longer read
+    - SAR check on every MCP tool call: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
+    - 6 pre-built ClusterRoles (sre, orchestrator, approver, viewer, cicd, audit)
+    - Fail-closed authorization with configurable cache TTL
+    - Removal of the `rbac_roles.yaml` ConfigMap
 
 ## Next Steps
 

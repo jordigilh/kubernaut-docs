@@ -9,10 +9,10 @@ The API Frontend (AF) is the unified external protocol layer introduced in v1.5.
 The AF sits between external clients and the Kubernaut Engine, handling:
 
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
-- **Authentication** — OIDC/OAuth2 via DEX with JWT claim extraction
-- **Authorization** — Kubernetes SAR-based tool-level authorization (replaces file-based RBAC)
-- **Session management** — Lease-based distributed locking for interactive MCP sessions
-- **Streaming** — Server-Sent Events (SSE) for real-time investigation output
+- **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
+- **Authorization** — File-based RBAC via `rbac_roles.yaml` (SAR-based authorization [planned](https://github.com/jordigilh/kubernaut/issues/1221))
+- **Session proxy** — MCP tool calls proxied to KA, where Lease-based session management is implemented
+- **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
 ## Agentic Architecture
 
@@ -52,7 +52,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
   <!-- ── API Frontend bar ── -->
   <rect x="16" y="108" width="788" height="56" rx="10" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
   <text x="410" y="134" text-anchor="middle" font-size="16" font-weight="700" fill="white">API Frontend</text>
-  <text x="410" y="152" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">MCP Bridge · A2A Executor · REST API · SAR Authorizer · Session Manager</text>
+  <text x="410" y="152" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">MCP Streamable HTTP · A2A JSON-RPC · OIDC Auth · RBAC</text>
 
   <!-- ── Arrows: AF → Engine ── -->
   <line x1="250" y1="164" x2="250" y2="190" stroke="#B0B0B0" stroke-width="1.3"/>
@@ -124,34 +124,40 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 
 ## Session Lifecycle
 
-Interactive MCP sessions use **Kubernetes Leases** for distributed locking. This ensures exactly one active session per investigation, even across KA pod restarts.
+Interactive MCP sessions are managed by the **Kubernaut Agent's MCP layer** (`internal/kubernautagent/mcp/`), not the API Frontend. The AF proxies MCP protocol to KA, which owns session state.
 
 ### Lease-based distributed locking
 
-Each interactive session acquires a Lease in the `kubernaut-system` namespace. The Lease acts as a distributed lock:
+The `LeaseSessionManager` in KA uses Kubernetes coordination/v1 Leases (prefix: `kubernaut-interactive-`) for single-driver guarantee (BR-INTERACTIVE-002):
 
-- **Acquisition** — On `action:start`, KA creates a Lease named after the session ID
-- **Renewal** — Active sessions renew the Lease at regular intervals
-- **Orphan reclamation** — On startup, KA scans for Leases whose holder identity no longer exists and reclaims them (`ReconcileOrphanedLeases`)
-- **Same-user reconnect** — If the same user reconnects to their own session, the existing Lease is reused without interruption
+- **Acquisition** — On `action:start`, KA creates a Lease in `kubernaut-system`
+- **TTL** — Default session TTL is 30 minutes; configurable via `InteractiveConfig.SessionTTL`
+- **Inactivity timeout** — Sessions expire after a configurable period of no activity
+- **Max sessions** — Configurable cap; rejects new sessions when capacity is exhausted (SEC-03)
+- **Orphan reclamation** — On startup, KA scans for Leases whose holder identity no longer exists and reclaims them
+- **Same-user reconnect** — If the same user reconnects, the existing Lease is reused
 
 ### Session takeover (SEC-TAKEOVER-001)
 
 When User B connects to a session owned by User A:
 
-1. User A's investigation is **abandoned** (not completed) — this prevents identity confusion
+1. User A's investigation is **abandoned** (not completed) — prevents identity confusion
 2. The Lease holder is updated to User B
 3. An audit event is emitted recording the takeover
 4. User B starts a fresh investigation in the same session context
 
+### Disconnect handling (DD-INTERACTIVE-002)
+
+The `SessionClosedHandler` monitors MCP connection closures via the `DelegatingEventStore`. On disconnect, it triggers session release and reconstruction.
+
 ### Graceful shutdown — SessionDrainer
 
-When a KA pod receives SIGTERM:
+When a KA pod receives SIGTERM (BR-OPS-013):
 
-1. The `SessionDrainer` marks the pod as draining — no new sessions accepted
-2. Active sessions are given a grace period to complete
-3. Sessions that don't complete within the grace period are abandoned with audit events
-4. Pod terminates only after all sessions are drained or timed out
+1. The `SessionDrainer` notifies all connected MCP clients that the server is shutting down
+2. In-flight tool executions are given time to complete
+3. All active session Leases are released
+4. Pod terminates only after all sessions are drained
 
 ## SSE Streaming
 

@@ -424,11 +424,10 @@ changes between releases.
 
 ### v1.4 → v1.5 migration notes
 
-v1.5 introduces breaking changes that require manual steps during reinstall:
+v1.5 introduces changes that require attention during reinstall:
 
-1. **SAR-based tool authorization** — The API Frontend's `rbac_roles.yaml` ConfigMap is removed. Create `ClusterRoleBindings` for MCP tool access using the [pre-built ClusterRoles](../architecture/security-rbac.md#tool-authorization-v15).
-2. **11th service — API Frontend** — Resource planning must account for the new service. See [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for resource defaults.
-3. **Lease RBAC** — The Kubernaut Agent ServiceAccount now requires `list` on `coordination.k8s.io/leases`. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.
+1. **11th service — API Frontend** — Resource planning must account for the new service. See [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for resource defaults.
+2. **Lease RBAC** — The Kubernaut Agent ServiceAccount now requires `list` on `coordination.k8s.io/leases`. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.
 
 ## Uninstalling
 

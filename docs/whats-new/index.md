@@ -15,7 +15,7 @@ Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It a
 - **MCP gateway** — Exposes investigation, workflow discovery, and remediation tools via the Model Context Protocol
 - **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
 - **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
-- **Session management** — Kubernetes Lease-based distributed locking with orphaned session reclamation at startup, same-user reconnect, and graceful drain via `SessionDrainer` on pod shutdown
+- **MCP proxy** — Proxies MCP Streamable HTTP and A2A JSON-RPC to the Kubernaut Agent, where session management (Lease-based locking, orphan reclamation, `SessionDrainer`) is implemented
 
 See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
 
@@ -23,44 +23,23 @@ See [API Frontend Architecture](../architecture/apifrontend.md) for the full des
 
 Operators and AI agents can now connect to Kubernaut via MCP for **interactive investigation and remediation**. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.
 
-The interactive flow uses five MCP tools on the Kubernaut Agent:
+The Kubernaut Agent registers **3 MCP tools** via the go-sdk MCP server:
 
 | Tool | Purpose |
 |---|---|
-| `kubernaut_investigate` | Start, reconnect to, check status of, or complete an investigation (actions: `start`, `reconnect`, `status`, `complete`) |
-| `discover_workflows` | After RCA, returns matching workflows with LLM-populated parameters |
-| `select_workflow` | Operator selects a workflow from the discovery results |
-| `complete_no_action` | Operator decides no remediation is needed |
-| `stream_investigation` | Subscribe to real-time SSE stream of investigation progress |
+| `kubernaut_investigate` | Start, reconnect to, take over, check status of, send messages, discover workflows, or complete an investigation (8 actions: `start`, `message`, `complete`, `cancel`, `takeover`, `status`, `reconnect`, `discover_workflows`) |
+| `kubernaut_select_workflow` | Operator selects a workflow from the discovery results; triggers enrichment and catalog lookup |
+| `kubernaut_complete_no_action` | Operator decides no remediation is needed — can be called at any point |
 
 See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
 
 ### Interactive workflow discovery with LLM-populated parameters
 
-The `discover_workflows` tool returns workflow alternatives with **parameters pre-populated by the LLM** based on the root cause analysis. Operators can review and edit parameters before confirming execution via `select_workflow`.
+The `discover_workflows` action on `kubernaut_investigate` returns workflow alternatives with **parameters pre-populated by the LLM** based on the root cause analysis (PR #1171, PR #1188). Operators review and edit parameters before confirming execution via `kubernaut_select_workflow`.
 
-Parameter safety is enforced through **comprehensive validation with LLM self-correction**: type checking against the workflow's declared parameter schema, regex pattern matching (`maxPatternLength: 1024`), required field enforcement, and automatic retry when the LLM provides invalid values.
+Parameter safety is enforced through **comprehensive validation with LLM self-correction** (PR #1187): type checking against the workflow's declared parameter schema, regex pattern matching, required field enforcement, and automatic retry when the LLM provides invalid values.
 
 See [Workflow Authoring: Parameters](../user-guide/workflows.md#parameters) for the parameter schema reference.
-
-### Breaking: SAR-based tool authorization replaces file-based RBAC
-
-The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kubernetes-native SubjectAccessReview (SAR)** authorization at tool invocation time.
-
-**Migration required**: customers who customized `rbac_roles.yaml` must create equivalent `ClusterRoleBinding` resources. The Helm chart ships 6 pre-built `ClusterRoles`:
-
-| ClusterRole | Scope |
-|---|---|
-| `kubernaut-tool-sre` | All tools |
-| `kubernaut-tool-orchestrator` | Orchestration + triage tools |
-| `kubernaut-tool-approver` | Approve + read tools |
-| `kubernaut-tool-viewer` | Read-only tools |
-| `kubernaut-tool-cicd` | List, get, watch |
-| `kubernaut-tool-audit` | Audit, history, effectiveness |
-
-SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorization is fail-closed: SAR API errors deny the tool call. Results are cached with a configurable TTL (default 30s via `apifrontend.rbac.sarCacheTTL`).
-
-See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the full model and binding examples.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 
@@ -82,20 +61,14 @@ The [disconnected installation guide](../operations/disconnected-install.md) has
 
 The OLM flow uses `oc-mirror` v2 with an upstream digest-pinned `ImageSetConfiguration` from the operator repository, producing IDMS and CatalogSource resources automatically.
 
-### InvestigationSession CRD enhancements
-
-The `InvestigationSession` sub-resource on `AIAnalysis` now includes `StartedAt` and `CompletedAt` timestamps, enabling operators to measure interactive session duration via `kubectl`.
-
 ### Lease RBAC for session management
 
 The Kubernaut Agent ServiceAccount now requires `list` permission on `coordination.k8s.io/leases` (in addition to the existing create/get/update/delete) for orphaned session reclamation at startup. The Helm chart and Operator both provision this automatically.
 
 ### Platform hardening
 
-- **SessionDrainer** (GAP-16) — Active MCP sessions are drained before KA pod termination during rolling updates
+- **SessionDrainer** (BR-OPS-013) — Active MCP sessions are drained before KA pod termination during rolling updates
 - **Race-safe session transitions** — Mutex-protected session state machine prevents concurrent state corruption
-- **429 body replay** — MCP tool calls that receive rate-limit responses are automatically retried with the original request body
-- **Cross-namespace label overlap fix** — `labelsOverlap` no longer produces false positives across namespaces
 
 ---
 

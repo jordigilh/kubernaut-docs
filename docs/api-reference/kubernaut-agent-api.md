@@ -149,104 +149,41 @@ All error responses (4xx, 5xx) use [RFC 7807 Problem Details](index.md#error-res
 }
 ```
 
-## Interactive Session Endpoints (v1.5+)
+## Interactive MCP Mode (v1.5+)
 
-v1.5 adds interactive MCP session support to Kubernaut Agent, consumed by the API Frontend. These endpoints power the [interactive sessions](../user-guide/interactive-sessions.md) feature.
+v1.5 adds interactive MCP session support to the Kubernaut Agent. Interactive tools are **not exposed as REST endpoints** — they are registered on the go-sdk MCP server (`internal/kubernautagent/mcp/`) and accessed via MCP Streamable HTTP through the API Frontend's `POST /mcp` endpoint.
 
-### Start Interactive Investigation
+The existing REST API is unchanged. The MCP server runs alongside it, registering 3 tools:
 
-```
-POST /api/v1/interactive/investigate
-```
+| MCP Tool | Description |
+|---|---|
+| `kubernaut_investigate` | 8-action tool: start, message, complete, cancel, takeover, status, reconnect, discover_workflows |
+| `kubernaut_select_workflow` | Select a workflow from discovery results; triggers enrichment and catalog lookup |
+| `kubernaut_complete_no_action` | Close investigation without selecting a workflow |
 
-Starts an interactive investigation session with Lease-based distributed locking.
+See [Interactive Sessions](../user-guide/interactive-sessions.md) for the full tool schemas and operator guide.
 
-**Request**:
+### SSE Streaming
 
-```json
-{
-  "action": "start",
-  "signal_name": "PodCrashLoopBackOff",
-  "namespace": "production",
-  "resource_kind": "Deployment",
-  "resource_name": "checkout-service",
-  "user_id": "sre@example.com"
-}
-```
-
-**Response**: `200 OK` — Session created with Lease
-
-```json
-{
-  "session_id": "sess-a1b2c3d4",
-  "status": "investigating",
-  "lease_name": "kubernaut-session-sess-a1b2c3d4"
-}
-```
-
-### Reconnect to Session
+The existing REST endpoint supports real-time streaming for interactive sessions:
 
 ```
-POST /api/v1/interactive/investigate
+GET /api/v1/incident/session/{session_id}/stream
 ```
 
-Reconnect to an existing session (same user) or trigger takeover (different user).
+The API Frontend subscribes to this SSE stream and relays events to MCP clients.
 
-**Request**:
+### Additional REST Endpoints (v1.5)
 
-```json
-{
-  "action": "reconnect",
-  "session_id": "sess-a1b2c3d4",
-  "user_id": "sre@example.com"
-}
-```
-
-### Discover Workflows
-
-```
-POST /api/v1/interactive/discover
-```
-
-After RCA completes, returns matching workflows with LLM-populated parameters.
-
-**Response**: `200 OK`
-
-```json
-{
-  "session_id": "sess-a1b2c3d4",
-  "alternatives": [
-    {
-      "workflow_id": "restart-and-patch-memory",
-      "description": "Bump memory limit + rolling restart",
-      "confidence": 0.91,
-      "risk": "low",
-      "parameters": { "memory_limit": "768Mi" }
-    }
-  ]
-}
-```
-
-### Select Workflow
-
-```
-POST /api/v1/interactive/select
-```
-
-Operator selects a workflow from the discovery results. Parameters are validated against the workflow schema with LLM self-correction on validation failure.
-
-### Stream Investigation (SSE)
-
-```
-GET /api/v1/interactive/stream/{session_id}
-```
-
-Server-Sent Events stream of real-time investigation output. See [API Frontend API: SSE Streaming](apifrontend-api.md#sse-streaming) for event types.
+| Method | Path | Description |
+|---|---|---|
+| `POST` | `/api/v1/incident/session/{session_id}/cancel` | Cancel an investigation session |
+| `GET` | `/api/v1/incident/session/{session_id}/snapshot` | Get a point-in-time session snapshot |
 
 ## Session Management
 
 - **Autonomous sessions** are stored **in-memory** in the Kubernaut Agent pod. If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts).
-- **Interactive sessions** (v1.5+) use **Kubernetes Leases** for distributed locking. Orphaned Leases are reclaimed on startup via `ReconcileOrphanedLeases`. The `SessionDrainer` gracefully drains active sessions on pod shutdown.
+- **Interactive sessions** (v1.5+) use **Kubernetes Leases** (prefix: `kubernaut-interactive-`) for distributed locking. The `LeaseSessionManager` handles session creation, takeover (SEC-TAKEOVER-001), and TTL enforcement. Orphaned Leases are reclaimed on startup. The `SessionDrainer` gracefully drains active sessions on pod shutdown (BR-OPS-013).
 - Session results are available until the pod restarts or the session is garbage-collected
 
 ## LLM Providers

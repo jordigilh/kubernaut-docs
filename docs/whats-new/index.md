@@ -50,7 +50,7 @@ The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kub
 
 | ClusterRole | Persona |
 |---|---|
-| `kubernaut-tool-sre` | Full SRE access (all 20 tools) |
+| `kubernaut-tool-sre` | Full SRE access (all 19 tools) |
 | `kubernaut-tool-ai-orchestrator` | Automated agent orchestration |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration |
 | `kubernaut-tool-observability` | Read-only observability |

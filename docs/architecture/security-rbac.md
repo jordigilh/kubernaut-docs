@@ -387,14 +387,14 @@ All 3 AF RBAC code paths (MCP bridge `checkRBAC()`, A2A agent `newRBACGuard()`, 
 
 The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`apifrontend.config.rbac.personas`):
 
-| ClusterRole | Persona | Tools |
-|---|---|---|
-| `kubernaut-tool-sre` | Full SRE access | All 20 tools |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | Orchestration + triage + cluster context |
-| `kubernaut-tool-cicd` | CI/CD pipeline integration | list, get, watch |
-| `kubernaut-tool-observability` | Read-only observability | Read-only tools |
-| `kubernaut-tool-l3-audit` | Compliance and auditing | Audit, history, effectiveness |
-| `kubernaut-tool-remediation-approver` | Human approval workflows | Approve + read |
+| ClusterRole | Persona | Tool Count | Tools |
+|---|---|---|---|
+| `kubernaut-tool-sre` | Full SRE access | 19 | All SAR-gated tools |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 | Remediation lifecycle (5) + investigation (4) + cluster context (6) |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
+| `kubernaut-tool-observability` | Read-only observability | 8 | list/get/watch + effectiveness + workflows + cluster context (4) |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | list/get + workflows + history + effectiveness + audit trail |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_approve`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
 
 ### Binding example
 

@@ -3682,16 +3682,16 @@
 </tbody>
 </table>
 <p>The SDK ConfigMap controls which Kubernaut Agent toolsets are available to the investigation agent. The Kubernetes core toolset is always enabled. Additional toolsets (e.g., <code>prometheus/metrics</code>) are configured in the SDK config:</p>
-<p><code>yaml
-llm:
-  provider: openai
-  model: gpt-4o
-  endpoint: ""
-toolsets:
-  prometheus/metrics:
-    enabled: true
-    config:
-      prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="nt">toolsets</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">prometheus/metrics</span><span class="p">:</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">prometheus_url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
+</span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Token overhead from unused toolsets</p>
 <p>Each enabled toolset adds its full tool schema to every LLM context turn, even if none of its tools are called. This can add ~30% token overhead and bias the LLM toward irrelevant investigation paths. Enable only the toolsets your workload needs. See <a href="../../user-guide/configmap-kubernaut-agent/#toolset-optimization">Toolset Optimization</a> for guidance and an incident-type mapping table.</p>
@@ -3840,14 +3840,16 @@ toolsets:
 <p>The tool performs four operations in sequence:</p>
 <h3 id="1-owner-chain-resolution">1. Owner Chain Resolution<a class="headerlink" href="#1-owner-chain-resolution" title="Permanent link">&para;</a></h3>
 <p>Walks the Kubernetes ownership hierarchy to find the <strong>root managing resource</strong>:</p>
-<p><code>Pod → ReplicaSet → Deployment
-Pod → StatefulSet
-Pod → DaemonSet
-Pod → Job</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Pod → ReplicaSet → Deployment
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>Pod → StatefulSet
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>Pod → DaemonSet
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>Pod → Job
+</span></code></pre></div>
 <p>All subsequent context (spec hash, history, detected labels) is about the root owner, not the individual pod. This ensures that history is tracked at the right level -- a Deployment, not an ephemeral ReplicaSet.</p>
 <h3 id="2-spec-hash-computation">2. Spec Hash Computation<a class="headerlink" href="#2-spec-hash-computation" title="Permanent link">&para;</a></h3>
 <p>Computes a canonical SHA-256 hash of the <strong>root owner</strong> resource's <code>.spec</code> (v1.3+ for <code>get_namespaced_resource_context</code> / <code>get_cluster_resource_context</code>: the tool resolves the owner chain first, then hashes the root). This differs from the <strong>Effectiveness Monitor generic enricher</strong>, which hashes the <strong>direct</strong> remediation target. See <a href="../effectiveness/#spec-hash-root-owner-vs-direct-resource-v13">Effectiveness: Spec hash: root owner vs direct resource (v1.3)</a>.</p>
-<p><code>sha256(canonicalize(rootOwner.spec))</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sha256(canonicalize(rootOwner.spec))
+</span></code></pre></div>
 <p>This fingerprint uniquely identifies the current configuration state. When sent to DataStorage, it enables the history endpoint to distinguish between:</p>
 <ul>
 <li><strong>Same config, tried before</strong> -- the current spec matches a previous pre-remediation state (regression)</li>
@@ -3916,11 +3918,12 @@ Pod → Job</code></p>
 <p>Detection runs once per investigation. If it fails, an empty label set is used (graceful degradation).</p>
 <h3 id="4-remediation-history">4. Remediation History<a class="headerlink" href="#4-remediation-history" title="Permanent link">&para;</a></h3>
 <p>Fetches the tiered remediation history from DataStorage:</p>
-<p><code>GET /api/v1/remediation-history/context
-  ?targetKind=Deployment
-  &amp;targetName=my-app
-  &amp;targetNamespace=production
-  &amp;currentSpecHash=sha256:abc123...</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>GET /api/v1/remediation-history/context
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>  ?targetKind=Deployment
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>  &amp;targetName=my-app
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>  &amp;targetNamespace=production
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>  &amp;currentSpecHash=sha256:abc123...
+</span></code></pre></div>
 <p>The response contains two tiers of history with different query strategies, time windows, and detail levels:</p>
 <table>
 <thead>
@@ -3991,62 +3994,62 @@ Pod → Job</code></p>
 <li><strong>GitOps reverted the rollback</strong>, pushing config back to <code>AAA</code> -- triggering this new investigation</li>
 </ol>
 <p>Tier 1 returns entries in the last 24 hours that match the current spec-hash correlation criteria:</p>
-<p><code>json
-{
-  "targetResource": "production/Deployment/my-app",
-  "currentSpecHash": "sha256:AAA",
-  "regressionDetected": true,
-  "tier1": {
-    "window": "24h",
-    "chain": [
-      {
-        "remediationUID": "rr-001",
-        "completedAt": "2026-03-04T08:00:00Z",
-        "workflowType": "RestartPod",
-        "outcome": "completed",
-        "effectivenessScore": 0.35,
-        "preRemediationSpecHash": "sha256:AAA",
-        "postRemediationSpecHash": "sha256:AAA",
-        "hashMatch": "preRemediation",
-        "signalResolved": false,
-        "healthChecks": {
-          "podRunning": true,
-          "readinessPass": false,
-          "restartDelta": 3,
-          "crashLoops": true
-        }
-      },
-      {
-        "remediationUID": "rr-002",
-        "completedAt": "2026-03-04T10:00:00Z",
-        "workflowType": "IncreaseMemory",
-        "outcome": "completed",
-        "effectivenessScore": 0.60,
-        "preRemediationSpecHash": "sha256:AAA",
-        "postRemediationSpecHash": "sha256:BBB",
-        "hashMatch": "preRemediation",
-        "signalResolved": false,
-        "healthChecks": {
-          "podRunning": true,
-          "readinessPass": true,
-          "restartDelta": 0,
-          "crashLoops": false
-        }
-      },
-      {
-        "remediationUID": "rr-003",
-        "completedAt": "2026-03-04T14:00:00Z",
-        "workflowType": "RollbackDeployment",
-        "outcome": "completed",
-        "effectivenessScore": 0.20,
-        "preRemediationSpecHash": "sha256:BBB",
-        "postRemediationSpecHash": "sha256:CCC",
-        "hashMatch": "none",
-        "signalResolved": false
-      }
-    ]
-  }
-}</code></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;targetResource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production/Deployment/my-app&quot;</span><span class="p">,</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;currentSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:AAA&quot;</span><span class="p">,</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">&quot;regressionDetected&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span><span class="nt">&quot;tier1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">    </span><span class="nt">&quot;window&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;24h&quot;</span><span class="p">,</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">&quot;chain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="nt">&quot;remediationUID&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-001&quot;</span><span class="p">,</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">        </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T08:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">        </span><span class="nt">&quot;workflowType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RestartPod&quot;</span><span class="p">,</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">        </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">        </span><span class="nt">&quot;effectivenessScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.35</span><span class="p">,</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">        </span><span class="nt">&quot;preRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:AAA&quot;</span><span class="p">,</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">        </span><span class="nt">&quot;postRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:AAA&quot;</span><span class="p">,</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">        </span><span class="nt">&quot;hashMatch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;preRemediation&quot;</span><span class="p">,</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">        </span><span class="nt">&quot;signalResolved&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">        </span><span class="nt">&quot;healthChecks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-19"><a id="__codelineno-4-19" name="__codelineno-4-19" href="#__codelineno-4-19"></a><span class="w">          </span><span class="nt">&quot;podRunning&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-4-20"><a id="__codelineno-4-20" name="__codelineno-4-20" href="#__codelineno-4-20"></a><span class="w">          </span><span class="nt">&quot;readinessPass&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-4-21"><a id="__codelineno-4-21" name="__codelineno-4-21" href="#__codelineno-4-21"></a><span class="w">          </span><span class="nt">&quot;restartDelta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+</span><span id="__span-4-22"><a id="__codelineno-4-22" name="__codelineno-4-22" href="#__codelineno-4-22"></a><span class="w">          </span><span class="nt">&quot;crashLoops&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-4-23"><a id="__codelineno-4-23" name="__codelineno-4-23" href="#__codelineno-4-23"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-24"><a id="__codelineno-4-24" name="__codelineno-4-24" href="#__codelineno-4-24"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-4-25"><a id="__codelineno-4-25" name="__codelineno-4-25" href="#__codelineno-4-25"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-4-26"><a id="__codelineno-4-26" name="__codelineno-4-26" href="#__codelineno-4-26"></a><span class="w">        </span><span class="nt">&quot;remediationUID&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-002&quot;</span><span class="p">,</span>
+</span><span id="__span-4-27"><a id="__codelineno-4-27" name="__codelineno-4-27" href="#__codelineno-4-27"></a><span class="w">        </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T10:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-4-28"><a id="__codelineno-4-28" name="__codelineno-4-28" href="#__codelineno-4-28"></a><span class="w">        </span><span class="nt">&quot;workflowType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;IncreaseMemory&quot;</span><span class="p">,</span>
+</span><span id="__span-4-29"><a id="__codelineno-4-29" name="__codelineno-4-29" href="#__codelineno-4-29"></a><span class="w">        </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+</span><span id="__span-4-30"><a id="__codelineno-4-30" name="__codelineno-4-30" href="#__codelineno-4-30"></a><span class="w">        </span><span class="nt">&quot;effectivenessScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.60</span><span class="p">,</span>
+</span><span id="__span-4-31"><a id="__codelineno-4-31" name="__codelineno-4-31" href="#__codelineno-4-31"></a><span class="w">        </span><span class="nt">&quot;preRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:AAA&quot;</span><span class="p">,</span>
+</span><span id="__span-4-32"><a id="__codelineno-4-32" name="__codelineno-4-32" href="#__codelineno-4-32"></a><span class="w">        </span><span class="nt">&quot;postRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:BBB&quot;</span><span class="p">,</span>
+</span><span id="__span-4-33"><a id="__codelineno-4-33" name="__codelineno-4-33" href="#__codelineno-4-33"></a><span class="w">        </span><span class="nt">&quot;hashMatch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;preRemediation&quot;</span><span class="p">,</span>
+</span><span id="__span-4-34"><a id="__codelineno-4-34" name="__codelineno-4-34" href="#__codelineno-4-34"></a><span class="w">        </span><span class="nt">&quot;signalResolved&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+</span><span id="__span-4-35"><a id="__codelineno-4-35" name="__codelineno-4-35" href="#__codelineno-4-35"></a><span class="w">        </span><span class="nt">&quot;healthChecks&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-4-36"><a id="__codelineno-4-36" name="__codelineno-4-36" href="#__codelineno-4-36"></a><span class="w">          </span><span class="nt">&quot;podRunning&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-4-37"><a id="__codelineno-4-37" name="__codelineno-4-37" href="#__codelineno-4-37"></a><span class="w">          </span><span class="nt">&quot;readinessPass&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-4-38"><a id="__codelineno-4-38" name="__codelineno-4-38" href="#__codelineno-4-38"></a><span class="w">          </span><span class="nt">&quot;restartDelta&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span>
+</span><span id="__span-4-39"><a id="__codelineno-4-39" name="__codelineno-4-39" href="#__codelineno-4-39"></a><span class="w">          </span><span class="nt">&quot;crashLoops&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-4-40"><a id="__codelineno-4-40" name="__codelineno-4-40" href="#__codelineno-4-40"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-4-41"><a id="__codelineno-4-41" name="__codelineno-4-41" href="#__codelineno-4-41"></a><span class="w">      </span><span class="p">},</span>
+</span><span id="__span-4-42"><a id="__codelineno-4-42" name="__codelineno-4-42" href="#__codelineno-4-42"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-4-43"><a id="__codelineno-4-43" name="__codelineno-4-43" href="#__codelineno-4-43"></a><span class="w">        </span><span class="nt">&quot;remediationUID&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-003&quot;</span><span class="p">,</span>
+</span><span id="__span-4-44"><a id="__codelineno-4-44" name="__codelineno-4-44" href="#__codelineno-4-44"></a><span class="w">        </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T14:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-4-45"><a id="__codelineno-4-45" name="__codelineno-4-45" href="#__codelineno-4-45"></a><span class="w">        </span><span class="nt">&quot;workflowType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RollbackDeployment&quot;</span><span class="p">,</span>
+</span><span id="__span-4-46"><a id="__codelineno-4-46" name="__codelineno-4-46" href="#__codelineno-4-46"></a><span class="w">        </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+</span><span id="__span-4-47"><a id="__codelineno-4-47" name="__codelineno-4-47" href="#__codelineno-4-47"></a><span class="w">        </span><span class="nt">&quot;effectivenessScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.20</span><span class="p">,</span>
+</span><span id="__span-4-48"><a id="__codelineno-4-48" name="__codelineno-4-48" href="#__codelineno-4-48"></a><span class="w">        </span><span class="nt">&quot;preRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:BBB&quot;</span><span class="p">,</span>
+</span><span id="__span-4-49"><a id="__codelineno-4-49" name="__codelineno-4-49" href="#__codelineno-4-49"></a><span class="w">        </span><span class="nt">&quot;postRemediationSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:CCC&quot;</span><span class="p">,</span>
+</span><span id="__span-4-50"><a id="__codelineno-4-50" name="__codelineno-4-50" href="#__codelineno-4-50"></a><span class="w">        </span><span class="nt">&quot;hashMatch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;none&quot;</span><span class="p">,</span>
+</span><span id="__span-4-51"><a id="__codelineno-4-51" name="__codelineno-4-51" href="#__codelineno-4-51"></a><span class="w">        </span><span class="nt">&quot;signalResolved&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+</span><span id="__span-4-52"><a id="__codelineno-4-52" name="__codelineno-4-52" href="#__codelineno-4-52"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-4-53"><a id="__codelineno-4-53" name="__codelineno-4-53" href="#__codelineno-4-53"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-4-54"><a id="__codelineno-4-54" name="__codelineno-4-54" href="#__codelineno-4-54"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-4-55"><a id="__codelineno-4-55" name="__codelineno-4-55" href="#__codelineno-4-55"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>The LLM can trace the full chain:</p>
 <ul>
 <li><code>rr-001</code>: <code>RestartPod</code> on config <code>AAA</code> -&gt; stayed at <code>AAA</code>, scored 0.35, crash loops continued. <strong>hashMatch = preRemediation</strong> (current config matches this entry's pre-hash, confirming regression).</li>
@@ -4056,27 +4059,27 @@ Pod → Job</code></p>
 <p>From this chain, the LLM can reason: <em>"We're back at config <code>AAA</code>. <code>RestartPod</code> failed on this config (0.35). <code>IncreaseMemory</code> partially helped (0.60) but the signal recurred. The rollback from <code>BBB</code> to <code>CCC</code> was counterproductive (0.20). The best option is either <code>IncreaseMemory</code> again (it was the most effective) or escalating to human review since three attempts have failed."</em></p>
 <h3 id="tier-2-example-historical-regression-detection">Tier 2 Example: Historical Regression Detection<a class="headerlink" href="#tier-2-example-historical-regression-detection" title="Permanent link">&para;</a></h3>
 <p>Now suppose the Deployment was stable for months but a bad release reverted it to a config last seen 45 days ago (spec hash <code>sha256:XXX</code>). Tier 1 is empty (no remediations in the last 24 hours), but Tier 2 finds older history by matching <code>pre_remediation_spec_hash = sha256:XXX</code>:</p>
-<p><code>json
-{
-  "targetResource": "production/Deployment/my-app",
-  "currentSpecHash": "sha256:XXX",
-  "regressionDetected": true,
-  "tier1": { "window": "24h", "chain": [] },
-  "tier2": {
-    "window": "2160h",
-    "chain": [
-      {
-        "remediationUID": "rr-old-001",
-        "completedAt": "2026-01-18T09:00:00Z",
-        "workflowType": "RollbackDeployment",
-        "outcome": "completed",
-        "effectivenessScore": 0.92,
-        "hashMatch": "preRemediation",
-        "signalResolved": true
-      }
-    ]
-  }
-}</code></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;targetResource&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production/Deployment/my-app&quot;</span><span class="p">,</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;currentSpecHash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sha256:XXX&quot;</span><span class="p">,</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;regressionDetected&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">&quot;tier1&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;window&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;24h&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;chain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span><span class="w"> </span><span class="p">},</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nt">&quot;tier2&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">&quot;window&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2160h&quot;</span><span class="p">,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">&quot;chain&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">      </span><span class="p">{</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">        </span><span class="nt">&quot;remediationUID&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-old-001&quot;</span><span class="p">,</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">        </span><span class="nt">&quot;completedAt&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-18T09:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">        </span><span class="nt">&quot;workflowType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;RollbackDeployment&quot;</span><span class="p">,</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">        </span><span class="nt">&quot;outcome&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">        </span><span class="nt">&quot;effectivenessScore&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">,</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">        </span><span class="nt">&quot;hashMatch&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;preRemediation&quot;</span><span class="p">,</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">        </span><span class="nt">&quot;signalResolved&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">      </span><span class="p">}</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>The LLM sees: <em>"45 days ago, this exact configuration was remediated with <code>RollbackDeployment</code> and it worked well (0.92, signal resolved). This is a regression to a known-bad config. <code>RollbackDeployment</code> is a strong candidate."</em></p>
 <p>Without Tier 2, this historical insight would be invisible -- the LLM would have no context and might try less effective approaches first.</p>
 <h3 id="formatted-history-warnings">Formatted History Warnings<a class="headerlink" href="#formatted-history-warnings" title="Permanent link">&para;</a></h3>
@@ -4163,7 +4166,8 @@ Pod → Job</code></p>
 <p><strong>Invocation 2 (Workflow selection)</strong> is a <strong>separate</strong> session that runs the three-step DataStorage protocol with <strong>no tool transcript from Invocation 1</strong> — it relies on the <strong>structured RCA fields</strong> injected at session start, plus the usual workflow tools.</p>
 <p>Labels and other signal context that were <strong>detected or resolved in Invocation 1</strong> (e.g. <code>session_state["detected_labels"]</code> and enriched signal metadata) are available to the workflow step and are <strong>automatically applied</strong> to DataStorage queries (e.g. as context filters in <code>list_available_actions</code>).</p>
 <h3 id="step-1-list-available-actions">Step 1: List Available Actions<a class="headerlink" href="#step-1-list-available-actions" title="Permanent link">&para;</a></h3>
-<p><code>list_available_actions(offset=0, limit=20)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>list_available_actions(offset=0, limit=20)
+</span></code></pre></div>
 <p>KA sends signal context filters (<code>severity</code>, <code>component</code>, <code>environment</code>, <code>priority</code>, <code>custom_labels</code>) and <code>detected_labels</code> as query parameters to DataStorage. DataStorage uses these to <strong>filter and rank</strong> the action types -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:</p>
 <ul>
 <li><code>what</code> -- What the action does</li>
@@ -4173,11 +4177,13 @@ Pod → Job</code></p>
 </ul>
 <p>When detected labels are available, the response also includes a <code>cluster_context</code> section (e.g., "Target resource is GitOps-managed with ArgoCD, Helm-managed, PDB-protected"). For GitOps-managed resources, KA adds a prescriptive instruction telling the LLM to prefer git-based action types over direct kubectl actions.</p>
 <h3 id="step-2-list-workflows-for-action-type">Step 2: List Workflows for Action Type<a class="headerlink" href="#step-2-list-workflows-for-action-type" title="Permanent link">&para;</a></h3>
-<p><code>list_workflows(action_type="RollbackDeployment", offset=0, limit=10)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>list_workflows(action_type=&quot;RollbackDeployment&quot;, offset=0, limit=10)
+</span></code></pre></div>
 <p>For the chosen action type, the LLM sees workflow summaries ordered by DataStorage's internal label-match score. The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.</p>
 <p>Pagination is supported (<code>hasMore</code> flag) for action types with many workflows.</p>
 <h3 id="step-3-get-workflow-details">Step 3: Get Workflow Details<a class="headerlink" href="#step-3-get-workflow-details" title="Permanent link">&para;</a></h3>
-<p><code>get_workflow(workflow_id="rollback-deployment-v1")</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>get_workflow(workflow_id=&quot;rollback-deployment-v1&quot;)
+</span></code></pre></div>
 <p>The LLM retrieves full details including the parameter schema to confirm the selection and populate execution parameters from its investigation findings.</p>
 <h3 id="what-drives-the-final-decision">What Drives the Final Decision<a class="headerlink" href="#what-drives-the-final-decision" title="Permanent link">&para;</a></h3>
 <p>The LLM makes the final selection based on:</p>
@@ -4333,10 +4339,10 @@ Pod → Job</code></p>
 <p>Non-production environments (development, staging, qa, test) auto-approve when <code>remediation_target</code> is present.</p>
 <h3 id="confidence-threshold">Confidence Threshold<a class="headerlink" href="#confidence-threshold" title="Permanent link">&para;</a></h3>
 <p>The default confidence threshold is <strong>0.8</strong> in the Rego policy, overridable via Helm:</p>
-<p><code>yaml
-aianalysis:
-  rego:
-    confidenceThreshold: 0.9  # Override the default 0.8</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">aianalysis</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">rego</span><span class="p">:</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">confidenceThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.9</span><span class="w">  </span><span class="c1"># Override the default 0.8</span>
+</span></code></pre></div>
 <p>The <code>is_high_confidence</code> helper is defined in the policy but not currently used in the approval rules. It is available for operators to add custom rules (e.g., "require approval when confidence &lt; threshold even in staging").</p>
 <h3 id="risk-factors">Risk Factors<a class="headerlink" href="#risk-factors" title="Permanent link">&para;</a></h3>
 <p>Scored risk factors determine the human-readable approval reason but do not change the approval decision:</p>

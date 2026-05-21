@@ -3411,10 +3411,11 @@
 <p>The enrichment phase gathers Kubernetes context about the target resource.</p>
 <h3 id="owner-chain-resolution">Owner Chain Resolution<a class="headerlink" href="#owner-chain-resolution" title="Permanent link">&para;</a></h3>
 <p>The owner chain builder (<code>ownerchain.NewBuilder</code>) follows <code>controller: true</code> owner references up to a depth of <strong>5</strong> to find the top-level controlling resource:</p>
-<p><code>Pod → ReplicaSet → Deployment
-Pod → StatefulSet
-Pod → DaemonSet
-Pod → Job → CronJob</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Pod → ReplicaSet → Deployment
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>Pod → StatefulSet
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>Pod → DaemonSet
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>Pod → Job → CronJob
+</span></code></pre></div>
 <p>On error, a partial chain is returned (graceful degradation).</p>
 <h3 id="context-by-resource-kind">Context by Resource Kind<a class="headerlink" href="#context-by-resource-kind" title="Permanent link">&para;</a></h3>
 <table>

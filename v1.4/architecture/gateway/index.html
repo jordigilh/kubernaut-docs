@@ -3560,12 +3560,12 @@
 </ol>
 <p>Cluster-scoped resources (Node, PersistentVolume, Namespace) only check the resource label.</p>
 <p>Unmanaged resources are <strong>not rejected with an error</strong>. The Gateway returns HTTP 200 with <code>status: "rejected"</code> and <code>reason: "unmanaged_resource"</code>, along with a <code>kubectl</code> command the operator can use to opt in:</p>
-<p><code>json
-{
-  "status": "rejected",
-  "reason": "unmanaged_resource",
-  "message": "Resource is not managed by Kubernaut. To enable: kubectl label namespace &lt;ns&gt; kubernaut.ai/managed=true"
-}</code></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rejected&quot;</span><span class="p">,</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unmanaged_resource&quot;</span><span class="p">,</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Resource is not managed by Kubernaut. To enable: kubectl label namespace &lt;ns&gt; kubernaut.ai/managed=true&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="phase-based-deduplication">Phase-Based Deduplication<a class="headerlink" href="#phase-based-deduplication" title="Permanent link">&para;</a></h2>
 <p>The Gateway prevents duplicate remediations using a phase-based deduplication system backed by Kubernetes RR status (no Valkey dependency).</p>
 <h3 id="fingerprint">Fingerprint<a class="headerlink" href="#fingerprint" title="Permanent link">&para;</a></h3>
@@ -3602,7 +3602,8 @@
 <h2 id="remediationrequest-creation">RemediationRequest Creation<a class="headerlink" href="#remediationrequest-creation" title="Permanent link">&para;</a></h2>
 <p>When a signal passes all checks (authenticated, in scope, not a duplicate), the Gateway creates a <code>RemediationRequest</code> CRD:</p>
 <h3 id="name-format">Name Format<a class="headerlink" href="#name-format" title="Permanent link">&para;</a></h3>
-<p><code>rr-{fingerprint-prefix}-{uuid-suffix}</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>rr-{fingerprint-prefix}-{uuid-suffix}
+</span></code></pre></div>
 <p>The fingerprint prefix enables field-selector queries for deduplication lookups.</p>
 <h3 id="spec-fields-populated">Spec Fields Populated<a class="headerlink" href="#spec-fields-populated" title="Permanent link">&para;</a></h3>
 <table>
@@ -3703,7 +3704,8 @@
     Audit --&gt; Response["HTTP Response"]</code></pre>
 <h2 id="handoff-to-remediation-orchestrator">Handoff to Remediation Orchestrator<a class="headerlink" href="#handoff-to-remediation-orchestrator" title="Permanent link">&para;</a></h2>
 <p>The Gateway's responsibility ends with CRD creation. The <code>RemediationRequest</code> is picked up by the Remediation Orchestrator, which creates a <code>SignalProcessing</code> CRD to begin enrichment:</p>
-<p><code>Gateway creates RR → RO watches RR → RO creates SP CRD → SP enriches signal</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>Gateway creates RR → RO watches RR → RO creates SP CRD → SP enriches signal
+</span></code></pre></div>
 <h2 id="security-hardening-v14">Security Hardening (v1.4)<a class="headerlink" href="#security-hardening-v14" title="Permanent link">&para;</a></h2>
 <p>The v1.4 release addressed 14 security audit findings:</p>
 <table>

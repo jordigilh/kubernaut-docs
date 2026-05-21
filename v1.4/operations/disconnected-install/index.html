@@ -2834,8 +2834,163 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#4b-edit-the-air-gap-overlay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b. Edit the air-gap overlay
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4c-install-with-layered-overlays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4c. Install with layered overlays
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#step-5-verify-the-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 5: Verify the installation
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 5: Verify the installation">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pod-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pod status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#image-pull-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Image pull errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Job
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#service-health" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Service health
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#optional-imagedigestmirrorset-idms" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Optional: ImageDigestMirrorSet (IDMS)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#troubleshooting" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Troubleshooting
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Troubleshooting">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tls-certificate-hook-fails" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TLS certificate hook fails
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-job-fails-connecting-to-postgresql" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration Job fails connecting to PostgreSQL
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verifying-mirror-registry-contents" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verifying mirror registry contents
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3286,86 +3441,86 @@
 <td>OCP CLI for TLS certificate hook Jobs</td>
 </tr>
 <tr>
-<td><code>quay.io/kubernaut-ai/db-migrate:v1.4.0</code></td>
+<td><code>quay.io/kubernaut-ai/db-migrate:v1.4.1</code></td>
 <td>Database migrations (goose + psql on UBI9)</td>
 </tr>
 </tbody>
 </table>
 <h3 id="automated-image-list">Automated image list<a class="headerlink" href="#automated-image-list" title="Permanent link">&para;</a></h3>
 <p>Use the included script to extract the exact images from the chart templates:</p>
-<p><code>bash
-./hack/airgap/generate-image-list.sh \
-  --set global.image.tag=v1.4.0 \
-  -f charts/kubernaut/values-ocp.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>./hack/airgap/generate-image-list.sh<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span>v1.4.1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml
+</span></code></pre></div>
 <p>This outputs one image per line -- the authoritative list of everything to mirror.</p>
 <hr />
 <h2 id="step-2-mirror-images-to-your-registry">Step 2: Mirror images to your registry<a class="headerlink" href="#step-2-mirror-images-to-your-registry" title="Permanent link">&para;</a></h2>
 <h3 id="2a-prepare-the-imagesetconfiguration">2a. Prepare the ImageSetConfiguration<a class="headerlink" href="#2a-prepare-the-imagesetconfiguration" title="Permanent link">&para;</a></h3>
 <p>Copy the template and replace the version placeholder:</p>
-<p><code>bash
-cp hack/airgap/imageset-config.yaml.tmpl imageset-config.yaml
-sed -i 's/&lt;VERSION&gt;/v1.4.0/g' imageset-config.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>cp<span class="w"> </span>hack/airgap/imageset-config.yaml.tmpl<span class="w"> </span>imageset-config.yaml
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/v1.4.1/g&#39;</span><span class="w"> </span>imageset-config.yaml
+</span></code></pre></div>
 <p>The resulting file lists every image under <code>mirror.additionalImages</code>:</p>
-<p><code>yaml
-kind: ImageSetConfiguration
-apiVersion: mirror.openshift.io/v1alpha2
-storageConfig:
-  local:
-    path: ./kubernaut-mirror
-mirror:
-  additionalImages:
-    - name: quay.io/kubernaut-ai/gateway:v1.4.0
-    - name: quay.io/kubernaut-ai/datastorage:v1.4.0
-    # ... all 10 Kubernaut services ...
-    - name: quay.io/kubernaut-ai/db-migrate:v1.4.0
-    - name: registry.redhat.io/rhel10/postgresql-16
-    - name: registry.redhat.io/rhel10/valkey-8
-    - name: registry.redhat.io/openshift4/ose-cli-rhel9:v4.17</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ImageSetConfiguration</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">mirror.openshift.io/v1alpha2</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nt">storageConfig</span><span class="p">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">local</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">path</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">./kubernaut-mirror</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="nt">mirror</span><span class="p">:</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">additionalImages</span><span class="p">:</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/gateway:v1.4.1</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/datastorage:v1.4.1</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="c1"># ... all 10 Kubernaut services ...</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai/db-migrate:v1.4.1</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/rhel10/postgresql-16</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/rhel10/valkey-8</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io/openshift4/ose-cli-rhel9:v4.17</span>
+</span></code></pre></div>
 <h3 id="2b-run-oc-mirror">2b. Run oc mirror<a class="headerlink" href="#2b-run-oc-mirror" title="Permanent link">&para;</a></h3>
 <p>From the bastion host:</p>
-<p><code>bash
-oc mirror --config=imageset-config.yaml \
-  docker://&lt;mirror-registry&gt;</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>oc<span class="w"> </span>mirror<span class="w"> </span>--config<span class="o">=</span>imageset-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span>docker://&lt;mirror-registry&gt;
+</span></code></pre></div>
 <p>Replace <code>&lt;mirror-registry&gt;</code> with your private registry hostname (e.g., <code>mirror.corp.example.com:5000</code>). Multi-architecture manifests (amd64 + arm64) are handled automatically.</p>
 <div class="admonition tip">
 <p class="admonition-title">Alternative: skopeo</p>
 <p>For individual images (nested registry):</p>
-<p><code>bash
-skopeo copy \
-  docker://quay.io/kubernaut-ai/gateway:v1.4.0 \
-  docker://harbor.corp/kubernaut-ai/gateway:v1.4.0</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.4.1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>docker://harbor.corp/kubernaut-ai/gateway:v1.4.1
+</span></code></pre></div>
 <p>For flat registries (quay.io, Docker Hub) use dash-joined names:</p>
-<p><code>bash
-skopeo copy \
-  docker://quay.io/kubernaut-ai/gateway:v1.4.0 \
-  docker://quay.io/myorg/kubernaut-ai-gateway:v1.4.0</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.4.1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>docker://quay.io/myorg/kubernaut-ai-gateway:v1.4.1
+</span></code></pre></div>
 <p><code>oc mirror</code> is preferred because it processes all images in one pass and preserves multi-arch manifests.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">OCP internal registry and multi-arch images</p>
 <p>The OCP integrated registry does not support multi-arch manifest pushes via <code>skopeo copy --all</code> (returns HTTP 500). When mirroring to the OCP internal registry with skopeo, use single-arch copies:</p>
-<p><code>bash
-skopeo copy --override-arch=amd64 --override-os=linux \
-  docker://quay.io/kubernaut-ai/gateway:v1.4.0 \
-  docker://&lt;ocp-registry&gt;/kubernaut-system/kubernaut-ai-gateway:v1.4.0</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>skopeo<span class="w"> </span>copy<span class="w"> </span>--override-arch<span class="o">=</span>amd64<span class="w"> </span>--override-os<span class="o">=</span>linux<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>docker://quay.io/kubernaut-ai/gateway:v1.4.1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>docker://&lt;ocp-registry&gt;/kubernaut-system/kubernaut-ai-gateway:v1.4.1
+</span></code></pre></div>
 <p>This limitation does not affect <code>oc mirror</code>, which handles the OCP registry natively.</p>
 </div>
 <hr />
 <h2 id="step-3-configure-the-global-pull-secret">Step 3: Configure the global pull secret<a class="headerlink" href="#step-3-configure-the-global-pull-secret" title="Permanent link">&para;</a></h2>
 <p>Add your mirror registry credentials to the OCP global pull secret so every node can pull from it.</p>
 <h3 id="3a-export-the-current-pull-secret">3a. Export the current pull secret<a class="headerlink" href="#3a-export-the-current-pull-secret" title="Permanent link">&para;</a></h3>
-<p><code>bash
-oc get secret/pull-secret -n openshift-config \
-  -o jsonpath='{.data.\.dockerconfigjson}' | base64 -d &gt; pull-secret.json</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>oc<span class="w"> </span>get<span class="w"> </span>secret/pull-secret<span class="w"> </span>-n<span class="w"> </span>openshift-config<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.\.dockerconfigjson}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span>&gt;<span class="w"> </span>pull-secret.json
+</span></code></pre></div>
 <h3 id="3b-add-mirror-registry-credentials">3b. Add mirror registry credentials<a class="headerlink" href="#3b-add-mirror-registry-credentials" title="Permanent link">&para;</a></h3>
-<p><code>bash
-oc registry login --registry=&lt;mirror-registry&gt; \
-  --auth-basic=&lt;username&gt;:&lt;password&gt; \
-  --to=pull-secret.json</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>oc<span class="w"> </span>registry<span class="w"> </span>login<span class="w"> </span>--registry<span class="o">=</span>&lt;mirror-registry&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--auth-basic<span class="o">=</span>&lt;username&gt;:&lt;password&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>--to<span class="o">=</span>pull-secret.json
+</span></code></pre></div>
 <h3 id="3c-update-the-cluster">3c. Update the cluster<a class="headerlink" href="#3c-update-the-cluster" title="Permanent link">&para;</a></h3>
-<p><code>bash
-oc set data secret/pull-secret -n openshift-config \
-  --from-file=.dockerconfigjson=pull-secret.json</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>oc<span class="w"> </span><span class="nb">set</span><span class="w"> </span>data<span class="w"> </span>secret/pull-secret<span class="w"> </span>-n<span class="w"> </span>openshift-config<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--from-file<span class="o">=</span>.dockerconfigjson<span class="o">=</span>pull-secret.json
+</span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>Updating the global pull secret triggers a rolling restart of all nodes via the Machine Config Operator. This can take 15-30 minutes depending on cluster size.</p>
@@ -3374,46 +3529,50 @@ oc set data secret/pull-secret -n openshift-config \
 <h2 id="step-4-install-the-kubernaut-helm-chart">Step 4: Install the Kubernaut Helm chart<a class="headerlink" href="#step-4-install-the-kubernaut-helm-chart" title="Permanent link">&para;</a></h2>
 <h3 id="4a-provision-secrets">4a. Provision secrets<a class="headerlink" href="#4a-provision-secrets" title="Permanent link">&para;</a></h3>
 <p>All database, cache, and LLM credentials must be pre-created before install. The chart validates their presence at template time.</p>
-<p>```bash
-kubectl create namespace kubernaut-system</p>
-<h1 id="postgresql-datastorage-consolidated-secret">PostgreSQL + DataStorage (consolidated secret)<a class="headerlink" href="#postgresql-datastorage-consolidated-secret" title="Permanent link">&para;</a></h1>
-<p>PG_PASSWORD=$(openssl rand -base64 24)
-kubectl create secret generic postgresql-secret \
-  --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
-  --from-literal=POSTGRES_DB=action_history \
-  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
-  -n kubernaut-system</p>
-<h1 id="valkey">Valkey<a class="headerlink" href="#valkey" title="Permanent link">&para;</a></h1>
-<p>kubectl create secret generic valkey-secret \
-  --from-literal=valkey-secrets.yaml="$(printf 'password: %s' "$(openssl rand -base64 24)")" \
-  -n kubernaut-system</p>
-<h1 id="llm-credentials">LLM credentials<a class="headerlink" href="#llm-credentials" title="Permanent link">&para;</a></h1>
-<p>kubectl create secret generic llm-credentials \
-  --from-literal=OPENAI_API_KEY=<your-local-llm-key> \
-  -n kubernaut-system
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="c1"># PostgreSQL + DataStorage (consolidated secret)</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="c1"># Valkey</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>valkey-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;password: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="c1"># LLM credentials</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>&lt;your-local-llm-key&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <p>See the <a href="../../getting-started/installation/#2-provision-secrets">secret provisioning</a> reference for the full secret schema.</p>
 <h3 id="4b-edit-the-air-gap-overlay">4b. Edit the air-gap overlay<a class="headerlink" href="#4b-edit-the-air-gap-overlay" title="Permanent link">&para;</a></h3>
 <p>Replace every <code>&lt;mirror-registry&gt;</code> placeholder in <code>values-airgap.yaml</code> with your actual registry hostname:</p>
-<p><code>bash
-sed -i 's/&lt;mirror-registry&gt;/mirror.corp.example.com:5000/g' \
-  charts/kubernaut/values-airgap.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;mirror-registry&gt;/mirror.corp.example.com:5000/g&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>charts/kubernaut/values-airgap.yaml
+</span></code></pre></div>
 <p>The overlay overrides all image references:</p>
-<p>```yaml
-global:
-  image:
-    registry: <mirror-registry>
-    namespace: kubernaut-ai
-    separator: "/"   # use "-" for flat registries (quay.io, Docker Hub)</p>
-<p>postgresql:
-  image: <mirror-registry>/rhel10/postgresql-16</p>
-<p>valkey:
-  image: <mirror-registry>/rhel10/valkey-8</p>
-<p>hooks:
-  tlsCerts:
-    image: <mirror-registry>/openshift4/ose-cli-rhel9:v4.17
-```</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">global</span><span class="p">:</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">registry</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-ai</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">separator</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/&quot;</span><span class="w">   </span><span class="c1"># use &quot;-&quot; for flat registries (quay.io, Docker Hub)</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;/rhel10/postgresql-16</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="nt">valkey</span><span class="p">:</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="w">  </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;/rhel10/valkey-8</span>
+</span><span id="__span-12-12"><a id="__codelineno-12-12" name="__codelineno-12-12" href="#__codelineno-12-12"></a>
+</span><span id="__span-12-13"><a id="__codelineno-12-13" name="__codelineno-12-13" href="#__codelineno-12-13"></a><span class="nt">hooks</span><span class="p">:</span>
+</span><span id="__span-12-14"><a id="__codelineno-12-14" name="__codelineno-12-14" href="#__codelineno-12-14"></a><span class="w">  </span><span class="nt">tlsCerts</span><span class="p">:</span>
+</span><span id="__span-12-15"><a id="__codelineno-12-15" name="__codelineno-12-15" href="#__codelineno-12-15"></a><span class="w">    </span><span class="nt">image</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;/openshift4/ose-cli-rhel9:v4.17</span>
+</span></code></pre></div>
 <p>The <code>db-migrate</code> image tag is derived from <code>global.image.*</code>, so no separate override is needed.</p>
 <p>The <code>separator</code> field controls how the namespace is joined to the service name:</p>
 <table>
@@ -3465,52 +3624,50 @@ global:
 <p><code>values-airgap.yaml</code> <strong>must</strong> come after <code>values-ocp.yaml</code>. It overrides the <code>registry.redhat.io</code> image references with your mirror registry. The <code>postgresql.variant: ocp</code> setting from <code>values-ocp.yaml</code> is preserved, ensuring correct PostgreSQL environment variable names and data directory paths.</p>
 </div>
 <p>Prepare your SDK config file with the local LLM endpoint (see <a href="../../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK Config</a>):</p>
-<p>```yaml</p>
-<h1 id="my-sdk-configyaml-ollama-example">my-sdk-config.yaml — Ollama example<a class="headerlink" href="#my-sdk-configyaml-ollama-example" title="Permanent link">&para;</a></h1>
-<p>llm:
-  provider: ollama
-  model: llama3
-  endpoint: http://ollama.internal.svc:11434
-```</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="c1"># my-sdk-config.yaml — Ollama example</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama3</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://ollama.internal.svc:11434</span>
+</span></code></pre></div>
 <p>Alternatively, for an OpenAI-compatible server:</p>
-<p>```yaml</p>
-<h1 id="my-sdk-configyaml-openai-compatible-example">my-sdk-config.yaml — OpenAI-compatible example<a class="headerlink" href="#my-sdk-configyaml-openai-compatible-example" title="Permanent link">&para;</a></h1>
-<p>llm:
-  provider: openai
-  model: gpt-4o
-  endpoint: http://vllm.internal.svc:8000
-```</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="c1"># my-sdk-config.yaml — OpenAI-compatible example</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://vllm.internal.svc:8000</span>
+</span></code></pre></div>
 <p><strong>Nested registry</strong> (Harbor, Artifactory):</p>
-<p><code>bash
-helm install kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system \
-  -f charts/kubernaut/values-ocp.yaml \
-  -f charts/kubernaut/values-airgap.yaml \
-  --set global.image.registry=harbor.corp \
-  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-airgap.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span>--set<span class="w"> </span>global.image.registry<span class="o">=</span>harbor.corp<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml
+</span></code></pre></div>
 <p><strong>Flat registry</strong> (quay.io, OCP internal):</p>
-<p><code>bash
-helm install kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system \
-  -f charts/kubernaut/values-ocp.yaml \
-  -f charts/kubernaut/values-airgap.yaml \
-  --set global.image.registry=quay.io/myorg \
-  --set global.image.separator=- \
-  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-airgap.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span>--set<span class="w"> </span>global.image.registry<span class="o">=</span>quay.io/myorg<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span>--set<span class="w"> </span>global.image.separator<span class="o">=</span>-<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml
+</span></code></pre></div>
 <p>If you used custom secret names in step 4a, add the corresponding <code>--set</code> flags:</p>
-<p><code>bash
-  --set postgresql.auth.existingSecret=&lt;your-pg-secret-name&gt; \
-  --set valkey.existingSecret=&lt;your-valkey-secret-name&gt;</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="w">  </span>--set<span class="w"> </span>postgresql.auth.existingSecret<span class="o">=</span>&lt;your-pg-secret-name&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>--set<span class="w"> </span>valkey.existingSecret<span class="o">=</span>&lt;your-valkey-secret-name&gt;
+</span></code></pre></div>
 <hr />
 <h2 id="step-5-verify-the-installation">Step 5: Verify the installation<a class="headerlink" href="#step-5-verify-the-installation" title="Permanent link">&para;</a></h2>
 <h3 id="pod-status">Pod status<a class="headerlink" href="#pod-status" title="Permanent link">&para;</a></h3>
-<p><code>bash
-kubectl get pods -n kubernaut-system</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <p>All pods should reach <code>1/1 Running</code> within a few minutes.</p>
 <h3 id="image-pull-errors">Image pull errors<a class="headerlink" href="#image-pull-errors" title="Permanent link">&para;</a></h3>
 <p>If any pod is stuck in <code>ImagePullBackOff</code> or <code>ErrImagePull</code>:</p>
-<p><code>bash
-kubectl describe pod &lt;pod-name&gt; -n kubernaut-system | grep -A5 "Events:"</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A5<span class="w"> </span><span class="s2">&quot;Events:&quot;</span>
+</span></code></pre></div>
 <p>Common causes:</p>
 <ul>
 <li>Image not mirrored -- re-run <code>oc mirror</code></li>
@@ -3518,20 +3675,20 @@ kubectl describe pod &lt;pod-name&gt; -n kubernaut-system | grep -A5 "Events:"</
 <li>Typo in registry hostname in <code>values-airgap.yaml</code></li>
 </ul>
 <p>Verify the actual image reference a pod is using:</p>
-<p><code>bash
-kubectl get pod &lt;pod-name&gt; -n kubernaut-system \
-  -o jsonpath='{.spec.containers[0].image}'</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.containers[0].image}&#39;</span>
+</span></code></pre></div>
 <h3 id="migration-job">Migration Job<a class="headerlink" href="#migration-job" title="Permanent link">&para;</a></h3>
 <p>The database migration runs as a post-install Helm hook:</p>
-<p><code>bash
-kubectl get jobs -n kubernaut-system | grep migration</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>migration
+</span></code></pre></div>
 <p>The job should show <code>1/1</code> completions. If it failed:</p>
-<p><code>bash
-kubectl logs job/&lt;release-name&gt;-db-migration -n kubernaut-system</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>job/&lt;release-name&gt;-db-migration<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <h3 id="service-health">Service health<a class="headerlink" href="#service-health" title="Permanent link">&para;</a></h3>
-<p><code>bash
-kubectl port-forward -n kubernaut-system svc/kubernaut-agent 8081:8081
-curl -s http://localhost:8081/healthz | jq '.'</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>kubectl<span class="w"> </span>port-forward<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>svc/kubernaut-agent<span class="w"> </span><span class="m">8081</span>:8081
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8081/healthz<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.&#39;</span>
+</span></code></pre></div>
 <hr />
 <h2 id="optional-imagedigestmirrorset-idms">Optional: ImageDigestMirrorSet (IDMS)<a class="headerlink" href="#optional-imagedigestmirrorset-idms" title="Permanent link">&para;</a></h2>
 <p>As an alternative to <code>values-airgap.yaml</code>, an <code>ImageDigestMirrorSet</code> configures OCP to transparently redirect image pulls from source registries to your mirror at the CRI-O level. This is useful when multiple applications in the cluster pull from the same source registries.</p>
@@ -3539,28 +3696,28 @@ curl -s http://localhost:8081/healthz | jq '.'</code></p>
 <p class="admonition-title">Note</p>
 <p>IDMS requires OCP 4.13+. For older versions, use the deprecated <code>ImageContentSourcePolicy</code> (ICSP) with the same mirror mappings.</p>
 </div>
-<p><code>yaml
-apiVersion: config.openshift.io/v1
-kind: ImageDigestMirrorSet
-metadata:
-  name: kubernaut-mirror
-spec:
-  imageDigestMirrors:
-    - source: quay.io/kubernaut-ai
-      mirrors:
-        - &lt;mirror-registry&gt;/kubernaut-ai   # nested; or &lt;mirror-registry&gt; for flat naming
-    - source: registry.redhat.io
-      mirrors:
-        - &lt;mirror-registry&gt;</code></p>
-<p><code>bash
-oc apply -f idms-kubernaut.yaml</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">config.openshift.io/v1</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ImageDigestMirrorSet</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-mirror</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">  </span><span class="nt">imageDigestMirrors</span><span class="p">:</span>
+</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">quay.io/kubernaut-ai</span>
+</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a><span class="w">      </span><span class="nt">mirrors</span><span class="p">:</span>
+</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;/kubernaut-ai</span><span class="w">   </span><span class="c1"># nested; or &lt;mirror-registry&gt; for flat naming</span>
+</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">registry.redhat.io</span>
+</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a><span class="w">      </span><span class="nt">mirrors</span><span class="p">:</span>
+</span><span id="__span-24-12"><a id="__codelineno-24-12" name="__codelineno-24-12" href="#__codelineno-24-12"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">&lt;mirror-registry&gt;</span>
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>idms-kubernaut.yaml
+</span></code></pre></div>
 <p>When using IDMS, install with just <code>values-ocp.yaml</code> (no <code>values-airgap.yaml</code>). However, IDMS only redirects <strong>digest-based</strong> references -- not tags. To use digest references with the chart, set <code>global.image.digest</code>:</p>
-<p><code>bash
-helm install kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system \
-  -f charts/kubernaut/values-ocp.yaml \
-  --set global.image.digest=sha256:&lt;digest&gt; \
-  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span>--set<span class="w"> </span>global.image.digest<span class="o">=</span>sha256:&lt;digest&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml
+</span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">Recommendation</p>
 <p>For most disconnected installs, <code>values-airgap.yaml</code> (direct mirror pull) is simpler and more predictable than IDMS. Use IDMS when you have cluster-wide registry redirection policies already in place.</p>
@@ -3570,26 +3727,26 @@ helm install kubernaut charts/kubernaut/ \
 <h3 id="tls-certificate-hook-fails">TLS certificate hook fails<a class="headerlink" href="#tls-certificate-hook-fails" title="Permanent link">&para;</a></h3>
 <p>The <code>tls-cert-gen</code> Job uses <code>ose-cli-rhel9</code> to generate self-signed certificates. If this image wasn't mirrored, pods that depend on TLS (e.g., authwebhook) won't start.</p>
 <p>Mirror <code>registry.redhat.io/openshift4/ose-cli-rhel9:v4.17</code> and retry:</p>
-<p><code>bash
-helm upgrade kubernaut charts/kubernaut/ \
-  --namespace kubernaut-system \
-  -f charts/kubernaut/values-ocp.yaml \
-  -f charts/kubernaut/values-airgap.yaml \
-  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-airgap.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml
+</span></code></pre></div>
 <h3 id="migration-job-fails-connecting-to-postgresql">Migration Job fails connecting to PostgreSQL<a class="headerlink" href="#migration-job-fails-connecting-to-postgresql" title="Permanent link">&para;</a></h3>
 <p>If the <code>db-migration</code> Job logs show <code>pg_isready</code> failures or <code>goose</code> connection refused errors, the PostgreSQL pod likely hasn't started. Check whether its image was mirrored:</p>
-<p><code>bash
-kubectl get pod -l app=postgresql -n kubernaut-system</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>postgresql<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <p>If the PostgreSQL pod is in <code>ImagePullBackOff</code>, mirror <code>registry.redhat.io/rhel10/postgresql-16</code> and delete the failed Job so the next <code>helm upgrade</code> recreates it.</p>
 <h3 id="verifying-mirror-registry-contents">Verifying mirror registry contents<a class="headerlink" href="#verifying-mirror-registry-contents" title="Permanent link">&para;</a></h3>
-<p>```bash</p>
-<h1 id="nested-registry-separator">Nested registry (separator="/"):<a class="headerlink" href="#nested-registry-separator" title="Permanent link">&para;</a></h1>
-<p>skopeo list-tags docker://<mirror-registry>/kubernaut-ai/gateway
-skopeo inspect docker://<mirror-registry>/kubernaut-ai/gateway:v1.4.0</p>
-<h1 id="flat-registry-separator-">Flat registry (separator="-"):<a class="headerlink" href="#flat-registry-separator-" title="Permanent link">&para;</a></h1>
-<p>skopeo list-tags docker://<mirror-registry>/kubernaut-ai-gateway
-skopeo inspect docker://<mirror-registry>/kubernaut-ai-gateway:v1.4.0
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="c1"># Nested registry (separator=&quot;/&quot;):</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>skopeo<span class="w"> </span>list-tags<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai/gateway
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai/gateway:v1.4.1
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="c1"># Flat registry (separator=&quot;-&quot;):</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>skopeo<span class="w"> </span>list-tags<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai-gateway
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a>skopeo<span class="w"> </span>inspect<span class="w"> </span>docker://&lt;mirror-registry&gt;/kubernaut-ai-gateway:v1.4.1
+</span></code></pre></div>
 <hr />
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>flowchart LR

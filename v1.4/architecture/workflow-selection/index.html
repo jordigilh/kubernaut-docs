@@ -3278,15 +3278,15 @@
     KA--&gt;&gt;LLM: Full schema for evaluation</code></pre>
 <h3 id="step-1-list-action-types">Step 1: List Action Types<a class="headerlink" href="#step-1-list-action-types" title="Permanent link">&para;</a></h3>
 <p>The LLM calls <code>list_available_actions()</code> to discover what types of remediations are available. DataStorage returns action types from the <code>action_type_taxonomy</code> table, filtered to only include types that have at least one active workflow matching the signal context.</p>
-<p><code>sql
-SELECT t.action_type, t.description, COUNT(w.workflow_id) AS workflow_count
-FROM action_type_taxonomy t
-INNER JOIN remediation_workflow_catalog w ON w.action_type = t.action_type
-WHERE w.status = 'active' AND w.is_latest_version = true
-  AND t.status = 'active'
-  AND [context filters]
-GROUP BY t.action_type, t.description
-ORDER BY t.action_type</code></p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">workflow_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">workflow_count</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">FROM</span><span class="w"> </span><span class="n">action_type_taxonomy</span><span class="w"> </span><span class="n">t</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">INNER</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">remediation_workflow_catalog</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">action_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">is_latest_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="p">[</span><span class="n">context</span><span class="w"> </span><span class="n">filters</span><span class="p">]</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
+</span></code></pre></div>
 <p>Each action type includes a structured description (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, <code>preconditions</code>) that the LLM uses to choose the appropriate action category based on the root cause analysis.</p>
 <h3 id="step-2-list-workflows-by-action-type">Step 2: List Workflows by Action Type<a class="headerlink" href="#step-2-list-workflows-by-action-type" title="Permanent link">&para;</a></h3>
 <p>The LLM calls <code>list_workflows(action_type)</code> to get candidate workflows. DataStorage applies <strong>Layer 1</strong> mandatory filtering and <strong>Layer 2</strong> semantic scoring, returning results ordered by score. Scores are stripped before reaching the LLM -- they are used only for ordering.</p>
@@ -3407,7 +3407,8 @@ ORDER BY t.action_type</code></p>
 <h2 id="layer-2-semantic-scoring">Layer 2: Semantic Scoring<a class="headerlink" href="#layer-2-semantic-scoring" title="Permanent link">&para;</a></h2>
 <p>DataStorage computes a <code>final_score</code> for each candidate to <strong>order</strong> results (DD-WORKFLOW-004 v1.5). Scores are used only for ordering and are stripped before reaching the LLM.</p>
 <h3 id="scoring-formula">Scoring Formula<a class="headerlink" href="#scoring-formula" title="Permanent link">&para;</a></h3>
-<p><code>final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_penalty) / 10.0, 1.0)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_penalty) / 10.0, 1.0)
+</span></code></pre></div>
 <ul>
 <li><strong>Base score</strong>: 5.0 out of 10.0 (normalized to 0.50)</li>
 <li><strong>Range</strong>: 0.0 -- 1.0 (clamped via <code>LEAST(..., 1.0)</code>)</li>
@@ -3502,18 +3503,18 @@ ORDER BY t.action_type</code></p>
 <p>Action types provide a stable vocabulary for categorizing remediation actions. They are provisioned as Kubernetes CRDs (<code>ActionType</code>) and synced to the <code>action_type_taxonomy</code> PostgreSQL table by the Auth Webhook admission handler.</p>
 <h3 id="registering-action-types">Registering Action Types<a class="headerlink" href="#registering-action-types" title="Permanent link">&para;</a></h3>
 <p>Action types are fully operator-defined. Register types by applying an <code>ActionType</code> CRD:</p>
-<p><code>yaml
-apiVersion: kubernaut.ai/v1alpha1
-kind: ActionType
-metadata:
-  name: rotate-certificates
-spec:
-  name: RotateCertificates
-  description:
-    what: "Rotates TLS certificates for services"
-    whenToUse: "When certificate expiry is approaching or certificates are invalid"
-    whenNotToUse: "When the issue is DNS resolution, not certificate validity"
-    preconditions: "cert-manager must be installed and the Certificate resource must exist"</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ActionType</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rotate-certificates</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RotateCertificates</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">  </span><span class="nt">description</span><span class="p">:</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nt">what</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;Rotates</span><span class="nv"> </span><span class="s">TLS</span><span class="nv"> </span><span class="s">certificates</span><span class="nv"> </span><span class="s">for</span><span class="nv"> </span><span class="s">services&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="nt">whenToUse</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;When</span><span class="nv"> </span><span class="s">certificate</span><span class="nv"> </span><span class="s">expiry</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">approaching</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">certificates</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">invalid&quot;</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">whenNotToUse</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;When</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">issue</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">DNS</span><span class="nv"> </span><span class="s">resolution,</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">certificate</span><span class="nv"> </span><span class="s">validity&quot;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">    </span><span class="nt">preconditions</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;cert-manager</span><span class="nv"> </span><span class="s">must</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">installed</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">Certificate</span><span class="nv"> </span><span class="s">resource</span><span class="nv"> </span><span class="s">must</span><span class="nv"> </span><span class="s">exist&quot;</span>
+</span></code></pre></div>
 <p>The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, captures the operator identity for audit attribution, and updates the CRD status. Deleting the CRD disables the action type in the catalog (soft delete).</p>
 <p>The description fields are presented to the LLM during Step 1 of the discovery protocol, so accurate, unambiguous descriptions are essential. Follow these guidelines:</p>
 <ul>

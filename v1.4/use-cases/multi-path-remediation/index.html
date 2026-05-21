@@ -3281,7 +3281,8 @@ the DataStorage audit trail.</p>
 <p>When the LLM investigated the second incident, Kubernaut Agent's resource context tools
 automatically queried DataStorage for the resource's remediation history. The Kubernaut Agent logs
 confirmed:</p>
-<p><code>resource_context_resolved: history_count=5, has_detected_infrastructure=True</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>resource_context_resolved: history_count=5, has_detected_infrastructure=True
+</span></code></pre></div>
 <p>The LLM received the full remediation history for <code>Deployment/demo-app</code>, formatted as a
 prompt section that included:</p>
 <ul>

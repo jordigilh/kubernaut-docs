@@ -1169,6 +1169,28 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#workflow-catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Catalog
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3326,10 +3348,9 @@
 <p>Signal mode determines which prompt variant Kubernaut Agent uses for the investigation. In <strong>reactive</strong> mode, the LLM performs root cause analysis of an incident that has already occurred. In <strong>proactive</strong> mode, the prompt shifts to trend assessment and prevention — the LLM evaluates whether the predicted issue is likely to materialize and recommends preventive action (or concludes no action is needed).</p>
 <h2 id="resource-scope">Resource Scope<a class="headerlink" href="#resource-scope" title="Permanent link">&para;</a></h2>
 <p>Kubernaut uses a <strong>label-based opt-in model</strong>. Only namespaces and resources with the <code>kubernaut.ai/managed=true</code> label are eligible for remediation. The Gateway validates this label before creating a RemediationRequest.</p>
-<p>```bash</p>
-<h1 id="opt-a-namespace-into-kubernaut-management">Opt a namespace into Kubernaut management<a class="headerlink" href="#opt-a-namespace-into-kubernaut-management" title="Permanent link">&para;</a></h1>
-<p>kubectl label namespace my-app kubernaut.ai/managed=true
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Opt a namespace into Kubernaut management</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
+</span></code></pre></div>
 <h2 id="workflow-catalog">Workflow Catalog<a class="headerlink" href="#workflow-catalog" title="Permanent link">&para;</a></h2>
 <p>Remediation workflows are defined as declarative <strong><code>RemediationWorkflow</code> CRDs</strong> and registered in <strong>DataStorage</strong> as a searchable catalog via the Auth Webhook admission path. Each workflow has:</p>
 <ul>

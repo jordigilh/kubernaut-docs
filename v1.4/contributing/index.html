@@ -3003,6 +3003,106 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#development-standards" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Development Standards
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Development Standards">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#testing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Testing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#code-quality" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Code Quality
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pull-request-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pull Request Process
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#documentation-contributions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Documentation Contributions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Documentation Contributions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#local-preview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Local Preview
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#structure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Structure
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#links" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Links
+      
+    </span>
+  </a>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -3040,19 +3140,20 @@
 <li><strong>Make</strong> for build automation</li>
 </ul>
 <h3 id="clone-and-build">Clone and Build<a class="headerlink" href="#clone-and-build" title="Permanent link">&para;</a></h3>
-<p><code>bash
-git clone https://github.com/jordigilh/kubernaut.git
-cd kubernaut
-make build-all</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut.git
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>make<span class="w"> </span>build-all
+</span></code></pre></div>
 <h3 id="run-tests">Run Tests<a class="headerlink" href="#run-tests" title="Permanent link">&para;</a></h3>
-<p>```bash</p>
-<h1 id="unit-tests">Unit tests<a class="headerlink" href="#unit-tests" title="Permanent link">&para;</a></h1>
-<p>make test-tier-unit</p>
-<h1 id="integration-tests-requires-kind-cluster">Integration tests (requires Kind cluster)<a class="headerlink" href="#integration-tests-requires-kind-cluster" title="Permanent link">&para;</a></h1>
-<p>make test-integration-gateway</p>
-<h1 id="e2e-tests-creates-a-full-kind-cluster">E2E tests (creates a full Kind cluster)<a class="headerlink" href="#e2e-tests-creates-a-full-kind-cluster" title="Permanent link">&para;</a></h1>
-<p>make test-e2e-gateway
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Unit tests</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>make<span class="w"> </span>test-tier-unit
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Integration tests (requires Kind cluster)</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>make<span class="w"> </span>test-integration-gateway
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="c1"># E2E tests (creates a full Kind cluster)</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a>make<span class="w"> </span>test-e2e-gateway
+</span></code></pre></div>
 <h2 id="development-standards">Development Standards<a class="headerlink" href="#development-standards" title="Permanent link">&para;</a></h2>
 <h3 id="testing">Testing<a class="headerlink" href="#testing" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3077,9 +3178,9 @@ make build-all</code></p>
 <h2 id="documentation-contributions">Documentation Contributions<a class="headerlink" href="#documentation-contributions" title="Permanent link">&para;</a></h2>
 <p>This documentation site is maintained at <a href="https://github.com/jordigilh/kubernaut-docs">github.com/jordigilh/kubernaut-docs</a>.</p>
 <h3 id="local-preview">Local Preview<a class="headerlink" href="#local-preview" title="Permanent link">&para;</a></h3>
-<p><code>bash
-pip install -r requirements.txt
-mkdocs serve</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>mkdocs<span class="w"> </span>serve
+</span></code></pre></div>
 <p>Then open <a href="http://localhost:8000">http://localhost:8000</a>.</p>
 <h3 id="structure">Structure<a class="headerlink" href="#structure" title="Permanent link">&para;</a></h3>
 <ul>

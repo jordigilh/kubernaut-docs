@@ -3153,7 +3153,8 @@
 <p>Workflow catalog IDs (<code>workflowId</code>) are <strong>deterministic UUIDs</strong> (UUIDv5) and remain stable across PVC wipes for unchanged workflow specifications. Action types are keyed by their <code>actionType</code> identifier string.</p>
 </div>
 <h2 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h2>
-<p><code>https://data-storage-service.kubernaut-system.svc.cluster.local:8080</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://data-storage-service.kubernaut-system.svc.cluster.local:8080
+</span></code></pre></div>
 <h2 id="endpoints">Endpoints<a class="headerlink" href="#endpoints" title="Permanent link">&para;</a></h2>
 <h3 id="audit-events">Audit Events<a class="headerlink" href="#audit-events" title="Permanent link">&para;</a></h3>
 <table>
@@ -3405,13 +3406,13 @@
 <h2 id="error-responses">Error Responses<a class="headerlink" href="#error-responses" title="Permanent link">&para;</a></h2>
 <p>All error responses (4xx, 5xx) use <a href="../#error-responses-rfc-7807">RFC 7807 Problem Details</a> format with <code>Content-Type: application/problem+json</code>. See the <a href="../#error-type-catalog">error type catalog</a> for the full list of error types.</p>
 <p><strong>Example</strong> (invalid batch request):</p>
-<p><code>json
-{
-  "type": "https://kubernaut.ai/problems/validation-error",
-  "title": "Bad Request",
-  "detail": "Batch must contain between 1 and 1000 events",
-  "status": 400
-}</code></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://kubernaut.ai/problems/validation-error&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Bad Request&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Batch must contain between 1 and 1000 events&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">400</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="authentication">Authentication<a class="headerlink" href="#authentication" title="Permanent link">&para;</a></h2>
 <p>DataStorage uses <strong>Kubernetes TokenReview</strong> authentication. Clients must present a valid ServiceAccount token in the <code>Authorization</code> header.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>

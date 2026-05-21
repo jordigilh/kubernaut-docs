@@ -3385,6 +3385,14 @@
 <td>Tekton task or Job step failure</td>
 </tr>
 <tr>
+<td><code>UnsupportedEngine</code></td>
+<td>The execution engine is not registered (CRD-aware engine registration, v1.4)</td>
+</tr>
+<tr>
+<td><code>Deduplicated</code></td>
+<td>Execution-time resource collision — another WFE already owns the target execution resource</td>
+</tr>
+<tr>
 <td><code>Unknown</code></td>
 <td>Unclassified failure</td>
 </tr>
@@ -3584,7 +3592,8 @@
 <p>The credential lifecycle ensures Kubernetes Secret data is never persisted in AWX <code>extra_vars</code> (which are logged). Instead, each Secret gets a dynamic AWX credential type with <code>env</code> injectors, and an ephemeral credential is created per execution and deleted on cleanup.</p>
 <h2 id="deterministic-locking-dd-we-003">Deterministic Locking (DD-WE-003)<a class="headerlink" href="#deterministic-locking-dd-we-003" title="Permanent link">&para;</a></h2>
 <p>To prevent concurrent execution on the same target resource, the controller uses deterministic naming:</p>
-<p><code>PipelineRun/Job name = wfe-{sha256(targetResource)[:16]}</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>PipelineRun/Job name = wfe-{sha256(targetResource)[:16]}
+</span></code></pre></div>
 <p>The same target resource always produces the same execution resource name. If two WFEs attempt to run on the same target:</p>
 <ul>
 <li>The first one creates the resource successfully</li>
@@ -3706,8 +3715,9 @@
 </table>
 <h2 id="handoff">Handoff<a class="headerlink" href="#handoff" title="Permanent link">&para;</a></h2>
 <p>The WFE controller reports status back to the Orchestrator through the CRD status:</p>
-<p><code>WFE Completed → RO creates EffectivenessAssessment → Verifying phase
-WFE Failed    → WFE handler creates ManualReview NR → RO transitionToFailed → Failed phase</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>WFE Completed → RO creates EffectivenessAssessment → Verifying phase
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>WFE Failed    → WFE handler creates ManualReview NR → RO transitionToFailed → Failed phase
+</span></code></pre></div>
 <p>In v1.3, when a WorkflowExecution enters <code>PhaseFailed</code>, the WFE handler creates a <strong>ManualReview NR</strong> (<code>nr-manual-review-&lt;rr-name&gt;</code>) with <code>reviewSource=WorkflowExecution</code> and <code>priority=Critical</code> <strong>before</strong> calling <code>transitionToFailed</code>. The subsequent <code>transitionToFailed</code> Escalation NR is suppressed by the double-NR guard (a ManualReview NR already exists for this RR).</p>
 <p>For Ansible executions, the handoff is identical -- the AWX job status is mapped to the same WFE phases (<code>Completed</code>/<code>Failed</code>), so the Orchestrator does not need to distinguish between execution engines.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>

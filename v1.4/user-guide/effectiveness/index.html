@@ -3204,14 +3204,14 @@
 </tbody>
 </table>
 <p>These are configurable via Helm values:</p>
-<p><code>yaml
-remediationorchestrator:
-  config:
-    effectivenessAssessment:
-      stabilizationWindow: "5m"
-    asyncPropagation:
-      gitOpsSyncDelay: "3m"
-      operatorReconcileDelay: "1m"</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">remediationorchestrator</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">effectivenessAssessment</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;5m&quot;</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">asyncPropagation</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">gitOpsSyncDelay</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;3m&quot;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">operatorReconcileDelay</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;1m&quot;</span>
+</span></code></pre></div>
 <h2 id="feedback-loop-how-effectiveness-data-influences-future-decisions">Feedback Loop: How Effectiveness Data Influences Future Decisions<a class="headerlink" href="#feedback-loop-how-effectiveness-data-influences-future-decisions" title="Permanent link">&para;</a></h2>
 <p>The effectiveness assessment is not just a report -- it creates a continuous feedback loop that makes Kubernaut's workflow selection smarter over time.</p>
 <pre class="mermaid"><code>flowchart LR

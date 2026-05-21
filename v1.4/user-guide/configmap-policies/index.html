@@ -1504,6 +1504,67 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Policy Structure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#input-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Input Schema
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cross-rule-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cross-rule References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proactive-signal-mappings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Proactive Signal Mappings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hot-reload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hot-Reload
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reference-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reference File
+      
+    </span>
+  </a>
+  
 </li>
       
     </ul>
@@ -3075,47 +3136,50 @@
 <h2 id="provisioning">Provisioning<a class="headerlink" href="#provisioning" title="Permanent link">&para;</a></h2>
 <h3 id="option-a-inject-via-set-file-recommended">Option A: Inject via --set-file (recommended)<a class="headerlink" href="#option-a-inject-via-set-file-recommended" title="Permanent link">&para;</a></h3>
 <p>Provide a single <code>.rego</code> file directly:</p>
-<p><code>bash
-helm install kubernaut charts/kubernaut/ \
-  --set-file signalprocessing.policy=my-policy.rego \
-  ...</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>...
+</span></code></pre></div>
 <h3 id="option-b-pre-existing-configmap">Option B: Pre-existing ConfigMap<a class="headerlink" href="#option-b-pre-existing-configmap" title="Permanent link">&para;</a></h3>
 <p>Create the ConfigMap yourself and reference it:</p>
-<p>```bash
-kubectl create configmap signalprocessing-policy \
-  --from-file=policy.rego=my-policy.rego \
-  -n kubernaut-system</p>
-<p>helm install kubernaut charts/kubernaut/ \
-  --set signalprocessing.existingPolicyConfigMap=signalprocessing-policy \
-  ...
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>configmap<span class="w"> </span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--from-file<span class="o">=</span>policy.rego<span class="o">=</span>my-policy.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span>--set<span class="w"> </span>signalprocessing.existingPolicyConfigMap<span class="o">=</span>signalprocessing-policy<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span>...
+</span></code></pre></div>
 <h2 id="policy-structure">Policy Structure<a class="headerlink" href="#policy-structure" title="Permanent link">&para;</a></h2>
 <p>The policy file must use <code>package signalprocessing</code> and export 4 named rules:</p>
-<p>```rego
-package signalprocessing
-import rego.v1</p>
-<h1 id="environment">========== Environment ==========<a class="headerlink" href="#environment" title="Permanent link">&para;</a></h1>
-<h1 _environment_:="&quot;environment&quot;:" _source_:="&quot;source&quot;:" id="returns" string="string" string_="string,">Returns:<a class="headerlink" href="#returns" title="Permanent link">&para;</a></h1>
-<p>default environment := {"environment": "unknown", "source": "default"}
-environment := {"environment": "production", "source": "namespace-labels"} if {
-    input.namespace.labels["env"] == "production"
-}</p>
-<h1 id="severity">========== Severity ==========<a class="headerlink" href="#severity" title="Permanent link">&para;</a></h1>
-<h1 id="returns-string-criticalhighmediumlowunknown">Returns: string (critical/high/medium/low/unknown)<a class="headerlink" href="#returns-string-criticalhighmediumlowunknown" title="Permanent link">&para;</a></h1>
-<p>default severity := "unknown"
-severity := "critical" if { input.signal.severity == "critical" }</p>
-<h1 id="priority">========== Priority ==========<a class="headerlink" href="#priority" title="Permanent link">&para;</a></h1>
-<h1 _policy_name_:="&quot;policy_name&quot;:" _priority_:="&quot;priority&quot;:" id="returns_1" string="string" string_="string,">Returns:<a class="headerlink" href="#returns_1" title="Permanent link">&para;</a></h1>
-<h1 id="can-reference-environment-and-severity-directly">Can reference <code>environment</code> and <code>severity</code> directly<a class="headerlink" href="#can-reference-environment-and-severity-directly" title="Permanent link">&para;</a></h1>
-<p>default priority := {"priority": "P3", "policy_name": "default"}
-priority := {"priority": "P0", "policy_name": "production-critical"} if {
-    environment.environment == "production"
-    severity == "critical"
-}</p>
-<h1 id="custom-labels">========== Custom Labels ==========<a class="headerlink" href="#custom-labels" title="Permanent link">&para;</a></h1>
-<h1 id="returns-mapstringstring">Returns: map[string][]string<a class="headerlink" href="#returns-mapstringstring" title="Permanent link">&para;</a></h1>
-<p>default labels := {}
-```</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">package</span><span class="w"> </span><span class="n">signalprocessing</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># ========== Environment ==========</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="c1"># Returns: {&quot;environment&quot;: string, &quot;source&quot;: string}</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="k">default</span><span class="w"> </span><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="n">environment</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;environment&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;source&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;namespace-labels&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">namespace</span><span class="p">.</span><span class="n">labels</span><span class="p">[</span><span class="s2">&quot;env&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="p">}</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="c1"># ========== Severity ==========</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="c1"># Returns: string (critical/high/medium/low/unknown)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="k">default</span><span class="w"> </span><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;unknown&quot;</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="n">severity</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nb">input</span><span class="p">.</span><span class="n">signal</span><span class="p">.</span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="c1"># ========== Priority ==========</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="c1"># Returns: {&quot;priority&quot;: string, &quot;policy_name&quot;: string}</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="c1"># Can reference `environment` and `severity` directly</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="k">default</span><span class="w"> </span><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P3&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;default&quot;</span><span class="p">}</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">}</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="c1"># ========== Custom Labels ==========</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="c1"># Returns: map[string][]string</span>
+</span><span id="__span-2-27"><a id="__codelineno-2-27" name="__codelineno-2-27" href="#__codelineno-2-27"></a><span class="k">default</span><span class="w"> </span><span class="n">labels</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{}</span>
+</span></code></pre></div>
 <h3 id="input-schema">Input Schema<a class="headerlink" href="#input-schema" title="Permanent link">&para;</a></h3>
 <p>The Go controller sends a typed struct as Rego input:</p>
 <table>
@@ -3181,22 +3245,22 @@ priority := {"priority": "P0", "policy_name": "production-critical"} if {
 </table>
 <h3 id="cross-rule-references">Cross-rule References<a class="headerlink" href="#cross-rule-references" title="Permanent link">&para;</a></h3>
 <p>Priority rules can reference <code>environment</code> and <code>severity</code> directly within the policy. Rego resolves these declaratively without requiring explicit Go-level sequencing:</p>
-<p><code>rego
-priority := {"priority": "P0", "policy_name": "production-critical"} if {
-    environment.environment == "production"   # references the environment rule
-    severity == "critical"                     # references the severity rule
-}</code></p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="n">priority</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;priority&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;P0&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;policy_name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production-critical&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">    </span><span class="n">environment</span><span class="p">.</span><span class="n">environment</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="w">   </span><span class="c1"># references the environment rule</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">    </span><span class="n">severity</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;critical&quot;</span><span class="w">                     </span><span class="c1"># references the severity rule</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="proactive-signal-mappings">Proactive Signal Mappings<a class="headerlink" href="#proactive-signal-mappings" title="Permanent link">&para;</a></h2>
 <p>Proactive signal mappings are YAML (not Rego) and injected separately. They map proactive alert names to their reactive counterparts for deduplication.</p>
-<p><code>bash
-helm install kubernaut charts/kubernaut/ \
-  --set-file signalprocessing.proactiveSignalMappings.content=mappings.yaml \
-  ...</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.proactiveSignalMappings.content<span class="o">=</span>mappings.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>...
+</span></code></pre></div>
 <p>Example content:</p>
-<p><code>yaml
-proactive_signal_mappings:
-  PredictedOOMKill: OOMKilled
-  PredictedCPUThrottling: CPUThrottling</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">proactive_signal_mappings</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">PredictedOOMKill</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OOMKilled</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">PredictedCPUThrottling</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CPUThrottling</span>
+</span></code></pre></div>
 <p>If no proactive signals are used, this is optional (omit both fields).</p>
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>Policy changes are detected via <code>fsnotify</code> (~60s kubelet sync delay for ConfigMap updates). If the new policy has a syntax error, the previous policy is kept active and an error is logged.</p>

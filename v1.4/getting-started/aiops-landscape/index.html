@@ -3278,25 +3278,26 @@
 </table>
 <p>This is analogous to how the LLM already cross-references <code>kubectl</code> output, Prometheus metrics, and container logs. Predictive AI is another evidence source -- valuable when it has data, gracefully absent when it doesn't.</p>
 <h3 id="investigation-loop">Investigation Loop<a class="headerlink" href="#investigation-loop" title="Permanent link">&para;</a></h3>
-<p><code>Signal arrives (Prometheus alert, Kubernetes event)
-  |
-  v
-LLM Investigation
-  |-- kubectl get/describe/logs (cluster state)
-  |-- Prometheus query (metrics)
-  |-- Remediation history (what was tried before)
-  |-- Predictive AI query (correlation, topology)   &lt;-- knowledge agent
-  |
-  v
-Cross-validate findings
-  |-- Do tool results converge on the same root cause?
-  |-- Does predictive AI confirm or contradict?
-  |
-  v
-Confidence score + workflow selection
-  |-- High confidence, sources agree  -&gt; may auto-approve
-  |-- Low confidence, sources diverge -&gt; require manual approval
-  |-- Novel case, no predictive data  -&gt; genAI reasoning stands alone</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Signal arrives (Prometheus alert, Kubernetes event)
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>  |
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>  v
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>LLM Investigation
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  |-- kubectl get/describe/logs (cluster state)
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  |-- Prometheus query (metrics)
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  |-- Remediation history (what was tried before)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>  |-- Predictive AI query (correlation, topology)   &lt;-- knowledge agent
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>  |
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>  v
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>Cross-validate findings
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a>  |-- Do tool results converge on the same root cause?
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>  |-- Does predictive AI confirm or contradict?
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>  |
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>  v
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a>Confidence score + workflow selection
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>  |-- High confidence, sources agree  -&gt; may auto-approve
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>  |-- Low confidence, sources diverge -&gt; require manual approval
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a>  |-- Novel case, no predictive data  -&gt; genAI reasoning stands alone
+</span></code></pre></div>
 <h2 id="hallucination-safeguards-via-cross-validation">Hallucination Safeguards via Cross-Validation<a class="headerlink" href="#hallucination-safeguards-via-cross-validation" title="Permanent link">&para;</a></h2>
 <p>One of the primary concerns with generative AI in production is hallucination -- the LLM confidently asserting an incorrect root cause. Predictive AI integration provides a structural safeguard.</p>
 <p>If the LLM diagnoses root cause X but the predictive AI's correlation engine shows no supporting evidence (or points to a different cause), the system can:</p>

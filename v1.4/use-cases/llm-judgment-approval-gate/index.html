@@ -3347,20 +3347,20 @@ workflow but simultaneously warns against using it.</p>
 <h2 id="path-a-notactionable-run-2">Path A: NotActionable (Run 2)<a class="headerlink" href="#path-a-notactionable-run-2" title="Permanent link">&para;</a></h2>
 <p>In one of the three runs, the LLM concluded no action was needed outright. No workflow
 was selected and no warnings were raised:</p>
-<p><code>yaml
-actionability: NotActionable
-selectedWorkflow: null
-warnings: []
-rootCauseAnalysis:
-  severity: low
-  summary: &gt;
-    Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.
-    Five PVCs remain after their associated batch jobs completed. The data-processor
-    deployment is healthy and unaffected.
-  contributing_factors:
-    - Completed batch jobs cleanup
-    - PVC lifecycle independence
-    - Normal Kubernetes resource lifecycle</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">actionability</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NotActionable</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">selectedWorkflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">warnings</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">rootCauseAnalysis</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">low</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="no">Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="no">Five PVCs remain after their associated batch jobs completed. The data-processor</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="no">deployment is healthy and unaffected.</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">contributing_factors</span><span class="p">:</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Completed batch jobs cleanup</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">PVC lifecycle independence</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Normal Kubernetes resource lifecycle</span>
+</span></code></pre></div>
 <p>The RR auto-completed as <code>NoActionRequired</code> — no approval gate, no human involvement.
 This is the simpler story: <em>"Kubernaut's LLM correctly identifies orphaned PVCs as
 benign housekeeping and takes no action — even when a cleanup workflow is available."</em></p>
@@ -3393,34 +3393,35 @@ workflow:</p>
 <li><strong>Parameters:</strong> <code>LABEL_SELECTOR=batch-run=completed</code>, <code>TARGET_NAMESPACE=demo-orphaned-pvc</code></li>
 </ul>
 <p>But the LLM also emitted a warning alongside the selection:</p>
-<p><code>warnings: ["Alert not actionable — no remediation warranted"]</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>warnings: [&quot;Alert not actionable — no remediation warranted&quot;]
+</span></code></pre></div>
 <p>The LLM is effectively saying: <em>"I found a matching workflow and here it is, but I don't
 think this actually warrants automated action."</em></p>
 <h3 id="the-full-aa-status">The Full AA Status<a class="headerlink" href="#the-full-aa-status" title="Permanent link">&para;</a></h3>
-<p><code>json
-{
-  "actionability": "Actionable",
-  "selectedWorkflow": {
-    "actionType": "CleanupPVC",
-    "confidence": 0.9,
-    "parameters": {
-      "LABEL_SELECTOR": "batch-run=completed",
-      "TARGET_NAMESPACE": "demo-orphaned-pvc"
-    },
-    "rationale": "The workflow specifically targets orphaned PVCs from completed batch jobs..."
-  },
-  "rootCauseAnalysis": {
-    "severity": "low",
-    "summary": "Five orphaned PVCs from completed batch jobs consuming 500Mi...",
-    "contributingFactors": [
-      "Completed batch jobs without automatic PVC cleanup",
-      "Missing storage lifecycle management"
-    ]
-  },
-  "approvalRequired": true,
-  "approvalReason": "Production environment - requires manual approval",
-  "warnings": ["Alert not actionable — no remediation warranted"]
-}</code></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;actionability&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Actionable&quot;</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;selectedWorkflow&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">&quot;actionType&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CleanupPVC&quot;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">&quot;confidence&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.9</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">    </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">      </span><span class="nt">&quot;LABEL_SELECTOR&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;batch-run=completed&quot;</span><span class="p">,</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">      </span><span class="nt">&quot;TARGET_NAMESPACE&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo-orphaned-pvc&quot;</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">    </span><span class="p">},</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">&quot;rationale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The workflow specifically targets orphaned PVCs from completed batch jobs...&quot;</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;rootCauseAnalysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;low&quot;</span><span class="p">,</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Five orphaned PVCs from completed batch jobs consuming 500Mi...&quot;</span><span class="p">,</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nt">&quot;contributingFactors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="s2">&quot;Completed batch jobs without automatic PVC cleanup&quot;</span><span class="p">,</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="w">      </span><span class="s2">&quot;Missing storage lifecycle management&quot;</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w">    </span><span class="p">]</span>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="w">  </span><span class="p">},</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="w">  </span><span class="nt">&quot;approvalRequired&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="w">  </span><span class="nt">&quot;approvalReason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Production environment - requires manual approval&quot;</span><span class="p">,</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a><span class="w">  </span><span class="nt">&quot;warnings&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Alert not actionable — no remediation warranted&quot;</span><span class="p">]</span>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="p">}</span>
+</span></code></pre></div>
 <h2 id="why-this-matters">Why This Matters<a class="headerlink" href="#why-this-matters" title="Permanent link">&para;</a></h2>
 <h3 id="three-capabilities-working-together">Three Capabilities Working Together<a class="headerlink" href="#three-capabilities-working-together" title="Permanent link">&para;</a></h3>
 <p>This scenario demonstrates the interplay between three layers of the Kubernaut pipeline:</p>
@@ -3494,13 +3495,15 @@ policies were used:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Run 1: Default policy (production)</label><label for="__tabbed_1_2">Run 3: Patched policy (staging)</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<p><code>"approvalReason": "Production environment - requires manual approval"</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>&quot;approvalReason&quot;: &quot;Production environment - requires manual approval&quot;
+</span></code></pre></div>
 <p>The default <code>approval.rego</code> always requires approval for production namespaces,
 regardless of confidence or warnings. The LLM's warning was coincidentally caught
 — but by the environment rule, not the warning itself.</p>
 </div>
 <div class="tabbed-block">
-<p><code>"approvalReason": "LLM raised warnings — human review recommended"</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>&quot;approvalReason&quot;: &quot;LLM raised warnings — human review recommended&quot;
+</span></code></pre></div>
 <p>With the <code>has_warnings</code> rule added to the policy, the warning triggered approval
 in a staging namespace where the default policy would have auto-approved.</p>
 </div>
@@ -3541,27 +3544,31 @@ for inclusion in the default Helm chart policy.</p>
 <h3 id="making-the-warning-trigger-approval">Making the Warning Trigger Approval<a class="headerlink" href="#making-the-warning-trigger-approval" title="Permanent link">&para;</a></h3>
 <p>Adding the <code>has_warnings</code> rule to the policy ensures the LLM's warning triggers the
 approval gate in <strong>any</strong> environment. This was confirmed in Run 3 (staging namespace):</p>
-<p>```rego
-package aianalysis.approval</p>
-<p>import rego.v1</p>
-<p>default require_approval := false
-default reason := "Auto-approved"</p>
-<p>has_warnings if {
-  count(input.warnings) &gt; 0
-}</p>
-<p>require_approval if {
-  has_warnings
-}</p>
-<p>reason := "LLM raised warnings — human review recommended" if {
-  has_warnings
-}
-```</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">package</span><span class="w"> </span><span class="n">aianalysis</span><span class="p">.</span><span class="n">approval</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="k">import</span><span class="w"> </span><span class="n">rego</span><span class="p">.</span><span class="n">v1</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="k">default</span><span class="w"> </span><span class="n">require_approval</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="k">false</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="k">default</span><span class="w"> </span><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;Auto-approved&quot;</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="n">has_warnings</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="n">count</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">warnings</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">  </span><span class="n">has_warnings</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="p">}</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="n">reason</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="s2">&quot;LLM raised warnings — human review recommended&quot;</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">  </span><span class="n">has_warnings</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="p">}</span>
+</span></code></pre></div>
 <p>This policy can be combined with the default environment and affected-resource rules.
 Deploy it via Helm:</p>
-<p><code>bash
-helm upgrade kubernaut charts/kubernaut/ \
-  --set-file aianalysis.policies.content=my-approval.rego \
-  --reuse-values</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--reuse-values
+</span></code></pre></div>
 <p>See <a href="../../user-guide/configmap-approval/">AIAnalysis Approval Policy</a> for the full input
 contract and <a href="../../user-guide/rego-reference/">Rego Policy Reference</a> for more examples.</p>
 <h2 id="end-to-end-walkthrough">End-to-End Walkthrough<a class="headerlink" href="#end-to-end-walkthrough" title="Permanent link">&para;</a></h2>
@@ -3590,11 +3597,11 @@ actionable — no remediation warranted."</em></p>
 <h3 id="5-operator-reviews-and-rejects">5. Operator reviews and rejects<a class="headerlink" href="#5-operator-reviews-and-rejects" title="Permanent link">&para;</a></h3>
 <p>The operator sees the low severity, the 0.9-confidence workflow match, and the "no
 remediation warranted" warning. They reject the cleanup:</p>
-<p><code>bash
-kubectl patch rar rar-rr-4deb88d0bae3-9418f0bc -n kubernaut-system \
-  --type=merge --subresource=status \
-  -p '{"status":{"decision":"Rejected","decidedBy":"operator",
-       "decisionMessage":"Low-severity housekeeping — deferring to next maintenance window"}}'</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>rar-rr-4deb88d0bae3-9418f0bc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--type<span class="o">=</span>merge<span class="w"> </span>--subresource<span class="o">=</span>status<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Rejected&quot;,&quot;decidedBy&quot;:&quot;operator&quot;,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="s1">       &quot;decisionMessage&quot;:&quot;Low-severity housekeeping — deferring to next maintenance window&quot;}}&#39;</span>
+</span></code></pre></div>
 <h3 id="6-rr-fails-gracefully">6. RR fails gracefully<a class="headerlink" href="#6-rr-fails-gracefully" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3628,12 +3635,12 @@ remain exactly as they were.</p>
 <h3 id="7-dedup-cooldown-absorbs-re-fires">7. Dedup cooldown absorbs re-fires<a class="headerlink" href="#7-dedup-cooldown-absorbs-re-fires" title="Permanent link">&para;</a></h3>
 <p>After the rejection, the alert continues firing (the PVCs still exist), but the Gateway
 does not create a new RR. The deduplication cooldown is in effect:</p>
-<p><code>yaml
-deduplication:
-  firstSeenAt: 2026-03-18T21:14:50Z
-  lastSeenAt:  2026-03-18T21:21:50Z
-  occurrenceCount: 4
-nextAllowedExecution: 2026-03-18T21:25:39Z</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">deduplication</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">firstSeenAt</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:14:50Z</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">lastSeenAt</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:21:50Z</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">occurrenceCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nt">nextAllowedExecution</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-03-18T21:25:39Z</span>
+</span></code></pre></div>
 <p>Subsequent alerts with the same fingerprint increment <code>occurrenceCount</code> on the terminal
 RR but don't create a new one. This creates a natural "snooze" effect — rejecting an
 action doesn't silence the alert forever, but it prevents the platform from immediately

@@ -2656,8 +2656,201 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#stuck-in-processing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stuck in Processing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stuck-in-analyzing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stuck in Analyzing
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stuck-in-awaitingapproval" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stuck in AwaitingApproval
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#stuck-in-blocked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stuck in Blocked
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#no-workflows-found" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        No Workflows Found
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#notification-not-delivered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Not Delivered
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datastorage-connection-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DataStorage Connection Issues
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#certificate-rotation-runtime" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Certificate rotation (runtime)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#webhook-tls-certificate-issues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Webhook TLS Certificate Issues
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Webhook TLS Certificate Issues">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#verify-the-certificate-and-secret" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify the Certificate and Secret
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#verify-the-cabundle-on-webhook-configurations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify the caBundle on Webhook Configurations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hook-mode-tlsmode-hook" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hook Mode (tls.mode: hook)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cert-manager-mode-tlsmode-cert-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        cert-manager Mode (tls.mode: cert-manager)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#after-migration-from-hook-to-cert-manager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        After Migration from Hook to cert-manager
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-authentication-failure-sqlstate-28p01" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Authentication Failure (SQLSTATE 28P01)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#collecting-diagnostics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Collecting Diagnostics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
   
 </li>
       
@@ -3018,59 +3211,61 @@
 <p>The Orchestrator hasn't picked up the request.</p>
 <p><strong>Check</strong>:</p>
 <p>As of v1.2, <code>kubectl get remediationrequest</code> / <code>rr</code> lists <strong>Phase</strong>, <strong>Outcome</strong>, <strong>Alert</strong>, <strong>RCA Target</strong>, <strong>Workflow</strong>, and <strong>Confidence</strong> by default. <code>kubectl get rr -owide</code> adds <strong>Source</strong>, <strong>Signal NS</strong>, <strong>Signal Target</strong>, and <strong>RCA NS</strong>.</p>
-<p>```bash</p>
-<h1 id="is-the-orchestrator-running">Is the Orchestrator running?<a class="headerlink" href="#is-the-orchestrator-running" title="Permanent link">&para;</a></h1>
-<p>kubectl get pods -n kubernaut-system -l app=remediationorchestrator-controller</p>
-<h1 id="check-orchestrator-logs">Check Orchestrator logs<a class="headerlink" href="#check-orchestrator-logs" title="Permanent link">&para;</a></h1>
-<p>kubectl logs -n kubernaut-system -l app=remediationorchestrator-controller --tail=100</p>
-<h1 id="is-the-rr-in-the-correct-namespace">Is the RR in the correct namespace?<a class="headerlink" href="#is-the-rr-in-the-correct-namespace" title="Permanent link">&para;</a></h1>
-<p>kubectl get remediationrequests -A
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># Is the Orchestrator running?</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>remediationorchestrator-controller
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="c1"># Check Orchestrator logs</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>remediationorchestrator-controller<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="c1"># Is the RR in the correct namespace?</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationrequests<span class="w"> </span>-A
+</span></code></pre></div>
 <p><strong>Common causes</strong>: Orchestrator pod not running, RBAC permissions missing (see <a href="../../architecture/security-rbac/">Security &amp; RBAC</a>), RR in wrong namespace.</p>
 <h3 id="stuck-in-processing">Stuck in <code>Processing</code><a class="headerlink" href="#stuck-in-processing" title="Permanent link">&para;</a></h3>
 <p>Signal Processing hasn't completed enrichment.</p>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="check-the-child-signalprocessing-crd">Check the child SignalProcessing CRD<a class="headerlink" href="#check-the-child-signalprocessing-crd" title="Permanent link">&para;</a></h1>
-<p>kubectl get signalprocessing -n kubernaut-system</p>
-<h1 id="check-sp-controller-logs">Check SP controller logs<a class="headerlink" href="#check-sp-controller-logs" title="Permanent link">&para;</a></h1>
-<p>kubectl logs -n kubernaut-system -l app=signalprocessing-controller --tail=100
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="c1"># Check the child SignalProcessing CRD</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>signalprocessing<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="c1"># Check SP controller logs</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>signalprocessing-controller<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: Target resource not found, namespace not labeled with <code>kubernaut.ai/managed=true</code>.</p>
 <h3 id="stuck-in-analyzing">Stuck in <code>Analyzing</code><a class="headerlink" href="#stuck-in-analyzing" title="Permanent link">&para;</a></h3>
 <p>AI Analysis is waiting for Kubernaut Agent.</p>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="check-the-aianalysis-crd">Check the AIAnalysis CRD<a class="headerlink" href="#check-the-aianalysis-crd" title="Permanent link">&para;</a></h1>
-<p>kubectl get aianalysis -n kubernaut-system -o yaml</p>
-<h1 id="check-session-status">Check session status<a class="headerlink" href="#check-session-status" title="Permanent link">&para;</a></h1>
-<p>kubectl logs -n kubernaut-system -l app=aianalysis-controller --tail=100 | grep session</p>
-<h1 id="is-kubernaut-agent-healthy">Is Kubernaut Agent healthy?<a class="headerlink" href="#is-kubernaut-agent-healthy" title="Permanent link">&para;</a></h1>
-<p>kubectl get pods -n kubernaut-system -l app=kubernaut-agent
-kubectl logs -n kubernaut-system -l app=kubernaut-agent --tail=100
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># Check the AIAnalysis CRD</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>aianalysis<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>yaml
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="c1"># Check session status</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>aianalysis-controller<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>session
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="c1"># Is Kubernaut Agent healthy?</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>kubernaut-agent
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>kubernaut-agent<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: LLM provider unreachable, API key missing, Kubernaut Agent pod not running, session timeout.</p>
 <h3 id="stuck-in-awaitingapproval">Stuck in <code>AwaitingApproval</code><a class="headerlink" href="#stuck-in-awaitingapproval" title="Permanent link">&para;</a></h3>
 <p>Waiting for human approval.</p>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="list-pending-approvals">List pending approvals<a class="headerlink" href="#list-pending-approvals" title="Permanent link">&para;</a></h1>
-<p>kubectl get rar -n kubernaut-system</p>
-<h1 id="approve-subresourcestatus-is-required-because-the-spec-is-immutable">Approve (--subresource=status is required because the spec is immutable)<a class="headerlink" href="#approve-subresourcestatus-is-required-because-the-spec-is-immutable" title="Permanent link">&para;</a></h1>
-<p>kubectl patch rar <name> -n kubernaut-system \
-  --subresource=status --type=merge \
-  -p '{"status":{"decision":"Approved","decidedBy":"operator","decisionMessage":"Reviewed and approved"}}'
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># List pending approvals</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>rar<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="c1"># Approve (--subresource=status is required because the spec is immutable)</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">  </span>--subresource<span class="o">=</span>status<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;status&quot;:{&quot;decision&quot;:&quot;Approved&quot;,&quot;decidedBy&quot;:&quot;operator&quot;,&quot;decisionMessage&quot;:&quot;Reviewed and approved&quot;}}&#39;</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: Operator hasn't reviewed the RAR yet, approval notification not delivered, RAR about to expire. See <a href="../../user-guide/approval/">Human Approval</a> for the full walkthrough.</p>
 <h3 id="stuck-in-blocked">Stuck in <code>Blocked</code><a class="headerlink" href="#stuck-in-blocked" title="Permanent link">&para;</a></h3>
 <p>The Orchestrator's routing engine has determined that proceeding is unsafe. The RR will be automatically retried after the cooldown expires -- no manual intervention is needed in most cases.</p>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="inspect-the-block-reason-and-cooldown">Inspect the block reason and cooldown<a class="headerlink" href="#inspect-the-block-reason-and-cooldown" title="Permanent link">&para;</a></h1>
-<p>kubectl get rr <name> -n kubernaut-system -o yaml | grep -A 5 'block|Blocked'</p>
-<h1 id="check-all-rrs-and-their-phases">Check all RRs and their phases<a class="headerlink" href="#check-all-rrs-and-their-phases" title="Permanent link">&para;</a></h1>
-<p>kubectl get rr -n kubernaut-system
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># Inspect the block reason and cooldown</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>rr<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A<span class="w"> </span><span class="m">5</span><span class="w"> </span><span class="s1">&#39;block\|Blocked&#39;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="c1"># Check all RRs and their phases</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>rr<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <p><strong>Key status fields</strong>:</p>
 <table>
 <thead>
@@ -3146,65 +3341,68 @@ kubectl logs -n kubernaut-system -l app=kubernaut-agent --tail=100
 </tbody>
 </table>
 <p><strong>Example</strong>: A blocked RR due to consecutive failures:</p>
-<p>```bash
-$ kubectl get rr -n kubernaut-system
-NAME                       PHASE     OUTCOME   ALERT              RCA TARGET                 WORKFLOW                 CONFIDENCE   AGE
-rr-b157a3a9e42f-1c2b5576   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.88         18m
-rr-b157a3a9e42f-1fad7b25   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.85         14m
-rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    —            9m
-rr-b157a3a9e42f-efe8bb6b   Failed    Failed    KubeNodeNotReady   Node/worker-1              Cordon unhealthy node    0.90         4m</p>
-<p>$ kubectl get rr -n kubernaut-system -owide
-NAME                       PHASE     OUTCOME   ALERT              RCA TARGET      WORKFLOW               CONFIDENCE   AGE   SOURCE      SIGNAL NS   SIGNAL TARGET       RCA NS
-rr-b157a3a9e42f-e40b4d97   Blocked   Blocked   KubeNodeNotReady   Node/worker-1   Cordon unhealthy node  —            9m    prometheus  default     Node/worker-1       default
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>rr<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>NAME<span class="w">                       </span>PHASE<span class="w">     </span>OUTCOME<span class="w">   </span>ALERT<span class="w">              </span>RCA<span class="w"> </span>TARGET<span class="w">                 </span>WORKFLOW<span class="w">                 </span>CONFIDENCE<span class="w">   </span>AGE
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>rr-b157a3a9e42f-1c2b5576<span class="w">   </span>Failed<span class="w">    </span>Failed<span class="w">    </span>KubeNodeNotReady<span class="w">   </span>Node/worker-1<span class="w">              </span>Cordon<span class="w"> </span>unhealthy<span class="w"> </span>node<span class="w">    </span><span class="m">0</span>.88<span class="w">         </span>18m
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>rr-b157a3a9e42f-1fad7b25<span class="w">   </span>Failed<span class="w">    </span>Failed<span class="w">    </span>KubeNodeNotReady<span class="w">   </span>Node/worker-1<span class="w">              </span>Cordon<span class="w"> </span>unhealthy<span class="w"> </span>node<span class="w">    </span><span class="m">0</span>.85<span class="w">         </span>14m
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>rr-b157a3a9e42f-e40b4d97<span class="w">   </span>Blocked<span class="w">   </span>Blocked<span class="w">   </span>KubeNodeNotReady<span class="w">   </span>Node/worker-1<span class="w">              </span>Cordon<span class="w"> </span>unhealthy<span class="w"> </span>node<span class="w">    </span>—<span class="w">            </span>9m
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>rr-b157a3a9e42f-efe8bb6b<span class="w">   </span>Failed<span class="w">    </span>Failed<span class="w">    </span>KubeNodeNotReady<span class="w">   </span>Node/worker-1<span class="w">              </span>Cordon<span class="w"> </span>unhealthy<span class="w"> </span>node<span class="w">    </span><span class="m">0</span>.90<span class="w">         </span>4m
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>$<span class="w"> </span>kubectl<span class="w"> </span>get<span class="w"> </span>rr<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-owide
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a>NAME<span class="w">                       </span>PHASE<span class="w">     </span>OUTCOME<span class="w">   </span>ALERT<span class="w">              </span>RCA<span class="w"> </span>TARGET<span class="w">      </span>WORKFLOW<span class="w">               </span>CONFIDENCE<span class="w">   </span>AGE<span class="w">   </span>SOURCE<span class="w">      </span>SIGNAL<span class="w"> </span>NS<span class="w">   </span>SIGNAL<span class="w"> </span>TARGET<span class="w">       </span>RCA<span class="w"> </span>NS
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a>rr-b157a3a9e42f-e40b4d97<span class="w">   </span>Blocked<span class="w">   </span>Blocked<span class="w">   </span>KubeNodeNotReady<span class="w">   </span>Node/worker-1<span class="w">   </span>Cordon<span class="w"> </span>unhealthy<span class="w"> </span>node<span class="w">  </span>—<span class="w">            </span>9m<span class="w">    </span>prometheus<span class="w">  </span>default<span class="w">     </span>Node/worker-1<span class="w">       </span>default
+</span></code></pre></div>
 <p>Inspecting the blocked RR:</p>
-<p><code>yaml
-status:
-  blockMessage: '3 consecutive failures. Cooldown expires: 2026-03-10T03:04:03Z'
-  blockReason: ConsecutiveFailures
-  blockedUntil: "2026-03-10T03:04:03Z"
-  overallPhase: Blocked
-  deduplication:
-    firstSeenAt: "2026-03-10T02:04:02Z"
-    lastSeenAt: "2026-03-10T02:18:08Z"
-    occurrenceCount: 14</code></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">status</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">blockMessage</span><span class="p">:</span><span class="w"> </span><span class="s">&#39;3</span><span class="nv"> </span><span class="s">consecutive</span><span class="nv"> </span><span class="s">failures.</span><span class="nv"> </span><span class="s">Cooldown</span><span class="nv"> </span><span class="s">expires:</span><span class="nv"> </span><span class="s">2026-03-10T03:04:03Z&#39;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">blockReason</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ConsecutiveFailures</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">blockedUntil</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T03:04:03Z&quot;</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">overallPhase</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Blocked</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">deduplication</span><span class="p">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">firstSeenAt</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T02:04:02Z&quot;</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nt">lastSeenAt</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2026-03-10T02:18:08Z&quot;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">occurrenceCount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">14</span>
+</span></code></pre></div>
 <p>The signal (<code>KubeNodeNotReady</code>) fired 14 times during the cooldown window. After 3 consecutive failures, the routing engine blocked further attempts for 1 hour to prevent remediation storms. The RR will be automatically retried after <code>blockedUntil</code>.</p>
 <h2 id="no-workflows-found">No Workflows Found<a class="headerlink" href="#no-workflows-found" title="Permanent link">&para;</a></h2>
 <p>AI Analysis completes but no workflow is selected.</p>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="list-available-workflows">List available workflows<a class="headerlink" href="#list-available-workflows" title="Permanent link">&para;</a></h1>
-<p>curl https://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows</p>
-<h1 id="check-ai-analysis-results-selected-workflow-phase-and-human-review-reason">Check AI analysis results — selected workflow, phase, and human review reason<a class="headerlink" href="#check-ai-analysis-results-selected-workflow-phase-and-human-review-reason" title="Permanent link">&para;</a></h1>
-<p>kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.phase}{"\n"}{.status.selectedWorkflow}{"\n"}{.status.humanReviewReason}{"\n"}'</p>
-<h1 id="check-the-root-cause-analysis-and-remediation-target">Check the root cause analysis and remediation target<a class="headerlink" href="#check-the-root-cause-analysis-and-remediation-target" title="Permanent link">&para;</a></h1>
-<p>kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCauseAnalysis}'
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># List available workflows</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>curl<span class="w"> </span>https://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="c1"># Check AI analysis results — selected workflow, phase, and human review reason</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>aianalysis<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.phase}{&quot;\n&quot;}{.status.selectedWorkflow}{&quot;\n&quot;}{.status.humanReviewReason}{&quot;\n&quot;}&#39;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="c1"># Check the root cause analysis and remediation target</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>kubectl<span class="w"> </span>get<span class="w"> </span>aianalysis<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.rootCauseAnalysis}&#39;</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: No workflow registered for this alert type, label mismatch, DataStorage not running.</p>
 <h2 id="notification-not-delivered">Notification Not Delivered<a class="headerlink" href="#notification-not-delivered" title="Permanent link">&para;</a></h2>
 <p><strong>Check</strong>:</p>
 <p>As of v1.2, <code>kubectl get notificationrequest</code> shows <strong>TYPE</strong> and <strong>PRIORITY</strong> in <strong>PascalCase</strong> (for example <code>Completion</code>, <code>High</code>).</p>
-<p>```bash</p>
-<h1 id="tabular-status-v12-column-layout">Tabular status (v1.2 column layout)<a class="headerlink" href="#tabular-status-v12-column-layout" title="Permanent link">&para;</a></h1>
-<p>kubectl get notificationrequests -n kubernaut-system</p>
-<h1 id="name-type-priority-phase-attempts-age">NAME                        TYPE         PRIORITY   PHASE   ATTEMPTS   AGE<a class="headerlink" href="#name-type-priority-phase-attempts-age" title="Permanent link">&para;</a></h1>
-<h1 id="nr-sample-7d9f2-completion-high-sent-1-3m">nr-sample-7d9f2             Completion   High       Sent    1          3m<a class="headerlink" href="#nr-sample-7d9f2-completion-high-sent-1-3m" title="Permanent link">&para;</a></h1>
-<h1 id="full-resource-yaml">Full resource YAML<a class="headerlink" href="#full-resource-yaml" title="Permanent link">&para;</a></h1>
-<p>kubectl get notificationrequests -n kubernaut-system -o yaml</p>
-<h1 id="check-notification-controller-logs">Check Notification controller logs<a class="headerlink" href="#check-notification-controller-logs" title="Permanent link">&para;</a></h1>
-<p>kubectl logs -n kubernaut-system -l app=notification-controller --tail=100
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Tabular status (v1.2 column layout)</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>notificationrequests<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="c1"># NAME                        TYPE         PRIORITY   PHASE   ATTEMPTS   AGE</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="c1"># nr-sample-7d9f2             Completion   High       Sent    1          3m</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="c1"># Full resource YAML</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>kubectl<span class="w"> </span>get<span class="w"> </span>notificationrequests<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>yaml
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="c1"># Check Notification controller logs</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>notification-controller<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: Slack webhook secret not configured, no Slack receiver in the notification routing config, credential volume mount missing. See <a href="../../user-guide/notifications/">Notification Channels</a> for Slack setup.</p>
 <h2 id="datastorage-connection-issues">DataStorage Connection Issues<a class="headerlink" href="#datastorage-connection-issues" title="Permanent link">&para;</a></h2>
 <p><strong>Check</strong>:</p>
-<p>```bash</p>
-<h1 id="is-postgresql-running">Is PostgreSQL running?<a class="headerlink" href="#is-postgresql-running" title="Permanent link">&para;</a></h1>
-<p>kubectl get pods -n kubernaut-system -l app=postgresql</p>
-<h1 id="is-datastorage-healthy">Is DataStorage healthy?<a class="headerlink" href="#is-datastorage-healthy" title="Permanent link">&para;</a></h1>
-<p>kubectl exec -n kubernaut-system deploy/datastorage -- curl -s http://localhost:8081/readyz</p>
-<h1 id="check-datastorage-logs">Check DataStorage logs<a class="headerlink" href="#check-datastorage-logs" title="Permanent link">&para;</a></h1>
-<p>kubectl logs -n kubernaut-system -l app=datastorage --tail=100
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># Is PostgreSQL running?</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>postgresql
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="c1"># Is DataStorage healthy?</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>kubectl<span class="w"> </span><span class="nb">exec</span><span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deploy/datastorage<span class="w"> </span>--<span class="w"> </span>curl<span class="w"> </span>-s<span class="w"> </span>http://localhost:8081/readyz
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>
+</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="c1"># Check DataStorage logs</span>
+</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>datastorage<span class="w"> </span>--tail<span class="o">=</span><span class="m">100</span>
+</span></code></pre></div>
 <p><strong>Common causes</strong>: PostgreSQL pod not running, incorrect credentials, migration not run.</p>
 <h2 id="certificate-rotation-runtime">Certificate rotation (runtime)<a class="headerlink" href="#certificate-rotation-runtime" title="Permanent link">&para;</a></h2>
 <p>At runtime, inter-service <strong>server certificates</strong> and <strong>client CA</strong> bundles are reloaded without necessarily restarting the process:</p>
@@ -3235,23 +3433,24 @@ status:
 <h2 id="webhook-tls-certificate-issues">Webhook TLS Certificate Issues<a class="headerlink" href="#webhook-tls-certificate-issues" title="Permanent link">&para;</a></h2>
 <p>Admission webhook calls fail with TLS errors such as <code>x509: certificate signed by unknown authority</code> or <code>connection refused</code> on the webhook endpoint.</p>
 <h3 id="verify-the-certificate-and-secret">Verify the Certificate and Secret<a class="headerlink" href="#verify-the-certificate-and-secret" title="Permanent link">&para;</a></h3>
-<p>```bash</p>
-<h1 id="check-the-tls-secret-exists-and-has-data">Check the TLS secret exists and has data<a class="headerlink" href="#check-the-tls-secret-exists-and-has-data" title="Permanent link">&para;</a></h1>
-<p>kubectl get secret authwebhook-tls -n kubernaut-system</p>
-<h1 id="inspect-certificate-expiry-hook-mode">Inspect certificate expiry (hook mode)<a class="headerlink" href="#inspect-certificate-expiry-hook-mode" title="Permanent link">&para;</a></h1>
-<p>kubectl get secret authwebhook-tls -n kubernaut-system \
-  -o jsonpath='{.data.tls.crt}' | base64 -d | openssl x509 -noout -dates</p>
-<h1 id="in-cert-manager-mode-check-the-certificate-resource">In cert-manager mode, check the Certificate resource<a class="headerlink" href="#in-cert-manager-mode-check-the-certificate-resource" title="Permanent link">&para;</a></h1>
-<p>kubectl get certificate -n kubernaut-system
-kubectl describe certificate authwebhook-cert -n kubernaut-system
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Check the TLS secret exists and has data</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="c1"># Inspect certificate expiry (hook mode)</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.tls\.crt}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="p">|</span><span class="w"> </span>openssl<span class="w"> </span>x509<span class="w"> </span>-noout<span class="w"> </span>-dates
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="c1"># In cert-manager mode, check the Certificate resource</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a>kubectl<span class="w"> </span>describe<span class="w"> </span>certificate<span class="w"> </span>authwebhook-cert<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <h3 id="verify-the-cabundle-on-webhook-configurations">Verify the caBundle on Webhook Configurations<a class="headerlink" href="#verify-the-cabundle-on-webhook-configurations" title="Permanent link">&para;</a></h3>
-<p>```bash</p>
-<h1 id="check-that-cabundle-is-populated">Check that caBundle is populated<a class="headerlink" href="#check-that-cabundle-is-populated" title="Permanent link">&para;</a></h1>
-<p>kubectl get validatingwebhookconfigurations kubernaut-authwebhook \
-  -o jsonpath='{.webhooks[0].clientConfig.caBundle}' | wc -c</p>
-<h1 id="a-value-of-0-or-empty-means-the-ca-bundle-was-not-injected">A value of 0 or empty means the CA bundle was not injected<a class="headerlink" href="#a-value-of-0-or-empty-means-the-ca-bundle-was-not-injected" title="Permanent link">&para;</a></h1>
-<p>```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="c1"># Check that caBundle is populated</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>validatingwebhookconfigurations<span class="w"> </span>kubernaut-authwebhook<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.webhooks[0].clientConfig.caBundle}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>wc<span class="w"> </span>-c
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="c1"># A value of 0 or empty means the CA bundle was not injected</span>
+</span></code></pre></div>
 <h3 id="hook-mode-tlsmode-hook">Hook Mode (<code>tls.mode: hook</code>)<a class="headerlink" href="#hook-mode-tlsmode-hook" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3311,72 +3510,74 @@ kubectl describe certificate authwebhook-cert -n kubernaut-system
 <ol>
 <li>
 <p>Verify the old hook-generated Secret was replaced by cert-manager:</p>
-<p><code>bash
-kubectl get secret authwebhook-tls -n kubernaut-system -o yaml | grep "cert-manager"</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;cert-manager&quot;</span>
+</span></code></pre></div>
 </li>
 <li>
 <p>Confirm the <code>Certificate</code> resource is ready:</p>
-<p><code>bash
-kubectl get certificate authwebhook-cert -n kubernaut-system</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>authwebhook-cert<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 </li>
 <li>
 <p>Restart the authwebhook pod to pick up the new certificate:</p>
-<p><code>bash
-kubectl rollout restart deployment authwebhook -n kubernaut-system</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment<span class="w"> </span>authwebhook<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 </li>
 </ol>
 <h2 id="database-authentication-failure-sqlstate-28p01">Database Authentication Failure (SQLSTATE 28P01)<a class="headerlink" href="#database-authentication-failure-sqlstate-28p01" title="Permanent link">&para;</a></h2>
 <p>DataStorage or the migration hook fails with:</p>
-<p><code>FATAL: password authentication failed for user "slm_user" (SQLSTATE 28P01)</code></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>FATAL: password authentication failed for user &quot;slm_user&quot; (SQLSTATE 28P01)
+</span></code></pre></div>
 <p><strong>Cause</strong>: The password in <code>postgresql-secret</code> does not match what PostgreSQL was initialized with, or the <code>db-secrets.yaml</code> key inside <code>postgresql-secret</code> contains a different password than <code>POSTGRES_PASSWORD</code>.</p>
 <p><strong>Check</strong>:</p>
-<p><code>bash
-kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.POSTGRES_PASSWORD}' | base64 -d
-kubectl get secret postgresql-secret -n kubernaut-system -o jsonpath='{.data.db-secrets\.yaml}' | base64 -d</code></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.POSTGRES_PASSWORD}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.db-secrets\.yaml}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d
+</span></code></pre></div>
 <p>Both passwords must be identical.</p>
 <p><strong>Fix 1 — Align the secret (non-destructive)</strong></p>
 <p>If PostgreSQL was already initialized and running, update the secret to match the password PostgreSQL is using rather than reinitializing:</p>
-<p>```bash</p>
-<h1 id="read-the-password-pg-was-initialized-with-from-a-running-psql-session-or-from-your-records">Read the password PG was initialized with (from a running psql session or from your records)<a class="headerlink" href="#read-the-password-pg-was-initialized-with-from-a-running-psql-session-or-from-your-records" title="Permanent link">&para;</a></h1>
-<p>PG_PASSWORD="<current-pg-password>"</p>
-<p>kubectl delete secret postgresql-secret -n kubernaut-system
-kubectl create secret generic postgresql-secret \
-  --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
-  --from-literal=POSTGRES_DB=action_history \
-  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
-  -n kubernaut-system</p>
-<p>kubectl rollout restart deployment datastorage -n kubernaut-system
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># Read the password PG was initialized with (from a running psql session or from your records)</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="s2">&quot;&lt;current-pg-password&gt;&quot;</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>deployment<span class="w"> </span>datastorage<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <p><strong>Fix 2 — Reinitialize PostgreSQL (destructive)</strong></p>
 <p>If you cannot recover the original password, recreate the secret with a new password and reinitialize PostgreSQL:</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This destroys all existing data in PostgreSQL (audit history, workflow catalog). Only use as a last resort.</p>
 </div>
-<p>```bash
-PG_PASSWORD=$(openssl rand -base64 24)
-kubectl delete secret postgresql-secret -n kubernaut-system
-kubectl create secret generic postgresql-secret \
-  --from-literal=POSTGRES_USER=slm_user \
-  --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
-  --from-literal=POSTGRES_DB=action_history \
-  --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
-  -n kubernaut-system</p>
-<p>kubectl delete pvc postgresql-data -n kubernaut-system
-kubectl rollout restart statefulset postgresql -n kubernaut-system
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>postgresql-secret<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a>
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a>kubectl<span class="w"> </span>rollout<span class="w"> </span>restart<span class="w"> </span>statefulset<span class="w"> </span>postgresql<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
 <h2 id="collecting-diagnostics">Collecting Diagnostics<a class="headerlink" href="#collecting-diagnostics" title="Permanent link">&para;</a></h2>
 <p>Use the must-gather tool to collect a comprehensive diagnostic bundle:</p>
-<p>```bash
-kubectl run must-gather \
-  --image=quay.io/kubernaut-ai/must-gather:latest \
-  --restart=Never \
-  -n kubernaut-system \
-  -- collect</p>
-<h1 id="copy-the-results">Copy the results<a class="headerlink" href="#copy-the-results" title="Permanent link">&para;</a></h1>
-<p>kubectl cp kubernaut-system/must-gather:/output/must-gather.tar.gz ./must-gather.tar.gz
-```</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span>run<span class="w"> </span>must-gather<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--image<span class="o">=</span>quay.io/kubernaut-ai/must-gather:latest<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--restart<span class="o">=</span>Never<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--<span class="w"> </span>collect
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="c1"># Copy the results</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>kubectl<span class="w"> </span>cp<span class="w"> </span>kubernaut-system/must-gather:/output/must-gather.tar.gz<span class="w"> </span>./must-gather.tar.gz
+</span></code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../monitoring/">Monitoring</a> — Metrics and health checks</li>

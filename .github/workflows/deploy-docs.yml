@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  KUBERNAUT_RELEASE: v1.4.0
+  KUBERNAUT_RELEASE: v1.4.1
 
 jobs:
   deploy:
@@ -40,7 +40,7 @@ jobs:
       - name: Fetch generated CRD API reference
         run: |
           curl -fsSL \
-            "https://raw.githubusercontent.com/jordigilh/kubernaut/release/${KUBERNAUT_RELEASE}/docs/generated/crds.md" \
+            "https://raw.githubusercontent.com/jordigilh/kubernaut/${KUBERNAUT_RELEASE}/docs/generated/crds.md" \
             -o docs/api-reference/crds.md
 
       - name: Validate site build

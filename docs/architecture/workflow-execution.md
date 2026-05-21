@@ -29,6 +29,8 @@ For the complete field specification, see [WorkflowExecution in the CRD Referenc
 | `ConfigurationError` | Spec validation or dependency failure |
 | `ImagePullBackOff` | Bundle image pull failure |
 | `TaskFailed` | Tekton task or Job step failure |
+| `UnsupportedEngine` | The execution engine is not registered (CRD-aware engine registration, v1.4) |
+| `Deduplicated` | Execution-time resource collision — another WFE already owns the target execution resource |
 | `Unknown` | Unclassified failure |
 
 ### FailureDetails

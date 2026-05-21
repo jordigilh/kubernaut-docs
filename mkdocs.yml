@@ -37,9 +37,9 @@ theme:
     - toc.integrate
 
 extra:
-  chart_version: "1.4.0"
-  image_tag: "v1.4.0"
-  operator_image_tag: "1.4.0"
+  chart_version: "1.4.1"
+  image_tag: "v1.4.1"
+  operator_image_tag: "1.4.1"
   version:
     provider: mike
     default: latest

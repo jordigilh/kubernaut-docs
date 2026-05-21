@@ -222,6 +222,30 @@ Kubernaut Agent itself has a broad **read-only** ClusterRole (`kubernaut-agent-i
 
 This read-only access allows the LLM to investigate root causes using live cluster data without making changes.
 
+### Lease RBAC for Interactive Sessions (v1.5+)
+
+Interactive MCP sessions use Kubernetes Leases for distributed locking. The Kubernaut Agent ServiceAccount requires Lease permissions in addition to its existing investigator role:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| `coordination.k8s.io` | `leases` | get, create, update, delete, **list** | Session locking + orphan reclamation |
+
+The `list` verb (new in v1.5) is required for `ReconcileOrphanedLeases` — on startup, KA scans for Leases whose holder identity no longer exists and reclaims them.
+
+!!! note "Automatic provisioning"
+    Both the Helm chart and the Kubernaut Operator provision this permission automatically. Only custom RBAC configurations need manual updating.
+
+### API Frontend RBAC (v1.5+)
+
+The API Frontend ServiceAccount requires:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| `authentication.k8s.io` | `tokenreviews` | create | Validate OIDC bearer tokens |
+| `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
+
+The AF also needs `create` on `services/kubernaut-agent` and `services/data-storage-service` for proxying MCP tool calls to backend services.
+
 ## Infrastructure and Hooks
 
 ### PostgreSQL and Valkey
@@ -343,6 +367,66 @@ Verify your cluster's CNI plugin supports NetworkPolicy enforcement (Calico, Cil
     ```
 
 Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).
+
+## Tool Authorization (v1.5) {: #tool-authorization-v15 }
+
+v1.5 replaces the API Frontend's file-based `rbac_roles.yaml` with **Kubernetes-native SubjectAccessReview (SAR)** authorization. Every MCP tool call triggers a SAR check before execution.
+
+### How it works
+
+1. Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT
+2. On each tool invocation, AF issues a SAR: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
+3. The Kubernetes API server evaluates the user's ClusterRoleBindings
+4. If denied (or if the SAR API is unreachable), the tool call is rejected — **fail-closed**
+
+### Pre-built ClusterRoles
+
+The Helm chart and Operator ship six ClusterRoles:
+
+| ClusterRole | Tools | Use case |
+|---|---|---|
+| `kubernaut-tool-sre` | All 20 tools | Full SRE access |
+| `kubernaut-tool-orchestrator` | Orchestration + triage | Automated agent orchestration |
+| `kubernaut-tool-approver` | Approve + read | Human approval workflows |
+| `kubernaut-tool-viewer` | Read-only tools | Dashboards, monitoring |
+| `kubernaut-tool-cicd` | list, get, watch | CI/CD pipeline integration |
+| `kubernaut-tool-audit` | Audit, history, effectiveness | Compliance and auditing |
+
+### Binding example
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-team-kubernaut-tools
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: kubernaut-tool-sre
+  apiGroup: rbac.authorization.k8s.io
+```
+
+### SAR caching
+
+Authorization results are cached for a configurable TTL (default 30s) to avoid per-call SAR overhead:
+
+```yaml
+apifrontend:
+  rbac:
+    sarCacheTTL: 30s
+```
+
+### Migration from rbac_roles.yaml
+
+If you customized the file-based `rbac_roles.yaml` in v1.4:
+
+1. Identify which tools each role had access to
+2. Map those to the closest pre-built ClusterRole (or create a custom one)
+3. Create ClusterRoleBindings for your users/groups
+4. Remove the `rbac_roles.yaml` ConfigMap — it is no longer read
 
 ## Next Steps
 

@@ -128,6 +128,10 @@ The [Kubernaut Agent SDK config](../user-guide/configmap-kubernaut-agent.md) (LL
 
 The Kubernaut Agent now supports **Vertex AI, OpenAI, Anthropic, Bedrock, Ollama**, and additional providers via **LangChainGo**.
 
+### Custom HTTP headers for LLM endpoints
+
+Users can now inject [custom HTTP headers](../user-guide/configmap-kubernaut-agent.md#custom-headers) into outbound LLM API requests. This supports LLM proxies, API gateways, and corporate firewalls that require additional authentication headers. Three value sources are available: static values, Kubernetes Secret references (via environment variables), and file paths (for rotating tokens).
+
 ### Effectiveness Monitor improvements
 
 - `maxConcurrentReconciles` for parallel EA processing

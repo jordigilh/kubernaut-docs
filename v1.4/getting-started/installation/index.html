@@ -3582,7 +3582,7 @@
 <li>Alert resolution checks (AlertManager API)</li>
 <li>Metrics scraping for all Kubernaut services (all pods expose <code>/metrics</code>)</li>
 </ul>
-<p>Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set <code>effectivenessmonitor.external.prometheusEnabled=true</code> and <code>effectivenessmonitor.external.alertManagerEnabled=true</code>.</p>
+<p>Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set <code>monitoring.prometheus.enabled=true</code> and <code>monitoring.alertManager.enabled=true</code>.</p>
 <h2 id="infrastructure-setup">Infrastructure Setup<a class="headerlink" href="#infrastructure-setup" title="Permanent link">&para;</a></h2>
 <p>Complete these steps before installing the Kubernaut chart.</p>
 <h3 id="storage">Storage<a class="headerlink" href="#storage" title="Permanent link">&para;</a></h3>
@@ -3636,13 +3636,13 @@
 <tbody>
 <tr>
 <td>Prometheus</td>
-<td><code>http://kube-prometheus-stack-prometheus.monitoring.svc:9090</code></td>
-<td><code>effectivenessmonitor.external.prometheusUrl</code></td>
+<td>(set via <code>monitoring.prometheus.url</code>)</td>
+<td><code>monitoring.prometheus.url</code></td>
 </tr>
 <tr>
 <td>AlertManager</td>
-<td><code>http://kube-prometheus-stack-alertmanager.monitoring.svc:9093</code></td>
-<td><code>effectivenessmonitor.external.alertManagerUrl</code></td>
+<td>(set via <code>monitoring.alertManager.url</code>)</td>
+<td><code>monitoring.alertManager.url</code></td>
 </tr>
 </tbody>
 </table>
@@ -3877,7 +3877,7 @@ With GCP Workload Identity the secret can be omitted.</p>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policy<span class="o">=</span>my-policy.rego
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policies.content<span class="o">=</span>my-policy.rego
 </span></code></pre></div>
 <p>See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios/blob/main/helm/sdk-config.yaml.example">sdk-config.yaml.example</a> for a reference SDK config covering Vertex AI, Anthropic, OpenAI, and local models.</p>
 <p>To pin a specific chart version, add <code>--version &lt;version&gt;</code>. Omitting <code>--version</code> pulls the latest release.</p>

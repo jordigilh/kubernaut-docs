@@ -1484,6 +1484,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#monitoring" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#aianalysis" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1599,6 +1610,39 @@
     <span class="md-ellipsis">
       
         Routing Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#async-propagation-delays" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Async Propagation Delays
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notification-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Notification Settings
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#crd-retention" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Retention
       
     </span>
   </a>
@@ -3740,6 +3784,21 @@
 <td><code>30s</code></td>
 </tr>
 <tr>
+<td><code>gateway.config.server.k8sRequestTimeout</code></td>
+<td>Timeout for Kubernetes API requests (TokenReview, SAR)</td>
+<td><code>15s</code></td>
+</tr>
+<tr>
+<td><code>gateway.config.middleware.trustedProxyCIDRs</code></td>
+<td>Trusted proxy CIDRs for <code>X-Forwarded-For</code> extraction. Empty = fail-closed (proxy headers never trusted).</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>gateway.config.cors.allowedOrigins</code></td>
+<td>CORS allowed origins. Gateway is an M2M API; the default rejects all browser clients.</td>
+<td><code>https://no-browser-clients.invalid</code></td>
+</tr>
+<tr>
 <td><code>gateway.config.deduplication.cooldownPeriod</code></td>
 <td>Signal deduplication cooldown</td>
 <td><code>5m</code></td>
@@ -3977,7 +4036,6 @@
 </tbody>
 </table>
 <h3 id="effectivenessmonitor">EffectivenessMonitor<a class="headerlink" href="#effectivenessmonitor" title="Permanent link">&para;</a></h3>
-<p>Beginning with <strong>v1.4</strong>, Prometheus and AlertManager knobs are flattened into a single Helm subtree: <strong><code>effectivenessmonitor.monitoring</code></strong>, replacing <strong><code>effectivenessmonitor.external.*</code></strong> (see the introductory <strong>v1.4 configuration highlights</strong> callout).</p>
 <table>
 <thead>
 <tr>
@@ -3995,57 +4053,51 @@
 <tr>
 <td><code>effectivenessmonitor.config.assessment.validityWindow</code></td>
 <td>Time window for assessment validity</td>
-<td><code>300s</code></td>
+<td><code>120s</code></td>
 </tr>
+</tbody>
+</table>
+<p>Prometheus and AlertManager endpoints are configured via the <strong>unified <code>monitoring</code> block</strong> (see <a href="#monitoring">Monitoring</a> below), not under <code>effectivenessmonitor</code>. The chart propagates <code>monitoring.*</code> values to both the EffectivenessMonitor and Kubernaut Agent.</p>
+<h3 id="monitoring">Monitoring<a class="headerlink" href="#monitoring" title="Permanent link">&para;</a></h3>
+<p>Beginning with <strong>v1.4</strong>, Prometheus and AlertManager connection settings are configured via a <strong>top-level <code>monitoring</code> block</strong> — a single source of truth propagated to both the EffectivenessMonitor and Kubernaut Agent.</p>
+<table>
+<thead>
 <tr>
-<td><code>effectivenessmonitor.config.assessment.maxConcurrentReconciles</code></td>
-<td>Maximum concurrent EA reconciliations</td>
-<td><code>5</code></td>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default</th>
 </tr>
+</thead>
+<tbody>
 <tr>
-<td><code>effectivenessmonitor.external.prometheusUrl</code></td>
-<td>Prometheus URL</td>
-<td><code>http://kube-prometheus-stack-prometheus.monitoring.svc:9090</code></td>
-</tr>
-<tr>
-<td><code>effectivenessmonitor.external.prometheusEnabled</code></td>
+<td><code>monitoring.prometheus.enabled</code></td>
 <td>Enable Prometheus integration</td>
 <td><code>false</code></td>
 </tr>
 <tr>
-<td><code>effectivenessmonitor.external.alertManagerUrl</code></td>
-<td>AlertManager URL</td>
-<td><code>http://kube-prometheus-stack-alertmanager.monitoring.svc:9093</code></td>
+<td><code>monitoring.prometheus.url</code></td>
+<td>Prometheus URL</td>
+<td><code>""</code></td>
 </tr>
 <tr>
-<td><code>effectivenessmonitor.external.alertManagerEnabled</code></td>
+<td><code>monitoring.prometheus.tlsCaFile</code></td>
+<td>Path to PEM CA bundle for HTTPS connections to Prometheus</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>monitoring.alertManager.enabled</code></td>
 <td>Enable AlertManager integration</td>
 <td><code>false</code></td>
 </tr>
 <tr>
-<td><code>effectivenessmonitor.external.connectionTimeout</code></td>
-<td>HTTP client timeout for Prometheus/AlertManager connections</td>
-<td><code>10s</code></td>
-</tr>
-<tr>
-<td><code>effectivenessmonitor.external.prometheusLookback</code></td>
-<td>Duration before EA creation to query Prometheus for baseline metrics. Min: <code>1m</code>.</td>
-<td><code>30m</code></td>
-</tr>
-<tr>
-<td><code>effectivenessmonitor.external.scrapeInterval</code></td>
-<td>Prometheus scrape interval used to derive requeue timing for metric assessment. Min: <code>5s</code>.</td>
-<td><code>60s</code></td>
-</tr>
-<tr>
-<td><code>effectivenessmonitor.external.tlsCaFile</code></td>
-<td>Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with <code>ocpMonitoringRbac</code>, set to <code>/etc/ssl/em/service-ca.crt</code> (auto-mounted).</td>
+<td><code>monitoring.alertManager.url</code></td>
+<td>AlertManager URL</td>
 <td><code>""</code></td>
 </tr>
 <tr>
-<td><code>effectivenessmonitor.external.ocpMonitoringRbac</code></td>
-<td>Create <code>cluster-monitoring-view</code> ClusterRoleBinding and (when <code>alertManagerEnabled</code>) a ClusterRole granting <code>monitoring.coreos.com/alertmanagers/api</code> access for OCP's <code>kube-rbac-proxy</code>. Also sets <code>IS_OPENSHIFT</code> env and auto-configures TLS CA trust via a service-CA ConfigMap.</td>
-<td><code>false</code></td>
+<td><code>monitoring.alertManager.tlsCaFile</code></td>
+<td>Path to PEM CA bundle for HTTPS connections to AlertManager</td>
+<td><code>""</code></td>
 </tr>
 </tbody>
 </table>
@@ -4098,13 +4150,13 @@
 <td><code>1</code></td>
 </tr>
 <tr>
-<td><code>signalprocessing.policy</code></td>
+<td><code>signalprocessing.policies.content</code></td>
 <td>Unified Rego policy content (via <code>--set-file</code>). Chart creates <code>signalprocessing-policy</code> ConfigMap.</td>
 <td><code>""</code></td>
 </tr>
 <tr>
-<td><code>signalprocessing.existingPolicyConfigMap</code></td>
-<td>Pre-existing ConfigMap name for the unified Rego policy. Takes priority over <code>policy</code>.</td>
+<td><code>signalprocessing.policies.existingConfigMap</code></td>
+<td>Pre-existing ConfigMap name for the unified Rego policy. Takes priority over <code>policies.content</code>.</td>
 <td><code>""</code></td>
 </tr>
 <tr>
@@ -4119,7 +4171,7 @@
 </tr>
 </tbody>
 </table>
-<p>One of <code>policy</code> or <code>existingPolicyConfigMap</code> <strong>must</strong> be provided; the chart fails at install if neither is set. The policy file is a single <code>.rego</code> file (not a YAML bundle) containing all classification rules under <code>package signalprocessing</code>. Proactive signal mappings are optional and injected separately. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for the policy structure and customization guide.</p>
+<p>One of <code>policies.content</code> or <code>policies.existingConfigMap</code> <strong>must</strong> be provided; the chart fails at install if neither is set. The policy file is a single <code>.rego</code> file (not a YAML bundle) containing all classification rules under <code>package signalprocessing</code>. Proactive signal mappings are optional and injected separately. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for the policy structure and customization guide.</p>
 <h3 id="postgresql">PostgreSQL<a class="headerlink" href="#postgresql" title="Permanent link">&para;</a></h3>
 <p>All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See <a href="../../getting-started/installation/#2-provision-secrets">Provision Secrets</a>.</p>
 <table>
@@ -4393,6 +4445,67 @@
 </tbody>
 </table>
 <p>These settings prevent remediation storms and avoid repeating failed approaches.</p>
+<h3 id="async-propagation-delays">Async Propagation Delays<a class="headerlink" href="#async-propagation-delays" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remediationorchestrator.config.asyncPropagation.gitOpsSyncDelay</code></td>
+<td><code>3m</code></td>
+<td>Wait time for GitOps (ArgoCD/Flux) to sync before effectiveness assessment</td>
+</tr>
+<tr>
+<td><code>remediationorchestrator.config.asyncPropagation.operatorReconcileDelay</code></td>
+<td><code>1m</code></td>
+<td>Wait time for operator-managed resources to reconcile</td>
+</tr>
+<tr>
+<td><code>remediationorchestrator.config.asyncPropagation.proactiveAlertDelay</code></td>
+<td><code>5m</code></td>
+<td>Wait time for proactive alert resolution before assessment</td>
+</tr>
+</tbody>
+</table>
+<h3 id="notification-settings">Notification Settings<a class="headerlink" href="#notification-settings" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remediationorchestrator.config.notifications.notifySelfResolved</code></td>
+<td><code>false</code></td>
+<td>Emit a notification when a remediation self-resolves (alert clears before execution)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="crd-retention">CRD Retention<a class="headerlink" href="#crd-retention" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remediationorchestrator.config.retention.period</code></td>
+<td><code>24h</code></td>
+<td>Time-to-live for completed RemediationRequest CRDs before automatic cleanup</td>
+</tr>
+</tbody>
+</table>
 <h2 id="execution-namespace">Execution Namespace<a class="headerlink" href="#execution-namespace" title="Permanent link">&para;</a></h2>
 <p>Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate from the target resource's namespace. This creates a security boundary.</p>
 <table>
@@ -4413,6 +4526,11 @@
 <td><code>workflowexecution.config.execution.cooldownPeriod</code></td>
 <td><code>1m</code></td>
 <td>Cooldown between executions</td>
+</tr>
+<tr>
+<td><code>workflowexecution.config.tekton.enabled</code></td>
+<td><code>nil</code></td>
+<td>Tekton Pipelines engine toggle. <code>nil</code> or <code>true</code> = auto-discover Tekton CRDs at startup; <code>false</code> = disable Tekton engine.</td>
 </tr>
 </tbody>
 </table>
@@ -4521,36 +4639,6 @@
 <p>Kubernaut configures <strong>inter-service TLS</strong> (REST between components) and <strong>admission webhook TLS</strong> (Auth Webhook). The Helm values below cover both surfaces; the following subsections describe how admission webhook certificates are generated in each mode.</p>
 <h3 id="inter-service-tls-helm">Inter-service TLS (Helm)<a class="headerlink" href="#inter-service-tls-helm" title="Permanent link">&para;</a></h3>
 <p>These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under <code>tls.interService.certDir</code>, the primary API port (<strong>8080</strong>) uses HTTPS; health (<strong>8081</strong>) and metrics (<strong>9090</strong>) stay plain HTTP.</p>
-<div class="admonition note">
-<p class="admonition-title">TLS Security Profiles (v1.4)</p>
-<p>The <code>tls.profile</code> field (v1.4) selects a built-in cipher/protocol profile applied to all inter-service listeners:</p>
-<table>
-<thead>
-<tr>
-<th>Profile</th>
-<th>TLS Versions</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Modern</strong></td>
-<td>TLS 1.3 only</td>
-<td>Strictest — recommended for new deployments</td>
-</tr>
-<tr>
-<td><strong>Intermediate</strong> (default)</td>
-<td>TLS 1.2–1.3</td>
-<td>Balanced — compatible with most clients</td>
-</tr>
-<tr>
-<td><strong>Old</strong></td>
-<td>TLS 1.0–1.3</td>
-<td>Legacy — use only for backward-compatible environments</td>
-</tr>
-</tbody>
-</table>
-</div>
 <table>
 <thead>
 <tr>

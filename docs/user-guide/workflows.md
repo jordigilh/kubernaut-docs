@@ -23,19 +23,59 @@ flowchart LR
 
 The CRD approach replaces the previous OCI schema image model. Workflow schemas are now native Kubernetes resources, enabling `kubectl` management, GitOps workflows, and admission webhook integration for audit attribution.
 
+!!! important "Namespace placement"
+    - **`RemediationWorkflow`** and **`ActionType`** CRDs must be applied in `kubernaut-system` (or your configured platform namespace).
+    - **`ServiceAccount`**, **`ClusterRole`**, and **`ClusterRoleBinding`** for per-workflow RBAC go in `kubernaut-workflows` (the execution namespace).
+
+    All production workflows in the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/deploy) repository follow this convention.
+
 ## Create Your First Workflow
 
 This tutorial walks through creating a workflow that restarts a deployment.
 
 ### Step 1: Write the Schema
 
-Create `restart-deployment.yaml`:
+Create `restart-deployment.yaml`. Production workflows ship as multi-document YAML: a per-workflow `ServiceAccount` with scoped RBAC, followed by the `RemediationWorkflow` CRD.
 
 ```yaml
+# --- Per-workflow ServiceAccount and RBAC (in the execution namespace) ---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: restart-deployment-v1-runner
+  namespace: kubernaut-workflows
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubernaut:workflow:restart-deployment-v1
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "patch"]
+  - apiGroups: ["apps"]
+    resources: ["deployments/status"]
+    verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernaut:workflow:restart-deployment-v1
+subjects:
+  - kind: ServiceAccount
+    name: restart-deployment-v1-runner
+    namespace: kubernaut-workflows
+roleRef:
+  kind: ClusterRole
+  name: kubernaut:workflow:restart-deployment-v1
+  apiGroup: rbac.authorization.k8s.io
+---
+# --- RemediationWorkflow CRD (in the platform namespace) ---
 apiVersion: kubernaut.ai/v1alpha1
 kind: RemediationWorkflow
 metadata:
   name: restart-deployment-v1
+  namespace: kubernaut-system
 spec:
   version: "1.0.0"
   description:
@@ -61,6 +101,7 @@ spec:
   execution:
     engine: job
     bundle: registry.example.com/workflows/restart-deployment@sha256:abc123...
+    serviceAccountName: restart-deployment-v1-runner
 
   parameters:
     - name: TARGET_RESOURCE_NAME
@@ -84,6 +125,9 @@ spec:
     secrets: []
     configMaps: []
 ```
+
+!!! tip "Per-workflow ServiceAccounts"
+    Each workflow should declare its own ServiceAccount with least-privilege RBAC scoped to the resources it needs. The SA and its ClusterRole/ClusterRoleBinding go in the execution namespace (`kubernaut-workflows`), while the `RemediationWorkflow` CRD itself goes in the platform namespace (`kubernaut-system`). See the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/deploy/remediation-workflows) repository for complete examples.
 
 ### Step 2: Write the Remediation Script
 
@@ -295,9 +339,22 @@ The Workflow Execution controller validates that these resources exist before cr
 
 ### Parameters
 
-Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables. For the complete parameter schema, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) in the CRD Reference.
+Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variables.
 
-The `description` field is shown to the LLM during `get_workflow`, so it should be clear enough for the LLM to populate the parameter from its investigation findings.
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Parameter name in `UPPER_SNAKE_CASE` |
+| `type` | string | One of: `string`, `integer`, `boolean`, `float`, `array` |
+| `required` | boolean | Whether the parameter must be provided |
+| `description` | string | Shown to the LLM during `get_workflow` — write it clearly enough for the LLM to populate the value from its investigation findings |
+| `default` | JSON | Default value (type must match `type` field) |
+| `enum` | string[] | Allowed values (validated at execution time) |
+| `pattern` | string | Regex validation for `string` parameters |
+| `minimum` | number | Minimum value for `integer`/`float` parameters |
+| `maximum` | number | Maximum value for `integer`/`float` parameters |
+| `dependsOn` | string | Name of another parameter this one depends on |
+
+For the complete parameter schema, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) in the CRD Reference.
 
 #### Canonical target resource parameters
 
@@ -346,7 +403,7 @@ The Workflow Execution controller creates a Job with:
 
 - **Environment variables** -- All parameters (including the three canonical `TARGET_RESOURCE_*` params) injected as env vars, plus the system-injected `TARGET_RESOURCE`
 - **Dependency mounts** -- Secrets at `/run/kubernaut/secrets/<name>`, ConfigMaps at `/run/kubernaut/configmaps/<name>`
-- **ServiceAccount** -- `kubernaut-workflow-runner` (pre-configured RBAC)
+- **ServiceAccount** -- Per-workflow SA from `execution.serviceAccountName` (recommended). Falls back to the execution namespace default SA if omitted.
 
 ### Tekton Pipelines
 
@@ -375,6 +432,7 @@ apiVersion: kubernaut.ai/v1alpha1
 kind: RemediationWorkflow
 metadata:
   name: ansible-fix-config
+  namespace: kubernaut-system
 spec:
   version: "1.0.0"
   description:
@@ -390,6 +448,7 @@ spec:
     engine: ansible
     bundle: https://github.com/org/remediation-playbooks.git
     bundleDigest: b7e6a135be2019f995cb4875dbc0116dfda39d21
+    serviceAccountName: ansible-fix-config-runner
     engineConfig:
       playbookPath: "playbooks/fix-config.yml"
       jobTemplateName: "kubernaut-fix-config"
@@ -427,6 +486,29 @@ The Workflow Execution controller launches the AWX job template, passes paramete
 
 The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using `kubernetes.core` modules receive `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
 
+**Setting up an Ansible workflow:**
+
+The following checklist covers the operational steps for creating an Ansible-based workflow end-to-end:
+
+1. **Create the AWX/AAP Job Template** — the `jobTemplateName` in `engineConfig` must match an existing Job Template in your AWX/AAP instance. Configure the template to use the Execution Environment that contains the collections your playbook needs (e.g., `kubernetes.core`, `community.general`).
+
+2. **Structure the playbook repository** — the `bundle` field is a Git repository URL and `bundleDigest` is the Git commit SHA that pins the playbook version. A typical layout:
+
+    ```
+    remediation-playbooks/
+    ├── playbooks/
+    │   ├── fix-config.yml
+    │   └── migrate-storage.yml
+    └── roles/
+        └── common/
+    ```
+
+3. **Configure Git credentials** — if the playbook repo is private, configure an SCM credential on the AWX Project that syncs the repository. The `bundleDigest` (commit SHA) ensures Kubernaut always runs the exact playbook version registered in the CRD.
+
+4. **Wire up secrets** — for each entry in `dependencies.secrets`, create the corresponding Kubernetes Secret in the execution namespace (`kubernaut-workflows`). The executor reads each Secret, creates an ephemeral AWX credential, and injects values as `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables. Use `lookup('env', 'KUBERNAUT_SECRET_...')` with `no_log: true` in your playbook.
+
+5. **Set the `serviceAccountName`** — the SA provides a short-lived token via the Kubernetes TokenRequest API for AWX credential injection. Ensure the SA has RBAC permissions for any K8s resources the playbook modifies.
+
 ## Action Type Taxonomy
 
 Action types form the vocabulary the LLM uses to reason about remediation. Each action type has a structured description (`what`, `whenToUse`, `whenNotToUse`, `preconditions`) that the LLM reads during the `list_available_actions` step.
@@ -440,6 +522,7 @@ apiVersion: kubernaut.ai/v1alpha1
 kind: ActionType
 metadata:
   name: restart-sidecar
+  namespace: kubernaut-system
 spec:
   name: RestartSidecar
   description:
@@ -455,6 +538,9 @@ kubectl apply -f restart-sidecar-actiontype.yaml
 
 The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for audit attribution. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.
 
+!!! note "`whenNotToUse` and `preconditions` are optional but strongly recommended"
+    The `whenNotToUse` and `preconditions` fields are optional on both `ActionType` and `RemediationWorkflow` descriptions. However, providing them significantly improves LLM selection quality by giving the model explicit exclusion criteria and validation requirements.
+
 !!! warning "Action type descriptions directly affect LLM behavior"
     The LLM reads `what`, `whenToUse`, `whenNotToUse`, and `preconditions` verbatim during workflow discovery. Poorly written or overlapping descriptions degrade workflow selection quality:
 
@@ -465,15 +551,17 @@ The Auth Webhook intercepts the CREATE, registers the action type in the DataSto
 
 ## Workflow Lifecycle
 
-Workflows have five lifecycle states:
+Workflows have seven lifecycle states:
 
 | State | Description | Discoverable |
 |---|---|---|
-| `active` | Available for selection | Yes (if `is_latest_version`) |
-| `disabled` | Temporarily unavailable (CRD deleted, or manually disabled) | No |
-| `superseded` | Replaced by a new registration with different content for the same `metadata.name` + `version` | No |
-| `deprecated` | Marked for removal, still usable | No |
-| `archived` | Permanently removed from catalog | No |
+| `Pending` | Initial state before Auth Webhook registration completes | No |
+| `Active` | Available for selection | Yes (if `is_latest_version`) |
+| `Invalid` | Registration failed (e.g., execution bundle image not found in registry) | No |
+| `Disabled` | Temporarily unavailable (CRD deleted, or manually disabled) | No |
+| `Superseded` | Replaced by a new registration with different content for the same `metadata.name` + `version` | No |
+| `Deprecated` | Marked for removal, still usable | No |
+| `Archived` | Permanently removed from catalog | No |
 
 State transitions via `kubectl`:
 
@@ -593,6 +681,18 @@ The `final_score` determines the order in which workflows are presented to the L
 ## Example Workflows
 
 The [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository contains a library of reference workflows covering common remediation patterns (CrashLoopBackOff rollback, OOM memory increase, GitOps revert, node drain, certificate repair, etc.). These are ready-to-use starting points that operators can adapt to their environment.
+
+```
+kubernaut-demo-scenarios/deploy/
+├── action-types/          # One YAML per ActionType CRD
+│   ├── crashloop-rollback.yaml
+│   └── increase-memory-limits.yaml
+└── remediation-workflows/
+    └── <scenario>/        # Multi-doc YAML (SA + RBAC + CRD),
+        ├── <scenario>.yaml    plus Dockerfile and remediate.sh
+        ├── Containerfile.exec # for job-engine workflows
+        └── remediate.sh
+```
 
 Operators register workflows by applying `RemediationWorkflow` CRDs — see [Authoring Workflows](workflow-authoring.md) for guidelines.
 

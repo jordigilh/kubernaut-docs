@@ -170,7 +170,7 @@ spec:
 - **Exact match**: The workflow's value must equal the incident's value.
 - **Wildcard** (`"*"`): The workflow matches any non-empty value for that key (half credit).
 
-CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Internally, DataStorage wraps these into arrays for JSONB storage and scoring.
+CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Authors always declare `customLabels` as a flat `map[string]string`. DataStorage internally wraps each single-string value into a JSON array for JSONB scoring queries (e.g., `"high"` becomes `["high"]`), but this is transparent to workflow authors.
 
 ### Labeling Namespaces
 
@@ -304,6 +304,7 @@ apiVersion: kubernaut.ai/v1alpha1
 kind: ActionType
 metadata:
   name: graceful-restart
+  namespace: kubernaut-system
 spec:
   name: GracefulRestart
   description:
@@ -322,6 +323,7 @@ apiVersion: kubernaut.ai/v1alpha1
 kind: RemediationWorkflow
 metadata:
   name: restart-pods-v1
+  namespace: kubernaut-system
 spec:
   version: "1.0.0"
   description:
@@ -367,6 +369,7 @@ apiVersion: kubernaut.ai/v1alpha1
 kind: RemediationWorkflow
 metadata:
   name: crashloop-rollback-v1
+  namespace: kubernaut-system
 spec:
   version: "1.0.0"
   description:

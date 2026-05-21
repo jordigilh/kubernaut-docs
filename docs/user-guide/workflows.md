@@ -54,8 +54,11 @@ rules:
     resources: ["deployments"]
     verbs: ["get", "patch"]
   - apiGroups: ["apps"]
-    resources: ["deployments/status"]
-    verbs: ["get"]
+    resources: ["deployments/status", "replicasets"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -534,7 +537,7 @@ Parameters use `UPPER_SNAKE_CASE` names and are injected as environment variable
 | `pattern` | string | Regex validation for `string` parameters |
 | `minimum` | number | Minimum value for `integer`/`float` parameters |
 | `maximum` | number | Maximum value for `integer`/`float` parameters |
-| `dependsOn` | string | Name of another parameter this one depends on |
+| `dependsOn` | string[] | Names of other parameters this one depends on |
 
 For the complete parameter schema, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) in the CRD Reference.
 

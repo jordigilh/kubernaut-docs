@@ -181,8 +181,8 @@ _Appears in:_
 | ---| ---| ---|
 | `what`| _string_| What describes what this action type concretely does.|
 | `whenToUse`| _string_| WhenToUse describes conditions under which this action type is appropriate.|
-| `whenNotToUse`| _string_| WhenNotToUse describes specific exclusion conditions.|
-| `preconditions`| _string_| Preconditions describes conditions that must be verified before use.|
+| `whenNotToUse`| _string_| _(optional)_ WhenNotToUse describes specific exclusion conditions. Strongly recommended for LLM selection quality.|
+| `preconditions`| _string_| _(optional)_ Preconditions describes conditions that must be verified before use. Strongly recommended for LLM selection quality.|
 
 
 ### ActionTypeSpec
@@ -1446,8 +1446,8 @@ _Appears in:_
 | ---| ---| ---|
 | `what`| _string_| What describes what this workflow concretely does|
 | `whenToUse`| _string_| WhenToUse describes conditions under which this workflow is appropriate|
-| `whenNotToUse`| _string_| WhenNotToUse describes specific exclusion conditions|
-| `preconditions`| _string_| Preconditions describes conditions that must be verified through investigation|
+| `whenNotToUse`| _string_| _(optional)_ WhenNotToUse describes specific exclusion conditions. Strongly recommended for LLM selection quality.|
+| `preconditions`| _string_| _(optional)_ Preconditions describes conditions that must be verified through investigation. Strongly recommended for LLM selection quality.|
 
 
 ### RemediationWorkflowExecution
@@ -1549,7 +1549,7 @@ _Appears in:_
 | `actionType`| _string_| ActionType is the action type from the taxonomy (PascalCase).|
 | `labels`| _[RemediationWorkflowLabels](#remediationworkflowlabels)_| Labels contains mandatory matching/filtering criteria for discovery|
 | `customLabels`| _object (keys:string, values:string)_| CustomLabels contains operator-defined key-value labels for additional filtering|
-| `detectedLabels`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| DetectedLabels contains author-declared infrastructure requirements|
+| `detectedLabels`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| DetectedLabels contains author-declared infrastructure requirements. Expected keys: `gitOpsManaged`, `gitOpsTool`, `pdbProtected`, `hpaEnabled`, `stateful`, `helmManaged`, `networkIsolated`, `serviceMesh`. See [Detected Labels](../user-guide/workflows.md#detected-labels) for valid values and scoring weights.|
 | `execution`| _[RemediationWorkflowExecution](#remediationworkflowexecution)_| Execution contains execution engine configuration|
 | `dependencies`| _[RemediationWorkflowDependencies](#remediationworkflowdependencies)_| Dependencies declares infrastructure resources required by the workflow|
 | `maintainers`| _[RemediationWorkflowMaintainer](#remediationworkflowmaintainer) array_| Maintainers is optional maintainer information|

@@ -8,7 +8,7 @@ The SignalProcessing controller uses a single Rego policy file (`policy.rego`) f
 |---|---|
 | ConfigMap name | `signalprocessing-policy` (Rego) + `signalprocessing-proactive-signal-mappings` (optional, YAML) |
 | Mount path | `/etc/signalprocessing/policy.rego` (Rego) + `/etc/signalprocessing/proactive-signal-mappings.yaml` (mappings) |
-| Required | Yes -- chart fails at install if neither `signalprocessing.policy` nor `signalprocessing.existingPolicyConfigMap` is set |
+| Required | Yes -- chart fails at install if neither `signalprocessing.policies.content` nor `signalprocessing.policies.existingConfigMap` is set |
 
 ## Provisioning
 
@@ -18,7 +18,7 @@ Provide a single `.rego` file directly:
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set-file signalprocessing.policy=my-policy.rego \
+  --set-file signalprocessing.policies.content=my-policy.rego \
   ...
 ```
 
@@ -32,7 +32,7 @@ kubectl create configmap signalprocessing-policy \
   -n kubernaut-system
 
 helm install kubernaut charts/kubernaut/ \
-  --set signalprocessing.existingPolicyConfigMap=signalprocessing-policy \
+  --set signalprocessing.policies.existingConfigMap=signalprocessing-policy \
   ...
 ```
 

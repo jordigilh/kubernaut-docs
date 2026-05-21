@@ -300,7 +300,7 @@ See the [Rego Reference](rego-reference.md#ai-analysis-approval-policy) for the 
 
 | Policy | Provisioning |
 |---|---|
-| SP unified policy (`policy.rego`) | User-provided via `--set-file signalprocessing.policy=...` or `existingPolicyConfigMap` |
+| SP unified policy (`policy.rego`) | User-provided via `--set-file signalprocessing.policies.content=...` or `policies.existingConfigMap` |
 | SP proactive signal mappings | User-provided via `--set-file signalprocessing.proactiveSignalMappings.content=...` or `existingConfigMap` |
 | AA approval | User-provided via `--set-file aianalysis.policies.content=...` or `existingConfigMap` |
 

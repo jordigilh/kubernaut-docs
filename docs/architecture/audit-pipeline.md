@@ -127,7 +127,7 @@ All audit events for a single remediation share a `correlation_id` set to the `R
 
 ## Emitting Services
 
-All 10 Go services (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent) emit audit events:
+All 11 Go services (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent, API Frontend) emit audit events:
 
 | Service | Event Prefix | Key Events |
 |---|---|---|
@@ -141,6 +141,7 @@ All 10 Go services (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Re
 | **Effectiveness Monitor** | `effectiveness.*` | `health.assessed`, `hash.computed`, `alert.assessed`, `metrics.assessed`, `assessment.completed` |
 | **Auth Webhook** | `webhook.*`, `remediationworkflow.*`, `actiontype.*` | `remediationapprovalrequest.decided`, `remediationrequest.timeout_modified`, `notification.cancelled`, `remediationworkflow.admitted.create`, `remediationworkflow.admitted.delete`, `remediationworkflow.admitted.denied`, `actiontype.admitted.create`, `actiontype.admitted.update`, `actiontype.admitted.delete`, `actiontype.denied.create`, `actiontype.denied.update`, `actiontype.denied.delete` |
 | **DataStorage** | `datastorage.*`, `workflow.catalog.*` | `workflow.created`, `workflow.updated`, `actiontype.created`, `actiontype.updated`, `actiontype.disabled`, `actiontype.reenabled`, `actiontype.disable_denied`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
+| **API Frontend** | `apifrontend.*` | `rr.created`, `rr.deduplicated`, `ka.delegated`, `ka.result_received`, `user.decision`, `severity_triage.completed`, `severity_triage.failed`, `session.completed`, `impersonation.created`, `jwt.delegation`, `mcp.session_init`, `circuitbreaker.trip`, `triage.started`, `triage.completed` |
 
 ## Operator Attribution
 

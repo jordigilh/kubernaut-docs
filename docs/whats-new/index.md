@@ -50,7 +50,7 @@ The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kub
 
 | ClusterRole | Persona |
 |---|---|
-| `kubernaut-tool-sre` | Full SRE access (all 19 tools) |
+| `kubernaut-tool-sre` | Full SRE access (all 18 tools) |
 | `kubernaut-tool-ai-orchestrator` | Automated agent orchestration |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration |
 | `kubernaut-tool-observability` | Read-only observability |
@@ -68,6 +68,18 @@ An opt-in authentication mode (PR #1227) that forwards the user's raw OIDC JWT a
 Additionally, `serviceaccounts` has been removed from the AF ClusterRole's impersonation resources — no AF code path impersonates a service account.
 
 See [Security & RBAC: OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15) for the full model and compatibility matrix.
+
+### Generic cluster context tools replace narrow triage tools
+
+The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events`, `af_resolve_owner`) have been replaced with 3 generic tools that can inspect any namespaced Kubernetes resource (#1230):
+
+| New Tool | Replaces | Purpose |
+|---|---|---|
+| `kubectl_get` | `af_get_pods`, `af_get_workloads` (single) | Get any namespaced resource by kind/name/namespace |
+| `kubectl_list` | `af_get_pods`, `af_get_workloads` (list) | List any namespaced resources with optional label selector |
+| `kubectl_list_events` | `af_list_events` | List events with reason/object filters (renamed for consistency) |
+
+`af_resolve_owner` is removed — KA independently resolves the owner chain during RCA. The new tools use `RESTMapper` for dynamic kind-to-GVR resolution. Secret `.data` fields are redacted before returning to the LLM.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 

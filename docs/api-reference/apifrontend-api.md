@@ -76,16 +76,16 @@ POST /a2a/invoke
 
 Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication.
 
-The A2A agent uses **19 SAR-gated Google ADK tools** organized in four domains:
+The A2A agent uses **18 SAR-gated Google ADK tools** organized in four domains:
 
 | Domain | Tools |
 |---|---|
 | **Remediation lifecycle** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch` |
 | **Investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_select_workflow`, `kubernaut_present_decision` |
 | **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
-| **Cluster context** | `af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`, `af_check_existing_rr`, `af_create_rr` |
+| **Cluster context** | `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr` |
 
-The `kubernaut_*` investigation tools proxy to the Kubernaut Agent (via REST or MCP). The `kubernaut_*` CRD tools operate on RemediationRequest resources via the Kubernetes API. The `af_*` cluster context tools query the Kubernetes API using the authenticated user's identity (via impersonation or [OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15)). The `kubernaut_*` data tools query DataStorage. The AF also uses internal orchestration tools (`kubernaut_discover_workflows`, `kubernaut_stream_investigation`) that are not SAR-gated — they are invoked by the AF's own agent loop, not exposed directly to A2A callers.
+The `kubernaut_*` investigation tools proxy to the Kubernaut Agent (via REST or MCP). The `kubernaut_*` CRD tools operate on RemediationRequest resources via the Kubernetes API. The `kubectl_*` cluster context tools query any namespaced Kubernetes resource using the authenticated user's identity (via impersonation or [OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15)) with dynamic kind-to-GVR resolution via `RESTMapper`. Secret `.data` fields are redacted before returning to the LLM. The `kubernaut_*` data tools query DataStorage. The AF also uses internal orchestration tools (`kubernaut_discover_workflows`, `kubernaut_stream_investigation`) that are not SAR-gated — they are invoked by the AF's own agent loop, not exposed directly to A2A callers.
 
 ### Agent Card Discovery
 

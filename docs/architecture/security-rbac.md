@@ -3,7 +3,7 @@
 Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources.
 
 !!! info "Helm vs Operator RBAC"
-    The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the **Operator** prefixes each name with the CR's namespace (e.g., `kubernaut-system-gateway-role`) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates **13** baseline ClusterRoles, plus **2** additional ones (`alertmanager-view`, `gateway-signal-source`) when `spec.monitoring.enabled: true`. An optional `workflowexecution-awx` ClusterRole is created when Ansible integration is enabled.
+    The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the **Operator** prefixes each name with the CR's namespace (e.g., `kubernaut-system-gateway-role`) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates **14** baseline ClusterRoles (including the API Frontend ClusterRole in v1.5+), plus **2** additional ones (`alertmanager-view`, `gateway-signal-source`) when `spec.monitoring.enabled: true`, **6** per-persona tool ClusterRoles for SAR authorization (v1.5+), and an optional `workflowexecution-awx` ClusterRole when Ansible integration is enabled.
 
     The Operator also supports `spec.kubernautAgent.additionalClusterRoleBindings` — a list of pre-existing ClusterRole names to bind to the Kubernaut Agent ServiceAccount (max 64). **Use with caution**: any writable cluster-scoped privileges referenced here are granted to the agent, creating a privilege escalation path. Restrict who may edit the Kubernaut CR via cluster RBAC. See the [Operator threat model](https://github.com/jordigilh/kubernaut-operator/blob/main/docs/security/threat-model.md) for details.
 
@@ -219,6 +219,7 @@ Kubernaut Agent itself has a broad **read-only** ClusterRole (`kubernaut-agent-i
 | `security.istio.io` | authorizationpolicies, peerauthentications, requestauthentications | get, list, watch | Istio security policy investigation |
 | `networking.istio.io` | virtualservices, destinationrules, gateways, serviceentries | get, list, watch | Istio networking investigation |
 | `monitoring.coreos.com` | prometheusrules, servicemonitors, podmonitors, probes | get, list, watch | Monitoring investigation |
+| `config.openshift.io` | nodes, clusteroperators, clusterversions, infrastructures | get, list, watch | OCP platform investigation (Operator only) |
 
 This read-only access allows the LLM to investigate root causes using live cluster data without making changes.
 
@@ -389,10 +390,10 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 | ClusterRole | Persona | Tool Count | Tools |
 |---|---|---|---|
-| `kubernaut-tool-sre` | Full SRE access | 19 | All SAR-gated tools |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 | Remediation lifecycle (5) + investigation (4) + cluster context (6) |
+| `kubernaut-tool-sre` | Full SRE access | 18 | All SAR-gated tools |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 14 | Remediation lifecycle (5) + investigation (4) + cluster context (5) |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
-| `kubernaut-tool-observability` | Read-only observability | 8 | list/get/watch + effectiveness + workflows + cluster context (4) |
+| `kubernaut-tool-observability` | Read-only observability | 7 | list/get/watch + effectiveness + workflows + cluster context (3) |
 | `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | list/get + workflows + history + effectiveness + audit trail |
 | `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_approve`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
 
@@ -436,7 +437,7 @@ apifrontend:
 
 ### OIDC-direct mode — eliminating impersonation (v1.5)
 
-The AF's 4 read-only triage tools (`af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`) make K8s API calls as the authenticated user. By default, this uses **impersonation** (`Impersonate-User` / `Impersonate-Group` headers), which requires the AF ClusterRole to have `impersonate` on `users` and `groups`.
+The AF's 3 read-only triage tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`) make K8s API calls as the authenticated user. By default, this uses **impersonation** (`Impersonate-User` / `Impersonate-Group` headers), which requires the AF ClusterRole to have `impersonate` on `users` and `groups`.
 
 v1.5 adds an opt-in **OIDC-direct mode** (PR #1227) that forwards the user's raw OIDC JWT as a bearer token instead of impersonating. This eliminates impersonation privileges entirely, addressing CIS benchmark and SOC 2 audit concerns.
 

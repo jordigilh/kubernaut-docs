@@ -122,6 +122,33 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `datastorage.resources` | CPU/memory requests and limits | See `values.yaml` |
 | `datastorage.service.type` | Kubernetes Service type | `ClusterIP` |
 
+#### DataStorage Server Config (v1.5+)
+
+| Parameter | Description | Default |
+|---|---|---|
+| `datastorage.config.server.maxBodySize` | Maximum request body size in bytes | `5242880` (5 MiB) |
+| `datastorage.config.server.corsAllowedOrigins` | CORS allowed origins for browser-based access (e.g., Backstage console) | `[]` |
+| `datastorage.config.server.signerCertDir` | Directory containing the certificate used to sign audit events | `/etc/certs` |
+
+#### DataStorage Redis Config (v1.5+)
+
+| Parameter | Description | Default |
+|---|---|---|
+| `datastorage.config.redis.dlqMaxLen` | Dead letter queue MAXLEN bound | `10000` |
+| `datastorage.config.redis.tls.enabled` | Enable TLS for Redis/Valkey connections | `false` |
+| `datastorage.config.redis.tls.certFile` | Client TLS certificate file path | `""` |
+| `datastorage.config.redis.tls.keyFile` | Client TLS key file path | `""` |
+| `datastorage.config.redis.tls.caFile` | CA certificate file path for server verification | `""` |
+
+#### DataStorage Retention Config (v1.5+)
+
+| Parameter | Description | Default |
+|---|---|---|
+| `datastorage.config.retention.enabled` | Enable automatic data retention cleanup | `true` |
+| `datastorage.config.retention.interval` | How often the retention job runs | `24h` |
+| `datastorage.config.retention.batchSize` | Number of rows processed per retention batch | `1000` |
+| `datastorage.config.retention.defaultDays` | Default retention period in days | `2555` (~7 years) |
+
 ### Kubernaut Agent (LLM integration)
 
 | Parameter | Description | Default |
@@ -171,6 +198,27 @@ notification:
       secretName: slack-webhook
       secretKey: webhook-url
 ```
+
+### API Frontend (v1.5+)
+
+The API Frontend service provides the REST API surface for external integrations, MCP/A2A agent protocols, and the Backstage console. It is always deployed starting in v1.5.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `apifrontend.enabled` | Enable API Frontend deployment | `true` |
+| `apifrontend.replicas` | Number of replicas | `1` |
+| `apifrontend.logging.level` | Log level | `INFO` |
+| `apifrontend.config.server.httpPort` | Primary API port | `8443` |
+| `apifrontend.config.server.metricsPort` | Prometheus metrics port | `9090` |
+| `apifrontend.config.server.healthPort` | Health check port | `8081` |
+| `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
+| `apifrontend.config.session.retentionTTL` | How long completed sessions are retained | `720h` |
+| `apifrontend.config.severityTriage.cacheTTLSeconds` | Severity triage cache TTL | `30` |
+| `apifrontend.config.severityTriage.llmConfidence` | LLM confidence threshold for severity triage | `0.7` |
+| `apifrontend.resources.requests.memory` | Memory request | `64Mi` |
+| `apifrontend.resources.requests.cpu` | CPU request | `50m` |
+| `apifrontend.resources.limits.memory` | Memory limit | `256Mi` |
+| `apifrontend.resources.limits.cpu` | CPU limit | `500m` |
 
 ### Controllers (Common Parameters)
 

@@ -14,7 +14,7 @@ Kubernaut offers two deployment methods:
 
 ## Kubernaut Operator (Production)
 
-The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 10 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
+The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices (v1.5+; 10 in v1.4), RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
 
 ### Installation
 
@@ -66,7 +66,7 @@ spec:
 - Validates BYO PostgreSQL and Valkey secrets before deployment
 - Runs embedded database schema migrations
 - Installs and upgrades the 9 Kubernaut workload CRDs
-- Deploys all 10 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
 - Configures OCP Routes and service-serving CA TLS
 - Reports per-service readiness status on the `Kubernaut` CR
 - Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)

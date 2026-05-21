@@ -3,5 +3,5 @@ mkdocs-material==9.7.5
 mkdocs-macros-plugin==1.5.0
 mike==2.1.4
 pymdown-extensions==10.21
-pygments>=2.19,<2.21
+pygments>=2.19,<2.20
 markdown>=3.7,<3.10

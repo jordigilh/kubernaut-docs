@@ -241,7 +241,7 @@ The API Frontend ServiceAccount requires:
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|
-| `apifrontend.kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management |
+| `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management (PR #1224) |
 | `kubernaut.ai` | `remediationrequests` | get, list, create | RR access for interactive sessions |
 | `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
 | _(core)_ | `users`, `groups`, `serviceaccounts` | impersonate | Triage tool delegation ([#1226](https://github.com/jordigilh/kubernaut/issues/1226) plans OIDC-direct mode to eliminate this) |

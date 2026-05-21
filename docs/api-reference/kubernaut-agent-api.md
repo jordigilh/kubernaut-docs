@@ -149,10 +149,104 @@ All error responses (4xx, 5xx) use [RFC 7807 Problem Details](index.md#error-res
 }
 ```
 
+## Interactive Session Endpoints (v1.5+)
+
+v1.5 adds interactive MCP session support to Kubernaut Agent, consumed by the API Frontend. These endpoints power the [interactive sessions](../user-guide/interactive-sessions.md) feature.
+
+### Start Interactive Investigation
+
+```
+POST /api/v1/interactive/investigate
+```
+
+Starts an interactive investigation session with Lease-based distributed locking.
+
+**Request**:
+
+```json
+{
+  "action": "start",
+  "signal_name": "PodCrashLoopBackOff",
+  "namespace": "production",
+  "resource_kind": "Deployment",
+  "resource_name": "checkout-service",
+  "user_id": "sre@example.com"
+}
+```
+
+**Response**: `200 OK` — Session created with Lease
+
+```json
+{
+  "session_id": "sess-a1b2c3d4",
+  "status": "investigating",
+  "lease_name": "kubernaut-session-sess-a1b2c3d4"
+}
+```
+
+### Reconnect to Session
+
+```
+POST /api/v1/interactive/investigate
+```
+
+Reconnect to an existing session (same user) or trigger takeover (different user).
+
+**Request**:
+
+```json
+{
+  "action": "reconnect",
+  "session_id": "sess-a1b2c3d4",
+  "user_id": "sre@example.com"
+}
+```
+
+### Discover Workflows
+
+```
+POST /api/v1/interactive/discover
+```
+
+After RCA completes, returns matching workflows with LLM-populated parameters.
+
+**Response**: `200 OK`
+
+```json
+{
+  "session_id": "sess-a1b2c3d4",
+  "alternatives": [
+    {
+      "workflow_id": "restart-and-patch-memory",
+      "description": "Bump memory limit + rolling restart",
+      "confidence": 0.91,
+      "risk": "low",
+      "parameters": { "memory_limit": "768Mi" }
+    }
+  ]
+}
+```
+
+### Select Workflow
+
+```
+POST /api/v1/interactive/select
+```
+
+Operator selects a workflow from the discovery results. Parameters are validated against the workflow schema with LLM self-correction on validation failure.
+
+### Stream Investigation (SSE)
+
+```
+GET /api/v1/interactive/stream/{session_id}
+```
+
+Server-Sent Events stream of real-time investigation output. See [API Frontend API: SSE Streaming](apifrontend-api.md#sse-streaming) for event types.
+
 ## Session Management
 
-- Sessions are stored **in-memory** in the Kubernaut Agent pod
-- If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts)
+- **Autonomous sessions** are stored **in-memory** in the Kubernaut Agent pod. If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts).
+- **Interactive sessions** (v1.5+) use **Kubernetes Leases** for distributed locking. Orphaned Leases are reclaimed on startup via `ReconcileOrphanedLeases`. The `SessionDrainer` gracefully drains active sessions on pod shutdown.
 - Session results are available until the pod restarts or the session is garbage-collected
 
 ## LLM Providers

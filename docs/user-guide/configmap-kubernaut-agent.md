@@ -195,22 +195,25 @@ Empirical testing shows that loading a single unused toolset (Prometheus, 123 to
 ### Example: Minimal SDK Config (No Optional Toolsets)
 
 ```yaml
-llm:
-  provider: openai
-  model: gpt-4o
-  temperature: 0.5
+ai:
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.5
 
-toolsets: {}
+integrations:
+  toolsets: {}
 ```
 
 Enable Prometheus only when investigating metric-driven alerts:
 
 ```yaml
-toolsets:
-  prometheus/metrics:
-    enabled: true
-    config:
-      prometheus_url: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
+integrations:
+  toolsets:
+    prometheus/metrics:
+      enabled: true
+      config:
+        prometheusUrl: "http://kube-prometheus-stack-prometheus.monitoring.svc:9090"
 ```
 
 !!! note "Automatic toolset selection"
@@ -221,11 +224,12 @@ toolsets:
 ### OpenAI
 
 ```yaml
-llm:
-  provider: openai
-  model: gpt-4o
-  temperature: 0.7
-  timeout_seconds: 120
+ai:
+  llm:
+    provider: openai
+    model: gpt-4o
+    temperature: 0.7
+    timeoutSeconds: 120
 ```
 
 Secret: `kubectl create secret generic llm-credentials --from-literal=OPENAI_API_KEY=sk-...`
@@ -233,10 +237,11 @@ Secret: `kubectl create secret generic llm-credentials --from-literal=OPENAI_API
 ### OpenAI-Compatible (vLLM, LocalAI, TGI)
 
 ```yaml
-llm:
-  provider: openai
-  model: gpt-4o
-  endpoint: http://vllm.internal.svc:8000
+ai:
+  llm:
+    provider: openai
+    model: gpt-4o
+    endpoint: http://vllm.internal.svc:8000
 ```
 
 Set the `endpoint` to the server origin **without** `/v1` — the agent appends `/v1` automatically.
@@ -244,12 +249,13 @@ Set the `endpoint` to the server origin **without** `/v1` — the agent appends 
 ### Azure OpenAI
 
 ```yaml
-llm:
-  provider: azure
-  model: gpt-4o
-  endpoint: https://my-resource.openai.azure.com/
-  azure_api_version: "2024-02-15-preview"
-  timeout_seconds: 120
+ai:
+  llm:
+    provider: azure
+    model: gpt-4o
+    endpoint: https://my-resource.openai.azure.com/
+    azureApiVersion: "2024-02-15-preview"
+    timeoutSeconds: 120
 ```
 
 Secret: `kubectl create secret generic llm-credentials --from-literal=AZURE_API_KEY=...`
@@ -257,12 +263,13 @@ Secret: `kubectl create secret generic llm-credentials --from-literal=AZURE_API_
 ### Google Vertex AI (Gemini)
 
 ```yaml
-llm:
-  provider: vertex
-  model: gemini-2.5-pro
-  vertex_project: my-project-id
-  vertex_location: us-central1
-  timeout_seconds: 180
+ai:
+  llm:
+    provider: vertex
+    model: gemini-2.5-pro
+    vertexProject: my-project-id
+    vertexLocation: us-central1
+    timeoutSeconds: 180
 ```
 
 Secret: `kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system`
@@ -272,12 +279,13 @@ The agent auto-detects `application_default_credentials.json` in the mounted sec
 ### Claude on Vertex AI
 
 ```yaml
-llm:
-  provider: vertex_ai
-  model: claude-sonnet-4-20250514
-  vertex_project: my-project-id
-  vertex_location: us-east5
-  timeout_seconds: 180
+ai:
+  llm:
+    provider: vertex_ai
+    model: claude-sonnet-4-20250514
+    vertexProject: my-project-id
+    vertexLocation: us-east5
+    timeoutSeconds: 180
 ```
 
 Uses the Anthropic Go SDK directly (not LangChainGo). Requires Vertex AI Model Garden access.
@@ -285,10 +293,11 @@ Uses the Anthropic Go SDK directly (not LangChainGo). Requires Vertex AI Model G
 ### Anthropic (Direct)
 
 ```yaml
-llm:
-  provider: anthropic
-  model: claude-sonnet-4-20250514
-  timeout_seconds: 180
+ai:
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-20250514
+    timeoutSeconds: 180
 ```
 
 Secret: `kubectl create secret generic llm-credentials --from-literal=ANTHROPIC_API_KEY=...`
@@ -296,10 +305,11 @@ Secret: `kubectl create secret generic llm-credentials --from-literal=ANTHROPIC_
 ### Ollama (Local / Air-Gapped)
 
 ```yaml
-llm:
-  provider: ollama
-  model: llama3
-  endpoint: http://ollama.internal.svc:11434
+ai:
+  llm:
+    provider: ollama
+    model: llama3
+    endpoint: http://ollama.internal.svc:11434
 ```
 
 Recommended for disconnected/air-gapped environments. See [Disconnected Installation](../operations/disconnected-install.md) for setup guidance.

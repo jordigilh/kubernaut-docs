@@ -103,6 +103,9 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `gateway.config.server.maxConcurrentRequests` | Maximum concurrent request processing | `100` |
 | `gateway.config.server.readTimeout` | HTTP read timeout | `30s` |
 | `gateway.config.server.writeTimeout` | HTTP write timeout | `30s` |
+| `gateway.config.server.k8sRequestTimeout` | Timeout for Kubernetes API requests (TokenReview, SAR) | `15s` |
+| `gateway.config.middleware.trustedProxyCIDRs` | Trusted proxy CIDRs for `X-Forwarded-For` extraction. Empty = fail-closed (proxy headers never trusted). | `[]` |
+| `gateway.config.cors.allowedOrigins` | CORS allowed origins. Gateway is an M2M API; the default rejects all browser clients. | `https://no-browser-clients.invalid` |
 | `gateway.config.deduplication.cooldownPeriod` | Signal deduplication cooldown | `5m` |
 | `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
 
@@ -195,22 +198,25 @@ All controllers (`aianalysis`, `signalprocessing`, `remediationorchestrator`, `w
 
 ### EffectivenessMonitor
 
-Beginning with **v1.4**, Prometheus and AlertManager knobs are flattened into a single Helm subtree: **`effectivenessmonitor.monitoring`**, replacing **`effectivenessmonitor.external.*`** (see the introductory **v1.4 configuration highlights** callout).
-
 | Parameter | Description | Default |
 |---|---|---|
 | `effectivenessmonitor.config.assessment.stabilizationWindow` | EM-internal stabilization window (logged at startup). **Note:** the actual stabilization delay enforced by the EM reconciler is read from `EA.spec.config.stabilizationWindow`, which is set by the RO (default `5m` via `remediationorchestrator.config.effectivenessAssessment.stabilizationWindow`). | `30s` |
-| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `300s` |
-| `effectivenessmonitor.config.assessment.maxConcurrentReconciles` | Maximum concurrent EA reconciliations | `5` |
-| `effectivenessmonitor.external.prometheusUrl` | Prometheus URL | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` |
-| `effectivenessmonitor.external.prometheusEnabled` | Enable Prometheus integration | `false` |
-| `effectivenessmonitor.external.alertManagerUrl` | AlertManager URL | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` |
-| `effectivenessmonitor.external.alertManagerEnabled` | Enable AlertManager integration | `false` |
-| `effectivenessmonitor.external.connectionTimeout` | HTTP client timeout for Prometheus/AlertManager connections | `10s` |
-| `effectivenessmonitor.external.prometheusLookback` | Duration before EA creation to query Prometheus for baseline metrics. Min: `1m`. | `30m` |
-| `effectivenessmonitor.external.scrapeInterval` | Prometheus scrape interval used to derive requeue timing for metric assessment. Min: `5s`. | `60s` |
-| `effectivenessmonitor.external.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to Prometheus/AlertManager. On OCP with `ocpMonitoringRbac`, set to `/etc/ssl/em/service-ca.crt` (auto-mounted). | `""` |
-| `effectivenessmonitor.external.ocpMonitoringRbac` | Create `cluster-monitoring-view` ClusterRoleBinding and (when `alertManagerEnabled`) a ClusterRole granting `monitoring.coreos.com/alertmanagers/api` access for OCP's `kube-rbac-proxy`. Also sets `IS_OPENSHIFT` env and auto-configures TLS CA trust via a service-CA ConfigMap. | `false` |
+| `effectivenessmonitor.config.assessment.validityWindow` | Time window for assessment validity | `120s` |
+
+Prometheus and AlertManager endpoints are configured via the **unified `monitoring` block** (see [Monitoring](#monitoring) below), not under `effectivenessmonitor`. The chart propagates `monitoring.*` values to both the EffectivenessMonitor and Kubernaut Agent.
+
+### Monitoring
+
+Beginning with **v1.4**, Prometheus and AlertManager connection settings are configured via a **top-level `monitoring` block** — a single source of truth propagated to both the EffectivenessMonitor and Kubernaut Agent.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `monitoring.prometheus.enabled` | Enable Prometheus integration | `false` |
+| `monitoring.prometheus.url` | Prometheus URL | `""` |
+| `monitoring.prometheus.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to Prometheus | `""` |
+| `monitoring.alertManager.enabled` | Enable AlertManager integration | `false` |
+| `monitoring.alertManager.url` | AlertManager URL | `""` |
+| `monitoring.alertManager.tlsCaFile` | Path to PEM CA bundle for HTTPS connections to AlertManager | `""` |
 
 ### AIAnalysis
 
@@ -228,12 +234,12 @@ One of `policies.content` or `policies.existingConfigMap` **must** be provided; 
 | Parameter | Description | Default |
 |---|---|---|
 | `signalprocessing.replicas` | Number of replicas | `1` |
-| `signalprocessing.policy` | Unified Rego policy content (via `--set-file`). Chart creates `signalprocessing-policy` ConfigMap. | `""` |
-| `signalprocessing.existingPolicyConfigMap` | Pre-existing ConfigMap name for the unified Rego policy. Takes priority over `policy`. | `""` |
+| `signalprocessing.policies.content` | Unified Rego policy content (via `--set-file`). Chart creates `signalprocessing-policy` ConfigMap. | `""` |
+| `signalprocessing.policies.existingConfigMap` | Pre-existing ConfigMap name for the unified Rego policy. Takes priority over `policies.content`. | `""` |
 | `signalprocessing.proactiveSignalMappings.content` | Proactive signal mappings YAML (via `--set-file`). Chart creates ConfigMap. | `""` |
 | `signalprocessing.proactiveSignalMappings.existingConfigMap` | Pre-existing ConfigMap name for proactive signal mappings. | `""` |
 
-One of `policy` or `existingPolicyConfigMap` **must** be provided; the chart fails at install if neither is set. The policy file is a single `.rego` file (not a YAML bundle) containing all classification rules under `package signalprocessing`. Proactive signal mappings are optional and injected separately. See [SignalProcessing Rego Policies](configmap-policies.md) for the policy structure and customization guide.
+One of `policies.content` or `policies.existingConfigMap` **must** be provided; the chart fails at install if neither is set. The policy file is a single `.rego` file (not a YAML bundle) containing all classification rules under `package signalprocessing`. Proactive signal mappings are optional and injected separately. See [SignalProcessing Rego Policies](configmap-policies.md) for the policy structure and customization guide.
 
 ### PostgreSQL
 
@@ -362,6 +368,26 @@ Individual `RemediationRequest` resources can override timeouts via `spec.timeou
 
 These settings prevent remediation storms and avoid repeating failed approaches.
 
+### Async Propagation Delays
+
+| Parameter | Default | Description |
+|---|---|---|
+| `remediationorchestrator.config.asyncPropagation.gitOpsSyncDelay` | `3m` | Wait time for GitOps (ArgoCD/Flux) to sync before effectiveness assessment |
+| `remediationorchestrator.config.asyncPropagation.operatorReconcileDelay` | `1m` | Wait time for operator-managed resources to reconcile |
+| `remediationorchestrator.config.asyncPropagation.proactiveAlertDelay` | `5m` | Wait time for proactive alert resolution before assessment |
+
+### Notification Settings
+
+| Parameter | Default | Description |
+|---|---|---|
+| `remediationorchestrator.config.notifications.notifySelfResolved` | `false` | Emit a notification when a remediation self-resolves (alert clears before execution) |
+
+### CRD Retention
+
+| Parameter | Default | Description |
+|---|---|---|
+| `remediationorchestrator.config.retention.period` | `24h` | Time-to-live for completed RemediationRequest CRDs before automatic cleanup |
+
 ## Execution Namespace
 
 Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate from the target resource's namespace. This creates a security boundary.
@@ -370,6 +396,7 @@ Workflow Jobs and Tekton PipelineRuns execute in a dedicated namespace, separate
 |---|---|---|
 | `workflowexecution.workflowNamespace` | `kubernaut-workflows` | Namespace for workflow execution |
 | `workflowexecution.config.execution.cooldownPeriod` | `1m` | Cooldown between executions |
+| `workflowexecution.config.tekton.enabled` | `nil` | Tekton Pipelines engine toggle. `nil` or `true` = auto-discover Tekton CRDs at startup; `false` = disable Tekton engine. |
 
 The `kubernaut-workflow-runner` ServiceAccount has pre-configured RBAC to read and patch resources across namespaces. See [Security & RBAC -- Workflow Execution](../architecture/security-rbac.md#workflow-execution) for the full permission list.
 
@@ -465,15 +492,6 @@ Kubernaut configures **inter-service TLS** (REST between components) and **admis
 ### Inter-service TLS (Helm)
 
 These values control mTLS and HTTPS for internal service-to-service calls (for example, Gateway → DataStorage). When the server finds TLS material under `tls.interService.certDir`, the primary API port (**8080**) uses HTTPS; health (**8081**) and metrics (**9090**) stay plain HTTP.
-
-!!! note "TLS Security Profiles (v1.4)"
-    The `tls.profile` field (v1.4) selects a built-in cipher/protocol profile applied to all inter-service listeners:
-
-    | Profile | TLS Versions | Description |
-    |---|---|---|
-    | **Modern** | TLS 1.3 only | Strictest — recommended for new deployments |
-    | **Intermediate** (default) | TLS 1.2–1.3 | Balanced — compatible with most clients |
-    | **Old** | TLS 1.0–1.3 | Legacy — use only for backward-compatible environments |
 
 | Parameter | Description | Default |
 |---|---|---|

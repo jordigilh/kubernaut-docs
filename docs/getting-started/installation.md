@@ -107,7 +107,7 @@ This section walks you through installing Kubernaut using the Helm chart for dev
   - Alert resolution checks (AlertManager API)
   - Metrics scraping for all Kubernaut services (all pods expose `/metrics`)
 
-Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set `effectivenessmonitor.external.prometheusEnabled=true` and `effectivenessmonitor.external.alertManagerEnabled=true`.
+Prometheus and AlertManager integration is disabled by default. To enable effectiveness assessments based on alert resolution and metric queries, set `monitoring.prometheus.enabled=true` and `monitoring.alertManager.enabled=true`.
 
 ## Infrastructure Setup
 
@@ -146,8 +146,8 @@ Kubernaut integrates with Prometheus and AlertManager at two levels:
 
 | Service | Default URL | Override |
 |---|---|---|
-| Prometheus | `http://kube-prometheus-stack-prometheus.monitoring.svc:9090` | `effectivenessmonitor.external.prometheusUrl` |
-| AlertManager | `http://kube-prometheus-stack-alertmanager.monitoring.svc:9093` | `effectivenessmonitor.external.alertManagerUrl` |
+| Prometheus | (set via `monitoring.prometheus.url`) | `monitoring.prometheus.url` |
+| AlertManager | (set via `monitoring.alertManager.url`) | `monitoring.alertManager.url` |
 
 **2. AlertManager sends alerts to Gateway** -- The Gateway authenticates every signal ingestion request using Kubernetes TokenReview + SubjectAccessReview (SAR). AlertManager must include a bearer token in its webhook requests. See [Signal Source Authentication](#signal-source-authentication) below for the full configuration.
 
@@ -360,7 +360,7 @@ helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
   --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml \
   --set-file aianalysis.policies.content=my-approval.rego \
-  --set-file signalprocessing.policy=my-policy.rego
+  --set-file signalprocessing.policies.content=my-policy.rego
 ```
 
 See the [sdk-config.yaml.example](https://github.com/jordigilh/kubernaut-demo-scenarios/blob/main/helm/sdk-config.yaml.example) for a reference SDK config covering Vertex AI, Anthropic, OpenAI, and local models.

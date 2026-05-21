@@ -6,23 +6,26 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
 
 ```mermaid
 graph LR
-    subgraph v14["Available (v1.4)"]
+    subgraph v14["Available (v1.4+)"]
         L1["Level 1<br/><b>Observe</b><br/><small>Global dry-run</small>"]
         L3["Level 3<br/><b>Approve</b><br/><small>RAR gate</small>"]
         L4["Level 4<br/><b>Automate</b><br/><small>Full autonomous</small>"]
     end
-    subgraph v15["Planned (v1.5)"]
+    subgraph v15["Available (v1.5+)"]
         L2["Level 2<br/><b>Selective Trust</b><br/><small>Per-workflow dry-run</small>"]
+        L5["Interactive<br/><b>MCP Sessions</b><br/><small>Operator-in-the-loop</small>"]
     end
     L1 --> L2 --> L3 --> L4
+    L2 -.-> L5
 ```
 
 | Level | Name | Human Involvement | Available |
 |---|---|---|---|
 | **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution | **v1.4** (global dry-run) |
-| **2** | Selective Trust | Trusted workflows execute; new ones stay in dry-run | v1.5 (per-workflow dry-run) |
+| **2** | **Selective Trust** | Trusted workflows execute; new ones stay in dry-run | **v1.5** (per-workflow dry-run) |
 | **3** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects | **v1.4** |
 | **4** | **Automate** | Matched workflows execute without human intervention | **v1.4** |
+| | **Interactive** | Operator connects via MCP for real-time investigation and workflow selection | **v1.5** ([Interactive Sessions](interactive-sessions.md)) |
 
 Operators typically start at Level 1 (observe) or Level 3 (approve) and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
 

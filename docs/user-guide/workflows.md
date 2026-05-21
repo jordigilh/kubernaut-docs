@@ -198,6 +198,188 @@ Verify registration:
 kubectl get remediationworkflow restart-deployment-v1 -o wide
 ```
 
+## Create Your First Ansible Workflow
+
+This tutorial walks through creating an Ansible-based workflow that fixes application configuration drift via a GitOps commit. It mirrors the Job tutorial above but uses AWX/AAP as the execution engine.
+
+### Step 1: Set Up the AWX Job Template
+
+Create a Job Template in your AWX/AAP instance:
+
+- **Name**: `kubernaut-fix-config-drift` (this becomes `engineConfig.jobTemplateName`)
+- **Project**: Point to a Git repository containing your playbooks (AWX syncs the repo via its SCM credential)
+- **Playbook**: Select the playbook path (e.g., `playbooks/fix-config-drift.yml`)
+- **Execution Environment**: Use an EE that includes the `kubernetes.core` and `community.general` collections
+
+### Step 2: Write the Playbook
+
+Create `playbooks/fix-config-drift.yml` in your playbook repository:
+
+{% raw %}
+```yaml
+---
+- name: Fix configuration drift via GitOps commit
+  hosts: localhost
+  connection: local
+  gather_facts: false
+
+  tasks:
+    - name: Read Git credentials from AWX credential env vars
+      ansible.builtin.set_fact:
+        git_username: "{{ lookup('env', 'KUBERNAUT_SECRET_GIT_REPO_CREDS_USERNAME') }}"
+        git_password: "{{ lookup('env', 'KUBERNAUT_SECRET_GIT_REPO_CREDS_PASSWORD') }}"
+      no_log: true
+
+    - name: Clone application config repository
+      ansible.builtin.git:
+        repo: "https://{{ git_username }}:{{ git_password }}@github.com/org/app-config.git"
+        dest: /tmp/app-config
+        version: main
+      no_log: true
+
+    - name: Apply corrected configuration
+      ansible.builtin.template:
+        src: templates/deployment-config.yml.j2
+        dest: "/tmp/app-config/{{ TARGET_RESOURCE_NAMESPACE }}/{{ TARGET_RESOURCE_NAME }}/config.yml"
+
+    - name: Commit and push fix
+      ansible.builtin.shell: |
+        cd /tmp/app-config
+        git add -A
+        git commit -m "fix({{ TARGET_RESOURCE_NAMESPACE }}): correct config drift for {{ TARGET_RESOURCE_NAME }} [RR: {{ RR_NAME }}]"
+        git push origin main
+      no_log: true
+```
+{% endraw %}
+
+Key points:
+
+- Secrets are accessed via `lookup('env', 'KUBERNAUT_SECRET_...')` — always use `no_log: true` on tasks that handle credentials
+- `RR_NAME` is auto-injected by the executor and used here to link the Git commit back to the remediation event
+- `kubernetes.core` modules authenticate automatically via the injected `K8S_AUTH_*` credentials
+
+### Step 3: Write the Schema
+
+Create `fix-config-drift.yaml` with the SA + RBAC + CRD multi-doc pattern:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fix-config-drift-v1-runner
+  namespace: kubernaut-workflows
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubernaut:workflow:fix-config-drift-v1
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
+    verbs: ["get", "list"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubernaut:workflow:fix-config-drift-v1
+subjects:
+  - kind: ServiceAccount
+    name: fix-config-drift-v1-runner
+    namespace: kubernaut-workflows
+roleRef:
+  kind: ClusterRole
+  name: kubernaut:workflow:fix-config-drift-v1
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: kubernaut.ai/v1alpha1
+kind: RemediationWorkflow
+metadata:
+  name: fix-config-drift-v1
+  namespace: kubernaut-system
+spec:
+  version: "1.0.0"
+  description:
+    what: "Fixes application configuration drift by committing the correct state to the source Git repository"
+    whenToUse: "When config drift is detected and the correct state is defined in a GitOps-managed repository"
+    whenNotToUse: "When the drift is intentional or the application is not GitOps-managed"
+    preconditions: "The deployment exists, the config repository is accessible, and Git credentials are available"
+  maintainers:
+    - name: "Platform Team"
+      email: "platform@example.com"
+
+  actionType: FixConfiguration
+
+  labels:
+    severity: [high, medium]
+    environment: [production, staging]
+    component: [deployment]
+    priority: "*"
+
+  detectedLabels:
+    gitOpsManaged: "true"
+
+  execution:
+    engine: ansible
+    bundle: https://github.com/org/remediation-playbooks.git
+    bundleDigest: b7e6a135be2019f995cb4875dbc0116dfda39d21
+    serviceAccountName: fix-config-drift-v1-runner
+    engineConfig:
+      playbookPath: "playbooks/fix-config-drift.yml"
+      jobTemplateName: "kubernaut-fix-config-drift"
+
+  parameters:
+    - name: TARGET_RESOURCE_NAME
+      type: string
+      required: true
+      description: "Name of the root managing resource (KA-injected)"
+    - name: TARGET_RESOURCE_KIND
+      type: string
+      required: true
+      description: "Kind of the root managing resource (KA-injected)"
+    - name: TARGET_RESOURCE_NAMESPACE
+      type: string
+      required: true
+      description: "Namespace of the root managing resource (KA-injected)"
+
+  dependencies:
+    secrets:
+      - name: git-repo-creds
+    configMaps: []
+```
+
+!!! note "`bundleDigest` is the Git commit SHA"
+    Unlike Job/Tekton workflows where the bundle is an OCI image digest, Ansible workflows use the Git commit SHA to pin the exact playbook version. Update `bundleDigest` when you push new playbook changes to ensure Kubernaut runs the version you registered.
+
+### Step 4: Create the Secret
+
+The workflow declares `git-repo-creds` as a dependency. Create it in the execution namespace:
+
+```bash
+kubectl create secret generic git-repo-creds \
+  -n kubernaut-workflows \
+  --from-literal=username=kubernaut-bot \
+  --from-literal=password=ghp_xxxxxxxxxxxx
+```
+
+The executor reads this Secret, creates an ephemeral AWX credential, and injects the values as `KUBERNAUT_SECRET_GIT_REPO_CREDS_USERNAME` and `KUBERNAUT_SECRET_GIT_REPO_CREDS_PASSWORD` environment variables into the Execution Environment. The ephemeral credential is deleted after the AWX job completes.
+
+### Step 5: Register the Workflow
+
+```bash
+kubectl apply -f fix-config-drift.yaml
+```
+
+Verify registration:
+
+```bash
+kubectl get remediationworkflow fix-config-drift-v1 -n kubernaut-system -o wide
+```
+
+The `CATALOGSTATUS` column should show `Active` once the Auth Webhook completes registration. If it shows `Pending`, the webhook is still processing. If it shows `Invalid`, check the workflow spec for errors (e.g., unreachable bundle URL).
+
 ## Schema Reference
 
 For the complete field specification, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the CRD Reference.
@@ -486,28 +668,7 @@ The Workflow Execution controller launches the AWX job template, passes paramete
 
 The executor automatically injects the WE controller's in-cluster ServiceAccount token as an ephemeral AWX credential on every job launch. Playbooks using `kubernetes.core` modules receive `K8S_AUTH_HOST`, `K8S_AUTH_API_KEY`, and `K8S_AUTH_SSL_CA_CERT` environment variables without manual credential configuration. The credential is ephemeral and deleted after the job completes. If the in-cluster environment is unavailable, the job proceeds without K8s credentials.
 
-**Setting up an Ansible workflow:**
-
-The following checklist covers the operational steps for creating an Ansible-based workflow end-to-end:
-
-1. **Create the AWX/AAP Job Template** — the `jobTemplateName` in `engineConfig` must match an existing Job Template in your AWX/AAP instance. Configure the template to use the Execution Environment that contains the collections your playbook needs (e.g., `kubernetes.core`, `community.general`).
-
-2. **Structure the playbook repository** — the `bundle` field is a Git repository URL and `bundleDigest` is the Git commit SHA that pins the playbook version. A typical layout:
-
-    ```
-    remediation-playbooks/
-    ├── playbooks/
-    │   ├── fix-config.yml
-    │   └── migrate-storage.yml
-    └── roles/
-        └── common/
-    ```
-
-3. **Configure Git credentials** — if the playbook repo is private, configure an SCM credential on the AWX Project that syncs the repository. The `bundleDigest` (commit SHA) ensures Kubernaut always runs the exact playbook version registered in the CRD.
-
-4. **Wire up secrets** — for each entry in `dependencies.secrets`, create the corresponding Kubernetes Secret in the execution namespace (`kubernaut-workflows`). The executor reads each Secret, creates an ephemeral AWX credential, and injects values as `KUBERNAUT_SECRET_{NAME}_{KEY}` environment variables. Use `lookup('env', 'KUBERNAUT_SECRET_...')` with `no_log: true` in your playbook.
-
-5. **Set the `serviceAccountName`** — the SA provides a short-lived token via the Kubernetes TokenRequest API for AWX credential injection. Ensure the SA has RBAC permissions for any K8s resources the playbook modifies.
+For a complete end-to-end walkthrough, see [Create Your First Ansible Workflow](#create-your-first-ansible-workflow).
 
 ## Action Type Taxonomy
 

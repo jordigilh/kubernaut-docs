@@ -10,7 +10,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
 - **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
-- **Authorization** — File-based RBAC via `rbac_roles.yaml` (SAR-based authorization [planned](https://github.com/jordigilh/kubernaut/issues/1221))
+- **Authorization** — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache
 - **Session proxy** — MCP tool calls proxied to KA, where Lease-based session management is implemented
 - **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
@@ -165,18 +165,17 @@ The AF streams investigation output to clients via **Server-Sent Events**:
 
 - Token-by-token output from LLM responses
 - Keepalive pings at regular intervals to maintain the connection
-- Automatic reconnect support — clients can resume from the last received event
 - Investigation progress events (phase transitions, tool calls, results)
 
 ## Integration Points
 
 | Target | Protocol | Purpose |
 |---|---|---|
-| **Kubernaut Agent** | HTTP/REST | Investigation sessions, MCP tool proxying |
+| **Kubernaut Agent** | MCP JSON-RPC + HTTP/REST | MCP tool proxying, SSE streaming |
 | **DataStorage** | HTTP/REST | Workflow catalog, remediation history, audit events |
 | **LLM Provider** | HTTP/REST (via KA) | Severity triage with configurable confidence threshold |
-| **OIDC Provider** | OAuth2/OIDC | User authentication and JWT issuance |
-| **Kubernetes API** | SAR | Tool-level authorization |
+| **OIDC Provider** | OAuth2/OIDC | User authentication via JWKS |
+| **Kubernetes API** | SubjectAccessReview | SAR-based tool authorization (verb `use`, group `kubernaut.ai`, resource `tools`) |
 
 ## Health Checks
 

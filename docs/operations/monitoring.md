@@ -142,7 +142,8 @@ scrape_configs:
 | `af_auth_duration_seconds` | Histogram | `result` | Authentication latency distribution |
 | `af_rate_limit_rejections_total` | Counter | `tier`, `reason` | Rate limit rejections |
 | `af_sse_active_connections` | Gauge | -- | Currently active SSE connections |
-| `af_llm_tokens_total` | Counter | `direction` | LLM tokens consumed (input/output) |
+| `af_auth_circuit_breaker_state` | Gauge | `provider` | Authentication circuit breaker state (0=closed, 1=open) |
+| `af_llm_tokens_total` | Counter | `direction`, `model` | LLM tokens consumed by direction (input/output) and model |
 | `af_sessions_active` | Gauge | `phase` | Active InvestigationSessions by phase |
 
 ## Kubernaut Agent Metrics

@@ -15,6 +15,7 @@ Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It a
 - **MCP gateway** — Exposes investigation, workflow discovery, and remediation tools via the Model Context Protocol
 - **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
 - **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
+- **SAR authorization** — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results
 - **MCP proxy** — Proxies MCP Streamable HTTP and A2A JSON-RPC to the Kubernaut Agent, where session management (Lease-based locking, orphan reclamation, `SessionDrainer`) is implemented
 
 See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
@@ -40,6 +41,25 @@ The `discover_workflows` action on `kubernaut_investigate` returns workflow alte
 Parameter safety is enforced through **comprehensive validation with LLM self-correction** (PR #1187): type checking against the workflow's declared parameter schema, regex pattern matching, required field enforcement, and automatic retry when the LLM provides invalid values.
 
 See [Workflow Authoring: Parameters](../user-guide/workflows.md#parameters) for the parameter schema reference.
+
+### Breaking: SAR-based tool authorization replaces file-based RBAC
+
+The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kubernetes-native SubjectAccessReview (SAR)** authorization at `tools/call` time (PR #1222). `tools/list` remains unfiltered (ADR-020).
+
+**Migration required**: customers who customized `rbac_roles.yaml` must create equivalent `ClusterRoleBinding` resources. The Helm chart ships 6 per-persona `ClusterRoles`:
+
+| ClusterRole | Persona |
+|---|---|
+| `kubernaut-tool-sre` | Full SRE access (all 20 tools) |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration |
+| `kubernaut-tool-observability` | Read-only observability |
+| `kubernaut-tool-l3-audit` | Compliance and auditing |
+| `kubernaut-tool-remediation-approver` | Human approval workflows |
+
+SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorization is fail-closed: SAR API errors deny the tool call. Results are cached with a configurable TTL (default 30s via `apifrontend.config.rbac.sarCacheTTL`).
+
+See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the full model and binding examples.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 

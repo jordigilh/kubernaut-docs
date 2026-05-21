@@ -6,7 +6,7 @@ hide:
 
 # What's Next
 
-The features below are planned for future Kubernaut releases. For features that shipped in v1.5 (Interactive Sessions, API Frontend, MCP tool authorization), see [What's New: v1.5](../whats-new/index.md#v15).
+The features below are planned for future Kubernaut releases. For features that shipped in v1.5 (Interactive MCP Sessions, API Frontend, SAR-based tool authorization), see [What's New: v1.5](../whats-new/index.md#v15).
 
 ## Backstage Console
 
@@ -42,7 +42,7 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
 ## Expanded MCP Tool Surface & A2A Protocol
 
 !!! note "v1.5 ships the core MCP tools"
-    The API Frontend and its core investigation/discovery tools (`kubernaut_investigate`, `discover_workflows`, `select_workflow`, `complete_no_action`, `stream_investigation`) shipped in v1.5. See [What's New: v1.5](../whats-new/index.md#v15). The items below are the planned expansion.
+    The API Frontend and its 3 interactive MCP tools (`kubernaut_investigate` with 8 actions, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) shipped in v1.5. See [What's New: v1.5](../whats-new/index.md#v15). The items below are the planned expansion.
 
 The full 20-tool MCP surface will span four domains:
 

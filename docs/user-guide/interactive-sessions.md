@@ -23,8 +23,8 @@ Any MCP-compatible client can connect to Kubernaut's interactive sessions. The A
 
 ### Prerequisites
 
-- OIDC provider configured for the API Frontend
-- User has RBAC permissions for MCP tool access
+- OIDC provider configured for the API Frontend (DEX, Keycloak, etc.)
+- User has a `ClusterRoleBinding` to one of the [per-persona ClusterRoles](../architecture/security-rbac.md#tool-authorization-v15) (e.g., `kubernaut-tool-sre`)
 - MCP client supporting Streamable HTTP transport (spec 2025-03-26)
 
 ## MCP Tools
@@ -97,11 +97,14 @@ Select a workflow from the discovery results. Requires a prior `discover_workflo
   "workflow_id": "rollback-config",
   "kind": "Deployment",
   "name": "checkout-service",
-  "namespace": "production"
+  "namespace": "production",
+  "api_version": "apps/v1",
+  "spec_hash": "a1b2c3d4",
+  "incident_id": "inc-2026-0512"
 }
 ```
 
-The `kind`, `name`, and `namespace` fields are optional — when provided, they trigger enrichment (owner chain resolution, labels, history) before catalog lookup.
+Only `rr_id` and `workflow_id` are required. The remaining fields are optional — when `kind` is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. `api_version` disambiguates Kinds that exist in multiple API groups (e.g., `Event`). `spec_hash` and `incident_id` enable correlation with prior investigations.
 
 Parameters are validated against the workflow's declared schema. If validation fails, the LLM attempts self-correction automatically (PR #1187).
 

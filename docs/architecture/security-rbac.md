@@ -237,7 +237,14 @@ The `list` verb (new in v1.5) is required for `ReconcileOrphanedLeases` — on s
 
 ### API Frontend RBAC (v1.5+)
 
-The API Frontend ServiceAccount requires permissions for authentication and downstream service access. The AF authenticates users via JWKS (OIDC) and proxies MCP/A2A calls to the Kubernaut Agent and DataStorage.
+The API Frontend ServiceAccount requires:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| `apifrontend.kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management |
+| `kubernaut.ai` | `remediationrequests` | get, list, create | RR access for interactive sessions |
+| `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
+| _(core)_ | `users`, `groups`, `serviceaccounts` | impersonate | Triage tool delegation ([#1226](https://github.com/jordigilh/kubernaut/issues/1226) plans OIDC-direct mode to eliminate this) |
 
 ## Infrastructure and Hooks
 
@@ -363,19 +370,74 @@ Custom CIDR ranges can be configured for services that need external access (e.g
 
 ## Tool Authorization {: #tool-authorization-v15 }
 
-### Current model (v1.5)
+### SAR-based tool authorization (v1.5)
 
-The API Frontend uses a **file-based RBAC model** via `rbac_roles.yaml` ConfigMap. Roles are mapped to MCP tool access and loaded at startup.
+v1.5 replaces the API Frontend's file-based `rbac_roles.yaml` with **Kubernetes-native SubjectAccessReview (SAR)** authorization (PR #1222). Every MCP `tools/call` invocation triggers a SAR check before execution. `tools/list` is unfiltered (ADR-020) — authorization is enforced only at call time.
 
-### Planned: SAR-based authorization
+### How it works
 
-!!! info "Planned — not yet implemented"
-    [Issue #1221](https://github.com/jordigilh/kubernaut/issues/1221) proposes replacing the file-based model with Kubernetes-native SubjectAccessReview (SAR) authorization. This work is in progress and will ship in a future release. The design calls for:
+1. Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT
+2. On each tool invocation, AF issues a SAR: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
+3. The Kubernetes API server evaluates the user's ClusterRoleBindings
+4. If denied (or if the SAR API is unreachable), the tool call is rejected — **fail-closed**
 
-    - SAR check on every MCP tool call: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
-    - 6 pre-built ClusterRoles (sre, orchestrator, approver, viewer, cicd, audit)
-    - Fail-closed authorization with configurable cache TTL
-    - Removal of the `rbac_roles.yaml` ConfigMap
+All 3 AF RBAC code paths (MCP bridge `checkRBAC()`, A2A agent `newRBACGuard()`, and main wiring) delegate to the `SARChecker`.
+
+### Per-persona ClusterRoles
+
+The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`apifrontend.config.rbac.personas`):
+
+| ClusterRole | Persona | Tools |
+|---|---|---|
+| `kubernaut-tool-sre` | Full SRE access | All 20 tools |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | Orchestration + triage + cluster context |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | list, get, watch |
+| `kubernaut-tool-observability` | Read-only observability | Read-only tools |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | Audit, history, effectiveness |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | Approve + read |
+
+### Binding example
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-team-kubernaut-tools
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: kubernaut-tool-sre
+  apiGroup: rbac.authorization.k8s.io
+```
+
+### SAR caching
+
+Authorization results are cached with a SHA256-keyed TTL cache (default 30s) to avoid per-call SAR overhead:
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      sarCacheTTL: 30s
+```
+
+### Migration from rbac_roles.yaml
+
+!!! warning "Breaking change"
+    The `rbac_roles.yaml` ConfigMap and `RBACConfig.GroupMapping` are removed in v1.5. Customers who customized file-based RBAC must create equivalent ClusterRoleBindings.
+
+1. Identify which tools each role had access to
+2. Map those to the closest per-persona ClusterRole (or create a custom one with `verb: use` on `resource: tools` in `apiGroup: kubernaut.ai`)
+3. Create ClusterRoleBindings for your OIDC groups
+4. The `rbac_roles.yaml` ConfigMap is no longer read
+
+### Planned: OIDC-direct authentication (eliminates impersonation)
+
+!!! info "Planned — [Issue #1226](https://github.com/jordigilh/kubernaut/issues/1226)"
+    The AF currently uses K8s impersonation headers for triage tools (`af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`). Issue #1226 proposes an opt-in OIDC-direct mode that forwards the user's raw JWT as a bearer token to the K8s API server, eliminating impersonation privileges entirely. This works when the K8s API server trusts the same OIDC provider as AF.
 
 ## Next Steps
 

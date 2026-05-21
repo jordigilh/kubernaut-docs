@@ -20,7 +20,7 @@ All protocol endpoints require a valid OIDC/OAuth2 bearer token:
 Authorization: Bearer <jwt-token>
 ```
 
-The AF validates tokens via JWKS from the configured OIDC provider and extracts user identity from JWT claims.
+The AF validates tokens via JWKS from the configured OIDC provider and extracts user identity from JWT claims. Tool invocations are authorized via **Kubernetes SubjectAccessReview** — see [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the SAR model and per-persona ClusterRoles.
 
 ## Protocol Endpoints
 

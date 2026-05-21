@@ -3046,6 +3046,8 @@ Review the changes below to understand what differs from the version you are cur
 <p>The <a href="../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK config</a> (LLM model, endpoint, API key, toolset settings) now supports <strong>hot-reload</strong> via <code>fsnotify</code>. Active investigations pin a config snapshot at session start, so in-flight work is unaffected. Provider-level settings (<code>llm.provider</code>, OAuth2 credentials) still require a pod restart.</p>
 <h3 id="expanded-llm-provider-support">Expanded LLM provider support<a class="headerlink" href="#expanded-llm-provider-support" title="Permanent link">&para;</a></h3>
 <p>The Kubernaut Agent now supports <strong>Vertex AI, OpenAI, Anthropic, Bedrock, Ollama</strong>, and additional providers via <strong>LangChainGo</strong>.</p>
+<h3 id="custom-http-headers-for-llm-endpoints">Custom HTTP headers for LLM endpoints<a class="headerlink" href="#custom-http-headers-for-llm-endpoints" title="Permanent link">&para;</a></h3>
+<p>Users can now inject <a href="../user-guide/configmap-kubernaut-agent/#custom-headers">custom HTTP headers</a> into outbound LLM API requests. This supports LLM proxies, API gateways, and corporate firewalls that require additional authentication headers. Three value sources are available: static values, Kubernetes Secret references (via environment variables), and file paths (for rotating tokens).</p>
 <h3 id="effectiveness-monitor-improvements">Effectiveness Monitor improvements<a class="headerlink" href="#effectiveness-monitor-improvements" title="Permanent link">&para;</a></h3>
 <ul>
 <li><code>maxConcurrentReconciles</code> for parallel EA processing</li>

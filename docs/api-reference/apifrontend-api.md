@@ -76,6 +76,17 @@ POST /a2a/invoke
 
 Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication.
 
+The A2A agent uses **19 SAR-gated Google ADK tools** organized in four domains:
+
+| Domain | Tools |
+|---|---|
+| **Remediation lifecycle** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch` |
+| **Investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_select_workflow`, `kubernaut_present_decision` |
+| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| **Cluster context** | `af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`, `af_check_existing_rr`, `af_create_rr` |
+
+The `kubernaut_*` investigation tools proxy to the Kubernaut Agent (via REST or MCP). The `kubernaut_*` CRD tools operate on RemediationRequest resources via the Kubernetes API. The `af_*` cluster context tools query the Kubernetes API using the authenticated user's identity (via impersonation or [OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15)). The `kubernaut_*` data tools query DataStorage. The AF also uses internal orchestration tools (`kubernaut_discover_workflows`, `kubernaut_stream_investigation`) that are not SAR-gated — they are invoked by the AF's own agent loop, not exposed directly to A2A callers.
+
 ### Agent Card Discovery
 
 ```
@@ -100,12 +111,21 @@ All AF metrics use the `af_` namespace. See [Monitoring: API Frontend Metrics](.
 
 ## Audit Events
 
-The AF emits audit events to DataStorage for significant operations. Audit event support was wired in PR #1191 (shared AuditStore normalization) and PR #1192 (14 production audit events).
+The AF emits **14 audit events** to DataStorage (PR #1191 shared AuditStore normalization, PR #1192 production wiring). All events use the `apifrontend.*` prefix.
 
-!!! note "Audit event names are approximate"
-    Exact event type names should be verified against the DataStorage OpenAPI spec (`api/datastorage/openapi/`). The categories below reflect the scope of the implementation.
+| Category | Events |
+|---|---|
+| **Remediation** | `rr.created`, `rr.deduplicated` |
+| **KA delegation** | `ka.delegated`, `ka.result_received` |
+| **User decisions** | `user.decision` |
+| **Severity triage** | `severity_triage.completed`, `severity_triage.failed` |
+| **Session lifecycle** | `session.completed` (includes `duration_ms`) |
+| **Auth** | `impersonation.created`, `jwt.delegation` |
+| **MCP** | `mcp.session_init` (deduplicated per `Mcp-Session-Id`) |
+| **Resilience** | `circuitbreaker.trip` |
+| **Triage** | `triage.started`, `triage.completed` |
 
-Audit coverage includes: tool invocations, authorization decisions, session lifecycle events (create, reconnect, takeover, abandon, drain), and A2A task lifecycle.
+See [Audit Pipeline: Emitting Services](../architecture/audit-pipeline.md#emitting-services) for the full cross-service audit reference.
 
 ## Error Responses
 

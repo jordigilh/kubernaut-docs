@@ -39,19 +39,15 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
 <img src="../assets/images/backstage-workflows.svg" alt="Backstage Console — Workflow Catalog" style="width:100%">
 </div>
 
-## Expanded MCP Tool Surface & A2A Protocol
+## Expanded Tool Surface
 
-!!! note "v1.5 ships the core MCP tools"
-    The API Frontend and its 3 interactive MCP tools (`kubernaut_investigate` with 8 actions, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) shipped in v1.5. See [What's New: v1.5](../whats-new/index.md#v15). The items below are the planned expansion.
+!!! note "v1.5 ships both MCP and A2A tool surfaces"
+    v1.5 ships two complementary tool surfaces. See [What's New: v1.5](../whats-new/index.md#v15).
 
-The full 20-tool MCP surface will span four domains:
+    - **MCP (interactive)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate` with 8 actions, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for operator-in-the-loop sessions.
+    - **A2A (agent-to-agent)** — 19 SAR-gated Google ADK tools on the API Frontend spanning remediation lifecycle, investigation, data/history, and cluster context, plus internal orchestration tools. SAR-gated via per-persona ClusterRoles.
 
-- **Remediation lifecycle** — `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_submit_signal`
-- **Investigation** — `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_select_workflow`, `kubernaut_present_decision`
-- **Data & history** — `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`
-- **Cluster context** — `af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`, `af_check_existing_rr`, `af_create_rr`
-
-A2A (Agent-to-Agent) protocol support is planned with agent card discovery at `/.well-known/agent-card.json`, ADK executor integration, and `InvestigationSession` CRDs linking A2A task IDs to remediation context.
+The items below are planned expansions beyond the v1.5 surface.
 
 ## Declarative Recipes
 

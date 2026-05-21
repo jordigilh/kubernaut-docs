@@ -339,10 +339,10 @@ spec:
     priority: "*"
   customLabels:
     risk_tolerance: "high"
-  serviceAccountName: restart-pods-sa
   execution:
     engine: job
     bundle: registry.example.com/workflows/restart-pods@sha256:abc123...
+    serviceAccountName: restart-pods-sa
   parameters:
     - name: TARGET_RESOURCE_NAME
       type: string
@@ -388,6 +388,7 @@ spec:
   execution:
     engine: job
     bundle: registry.example.com/workflows/crashloop-rollback@sha256:def456...
+    serviceAccountName: crashloop-rollback-sa
   parameters:
     - name: TARGET_RESOURCE_NAME
       type: string

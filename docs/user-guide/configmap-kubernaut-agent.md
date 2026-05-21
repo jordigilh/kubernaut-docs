@@ -133,9 +133,13 @@ ai:
     temperature: 0.7          # Creativity vs determinism (0.0--1.0)
     maxRetries: 3             # LLM call retry count
     timeoutSeconds: 120       # Per-call timeout
-    customHeaders:            # Optional custom HTTP headers
+    customHeaders:            # Optional custom HTTP headers (see Custom Headers section)
       - name: "X-Custom"
         value: "..."
+      - name: "X-Auth-Token"
+        secretKeyRef: "LLM_PROXY_TOKEN"
+      - name: "X-Request-Cert"
+        filePath: "/etc/kubernaut/certs/client.pem"
     oauth2:                   # Optional OAuth2 client credentials
       enabled: false
       tokenUrl: ""            # Must use https:// when enabled
@@ -315,6 +319,73 @@ The Secret is marked `optional: true` — the agent starts without it but all LL
 - **0.3--0.5**: More deterministic. Recommended for production.
 - **0.7** (default): Balanced.
 - **0.8--1.0**: More creative. May discover non-obvious root causes but less consistent.
+
+## Custom Headers
+
+!!! info "Added in v1.3 (Issue #417)"
+
+The `customHeaders` field injects arbitrary HTTP headers into every outbound LLM API request. This is useful when your LLM endpoint sits behind an authenticating proxy, API gateway, or corporate firewall that requires additional credentials beyond the standard `apiKey`.
+
+### Value Sources
+
+Each header definition requires exactly **one** value source:
+
+| Source | Description | Resolved at |
+|---|---|---|
+| `value` | Static inline string | Config load |
+| `secretKeyRef` | Name of an environment variable (typically projected from a K8s Secret) | Startup (fail-fast if empty) |
+| `filePath` | Absolute path to a file whose contents are read as the header value | Each request (supports rotation) |
+
+### Configuration
+
+```yaml
+ai:
+  llm:
+    customHeaders:
+      # Static value — suitable for non-sensitive identifiers
+      - name: "X-Team-Id"
+        value: "platform-sre"
+
+      # Secret reference — resolves the env var LLM_PROXY_TOKEN at startup
+      - name: "X-Auth-Token"
+        secretKeyRef: "LLM_PROXY_TOKEN"
+
+      # File path — re-read on every request (supports cert/token rotation)
+      - name: "X-Client-Cert"
+        filePath: "/etc/kubernaut/certs/client.pem"
+```
+
+To expose a Kubernetes Secret as an environment variable for `secretKeyRef`, add an `env` entry to the Kubernaut Agent Deployment:
+
+```yaml
+env:
+  - name: LLM_PROXY_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: llm-proxy-credentials
+        key: token
+```
+
+### Validation Rules
+
+- **Exactly one source** must be set per header (`value`, `secretKeyRef`, or `filePath`).
+- **No duplicates** — each header name may appear only once (case-insensitive).
+- **Reserved headers** cannot be overridden: `Content-Type`, `Accept`, `Host`, `User-Agent`.
+- **Startup validation**: `secretKeyRef` entries are checked at pod startup — if the referenced environment variable is empty or unset, the agent fails to start with a clear error message.
+- **`filePath` validation**: file existence is checked at request time; a missing file causes the LLM call to fail (not the pod).
+
+### Common Use Cases
+
+| Scenario | Header | Source |
+|---|---|---|
+| Corporate API gateway authentication | `X-Api-Key` or `Authorization` | `secretKeyRef` |
+| LLM proxy with rotating bearer tokens | `Authorization` | `filePath` (token file refreshed by sidecar) |
+| Request tracing / correlation | `X-Request-Id`, `X-Correlation-Id` | `value` (static team/service ID) |
+| Multi-tenant LLM routing | `X-Tenant-Id` | `value` or `secretKeyRef` |
+
+### Hot-Reload Behavior
+
+`customHeaders` is a [hot-reloadable field](#hot-reload). Adding, removing, or modifying headers in the reloadable ConfigMap takes effect for new investigations without a pod restart. In-flight investigations continue with the headers that were active at session start.
 
 ## Hot-Reload
 

@@ -38,8 +38,8 @@ For reference, the full set (17 images) is:
 
 | Layer | Image | Purpose |
 |---|---|---|
-| **Catalog** | `quay.io/kubernaut-ai/kubernaut-operator-catalog:v{{ image_tag }}` | OLM index — makes the operator visible in OperatorHub |
-| **Bundle** | `quay.io/kubernaut-ai/kubernaut-operator-bundle:v{{ image_tag }}` | CSV + CRDs + metadata for a specific version |
+| **Catalog** | `quay.io/kubernaut-ai/kubernaut-operator-catalog@sha256:...` | OLM index — makes the operator visible in OperatorHub |
+| **Bundle** | `quay.io/kubernaut-ai/kubernaut-operator-bundle@sha256:...` | CSV + CRDs + metadata for a specific version |
 | **Operator** | `quay.io/kubernaut-ai/kubernaut-operator@sha256:...` | Controller manager binary |
 | **Operands** | | |
 | | `quay.io/kubernaut-ai/gateway` | Signal ingestion webhook |
@@ -58,26 +58,20 @@ For reference, the full set (17 images) is:
 | | `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL client for init containers |
 | | `registry.access.redhat.com/ubi10/ubi-minimal` | Minimal UBI for init containers |
 
-### Step 1: Create the ImageSetConfiguration
+### Step 1: Get the ImageSetConfiguration
 
-On the bastion host, create an `ImageSetConfiguration` referencing the operator catalog:
+The operator repository provides a ready-to-use `ImageSetConfiguration` with all images pinned by digest at [`hack/airgap/imageset-config.yaml`](https://github.com/jordigilh/kubernaut-operator/blob/main/hack/airgap/imageset-config.yaml). Download it to the bastion host:
 
-```yaml
-kind: ImageSetConfiguration
-apiVersion: mirror.openshift.io/v2alpha1
-storageConfig:
-  local:
-    path: ./kubernaut-mirror
-mirror:
-  operators:
-    - catalog: quay.io/kubernaut-ai/kubernaut-operator-catalog:v{{ image_tag }}
-      packages:
-        - name: kubernaut-operator
-          channels:
-            - name: alpha
+```bash
+curl -fsSL \
+  https://raw.githubusercontent.com/jordigilh/kubernaut-operator/main/hack/airgap/imageset-config.yaml \
+  -o imageset-config.yaml
 ```
 
-This is all you need. `oc-mirror` reads the catalog index, finds the bundle for the specified channel, parses the CSV, and discovers every image from `relatedImages` and the operator deployment spec automatically.
+The manifest references the operator catalog and all operand images by `@sha256:` digest, which is required for IDMS redirection. `oc-mirror` reads the catalog index, finds the bundle for the specified channel, parses the CSV, and discovers every image from `relatedImages` automatically.
+
+!!! tip "Why digests instead of tags?"
+    IDMS only redirects **digest-based** image references — not tags. The operator CSV `relatedImages` already pins all operand images by digest. Using the upstream manifest ensures your mirror contains the exact images the operator expects, and IDMS can redirect them transparently.
 
 ### Step 2: Mirror images
 

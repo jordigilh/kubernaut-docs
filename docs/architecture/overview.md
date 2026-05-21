@@ -67,6 +67,7 @@ Each service has a single responsibility:
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |
 | **Effectiveness Monitor** | Post-remediation health, alert, metrics, and spec hash assessment | [Effectiveness Assessment](effectiveness.md) |
 | **DataStorage** | Persistent storage (audit, workflow catalog, remediation history, effectiveness), workflow scoring | [Data Persistence](data-persistence.md) |
+| **API Frontend** | MCP/A2A/REST gateway, SAR-based tool authorization, session management (v1.5+) | [API Frontend](apifrontend.md) |
 
 ## Service Topology
 
@@ -74,6 +75,10 @@ Each service has a single responsibility:
 graph TB
     subgraph Ingress["Signal Ingestion"]
         GW[Gateway<br/><small>Signals → CRD</small>]
+    end
+
+    subgraph External_API["External API Layer v1.5+"]
+        AF[API Frontend<br/><small>MCP / A2A / REST</small>]
     end
 
     subgraph Core["Core Pipeline"]
@@ -98,6 +103,9 @@ graph TB
         PG[(PostgreSQL)]
         RD[(Valkey)]
     end
+
+    AF -.->|MCP tools| KA
+    AF -.->|history, catalog| DS
 
     GW -->|RemediationRequest| RO
     RO -->|SignalProcessing| SP
@@ -182,7 +190,7 @@ Kubernaut uses a **three-port** split on components that serve both an API and o
 | **8081** | **Health probes only**, always **plain HTTP**: `GET /healthz` (liveness), `GET /readyz` (readiness). The path **`/livez` is not registered** — do not configure probes to use it. |
 | **9090** | **Prometheus metrics**, always **plain HTTP** at `GET /metrics`. |
 
-**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, and the **AIAnalysis** controller. Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the 8080/8081 API/health split.
+**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, the **AIAnalysis** controller, and the **API Frontend** (v1.5+). Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the 8080/8081 API/health split.
 
 **Auth Webhook** is an exception: the Service uses **port 443** with **targetPort 9443** for admission traffic; health checks use **8081** (`/healthz`, `/readyz`) like the other Go components.
 

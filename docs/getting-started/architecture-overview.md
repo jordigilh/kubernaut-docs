@@ -67,18 +67,27 @@ Kubernaut is a microservices platform with 11 services (v1.5+; 10 in v1.4) that 
   <rect x="646" y="108" width="136" height="5" rx="3" fill="#DC2626"/>
   <text x="714" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Notification</text>
   <text x="714" y="148" text-anchor="middle" font-size="9" fill="#888">Slack / PagerDuty / Teams</text>
+  <!-- API Frontend (v1.5+) -->
+  <rect x="624" y="16" width="180" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="624" y="16" width="180" height="5" rx="3" fill="#8B5CF6"/>
+  <text x="714" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">API Frontend</text>
+  <text x="714" y="54" text-anchor="middle" font-size="9" fill="#888">MCP / A2A / REST (v1.5+)</text>
   <!-- Support Services -->
   <rect x="30" y="182" width="760" height="80" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
   <rect x="30" y="182" width="6" height="80" rx="3" fill="#64748B"/>
   <text x="50" y="200" font-size="11" font-weight="700" fill="#64748B">Support Services</text>
-  <rect x="42" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="42" y="210" width="240" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
   <rect x="42" y="210" width="5" height="42" rx="2" fill="#64748B"/>
   <text x="60" y="228" font-size="12" font-weight="600" fill="#1a1a1a">DataStorage</text>
   <text x="60" y="242" font-size="9" fill="#888">PostgreSQL + Valkey</text>
-  <rect x="418" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="418" y="210" width="5" height="42" rx="2" fill="#64748B"/>
-  <text x="436" y="228" font-size="12" font-weight="600" fill="#1a1a1a">AuthWebhook</text>
-  <text x="436" y="242" font-size="9" fill="#888">RAR override validation</text>
+  <rect x="298" y="210" width="240" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="298" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="316" y="228" font-size="12" font-weight="600" fill="#1a1a1a">AuthWebhook</text>
+  <text x="316" y="242" font-size="9" fill="#888">RAR override validation</text>
+  <rect x="554" y="210" width="224" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="554" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="572" y="228" font-size="12" font-weight="600" fill="#1a1a1a">Kubernaut Agent</text>
+  <text x="572" y="242" font-size="9" fill="#888">LLM investigation (Go)</text>
 </svg>
 </div>
 
@@ -110,9 +119,22 @@ Each CRD is owned by a dedicated controller. See [System Overview](../architectu
 
 See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and Kubernaut Agent.
 
+## Pipeline Modes (v1.5+)
+
+Kubernaut supports two pipeline modes simultaneously:
+
+| | Autonomous | Interactive |
+|---|---|---|
+| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator connects via MCP through API Frontend |
+| **Workflow selection** | LLM selects automatically | Operator chooses from LLM-populated alternatives |
+| **Approval** | Rego policy + RAR gate | Operator's selection is the approval |
+| **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
+
+Both modes use the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously can be joined mid-flight by an operator via the API Frontend. See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
+
 ## Communication Pattern
 
-All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, and EM queries AlertManager and Prometheus for effectiveness assessment.
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend proxies MCP/A2A calls to Kubernaut Agent and DataStorage.
 
 This architecture provides:
 

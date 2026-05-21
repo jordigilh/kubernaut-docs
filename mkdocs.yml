@@ -106,6 +106,7 @@ nav:
       - Effectiveness Monitoring: user-guide/effectiveness.md
       - Audit & Observability: user-guide/audit-and-observability.md
       - Data Lifecycle: user-guide/data-lifecycle.md
+      - Interactive Sessions: user-guide/interactive-sessions.md
       - Configuration Reference: user-guide/configuration.md
       - ConfigMap References:
           - Kubernaut Agent SDK Config: user-guide/configmap-kubernaut-agent.md
@@ -127,6 +128,7 @@ nav:
       - Async Propagation: architecture/async-propagation.md
       - Audit Pipeline: architecture/audit-pipeline.md
       - Data Persistence: architecture/data-persistence.md
+      - API Frontend: architecture/apifrontend.md
       - Security & RBAC: architecture/security-rbac.md
   - Design Decisions:
       - design-decisions/index.md
@@ -136,6 +138,7 @@ nav:
       - Operator CR: api-reference/operator-cr.md
       - DataStorage API: api-reference/datastorage-api.md
       - Kubernaut Agent API: api-reference/kubernaut-agent-api.md
+      - API Frontend API: api-reference/apifrontend-api.md
   - Use Cases:
       - use-cases/index.md
       - Multi-Path Remediation: use-cases/multi-path-remediation.md

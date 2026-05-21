@@ -244,7 +244,7 @@ The API Frontend ServiceAccount requires:
 | `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management (PR #1224) |
 | `kubernaut.ai` | `remediationrequests` | get, list, create | RR access for interactive sessions |
 | `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
-| _(core)_ | `users`, `groups`, `serviceaccounts` | impersonate | Triage tool delegation ([#1226](https://github.com/jordigilh/kubernaut/issues/1226) plans OIDC-direct mode to eliminate this) |
+| _(core)_ | `users`, `groups` | impersonate | Triage tool delegation (default mode; `serviceaccounts` removed in PR #1227) |
 
 ## Infrastructure and Hooks
 
@@ -434,10 +434,36 @@ apifrontend:
 3. Create ClusterRoleBindings for your OIDC groups
 4. The `rbac_roles.yaml` ConfigMap is no longer read
 
-### Planned: OIDC-direct authentication (eliminates impersonation)
+### OIDC-direct mode — eliminating impersonation (v1.5)
 
-!!! info "Planned — [Issue #1226](https://github.com/jordigilh/kubernaut/issues/1226)"
-    The AF currently uses K8s impersonation headers for triage tools (`af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`). Issue #1226 proposes an opt-in OIDC-direct mode that forwards the user's raw JWT as a bearer token to the K8s API server, eliminating impersonation privileges entirely. This works when the K8s API server trusts the same OIDC provider as AF.
+The AF's 4 read-only triage tools (`af_list_events`, `af_get_pods`, `af_get_workloads`, `af_resolve_owner`) make K8s API calls as the authenticated user. By default, this uses **impersonation** (`Impersonate-User` / `Impersonate-Group` headers), which requires the AF ClusterRole to have `impersonate` on `users` and `groups`.
+
+v1.5 adds an opt-in **OIDC-direct mode** (PR #1227) that forwards the user's raw OIDC JWT as a bearer token instead of impersonating. This eliminates impersonation privileges entirely, addressing CIS benchmark and SOC 2 audit concerns.
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      useOIDCDirect: true   # default: false (impersonation)
+```
+
+**How it works:** The `NewOIDCDirectDynamicFactory` creates a `rest.Config` with `BearerToken: identity.RawToken` instead of `Impersonate` headers. The base config is deep-copied via `rest.CopyConfig`; `BearerTokenFile` is cleared and `Impersonate` config zeroed. Fail-closed: missing identity, empty token, or expired token all return errors.
+
+**Compatible deployments** (K8s API server trusts the same OIDC provider as AF):
+
+- Self-managed K8s / kubeadm
+- OpenShift (integrated OAuth)
+- EKS with OIDC identity provider association
+- AKS with OIDC issuer
+
+**Not compatible** (impersonation remains the default):
+
+- GKE (only trusts Google IAM)
+- EKS without OIDC association
+- Any deployment where K8s and AF use different identity providers
+
+!!! tip "Quick win: `serviceaccounts` removed"
+    PR #1227 also removes `serviceaccounts` from the impersonation resources in the AF ClusterRole — no AF code path impersonates a service account, so this eliminates the highest-risk vector immediately, regardless of whether OIDC-direct is enabled.
 
 ## Next Steps
 

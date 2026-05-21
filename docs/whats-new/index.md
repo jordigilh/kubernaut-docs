@@ -61,6 +61,14 @@ SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorizatio
 
 See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the full model and binding examples.
 
+### OIDC-direct mode for triage tools
+
+An opt-in authentication mode (PR #1227) that forwards the user's raw OIDC JWT as a bearer token to the K8s API server, eliminating the need for impersonation privileges. Enable via `apifrontend.config.rbac.useOIDCDirect: true`. Compatible with any deployment where the K8s API server trusts the same OIDC provider as the API Frontend. Impersonation remains the default for non-compatible environments.
+
+Additionally, `serviceaccounts` has been removed from the AF ClusterRole's impersonation resources — no AF code path impersonates a service account.
+
+See [Security & RBAC: OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15) for the full model and compatibility matrix.
+
 ### Session takeover security (SEC-TAKEOVER-001)
 
 When a second user connects to an active MCP session, the original user's investigation is **abandoned, not completed**. This prevents a takeover from inheriting or completing work under a different identity. The abandoned session is logged as an audit event.

@@ -67,6 +67,7 @@ spec:
 - Runs embedded database schema migrations
 - Installs and upgrades the 9 Kubernaut workload CRDs
 - Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Applies preferred pod anti-affinity to all deployments (spread across nodes by `kubernetes.io/hostname`)
 - Configures OCP Routes and service-serving CA TLS
 - Reports per-service readiness status on the `Kubernaut` CR
 - Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)

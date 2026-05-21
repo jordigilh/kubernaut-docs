@@ -1,6 +1,6 @@
 # Architecture Overview
 
-Kubernaut is a microservices platform with 10 services that communicate through Kubernetes Custom Resources (CRDs). This page provides a high-level view of how the services work together.
+Kubernaut is a microservices platform with 11 services (v1.5+; 10 in v1.4) that communicate through Kubernetes Custom Resources (CRDs). This page provides a high-level view of how the services work together.
 
 ## System Diagram
 
@@ -100,7 +100,7 @@ For a detailed breakdown of all sub-phases and tools, see the [Architecture: Inv
 
 ## Services
 
-Kubernaut runs **10 services**: 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 1 Go API service.
+Kubernaut runs **11 services** (v1.5+): 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, 1 Go API service, and the API Frontend.
 
 ### CRD Controllers
 

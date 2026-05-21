@@ -15,6 +15,7 @@ In **v1.3**, the Kubernaut Agent metrics were renamed from the legacy `holmesgpt
 | **Gateway** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Ingestion API on **8080** |
 | **DataStorage** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness checks PostgreSQL; REST API on **8080** |
 | **Kubernaut Agent** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Readiness includes LLM connectivity |
+| **API Frontend** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | API on **8443**, metrics on **9090** (v1.5+) |
 | **Auth Webhook** | `GET /healthz` | `GET /readyz` | **8081** (plain HTTP) | Service **443** → targetPort **9443** for admission |
 
 ## Scrape Configuration
@@ -127,6 +128,16 @@ scrape_configs:
 | `datastorage_audit_lag_seconds` | Histogram | `service` | Lag between event occurrence and write |
 | `datastorage_dlq_warning` | Gauge | `stream` | DLQ at 80% capacity (1 = warning) |
 | `datastorage_dlq_critical` | Gauge | `stream` | DLQ at 90% capacity (1 = critical) |
+
+## API Frontend Metrics (v1.5+)
+
+| Metric | Type | Labels | Description |
+|---|---|---|---|
+| `af_tool_calls_total` | Counter | `tool`, `status` | MCP/A2A tool invocations by tool name and outcome |
+| `af_a2a_tasks_total` | Counter | `task_type`, `status` | A2A task executions by type and outcome |
+| `af_session_active` | Gauge | -- | Currently active API sessions |
+| `af_session_duration_seconds` | Histogram | -- | Session duration from connect to disconnect |
+| `af_http_request_duration_seconds` | Histogram | `endpoint`, `method`, `status` | HTTP request duration |
 
 ## Kubernaut Agent Metrics
 

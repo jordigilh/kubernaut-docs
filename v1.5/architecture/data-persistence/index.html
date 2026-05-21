@@ -1,0 +1,6210 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AIOps Platform for Intelligent Kubernetes Remediation">
+      
+      
+        <meta name="author" content="Kubernaut Contributors">
+      
+      
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/architecture/data-persistence/">
+      
+      
+        <link rel="prev" href="../audit-pipeline/">
+      
+      
+        <link rel="next" href="../security-rbac/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>Data Persistence - Kubernaut</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#data-persistence" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    Content may change before GA.
+    <a href="../../..">
+      <strong>View stable documentation.</strong>
+    </a>
+  
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kubernaut
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Data Persistence
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jordigilh/kubernaut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordigilh/kubernaut
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../design-decisions/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Design Decisions
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../use-cases/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Use Cases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whats-new/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  What's New
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whats-next/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  What's Next
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/compliance/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Compliance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    Kubernaut
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jordigilh/kubernaut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordigilh/kubernaut
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why Kubernaut
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/aiops-landscape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIOps Remediation Landscape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/market-comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Market Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/trust-ladder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Ladder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signals & Alert Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflow-authoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authoring Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rego-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policy Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human Approval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Effectiveness Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/audit-and-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit & Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/data-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMap References
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_15">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ConfigMap References
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-kubernaut-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernaut Agent SDK Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIAnalysis Approval Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gateway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gateway
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signal-processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signal Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kubernaut-agent-investigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Investigation Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../remediation-routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow-selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Selection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Effectiveness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../async-propagation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Async Propagation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Persistence
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#storage-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Storage Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-schema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database Schema
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Database Schema">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#resource_references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resource_references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit_events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audit_events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remediation_workflow_catalog" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        remediation_workflow_catalog
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_type_taxonomy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_type_taxonomy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#resource_action_traces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        resource_action_traces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_histories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_histories
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#notification_audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        notification_audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_assessments" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_assessments
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#effectiveness_results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        effectiveness_results
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_confidence_scores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_confidence_scores
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_outcomes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_outcomes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_alternatives" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_alternatives
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_effectiveness_metrics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_effectiveness_metrics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oscillation_patterns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oscillation_patterns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oscillation_detections" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oscillation_detections
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit_retention_policies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        audit_retention_policies
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retention_operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        retention_operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#views" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Views
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Views">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#effectiveness_trends" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        effectiveness_trends
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#low_confidence_actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        low_confidence_actions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#action_history_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        action_history_summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#incident_summary_view" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        incident_summary_view
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oscillation_detection_summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        oscillation_detection_summary
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#stored-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stored Functions
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deterministic-catalog-ids-uuidv5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deterministic catalog IDs (UUIDv5)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#auth-webhook-startup-reconciliation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Webhook startup reconciliation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#database-migrations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Database migrations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#remediationrequest-reconstruction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RemediationRequest Reconstruction
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RemediationRequest Reconstruction">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pipeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pipeline
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#query" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Query
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#source-event-mapping" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Source Event Mapping
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitations
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#valkey-dlq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valkey (DLQ)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Valkey (DLQ)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#streams" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Streams
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Operations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Message Format
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#data-flow-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Data Flow Summary
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../security-rbac/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security & RBAC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../design-decisions/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Design Decisions
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Design Decisions
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api-reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/operator-cr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operator CR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/datastorage-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DataStorage API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/kubernaut-agent-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../use-cases/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use Cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/multi-path-remediation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Path Remediation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/remediation-history-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation History Feedback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Judgment & Approval Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/supported-scenarios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported Scenarios
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/event-exporter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Exporter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/disconnected-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disconnected Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whats-new/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's New
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    What's New
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whats-next/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's Next
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    What's Next
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
+        
+          
+          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_11">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compliance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/compliance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOC2 Alignment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="data-persistence">Data Persistence<a class="headerlink" href="#data-persistence" title="Permanent link">&para;</a></h1>
+<div class="admonition info">
+<p class="admonition-title">Operator guide</p>
+<p>For CRD retention, storage lifetime, and use cases, see <a href="../../user-guide/data-lifecycle/">Data Lifecycle</a>.</p>
+</div>
+<p>Kubernaut uses <strong>PostgreSQL</strong> as its persistent data store, accessed exclusively through the <strong>DataStorage</strong> REST API service. Valkey provides a dead-letter queue for audit event resilience. This page covers the database schema, partitioning strategy, indexing, and the RemediationRequest reconstruction pipeline.</p>
+<h2 id="storage-architecture">Storage Architecture<a class="headerlink" href="#storage-architecture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TB
+    subgraph Services["All Kubernaut Services"]
+        S1[Gateway]
+        S2[Signal Processing]
+        S3[AI Analysis]
+        S4[Orchestrator]
+        S5[Workflow Execution]
+        S6[Notification]
+        S7[Effectiveness Monitor]
+        S8[Auth Webhook]
+    end
+
+    Services --&gt;|REST API| DS[DataStorage Service]
+
+    DS --&gt; PG[(PostgreSQL)]
+    DS --&gt; RD[(Valkey&lt;br/&gt;&lt;small&gt;DLQ&lt;/small&gt;)]
+
+    subgraph Tables["PostgreSQL Tables (17)"]
+        direction LR
+        subgraph Core["Core Tables"]
+            AE[audit_events&lt;br/&gt;&lt;small&gt;partitioned&lt;/small&gt;]
+            RR_T[resource_references]
+            WF[remediation_workflow_catalog]
+            AT[action_type_taxonomy]
+        end
+        subgraph Tracking["Action Tracking"]
+            AH[action_histories]
+            RT[resource_action_traces&lt;br/&gt;&lt;small&gt;partitioned&lt;/small&gt;]
+            NAU[notification_audit]
+        end
+        subgraph Learning["Learning &amp; Effectiveness"]
+            AA[action_assessments]
+            ER[effectiveness_results]
+            ACS[action_confidence_scores]
+            AO[action_outcomes]
+            AAlt[action_alternatives]
+            AEM[action_effectiveness_metrics]
+        end
+        subgraph Operations["Operations"]
+            OP[oscillation_patterns]
+            OD[oscillation_detections]
+            ARP[audit_retention_policies]
+            RO_T[retention_operations]
+        end
+    end
+
+    subgraph Views["Views (5)"]
+        V1[effectiveness_trends]
+        V2[low_confidence_actions]
+        V3[action_history_summary]
+        V4[incident_summary_view]
+        V5[oscillation_detection_summary]
+    end
+
+    PG --- Tables
+    PG --- Views</code></pre>
+<h2 id="database-schema">Database Schema<a class="headerlink" href="#database-schema" title="Permanent link">&para;</a></h2>
+<h3 id="resource_references">resource_references<a class="headerlink" href="#resource_references" title="Permanent link">&para;</a></h3>
+<p>Core resource identity table, serving as the FK target for action histories and oscillation detections.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td>Auto-incrementing primary key</td>
+</tr>
+<tr>
+<td><code>resource_uid</code></td>
+<td><code>VARCHAR(36)</code></td>
+<td>NOT NULL</td>
+<td>Kubernetes resource UID</td>
+</tr>
+<tr>
+<td><code>api_version</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td>API version (e.g., <code>apps/v1</code>)</td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td>Resource kind (e.g., <code>Deployment</code>)</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>VARCHAR(253)</code></td>
+<td>NOT NULL</td>
+<td>Resource name</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>VARCHAR(63)</code></td>
+<td></td>
+<td>Kubernetes namespace (NULL for cluster-scoped)</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Default: <code>now()</code></td>
+</tr>
+<tr>
+<td><code>deleted_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Soft-delete timestamp</td>
+</tr>
+<tr>
+<td><code>last_seen</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Default: <code>now()</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: PK, UNIQUE on <code>resource_uid</code>, UNIQUE on <code>(namespace, kind, name)</code>, btree on <code>kind</code>, <code>namespace</code>, <code>last_seen</code>.</p>
+<p><strong>Referenced by</strong>: <code>action_histories.resource_id</code>, <code>oscillation_detections.resource_id</code> (both CASCADE on delete).</p>
+<hr />
+<h3 id="audit_events">audit_events<a class="headerlink" href="#audit_events" title="Permanent link">&para;</a></h3>
+<p>The primary audit table, partitioned by month. This is the largest table in the system, storing the complete remediation history.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>event_id</code></td>
+<td><code>UUID</code></td>
+<td>PK (with <code>event_date</code>)</td>
+<td>Primary key</td>
+</tr>
+<tr>
+<td><code>event_version</code></td>
+<td><code>VARCHAR(10)</code></td>
+<td></td>
+<td>Schema version (default: <code>1.0</code>)</td>
+</tr>
+<tr>
+<td><code>event_timestamp</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>When the event occurred</td>
+</tr>
+<tr>
+<td><code>event_date</code></td>
+<td><code>DATE</code></td>
+<td>PK</td>
+<td>Partition key</td>
+</tr>
+<tr>
+<td><code>event_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td></td>
+<td>Hierarchical type (e.g., <code>aianalysis.analysis.completed</code>)</td>
+</tr>
+<tr>
+<td><code>event_category</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td>Category (e.g., <code>signal</code>, <code>remediation</code>)</td>
+</tr>
+<tr>
+<td><code>event_action</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td>Action (e.g., <code>received</code>, <code>completed</code>)</td>
+</tr>
+<tr>
+<td><code>event_outcome</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td><code>success</code>, <code>failure</code>, <code>pending</code></td>
+</tr>
+<tr>
+<td><code>actor_type</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td>Service or human operator</td>
+</tr>
+<tr>
+<td><code>actor_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Identity of the actor</td>
+</tr>
+<tr>
+<td><code>resource_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td></td>
+<td>Target resource type</td>
+</tr>
+<tr>
+<td><code>resource_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Target resource identifier</td>
+</tr>
+<tr>
+<td><code>correlation_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Links events for one remediation (RR name)</td>
+</tr>
+<tr>
+<td><code>parent_event_id</code></td>
+<td><code>UUID</code></td>
+<td></td>
+<td>Chain to parent event</td>
+</tr>
+<tr>
+<td><code>parent_event_date</code></td>
+<td><code>DATE</code></td>
+<td></td>
+<td>Parent event partition key</td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>VARCHAR(253)</code></td>
+<td></td>
+<td>Kubernetes namespace</td>
+</tr>
+<tr>
+<td><code>cluster_name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Cluster identifier</td>
+</tr>
+<tr>
+<td><code>event_data</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>Service-specific payload</td>
+</tr>
+<tr>
+<td><code>event_hash</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>SHA256 hash chain for integrity</td>
+</tr>
+<tr>
+<td><code>previous_event_hash</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Previous event's hash</td>
+</tr>
+<tr>
+<td><code>severity</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td>Signal severity</td>
+</tr>
+<tr>
+<td><code>duration_ms</code></td>
+<td><code>BIGINT</code></td>
+<td></td>
+<td>Operation duration</td>
+</tr>
+<tr>
+<td><code>error_code</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td>Error code (if failure)</td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Error description</td>
+</tr>
+<tr>
+<td><code>retention_days</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 2555 (7 years)</td>
+</tr>
+<tr>
+<td><code>is_sensitive</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>PII flag</td>
+</tr>
+<tr>
+<td><code>legal_hold</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Legal hold flag</td>
+</tr>
+<tr>
+<td><code>legal_hold_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Reason for hold</td>
+</tr>
+<tr>
+<td><code>legal_hold_placed_by</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Who placed the hold</td>
+</tr>
+<tr>
+<td><code>legal_hold_placed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>When hold was placed</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Columns</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>idx_audit_events_event_timestamp</code></td>
+<td><code>event_timestamp DESC</code></td>
+<td>Chronological queries</td>
+</tr>
+<tr>
+<td><code>idx_audit_events_correlation_id</code></td>
+<td><code>correlation_id, event_timestamp DESC</code></td>
+<td>Remediation timeline reconstruction</td>
+</tr>
+<tr>
+<td><code>idx_audit_events_event_type</code></td>
+<td><code>event_type, event_timestamp DESC</code></td>
+<td>Event type filtering</td>
+</tr>
+<tr>
+<td><code>idx_audit_events_event_data_gin</code></td>
+<td><code>event_data USING GIN</code></td>
+<td>JSONB payload queries</td>
+</tr>
+<tr>
+<td><code>idx_audit_events_pre_remediation_spec_hash</code></td>
+<td><code>(event_data-&gt;&gt;'pre_remediation_spec_hash'), event_timestamp DESC</code></td>
+<td>Spec hash history lookups</td>
+</tr>
+<tr>
+<td><code>idx_audit_events_post_remediation_spec_hash</code></td>
+<td><code>(event_data-&gt;&gt;'post_remediation_spec_hash'), event_timestamp DESC</code></td>
+<td>Post-remediation spec hash lookups (migration <code>004</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Partitioning</strong>: Monthly range on <code>event_date</code> (<code>audit_events_2026_03</code> through <code>audit_events_2028_12</code>, plus <code>audit_events_default</code>). Provides fast queries via partition pruning, efficient retention via partition drops, and independent sizing/backup per partition.</p>
+<p><strong>Trigger</strong>: <code>prevent_legal_hold_deletion</code> prevents deletion of rows with <code>legal_hold = true</code>.</p>
+<hr />
+<h3 id="remediation_workflow_catalog">remediation_workflow_catalog<a class="headerlink" href="#remediation_workflow_catalog" title="Permanent link">&para;</a></h3>
+<p>The workflow catalog table, used for workflow discovery and scoring.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>workflow_id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td>Deterministic UUIDv5 from content hash</td>
+</tr>
+<tr>
+<td><code>workflow_name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td>CRD metadata name</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>Semantic version</td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td>Human-readable display name</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>JSONB</code></td>
+<td>NOT NULL</td>
+<td><code>{what, whenToUse, whenNotToUse, preconditions}</code> (camelCase keys)</td>
+</tr>
+<tr>
+<td><code>owner</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Workflow owner</td>
+</tr>
+<tr>
+<td><code>maintainer</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Workflow maintainer</td>
+</tr>
+<tr>
+<td><code>content</code></td>
+<td><code>TEXT</code></td>
+<td>NOT NULL</td>
+<td>Full workflow content (YAML)</td>
+</tr>
+<tr>
+<td><code>content_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td>SHA256 hash of normalized workflow content (DD-EM-002)</td>
+</tr>
+<tr>
+<td><code>labels</code></td>
+<td><code>JSONB</code></td>
+<td>NOT NULL</td>
+<td>Mandatory labels (<code>signalName</code> key for semantic signal matching)</td>
+</tr>
+<tr>
+<td><code>parameters</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>Workflow parameters</td>
+</tr>
+<tr>
+<td><code>execution_engine</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>tekton</code>. One of <code>tekton</code>, <code>job</code>, <code>ansible</code></td>
+</tr>
+<tr>
+<td><code>schema_image</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>OCI image pulled at registration to extract <code>/workflow-schema.yaml</code></td>
+</tr>
+<tr>
+<td><code>schema_digest</code></td>
+<td><code>VARCHAR(71)</code></td>
+<td></td>
+<td>SHA256 digest of the schema image</td>
+</tr>
+<tr>
+<td><code>execution_bundle</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>OCI execution bundle reference (digest-pinned)</td>
+</tr>
+<tr>
+<td><code>execution_bundle_digest</code></td>
+<td><code>VARCHAR(71)</code></td>
+<td></td>
+<td>SHA256 digest of execution bundle</td>
+</tr>
+<tr>
+<td><code>custom_labels</code></td>
+<td><code>JSONB</code></td>
+<td>NOT NULL</td>
+<td>Custom labels from workflow schema</td>
+</tr>
+<tr>
+<td><code>detected_labels</code></td>
+<td><code>JSONB</code></td>
+<td>NOT NULL</td>
+<td>Infrastructure-awareness labels</td>
+</tr>
+<tr>
+<td><code>engine_config</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>Engine-specific config (e.g., AWX <code>jobTemplateName</code>, <code>inventoryName</code>). NULL for Tekton/Job</td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>TEXT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>action_type_taxonomy</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td>NOT NULL</td>
+<td><code>active</code>, <code>disabled</code>, <code>deprecated</code>, <code>archived</code>, <code>superseded</code></td>
+</tr>
+<tr>
+<td><code>status_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Reason for current status</td>
+</tr>
+<tr>
+<td><code>schema_version</code></td>
+<td><code>VARCHAR(10)</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>1.0</code></td>
+</tr>
+<tr>
+<td><code>disabled_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>When disabled</td>
+</tr>
+<tr>
+<td><code>disabled_by</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Who disabled it</td>
+</tr>
+<tr>
+<td><code>disabled_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Why disabled</td>
+</tr>
+<tr>
+<td><code>is_latest_version</code></td>
+<td><code>BOOLEAN</code></td>
+<td>NOT NULL</td>
+<td>Partial index for discovery queries</td>
+</tr>
+<tr>
+<td><code>previous_version</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td>Previous version reference</td>
+</tr>
+<tr>
+<td><code>deprecation_notice</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Deprecation notice text</td>
+</tr>
+<tr>
+<td><code>version_notes</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Version release notes</td>
+</tr>
+<tr>
+<td><code>change_summary</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Summary of changes from previous version</td>
+</tr>
+<tr>
+<td><code>approved_by</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Approver identity</td>
+</tr>
+<tr>
+<td><code>approved_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Approval timestamp</td>
+</tr>
+<tr>
+<td><code>expected_success_rate</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td>Expected success rate [0.000–1.000]</td>
+</tr>
+<tr>
+<td><code>expected_duration_seconds</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Expected execution duration</td>
+</tr>
+<tr>
+<td><code>actual_success_rate</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td>Computed from execution history [0.000–1.000]</td>
+</tr>
+<tr>
+<td><code>total_executions</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>successful_executions</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0 (constrained ≤ <code>total_executions</code>)</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td>Auto-updated via trigger</td>
+</tr>
+<tr>
+<td><code>created_by</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Creator identity</td>
+</tr>
+<tr>
+<td><code>updated_by</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td>Last updater identity</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key indexes</strong>: GIN on <code>labels</code>, <code>custom_labels</code>, <code>detected_labels</code>; composite on <code>(action_type, status, is_latest_version)</code> for discovery; partial UNIQUE on <code>(workflow_name, version)</code> WHERE <code>status = 'active'</code>; btree on <code>created_at DESC</code>, <code>status</code>, <code>workflow_name</code>, <code>schema_digest</code>, <code>execution_bundle_digest</code>, <code>actual_success_rate DESC</code> (active only).</p>
+<p><strong>Check constraints</strong>: <code>status</code> must be one of <code>active</code>/<code>disabled</code>/<code>deprecated</code>/<code>archived</code>/<code>superseded</code>. <code>expected_success_rate</code>, <code>actual_success_rate</code> must be in [0, 1]. <code>successful_executions</code> must be ≤ <code>total_executions</code>.</p>
+<p><strong>Workflow supersession</strong>: Only one workflow version per <code>(workflow_name, action_type)</code> pair can be <code>active</code> at a time. When a new version is registered (via <code>RemediationWorkflow</code> CRD creation or update), DataStorage marks the previous active entry as <code>superseded</code> and activates the new one, enforced by the <code>GetActiveByWorkflowName</code> repository method.</p>
+<p><strong>PK collision recovery (SupersedeAndCreate)</strong>: Workflow primary keys are <strong>deterministic</strong> (UUIDv5). A rare re-registration can collide with an existing row. If the colliding row has <code>status = 'Superseded'</code>, DataStorage <strong>re-activates</strong> it with reason <code>reactivated: re-registered via CRD</code>. The implementation uses a <strong>SAVEPOINT/ROLLBACK</strong> pattern.</p>
+<hr />
+<h3 id="action_type_taxonomy">action_type_taxonomy<a class="headerlink" href="#action_type_taxonomy" title="Permanent link">&para;</a></h3>
+<p>The action type registry for workflow categorization.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>action_type</code></td>
+<td><code>TEXT</code></td>
+<td>PK</td>
+<td>PascalCase identifier (e.g., <code>ScaleReplicas</code>, <code>RestartPod</code>)</td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>JSONB</code></td>
+<td>NOT NULL</td>
+<td><code>{what, whenToUse, whenNotToUse, preconditions}</code> (camelCase keys)</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>TEXT</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>active</code>. Lifecycle: <code>active</code>, <code>disabled</code>, <code>deprecated</code>, <code>archived</code>, <code>superseded</code></td>
+</tr>
+<tr>
+<td><code>disabled_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>When disabled</td>
+</tr>
+<tr>
+<td><code>disabled_by</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td>Who disabled it</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>NOT NULL</td>
+<td>Auto-updated via trigger</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Referenced by</strong>: <code>remediation_workflow_catalog.action_type</code> (FK).</p>
+<p>The database deploys with a clean schema — no pre-seeded rows. Action types are registered via <code>kubectl apply -f</code> on <code>ActionType</code> CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API.</p>
+<hr />
+<h3 id="resource_action_traces">resource_action_traces<a class="headerlink" href="#resource_action_traces" title="Permanent link">&para;</a></h3>
+<p>The <strong>major partitioned trace table</strong> for per-resource action tracking. Stores signal data, AI decision metadata, execution tracking, and effectiveness scoring. Partitioned by month on <code>action_timestamp</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK (with <code>action_timestamp</code>)</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_history_id</code></td>
+<td><code>BIGINT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>action_histories.id</code></td>
+</tr>
+<tr>
+<td><code>action_id</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td>UNIQUE (with <code>action_timestamp</code>)</td>
+</tr>
+<tr>
+<td><code>correlation_id</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td></td>
+<td>Links to RR correlation</td>
+</tr>
+<tr>
+<td><strong>Timing</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_timestamp</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td>Partition key</td>
+</tr>
+<tr>
+<td><code>execution_start_time</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>execution_end_time</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>execution_duration_ms</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Signal context</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>signal_name</code></td>
+<td><code>VARCHAR(200)</code></td>
+<td>NOT NULL</td>
+<td>Alert/signal name</td>
+</tr>
+<tr>
+<td><code>signal_severity</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td>NOT NULL</td>
+<td>Signal severity</td>
+</tr>
+<tr>
+<td><code>signal_labels</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>GIN-indexed for containment queries</td>
+</tr>
+<tr>
+<td><code>signal_annotations</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>signal_firing_time</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>incident_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>alert_name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>incident_severity</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Workflow / execution</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>workflow_id</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>workflow_version</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>workflow_step_number</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>workflow_execution_id</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>execution_status</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td>Default: <code>pending</code>. Values: <code>pending</code>, <code>executing</code>, <code>completed</code>, <code>failed</code></td>
+</tr>
+<tr>
+<td><code>execution_error</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>kubernetes_operations</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>AI decision</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>ai_selected_workflow</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>ai_chained_workflows</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>ai_manual_escalation</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>ai_workflow_customization</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>model_used</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td>LLM model identifier</td>
+</tr>
+<tr>
+<td><code>routing_tier</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>model_confidence</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td>NOT NULL</td>
+<td>[0.000–1.000]</td>
+</tr>
+<tr>
+<td><code>model_reasoning</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>alternative_actions</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_parameters</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>GIN-indexed</td>
+</tr>
+<tr>
+<td><strong>Resource state</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resource_state_before</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td>GIN-indexed</td>
+</tr>
+<tr>
+<td><code>resource_state_after</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Effectiveness</strong></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_score</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td>[0.000–1.000] when assessed</td>
+</tr>
+<tr>
+<td><code>effectiveness_criteria</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_assessed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_assessment_method</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_assessment_due</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_notes</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>follow_up_actions</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Default: <code>now()</code></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Auto-updated via trigger</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Key indexes</strong> (22 total): composite indexes for workflow success rates, incident type analysis, AI execution mode queries, alert-based lookups, effectiveness analysis, and multi-dimensional success correlation. Partial indexes on <code>execution_status IN ('pending','executing')</code> and <code>effectiveness_score IS NOT NULL</code> for targeted queries.</p>
+<p><strong>Triggers</strong>: <code>create_assessment_for_action_trace</code> (AFTER UPDATE — auto-creates <code>action_assessments</code> entries), <code>update_resource_action_traces_updated_at</code> (BEFORE UPDATE).</p>
+<p><strong>Partitioning</strong>: Monthly range on <code>action_timestamp</code> (<code>resource_action_traces_2026_03</code> through <code>resource_action_traces_2028_12</code>, plus <code>resource_action_traces_default</code>).</p>
+<hr />
+<h3 id="action_histories">action_histories<a class="headerlink" href="#action_histories" title="Permanent link">&para;</a></h3>
+<p>Per-resource action history with configurable retention and compaction.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>resource_id</code></td>
+<td><code>BIGINT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>resource_references.id</code> (UNIQUE, CASCADE)</td>
+</tr>
+<tr>
+<td><code>max_actions</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 1000</td>
+</tr>
+<tr>
+<td><code>max_age_days</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 30</td>
+</tr>
+<tr>
+<td><code>compaction_strategy</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td>Default: <code>pattern-aware</code></td>
+</tr>
+<tr>
+<td><code>oscillation_window_minutes</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 120</td>
+</tr>
+<tr>
+<td><code>effectiveness_threshold</code></td>
+<td><code>NUMERIC(3,2)</code></td>
+<td></td>
+<td>Default: 0.70</td>
+</tr>
+<tr>
+<td><code>pattern_min_occurrences</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 3</td>
+</tr>
+<tr>
+<td><code>total_actions</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>last_action_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>last_analysis_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>next_analysis_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Default: <code>now()</code></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Auto-updated via trigger</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Referenced by</strong>: <code>resource_action_traces.action_history_id</code>, <code>retention_operations.action_history_id</code> (both CASCADE).</p>
+<hr />
+<h3 id="notification_audit">notification_audit<a class="headerlink" href="#notification_audit" title="Permanent link">&para;</a></h3>
+<p>Notification-specific audit events with delivery tracking.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>remediation_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>notification_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td>UNIQUE</td>
+</tr>
+<tr>
+<td><code>recipient</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>channel</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>Constrained: <code>email</code>, <code>slack</code>, <code>pagerduty</code>, <code>sms</code></td>
+</tr>
+<tr>
+<td><code>message_summary</code></td>
+<td><code>TEXT</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>Constrained: <code>sent</code>, <code>failed</code>, <code>acknowledged</code>, <code>escalated</code></td>
+</tr>
+<tr>
+<td><code>sent_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>delivery_status</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>escalation_level</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: btree on <code>remediation_id</code>, <code>notification_id</code>, <code>channel</code>, <code>status</code>, <code>created_at DESC</code>.</p>
+<hr />
+<h3 id="action_assessments">action_assessments<a class="headerlink" href="#action_assessments" title="Permanent link">&para;</a></h3>
+<p>Pending effectiveness assessments for completed actions. Auto-created by the <code>create_assessment_for_action_trace</code> trigger.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td><code>gen_random_uuid()</code></td>
+</tr>
+<tr>
+<td><code>trace_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>context_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>alert_name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>namespace</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>resource_name</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>executed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>scheduled_for</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>now() + 5 minutes</code></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>pending</code>. Constrained: <code>pending</code>, <code>processing</code>, <code>completed</code>, <code>failed</code>, <code>skipped</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>completed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: partial index on <code>(status, scheduled_for)</code> WHERE <code>status = 'pending'</code> for scheduler queries.</p>
+<hr />
+<h3 id="effectiveness_results">effectiveness_results<a class="headerlink" href="#effectiveness_results" title="Permanent link">&para;</a></h3>
+<p>Results of effectiveness assessments for learning feedback.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>trace_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td>UNIQUE</td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>overall_score</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>[0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>alert_resolved</code></td>
+<td><code>BOOLEAN</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>metric_delta</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>side_effects</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>[0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>assessed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>recommended_adjustments</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>learning_contribution</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>Default: 0.5. [0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: btree on <code>action_type</code>, <code>assessed_at</code>, <code>overall_score</code>; composite on <code>(action_type, assessed_at DESC)</code> for learning queries.</p>
+<hr />
+<h3 id="action_confidence_scores">action_confidence_scores<a class="headerlink" href="#action_confidence_scores" title="Permanent link">&para;</a></h3>
+<p>Dynamic confidence scores that improve through learning.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>context_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>base_confidence</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>[0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>adjusted_confidence</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>[0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>adjustment_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_samples</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>last_updated</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique constraint</strong>: <code>(action_type, context_hash)</code>.</p>
+<hr />
+<h3 id="action_outcomes">action_outcomes<a class="headerlink" href="#action_outcomes" title="Permanent link">&para;</a></h3>
+<p>Historical outcomes for ML training.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>trace_id</code></td>
+<td><code>VARCHAR(255)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>context_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>success</code></td>
+<td><code>BOOLEAN</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>alert_resolved</code></td>
+<td><code>BOOLEAN</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>side_effects</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>effectiveness_score</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>[0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>execution_time</code></td>
+<td><code>BIGINT</code></td>
+<td></td>
+<td>Duration in ms</td>
+</tr>
+<tr>
+<td><code>metrics_before</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>metrics_after</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>failure_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>executed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>assessed_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: composite on <code>(action_type, context_hash, executed_at DESC)</code> for learning queries; btree on <code>effectiveness_score</code>, <code>success</code>, <code>executed_at</code>.</p>
+<hr />
+<h3 id="action_alternatives">action_alternatives<a class="headerlink" href="#action_alternatives" title="Permanent link">&para;</a></h3>
+<p>Alternative action recommendations for failed patterns.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>failed_action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>context_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>alternative_action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>success_rate</code></td>
+<td><code>FLOAT8</code></td>
+<td>NOT NULL</td>
+<td>Default: 0.5. [0.0–1.0]</td>
+</tr>
+<tr>
+<td><code>sample_size</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>last_success_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique constraint</strong>: <code>(failed_action_type, context_hash, alternative_action_type)</code>.</p>
+<hr />
+<h3 id="action_effectiveness_metrics">action_effectiveness_metrics<a class="headerlink" href="#action_effectiveness_metrics" title="Permanent link">&para;</a></h3>
+<p>Aggregated effectiveness metrics by scope, period, and action type.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>scope_type</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td>e.g., <code>namespace</code>, <code>cluster</code>, <code>action_type</code></td>
+</tr>
+<tr>
+<td><code>scope_value</code></td>
+<td><code>VARCHAR(200)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>metric_period</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td>NOT NULL</td>
+<td>e.g., <code>daily</code>, <code>weekly</code></td>
+</tr>
+<tr>
+<td><code>period_start</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>period_end</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>sample_size</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>average_score</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>median_score</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>std_deviation</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>confidence_interval_lower</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>confidence_interval_upper</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>trend_direction</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>trend_confidence</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>min_sample_size_met</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>statistical_significance</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Unique constraint</strong>: <code>(scope_type, scope_value, metric_period, period_start, action_type)</code>.</p>
+<hr />
+<h3 id="oscillation_patterns">oscillation_patterns<a class="headerlink" href="#oscillation_patterns" title="Permanent link">&para;</a></h3>
+<p>Pattern definitions for oscillation detection (repeated fail/fix cycles).</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern_type</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern_name</code></td>
+<td><code>VARCHAR(200)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>description</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>min_occurrences</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td>Default: 3</td>
+</tr>
+<tr>
+<td><code>time_window_minutes</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td>Default: 120</td>
+</tr>
+<tr>
+<td><code>action_sequence</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>threshold_config</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resource_types</code></td>
+<td><code>TEXT[]</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>namespaces</code></td>
+<td><code>TEXT[]</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>label_selectors</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>prevention_strategy</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>prevention_parameters</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>alerting_enabled</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>true</code></td>
+</tr>
+<tr>
+<td><code>alert_severity</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td>Default: <code>warning</code></td>
+</tr>
+<tr>
+<td><code>alert_channels</code></td>
+<td><code>TEXT[]</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>total_detections</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td>Default: 0</td>
+</tr>
+<tr>
+<td><code>prevention_success_rate</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>false_positive_rate</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>last_detection_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>active</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>true</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td>Auto-updated via trigger</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Referenced by</strong>: <code>oscillation_detections.pattern_id</code> (CASCADE).</p>
+<hr />
+<h3 id="oscillation_detections">oscillation_detections<a class="headerlink" href="#oscillation_detections" title="Permanent link">&para;</a></h3>
+<p>Detected oscillation instances.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>pattern_id</code></td>
+<td><code>BIGINT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>oscillation_patterns.id</code> (CASCADE)</td>
+</tr>
+<tr>
+<td><code>resource_id</code></td>
+<td><code>BIGINT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>resource_references.id</code> (CASCADE)</td>
+</tr>
+<tr>
+<td><code>detected_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td>Default: <code>now()</code></td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td><code>NUMERIC(4,3)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_count</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>time_span_minutes</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>matching_actions</code></td>
+<td><code>BIGINT[]</code></td>
+<td></td>
+<td>Array of <code>resource_action_traces.id</code> values</td>
+</tr>
+<tr>
+<td><code>pattern_evidence</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>prevention_applied</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>prevention_action</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>prevention_details</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>prevention_successful</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resolved</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>resolved_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resolution_method</code></td>
+<td><code>VARCHAR(50)</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>resolution_notes</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Indexes</strong>: btree on <code>(pattern_id, resource_id)</code>, <code>detected_at</code>; partial on <code>resolved = false</code> for active detections.</p>
+<hr />
+<h3 id="audit_retention_policies">audit_retention_policies<a class="headerlink" href="#audit_retention_policies" title="Permanent link">&para;</a></h3>
+<p>Retention policy definitions per event category.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>policy_id</code></td>
+<td><code>UUID</code></td>
+<td>PK</td>
+<td><code>gen_random_uuid()</code></td>
+</tr>
+<tr>
+<td><code>event_category</code></td>
+<td><code>TEXT</code></td>
+<td>NOT NULL</td>
+<td>UNIQUE</td>
+</tr>
+<tr>
+<td><code>retention_days</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>legal_hold_override</code></td>
+<td><code>BOOLEAN</code></td>
+<td></td>
+<td>Default: <code>false</code></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>updated_at</code></td>
+<td><code>TIMESTAMP</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="retention_operations">retention_operations<a class="headerlink" href="#retention_operations" title="Permanent link">&para;</a></h3>
+<p>Retention operation tracking and scheduling.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Nullable</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id</code></td>
+<td><code>BIGSERIAL</code></td>
+<td>PK</td>
+<td></td>
+</tr>
+<tr>
+<td><code>action_history_id</code></td>
+<td><code>BIGINT</code></td>
+<td>NOT NULL</td>
+<td>FK to <code>action_histories.id</code> (CASCADE)</td>
+</tr>
+<tr>
+<td><code>operation_type</code></td>
+<td><code>VARCHAR(30)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>strategy_used</code></td>
+<td><code>VARCHAR(30)</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>records_before</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>records_after</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>records_deleted</code></td>
+<td><code>INTEGER</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>records_archived</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>retention_criteria</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>preserved_criteria</code></td>
+<td><code>JSONB</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>operation_start</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td>NOT NULL</td>
+<td></td>
+</tr>
+<tr>
+<td><code>operation_end</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>operation_duration_ms</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>operation_status</code></td>
+<td><code>VARCHAR(20)</code></td>
+<td></td>
+<td>Default: <code>running</code></td>
+</tr>
+<tr>
+<td><code>error_message</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><code>created_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="views">Views<a class="headerlink" href="#views" title="Permanent link">&para;</a></h2>
+<h3 id="effectiveness_trends">effectiveness_trends<a class="headerlink" href="#effectiveness_trends" title="Permanent link">&para;</a></h3>
+<p>Daily aggregation of effectiveness results by action type.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td><code>effectiveness_results.action_type</code></td>
+</tr>
+<tr>
+<td><code>assessment_date</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td><code>date_trunc('day', assessed_at)</code></td>
+</tr>
+<tr>
+<td><code>total_assessments</code></td>
+<td><code>BIGINT</code></td>
+<td><code>count(*)</code></td>
+</tr>
+<tr>
+<td><code>avg_effectiveness</code></td>
+<td><code>FLOAT8</code></td>
+<td><code>avg(overall_score)</code></td>
+</tr>
+<tr>
+<td><code>avg_confidence</code></td>
+<td><code>FLOAT8</code></td>
+<td><code>avg(confidence)</code></td>
+</tr>
+<tr>
+<td><code>alerts_resolved</code></td>
+<td><code>BIGINT</code></td>
+<td>Count where <code>alert_resolved = true</code></td>
+</tr>
+<tr>
+<td><code>resolution_rate</code></td>
+<td><code>FLOAT8</code></td>
+<td><code>alerts_resolved / total_assessments</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="low_confidence_actions">low_confidence_actions<a class="headerlink" href="#low_confidence_actions" title="Permanent link">&para;</a></h3>
+<p>Actions requiring attention due to poor performance (adjusted confidence &lt; 0.5).</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>action_type</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td><code>action_confidence_scores</code></td>
+</tr>
+<tr>
+<td><code>context_hash</code></td>
+<td><code>VARCHAR(64)</code></td>
+<td><code>action_confidence_scores</code></td>
+</tr>
+<tr>
+<td><code>adjusted_confidence</code></td>
+<td><code>FLOAT8</code></td>
+<td>Below 0.5 threshold</td>
+</tr>
+<tr>
+<td><code>adjustment_reason</code></td>
+<td><code>TEXT</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>effectiveness_samples</code></td>
+<td><code>INTEGER</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>last_updated</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>recent_success_rate</code></td>
+<td><code>NUMERIC</code></td>
+<td>From <code>action_outcomes</code> (last 7 days)</td>
+</tr>
+<tr>
+<td><code>recent_samples</code></td>
+<td><code>BIGINT</code></td>
+<td>From <code>action_outcomes</code> (last 7 days)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="action_history_summary">action_history_summary<a class="headerlink" href="#action_history_summary" title="Permanent link">&para;</a></h3>
+<p>Per-resource action summary joining <code>resource_references</code>, <code>action_histories</code>, and <code>resource_action_traces</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Type</th>
+<th>Source</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>namespace</code></td>
+<td><code>VARCHAR(63)</code></td>
+<td><code>resource_references</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td><code>VARCHAR(100)</code></td>
+<td><code>resource_references</code></td>
+</tr>
+<tr>
+<td><code>name</code></td>
+<td><code>VARCHAR(253)</code></td>
+<td><code>resource_references</code></td>
+</tr>
+<tr>
+<td><code>total_actions</code></td>
+<td><code>INTEGER</code></td>
+<td><code>action_histories</code></td>
+</tr>
+<tr>
+<td><code>last_action_at</code></td>
+<td><code>TIMESTAMPTZ</code></td>
+<td><code>action_histories</code></td>
+</tr>
+<tr>
+<td><code>recent_actions_24h</code></td>
+<td><code>BIGINT</code></td>
+<td>Count from <code>resource_action_traces</code> (last 24h)</td>
+</tr>
+<tr>
+<td><code>avg_effectiveness_24h</code></td>
+<td><code>NUMERIC</code></td>
+<td>Avg <code>effectiveness_score</code> (last 24h)</td>
+</tr>
+<tr>
+<td><code>action_types_used</code></td>
+<td><code>BIGINT</code></td>
+<td>Distinct <code>action_type</code> count (last 24h)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="incident_summary_view">incident_summary_view<a class="headerlink" href="#incident_summary_view" title="Permanent link">&para;</a></h3>
+<p>Incident counts grouped by signal severity (ordered critical → low).</p>
+<h3 id="oscillation_detection_summary">oscillation_detection_summary<a class="headerlink" href="#oscillation_detection_summary" title="Permanent link">&para;</a></h3>
+<p>Oscillation detection statistics grouped by pattern type, including total detections, preventions applied/successful, average confidence, and last detection timestamp.</p>
+<hr />
+<h2 id="stored-functions">Stored Functions<a class="headerlink" href="#stored-functions" title="Permanent link">&para;</a></h2>
+<p>The database includes procedural functions for automated analysis:</p>
+<table>
+<thead>
+<tr>
+<th>Function</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>create_assessment_for_action_trace()</code></td>
+<td>Trigger: auto-creates <code>action_assessments</code> entries after trace updates</td>
+</tr>
+<tr>
+<td><code>create_monthly_partitions()</code></td>
+<td>Generates monthly partitions for <code>audit_events</code> and <code>resource_action_traces</code></td>
+</tr>
+<tr>
+<td><code>analyze_action_oscillation()</code></td>
+<td>Detects oscillation patterns in action histories</td>
+</tr>
+<tr>
+<td><code>detect_cascading_failures()</code></td>
+<td>Identifies cascading failure sequences</td>
+</tr>
+<tr>
+<td><code>detect_ineffective_loops()</code></td>
+<td>Finds repeated ineffective remediation loops</td>
+</tr>
+<tr>
+<td><code>detect_resource_thrashing()</code></td>
+<td>Detects resource thrashing (rapid scale up/down)</td>
+</tr>
+<tr>
+<td><code>detect_scale_oscillation()</code></td>
+<td>Detects scale oscillation patterns</td>
+</tr>
+<tr>
+<td><code>analyze_cascade_effects()</code></td>
+<td>Analyzes the scope of cascading failures</td>
+</tr>
+<tr>
+<td><code>store_oscillation_detection()</code></td>
+<td>Persists a detected oscillation to <code>oscillation_detections</code></td>
+</tr>
+<tr>
+<td><code>prevent_legal_hold_deletion()</code></td>
+<td>Blocks deletion of audit events under legal hold</td>
+</tr>
+<tr>
+<td><code>audit_event_lock_id()</code></td>
+<td>Generates advisory lock IDs for audit event deduplication</td>
+</tr>
+<tr>
+<td><code>get_action_effectiveness()</code></td>
+<td>Retrieves computed effectiveness scores</td>
+</tr>
+<tr>
+<td><code>get_action_traces()</code></td>
+<td>Queries <code>resource_action_traces</code> with filters</td>
+</tr>
+<tr>
+<td><code>get_recent_actions()</code></td>
+<td>Returns recent actions for a resource</td>
+</tr>
+<tr>
+<td><code>get_resource_actions_base()</code></td>
+<td>Base query for resource action retrieval</td>
+</tr>
+<tr>
+<td><code>get_resource_id()</code></td>
+<td>Resolves or creates <code>resource_references</code> entries</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="deterministic-catalog-ids-uuidv5">Deterministic catalog IDs (UUIDv5)<a class="headerlink" href="#deterministic-catalog-ids-uuidv5" title="Permanent link">&para;</a></h2>
+<p><code>RemediationWorkflow</code> resources use <strong>deterministic UUIDs</strong> (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across <strong>PVC wipes</strong> and database replays as long as the spec is unchanged. <code>ActionType</code> entries are keyed by their <code>actionType</code> identifier string.</p>
+<h2 id="auth-webhook-startup-reconciliation">Auth Webhook startup reconciliation<a class="headerlink" href="#auth-webhook-startup-reconciliation" title="Permanent link">&para;</a></h2>
+<p>On startup, the Auth Webhook runs a <strong>Runnable</strong> that lists cluster <code>ActionType</code> objects, then <code>RemediationWorkflow</code> objects, and <strong>reconciles</strong> them with DataStorage through <strong>idempotent creates</strong>. This repopulates the catalog after storage loss or drift without duplicating rows.</p>
+<h2 id="database-migrations">Database migrations<a class="headerlink" href="#database-migrations" title="Permanent link">&para;</a></h2>
+<p>Schema changes use an <strong>append-only</strong> migration chain managed by <a href="https://github.com/pressly/goose"><strong>goose</strong></a>. The strategy is:</p>
+<ul>
+<li><strong>Append-only chain</strong> — migrations are never rewritten in place; history stays linear.</li>
+<li><strong>Per-major baselines</strong> — each major release can ship a squashed baseline for <strong>fresh installs</strong>, while upgrades follow the incremental chain from their installed version.</li>
+<li><strong>Minor release squash</strong> — development incrementals are typically <strong>squashed per minor</strong> at release time to keep the chain maintainable.</li>
+<li><strong><code>db-migrate</code> migration job</strong> — runs via Helm hook (<code>post-install,post-upgrade</code>) and distinguishes <strong>fresh install</strong> vs <strong>upgrade</strong> using the <code>goose_db_version</code> table so the correct migration path applies.</li>
+</ul>
+<p>Migrations <code>002</code>–<code>005</code> are part of this chain; <strong><code>004</code> adds</strong> an index on <code>post_remediation_spec_hash</code> in <code>event_data</code> for audit queries, and <strong><code>005</code> adds</strong> an effectiveness correlation index.</p>
+<h2 id="remediationrequest-reconstruction">RemediationRequest Reconstruction<a class="headerlink" href="#remediationrequest-reconstruction" title="Permanent link">&para;</a></h2>
+<p>The DataStorage service can rebuild a complete <code>RemediationRequest</code> from audit events — even after the CRD has been removed from the cluster.</p>
+<h3 id="endpoint">Endpoint<a class="headerlink" href="#endpoint" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>POST /api/v1/audit/remediation-requests/{correlation_id}/reconstruct
+</span></code></pre></div>
+<h3 id="pipeline">Pipeline<a class="headerlink" href="#pipeline" title="Permanent link">&para;</a></h3>
+<pre class="mermaid"><code>graph LR
+    Q["1. Query&lt;br/&gt;&lt;small&gt;audit events by&lt;br/&gt;correlation_id&lt;/small&gt;"]
+    P["2. Parse&lt;br/&gt;&lt;small&gt;extract CRD fields&lt;br/&gt;from typed payloads&lt;/small&gt;"]
+    M["3. Map&lt;br/&gt;&lt;small&gt;aggregate into&lt;br/&gt;spec/status&lt;/small&gt;"]
+    B["4. Build&lt;br/&gt;&lt;small&gt;produce RR&lt;br/&gt;object&lt;/small&gt;"]
+    V["5. Validate&lt;br/&gt;&lt;small&gt;check completeness&lt;br/&gt;and integrity&lt;/small&gt;"]
+    Q --&gt; P --&gt; M --&gt; B --&gt; V</code></pre>
+<h3 id="query">Query<a class="headerlink" href="#query" title="Permanent link">&para;</a></h3>
+<p>Events are fetched by <code>correlation_id</code> filtered to specific event types:</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">event_id</span><span class="p">,</span><span class="w"> </span><span class="n">event_type</span><span class="p">,</span><span class="w"> </span><span class="n">event_timestamp</span><span class="p">,</span><span class="w"> </span><span class="n">event_outcome</span><span class="p">,</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">       </span><span class="n">resource_type</span><span class="p">,</span><span class="w"> </span><span class="n">resource_id</span><span class="p">,</span><span class="w"> </span><span class="n">actor_type</span><span class="p">,</span><span class="w"> </span><span class="n">actor_id</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">       </span><span class="n">event_data</span><span class="p">,</span><span class="w"> </span><span class="n">namespace</span><span class="p">,</span><span class="w"> </span><span class="n">cluster_name</span><span class="p">,</span><span class="w"> </span><span class="n">duration_ms</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="k">FROM</span><span class="w"> </span><span class="n">audit_events</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">correlation_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="err">$</span><span class="mi">1</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">event_type</span><span class="w"> </span><span class="k">IN</span><span class="w"> </span><span class="p">(</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="s1">&#39;gateway.signal.received&#39;</span><span class="p">,</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">    </span><span class="s1">&#39;aianalysis.analysis.completed&#39;</span><span class="p">,</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">    </span><span class="s1">&#39;workflowexecution.selection.completed&#39;</span><span class="p">,</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">    </span><span class="s1">&#39;workflowexecution.execution.started&#39;</span><span class="p">,</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">    </span><span class="s1">&#39;orchestrator.lifecycle.created&#39;</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">  </span><span class="p">)</span>
+</span><span id="__span-1-13"><a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">event_timestamp</span><span class="w"> </span><span class="k">ASC</span><span class="p">,</span><span class="w"> </span><span class="n">event_id</span><span class="w"> </span><span class="k">ASC</span>
+</span></code></pre></div>
+<h3 id="source-event-mapping">Source Event Mapping<a class="headerlink" href="#source-event-mapping" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Reconstructed Field</th>
+<th>Source Event</th>
+<th>Payload Field</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>spec.signalName</code>, <code>signalType</code>, <code>signalLabels</code></td>
+<td><code>gateway.signal.received</code></td>
+<td><code>GatewayAuditPayload</code></td>
+</tr>
+<tr>
+<td><code>spec.originalPayload</code></td>
+<td><code>gateway.signal.received</code></td>
+<td><code>GatewayAuditPayload</code></td>
+</tr>
+<tr>
+<td><code>spec.signalAnnotations</code></td>
+<td><code>gateway.signal.received</code></td>
+<td><code>GatewayAuditPayload</code></td>
+</tr>
+<tr>
+<td><code>status.selectedWorkflowRef</code></td>
+<td><code>workflowexecution.selection.completed</code></td>
+<td><code>WorkflowExecutionAuditPayload</code></td>
+</tr>
+<tr>
+<td><code>status.executionRef</code></td>
+<td><code>workflowexecution.execution.started</code></td>
+<td><code>WorkflowExecutionAuditPayload</code></td>
+</tr>
+<tr>
+<td><code>status.timeoutConfig</code></td>
+<td><code>orchestrator.lifecycle.created</code></td>
+<td><code>RemediationOrchestratorAuditPayload</code></td>
+</tr>
+</tbody>
+</table>
+<p>Events are ordered by timestamp and mapped into typed payloads (<code>GatewayAuditPayload</code>, <code>RemediationOrchestratorAuditPayload</code>, <code>AIAnalysisAuditPayload</code>, <code>WorkflowExecutionAuditPayload</code>) to rebuild the RR.</p>
+<h3 id="limitations">Limitations<a class="headerlink" href="#limitations" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Reconstruction is available for <strong>RemediationRequest</strong> CRDs only (other CRD types planned)</li>
+<li><code>status.error</code> and <code>OverallPhase</code> are not reconstructed from the current event schema</li>
+</ul>
+<h2 id="valkey-dlq">Valkey (DLQ)<a class="headerlink" href="#valkey-dlq" title="Permanent link">&para;</a></h2>
+<p>Valkey serves as a dead-letter queue for audit event resilience:</p>
+<h3 id="streams">Streams<a class="headerlink" href="#streams" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Stream</th>
+<th>Purpose</th>
+<th>Max Length</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>audit:dlq:events</code></td>
+<td>Failed generic audit batches</td>
+<td>10,000</td>
+</tr>
+<tr>
+<td><code>audit:dlq:notifications</code></td>
+<td>Failed notification audit events</td>
+<td>10,000</td>
+</tr>
+<tr>
+<td><code>audit:dead-letter:{type}</code></td>
+<td>Events that exceeded all retry attempts</td>
+<td>10,000</td>
+</tr>
+</tbody>
+</table>
+<h3 id="operations">Operations<a class="headerlink" href="#operations" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Operation</th>
+<th>Command</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Enqueue</td>
+<td><code>XADD</code></td>
+<td>Add failed batch to stream</td>
+</tr>
+<tr>
+<td>Read</td>
+<td><code>XREADGROUP</code></td>
+<td>Consumer group for reliable delivery</td>
+</tr>
+<tr>
+<td>Acknowledge</td>
+<td><code>XACK</code></td>
+<td>Mark message as processed</td>
+</tr>
+<tr>
+<td>Move to dead letter</td>
+<td><code>XADD</code> to dead-letter stream</td>
+<td>After max retries</td>
+</tr>
+<tr>
+<td>Drain</td>
+<td><code>DrainWithTimeout</code></td>
+<td>Graceful shutdown flush</td>
+</tr>
+</tbody>
+</table>
+<h3 id="message-format">Message Format<a class="headerlink" href="#message-format" title="Permanent link">&para;</a></h3>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;audit_event&quot;</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;payload&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;...&quot;</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-04T12:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span><span class="nt">&quot;retry_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">&quot;last_error&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;connection refused&quot;</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="p">}</span>
+</span></code></pre></div>
+<h2 id="data-flow-summary">Data Flow Summary<a class="headerlink" href="#data-flow-summary" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>graph TD
+    S[Service] --&gt;|StoreAudit| BS[Buffered Store]
+    BS --&gt;|batch POST| DS[DataStorage]
+    DS --&gt;|INSERT| PG[(PostgreSQL)]
+    DS --&gt;|on failure| RD[(Valkey DLQ)]
+    RD --&gt;|retry| DS
+
+    DS --&gt;|query| PG
+    PG --&gt;|reconstruct| RR[RemediationRequest]</code></pre>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../audit-pipeline/">Audit Pipeline</a> — How events reach DataStorage</li>
+<li><a href="../../user-guide/data-lifecycle/">Data Lifecycle</a> — User-facing data lifecycle documentation</li>
+<li><a href="../../api-reference/datastorage-api/">API Reference: DataStorage</a> — REST API endpoints</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../audit-pipeline/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Audit Pipeline">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Audit Pipeline
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../security-rbac/" class="md-footer__link md-footer__link--next" aria-label="Next: Security &amp; RBAC">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Security & RBAC
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Kubernaut Contributors
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/jordigilh/kubernaut" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

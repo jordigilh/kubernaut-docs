@@ -5,90 +5,83 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
 ## The Trust Ladder
 
 <div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 310" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" style="width:100%;height:auto">
-  <rect width="820" height="310" fill="white"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" style="width:100%;height:auto">
+  <rect width="820" height="320" fill="white"/>
 
   <!-- Title -->
   <text x="24" y="28" font-size="14" font-weight="700" fill="#0F172A" letter-spacing="0.5">Trust Ladder</text>
   <text x="24" y="46" font-size="10" fill="#64748B">Build confidence incrementally — from full human oversight to autonomous remediation.</text>
 
-  <!-- Baseline for staircase alignment (cards bottom-align at y=290) -->
-
   <!-- L1: Observe (shortest — 120px tall) -->
-  <rect x="16" y="170" width="186" height="120" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="16" y="170" width="186" height="5" rx="3" fill="#0891B2"/>
-  <text x="28" y="194" font-size="13" font-weight="700" fill="#0F172A">Observe</text>
-  <text x="28" y="212" font-size="9" fill="#64748B">Global dry-run mode. Kubernaut</text>
-  <text x="28" y="224" font-size="9" fill="#64748B">investigates and selects workflows</text>
-  <text x="28" y="236" font-size="9" fill="#64748B">but does not execute. Operators</text>
-  <text x="28" y="248" font-size="9" fill="#64748B">review RCA and selections via</text>
-  <text x="28" y="260" font-size="9" fill="#64748B">audit events and notifications.</text>
-  <text x="28" y="280" font-size="8" font-weight="600" fill="#0891B2">v1.4+</text>
+  <rect x="16" y="180" width="186" height="120" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="16" y="180" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="28" y="204" font-size="13" font-weight="700" fill="#0F172A">Observe</text>
+  <text x="28" y="220" font-size="9" fill="#64748B">Global dry-run mode. Kubernaut</text>
+  <text x="28" y="232" font-size="9" fill="#64748B">investigates and selects workflows</text>
+  <text x="28" y="244" font-size="9" fill="#64748B">but does not execute. Operators</text>
+  <text x="28" y="256" font-size="9" fill="#64748B">review RCA and selections via</text>
+  <text x="28" y="268" font-size="9" fill="#64748B">audit events and notifications.</text>
 
   <!-- L2: Approve (160px tall) -->
-  <rect x="214" y="130" width="186" height="160" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="214" y="130" width="186" height="5" rx="3" fill="#6366F1"/>
-  <text x="226" y="154" font-size="13" font-weight="700" fill="#0F172A">Approve</text>
-  <text x="226" y="172" font-size="9" fill="#64748B">Rego policy gates remediation.</text>
-  <text x="226" y="184" font-size="9" fill="#64748B">Human approves, rejects, or</text>
-  <text x="226" y="196" font-size="9" fill="#64748B">overrides the AI-selected</text>
-  <text x="226" y="208" font-size="9" fill="#64748B">workflow via RAR. Shadow agent</text>
-  <text x="226" y="220" font-size="9" fill="#64748B">alignment provides an additional</text>
-  <text x="226" y="232" font-size="9" fill="#64748B">safety layer independent of</text>
-  <text x="226" y="244" font-size="9" fill="#64748B">the trust level.</text>
-  <text x="226" y="280" font-size="8" font-weight="600" fill="#6366F1">v1.4+</text>
+  <rect x="214" y="140" width="186" height="160" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="214" y="140" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="226" y="164" font-size="13" font-weight="700" fill="#0F172A">Approve</text>
+  <text x="226" y="180" font-size="9" fill="#64748B">Rego policy gates remediation.</text>
+  <text x="226" y="192" font-size="9" fill="#64748B">Human approves, rejects, or</text>
+  <text x="226" y="204" font-size="9" fill="#64748B">overrides the AI-selected</text>
+  <text x="226" y="216" font-size="9" fill="#64748B">workflow via RAR. Shadow agent</text>
+  <text x="226" y="228" font-size="9" fill="#64748B">alignment provides an additional</text>
+  <text x="226" y="240" font-size="9" fill="#64748B">safety layer independent of</text>
+  <text x="226" y="252" font-size="9" fill="#64748B">the trust level.</text>
 
   <!-- L3: Security & Autonomy (200px tall) -->
-  <rect x="412" y="90" width="186" height="200" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="412" y="90" width="186" height="5" rx="3" fill="#D97706"/>
-  <text x="424" y="114" font-size="13" font-weight="700" fill="#0F172A">Security &amp; Autonomy</text>
-  <text x="424" y="132" font-size="9" fill="#64748B">SAR-based tool authorization</text>
-  <text x="424" y="144" font-size="9" fill="#64748B">with 6 per-persona ClusterRoles.</text>
-  <text x="424" y="156" font-size="9" fill="#64748B">Interactive MCP sessions for</text>
-  <text x="424" y="168" font-size="9" fill="#64748B">operator-in-the-loop investigation</text>
-  <text x="424" y="180" font-size="9" fill="#64748B">and workflow discovery. Session</text>
-  <text x="424" y="192" font-size="9" fill="#64748B">takeover security (SEC-TAKEOVER).</text>
-  <text x="424" y="210" font-size="9" fill="#64748B">A2A protocol for external agent</text>
-  <text x="424" y="222" font-size="9" fill="#64748B">delegation. API Frontend as the</text>
-  <text x="424" y="234" font-size="9" fill="#64748B">unified external protocol layer.</text>
-  <text x="424" y="280" font-size="8" font-weight="600" fill="#D97706">v1.5</text>
+  <rect x="412" y="100" width="186" height="200" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="412" y="100" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="424" y="124" font-size="13" font-weight="700" fill="#0F172A">Security &amp; Autonomy</text>
+  <text x="424" y="140" font-size="9" fill="#64748B">SAR-based tool authorization</text>
+  <text x="424" y="152" font-size="9" fill="#64748B">with 6 per-persona ClusterRoles.</text>
+  <text x="424" y="164" font-size="9" fill="#64748B">Interactive MCP sessions for</text>
+  <text x="424" y="176" font-size="9" fill="#64748B">operator-in-the-loop investigation</text>
+  <text x="424" y="188" font-size="9" fill="#64748B">and workflow discovery. A2A</text>
+  <text x="424" y="200" font-size="9" fill="#64748B">protocol for external agent</text>
+  <text x="424" y="212" font-size="9" fill="#64748B">delegation. API Frontend as the</text>
+  <text x="424" y="224" font-size="9" fill="#64748B">unified external protocol layer.</text>
 
   <!-- L4: Full Autonomy (240px tall) -->
-  <rect x="610" y="50" width="194" height="240" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="610" y="50" width="194" height="5" rx="3" fill="#059669"/>
-  <text x="622" y="74" font-size="13" font-weight="700" fill="#0F172A">Full Autonomy</text>
-  <text x="622" y="92" font-size="9" fill="#64748B">Matched workflows execute</text>
-  <text x="622" y="104" font-size="9" fill="#64748B">without human intervention.</text>
-  <text x="622" y="116" font-size="9" fill="#64748B">Effectiveness Monitor verifies</text>
-  <text x="622" y="128" font-size="9" fill="#64748B">fixes and feeds scores back</text>
-  <text x="622" y="140" font-size="9" fill="#64748B">into future investigations.</text>
-  <text x="622" y="158" font-size="9" fill="#64748B">Operators monitor outcomes</text>
-  <text x="622" y="170" font-size="9" fill="#64748B">via notifications, dashboards,</text>
-  <text x="622" y="182" font-size="9" fill="#64748B">and Effectiveness Monitor</text>
-  <text x="622" y="194" font-size="9" fill="#64748B">metrics. Rollback to Approve</text>
-  <text x="622" y="206" font-size="9" fill="#64748B">at any time by updating the</text>
-  <text x="622" y="218" font-size="9" fill="#64748B">Rego policy — no pod restart.</text>
-  <text x="622" y="280" font-size="8" font-weight="600" fill="#059669">v1.4+</text>
+  <rect x="610" y="60" width="194" height="240" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="610" y="60" width="194" height="4" rx="3" fill="#DC2626"/>
+  <text x="622" y="84" font-size="13" font-weight="700" fill="#0F172A">Full Autonomy</text>
+  <text x="622" y="100" font-size="9" fill="#64748B">Matched workflows execute</text>
+  <text x="622" y="112" font-size="9" fill="#64748B">without human intervention.</text>
+  <text x="622" y="124" font-size="9" fill="#64748B">Effectiveness Monitor verifies</text>
+  <text x="622" y="136" font-size="9" fill="#64748B">fixes and feeds scores back</text>
+  <text x="622" y="148" font-size="9" fill="#64748B">into future investigations.</text>
+  <text x="622" y="166" font-size="9" fill="#64748B">Operators monitor outcomes</text>
+  <text x="622" y="178" font-size="9" fill="#64748B">via notifications, dashboards,</text>
+  <text x="622" y="190" font-size="9" fill="#64748B">and Effectiveness Monitor</text>
+  <text x="622" y="202" font-size="9" fill="#64748B">metrics. Rollback to Approve</text>
+  <text x="622" y="214" font-size="9" fill="#64748B">at any time by updating the</text>
+  <text x="622" y="226" font-size="9" fill="#64748B">Rego policy — no pod restart.</text>
 
   <!-- Arrows connecting the levels -->
-  <line x1="202" y1="240" x2="214" y2="220" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
-  <line x1="400" y1="200" x2="412" y2="180" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
-  <line x1="598" y1="180" x2="610" y2="160" stroke="#B0B0B0" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+  <line x1="202" y1="250" x2="214" y2="230" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+  <line x1="400" y1="210" x2="412" y2="190" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+  <line x1="598" y1="190" x2="610" y2="170" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
 
   <defs>
     <marker id="tl-arrow" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
-      <polygon points="0 0, 7 2.5, 0 5" fill="#B0B0B0"/>
+      <polygon points="0 0, 7 2.5, 0 5" fill="#D1D5DB"/>
     </marker>
   </defs>
 </svg>
 </div>
 
-| Level | Name | Human Involvement | Available |
-|---|---|---|---|
-| **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution (global dry-run) | **v1.4+** |
-| **2** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects/overrides | **v1.4+** |
-| **3** | **Security & Autonomy** | SAR-based tool authorization, per-persona ClusterRoles, interactive MCP sessions | **v1.5** |
-| **4** | **Full Autonomy** | Matched workflows execute without human intervention | **v1.4+** |
+| Level | Name | Description |
+|---|---|---|
+| **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution (global dry-run) |
+| **2** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects/overrides |
+| **3** | **Security & Autonomy** | SAR-based tool authorization, per-persona ClusterRoles, interactive MCP sessions, A2A delegation |
+| **4** | **Full Autonomy** | Matched workflows execute without human intervention |
 
 At every level, operators can connect via **[Interactive MCP Sessions](interactive-sessions.md)** (v1.5) for real-time investigation and workflow selection.
 

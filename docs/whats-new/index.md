@@ -16,7 +16,7 @@ Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It a
 - **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
 - **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
 - **SAR authorization** — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results
-- **MCP bridge** — Dispatches 23 `kubernaut_*` tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
+- **MCP bridge** — Dispatches 23 `kubernaut_*` MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
 
 See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
 
@@ -24,15 +24,20 @@ See [API Frontend Architecture](../architecture/apifrontend.md) for the full des
 
 Operators and AI agents can now connect to Kubernaut via MCP for **interactive investigation and remediation**. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.
 
-The Kubernaut Agent registers **3 MCP tools** via the go-sdk MCP server:
+The API Frontend exposes **23 `kubernaut_*` MCP tools** on its MCP endpoint (`POST /mcp`), including 6 interactive session lifecycle tools dispatched to the Kubernaut Agent:
 
-| Tool | Purpose |
+| Domain | Tools |
 |---|---|
-| `kubernaut_investigate` | Start, reconnect to, take over, check status of, send messages, discover workflows, or complete an investigation (8 actions: `start`, `message`, `complete`, `cancel`, `takeover`, `status`, `reconnect`, `discover_workflows`) |
-| `kubernaut_select_workflow` | Operator selects a workflow from the discovery results; triggers enrichment and catalog lookup |
-| `kubernaut_complete_no_action` | Operator decides no remediation is needed — can be called at any point |
+| **Interactive lifecycle** | `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| **Investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation` |
+| **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` |
+| **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request` |
+| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| **Presentation** | `kubernaut_present_decision` |
 
-See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
+The Kubernaut Agent also runs a separate MCP server (`/api/v1/mcp`) with 3 tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections with Lease-based session management.
+
+See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide and [API Frontend API](../api-reference/apifrontend-api.md) for the full tool reference.
 
 ### Interactive workflow discovery with LLM-populated parameters
 
@@ -48,14 +53,14 @@ The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kub
 
 **Migration required**: customers who customized `rbac_roles.yaml` must create equivalent `ClusterRoleBinding` resources. The Helm chart ships 6 per-persona `ClusterRoles`:
 
-| ClusterRole | Persona |
-|---|---|
-| `kubernaut-tool-sre` | Full SRE access (all 26 tools including internal) |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration |
-| `kubernaut-tool-cicd` | CI/CD pipeline integration |
-| `kubernaut-tool-observability` | Read-only observability |
-| `kubernaut-tool-l3-audit` | Compliance and auditing |
-| `kubernaut-tool-remediation-approver` | Human approval workflows |
+| ClusterRole | Persona | MCP Tools |
+|---|---|---|
+| `kubernaut-tool-sre` | Investigation + remediation (no approval) | 20 |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 |
+| `kubernaut-tool-observability` | Read-only observability | 5 |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 |
 
 SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorization is fail-closed: SAR API errors deny the tool call. Results are cached with a configurable TTL (default 30s via `apifrontend.config.rbac.sarCacheTTL`).
 
@@ -79,7 +84,7 @@ The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events
 
 `af_resolve_owner` is removed — KA independently resolves the owner chain during RCA. The new tools use `RESTMapper` for dynamic kind-to-GVR resolution. Secret `.data` fields are redacted before returning to the LLM.
 
-All cluster context tools (`kubectl_*`, `af_check_existing_rr`, `af_create_rr`) are **internal to the AF's LLM agent** — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of **23 `kubernaut_*` tools** spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.
+All cluster context tools (`kubectl_*`, `af_check_existing_rr`, `af_create_rr`) are **internal to the AF's LLM agent** — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of **23 `kubernaut_*` MCP tools** spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 

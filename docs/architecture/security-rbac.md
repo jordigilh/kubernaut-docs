@@ -392,14 +392,17 @@ All 3 AF RBAC code paths (MCP bridge `checkRBAC()`, A2A agent `newRBACGuard()`, 
 
 The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`apifrontend.config.rbac.personas`):
 
-| ClusterRole | Persona | Tool Count | Tools |
+| ClusterRole | Persona | MCP Tools | Tool List |
 |---|---|---|---|
-| `kubernaut-tool-sre` | Full SRE access | 26 | All 23 MCP tools + 3 internal `kubectl_*` + `af_check_existing_rr` + `af_create_rr` |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 19 | CRD ops (3) + investigation (3) + interactive (6) + stream + discovery/selection + presentation + internal triage (5) |
+| `kubernaut-tool-sre` | Investigation + remediation (no approval) | 20 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
-| `kubernaut-tool-observability` | Read-only observability | 5 | list/get/watch + effectiveness + workflows |
-| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | list/get + workflows + history + effectiveness + audit trail |
-| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_approve`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
+| `kubernaut-tool-observability` | Read-only observability | 5 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_approve`, `kubernaut_watch` |
+
+!!! info "Internal tools"
+    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
 
 ### Binding example
 
@@ -445,8 +448,6 @@ All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is
 
 **User attribution** is preserved in the application audit trail (`tool.executed` events include `UserID`, `actor_ip`, `target_namespace`, `target_kind`) rather than in Kubernetes audit logs.
 
-!!! note "History"
-    Earlier v1.5 pre-releases included impersonation and an opt-in OIDC-direct mode (PR #1227). PR #1233 (ADR-022) removed both in favor of the unified SA model. The AF ClusterRole no longer includes `impersonate` verbs.
 
 **Accepted risks** (documented in ADR-022):
 

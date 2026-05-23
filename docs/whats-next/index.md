@@ -42,10 +42,11 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
 ## Expanded Tool Surface
 
 !!! note "v1.5 ships both MCP and A2A tool surfaces"
-    v1.5 ships two complementary tool surfaces. See [What's New: v1.5](../whats-new/index.md#v15).
+    v1.5 ships a unified tool surface on the API Frontend. See [What's New: v1.5](../whats-new/index.md#v15).
 
-    - **MCP (interactive)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate` with 8 actions, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for operator-in-the-loop sessions.
-    - **A2A (agent-to-agent)** — 23 SAR-gated `kubernaut_*` tools on the API Frontend spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. 5 additional cluster context and orchestration tools are internal to the AF's LLM agent. SAR-gated via per-persona ClusterRoles.
+    - **API Frontend MCP** — 23 `kubernaut_*` MCP tools on `POST /mcp` spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.
+    - **KA MCP (direct)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) with Lease-based session management for direct client connections.
+    - **Internal (ADK-only)** — 5 tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) internal to the AF's LLM agent for cluster context and RR creation.
 
 The items below are planned expansions beyond the v1.5 surface.
 
@@ -102,7 +103,7 @@ Accept signals described in plain language — not just structured Prometheus al
 
 ## Observe Mode (Trust Ladder Level 2)
 
-Building on v1.4's global dry-run mode, v1.5 adds operator dashboard visibility through the Backstage console and a guided onboarding path for new clusters.
+Building on v1.4's global dry-run mode, a future release will add operator dashboard visibility through the Backstage console and a guided onboarding path for new clusters.
 
 ---
 

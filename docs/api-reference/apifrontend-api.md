@@ -66,7 +66,7 @@ Returns `501` when MCP is disabled in the AF configuration.
 }
 ```
 
-The AF runs its own MCP server with **23 `kubernaut_*` tools** (see [A2A tools](#a2a-json-rpc-20) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA REST (autonomous investigation), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). The Kubernaut Agent runs a separate MCP server at `/api/v1/mcp` with 3 interactive-mode tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections.
+The AF runs its own MCP server with **23 `kubernaut_*` MCP tools** (see [A2A tools](#a2a-json-rpc-20) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA REST (autonomous investigation), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). The Kubernaut Agent runs a separate MCP server at `/api/v1/mcp` with 3 interactive-mode tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections.
 
 ### A2A JSON-RPC 2.0
 
@@ -76,7 +76,7 @@ POST /a2a/invoke
 
 Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication.
 
-The A2A agent uses **23 SAR-gated `kubernaut_*` tools** exposed on the MCP endpoint, organized in six domains:
+The A2A agent uses **23 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP endpoint, organized in six domains:
 
 | Domain | Tools | Backend |
 |---|---|---|
@@ -86,6 +86,9 @@ The A2A agent uses **23 SAR-gated `kubernaut_*` tools** exposed on the MCP endpo
 | **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` | KA MCP |
 | **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
 | **Presentation** | `kubernaut_present_decision` | Local |
+
+!!! note "Upstream Helm gap ([#1239](https://github.com/jordigilh/kubernaut/issues/1239))"
+    `kubernaut_list_approval_requests` and `kubernaut_get_approval_request` are not yet in the Helm `values.yaml` persona definitions. They belong in the `remediation-approver` persona per [#1235](https://github.com/jordigilh/kubernaut/issues/1235). The documentation reflects the intended design. See [per-persona ClusterRoles](../architecture/security-rbac.md#per-persona-clusterroles).
 
 The `kubernaut_*` investigation tools dispatch to the Kubernaut Agent (`kubernaut_start_investigation`/`kubernaut_poll_investigation` via KA REST; `kubernaut_select_workflow`/`kubernaut_discover_workflows` via KA MCP). The `kubernaut_*` CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)). The `kubernaut_*` data tools query DataStorage. `kubernaut_present_decision` is handled locally by the AF.
 

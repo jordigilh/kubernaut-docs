@@ -11,7 +11,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
 - **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
 - **Authorization** — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache
-- **MCP bridge** — Dispatches 23 `kubernaut_*` tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing
+- **MCP bridge** — Dispatches 23 `kubernaut_*` MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing
 - **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
 ## Agentic Architecture

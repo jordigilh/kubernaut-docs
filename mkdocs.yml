@@ -78,6 +78,9 @@ markdown_extensions:
 extra_css:
   - assets/extra.css
 
+extra_javascript:
+  - assets/extra.js
+
 plugins:
   - search
   - macros
@@ -139,6 +142,7 @@ nav:
       - DataStorage API: api-reference/datastorage-api.md
       - Kubernaut Agent API: api-reference/kubernaut-agent-api.md
       - API Frontend API: api-reference/apifrontend-api.md
+      - MCP Tool Reference: api-reference/mcp-tools.md
   - Use Cases:
       - use-cases/index.md
       - Multi-Path Remediation: use-cases/multi-path-remediation.md

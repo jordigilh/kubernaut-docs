@@ -18,7 +18,7 @@
         <link rel="prev" href="../datastorage-api/">
       
       
-        <link rel="next" href="../../use-cases/">
+        <link rel="next" href="../apifrontend-api/">
       
       
         
@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1484,6 +1514,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2053,6 +2113,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2404,6 +2468,45 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#interactive-mcp-mode-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive MCP Mode (v1.5+)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interactive MCP Mode (v1.5+)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sse-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE Streaming
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#additional-rest-endpoints-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Additional REST Endpoints (v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#session-management" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2440,6 +2543,62 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3318,10 +3477,63 @@
 </span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">409</span>
 </span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
 </span></code></pre></div>
+<h2 id="interactive-mcp-mode-v15">Interactive MCP Mode (v1.5+)<a class="headerlink" href="#interactive-mcp-mode-v15" title="Permanent link">&para;</a></h2>
+<p>v1.5 adds interactive MCP session support to the Kubernaut Agent. Interactive tools are <strong>not exposed as REST endpoints</strong> — they are registered on the go-sdk MCP server (<code>internal/kubernautagent/mcp/</code>) and accessed via MCP Streamable HTTP through the API Frontend's <code>POST /mcp</code> endpoint.</p>
+<p>The existing REST API is unchanged. The MCP server runs alongside it, registering 3 tools:</p>
+<table>
+<thead>
+<tr>
+<th>MCP Tool</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut_investigate</code></td>
+<td>8-action tool: start, message, complete, cancel, takeover, status, reconnect, discover_workflows</td>
+</tr>
+<tr>
+<td><code>kubernaut_select_workflow</code></td>
+<td>Select a workflow from discovery results; triggers enrichment and catalog lookup</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete_no_action</code></td>
+<td>Close investigation without selecting a workflow</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../user-guide/interactive-sessions/">Interactive Sessions</a> for the full tool schemas and operator guide.</p>
+<h3 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h3>
+<p>The existing REST endpoint supports real-time streaming for interactive sessions:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>GET /api/v1/incident/session/{session_id}/stream
+</span></code></pre></div>
+<p>The API Frontend subscribes to this SSE stream and relays events to MCP clients.</p>
+<h3 id="additional-rest-endpoints-v15">Additional REST Endpoints (v1.5)<a class="headerlink" href="#additional-rest-endpoints-v15" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Path</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/api/v1/incident/session/{session_id}/cancel</code></td>
+<td>Cancel an investigation session</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/api/v1/incident/session/{session_id}/snapshot</code></td>
+<td>Get a point-in-time session snapshot</td>
+</tr>
+</tbody>
+</table>
 <h2 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h2>
 <ul>
-<li>Sessions are stored <strong>in-memory</strong> in the Kubernaut Agent pod</li>
-<li>If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts)</li>
+<li><strong>Autonomous sessions</strong> are stored <strong>in-memory</strong> in the Kubernaut Agent pod. If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts).</li>
+<li><strong>Interactive sessions</strong> (v1.5+) use <strong>Kubernetes Leases</strong> (prefix: <code>kubernaut-interactive-</code>) for distributed locking. The <code>LeaseSessionManager</code> handles session creation, takeover (SEC-TAKEOVER-001), and TTL enforcement. Orphaned Leases are reclaimed on startup. The <code>SessionDrainer</code> gracefully drains active sessions on pod shutdown (BR-OPS-013).</li>
 <li>Session results are available until the pod restarts or the session is garbage-collected</li>
 </ul>
 <h2 id="llm-providers">LLM Providers<a class="headerlink" href="#llm-providers" title="Permanent link">&para;</a></h2>
@@ -3446,13 +3658,13 @@
         
         
           
-          <a href="../../use-cases/" class="md-footer__link md-footer__link--next" aria-label="Next: Use Cases">
+          <a href="../apifrontend-api/" class="md-footer__link md-footer__link--next" aria-label="Next: API Frontend API">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Use Cases
+                API Frontend API
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3513,6 +3725,8 @@
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

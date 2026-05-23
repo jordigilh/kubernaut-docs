@@ -12,31 +12,31 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/user-guide/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/architecture/apifrontend/">
       
       
-        <link rel="prev" href="../getting-started/architecture-overview/">
+        <link rel="prev" href="../data-persistence/">
       
       
-        <link rel="next" href="trust-ladder/">
+        <link rel="next" href="../security-rbac/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/logo.svg">
+      <link rel="icon" href="../../assets/images/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>User Guide - Kubernaut</title>
+        <title>API Frontend - Kubernaut</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +55,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/extra.css">
+      <link rel="stylesheet" href="../../assets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#user-guide" class="md-skip">
+        <a href="#api-frontend-architecture" class="md-skip">
           Skip to content
         </a>
       
@@ -97,13 +97,13 @@
   
     <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
     Content may change before GA.
-    <a href="../..">
+    <a href="../../..">
       <strong>View stable documentation.</strong>
     </a>
   
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -113,9 +113,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../assets/images/logo.svg" alt="logo">
+  <img src="../../assets/images/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -132,7 +132,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              User Guide
+              API Frontend
             
           </span>
         </div>
@@ -219,7 +219,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -240,7 +240,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -258,13 +258,11 @@
   
   
   
-    
-  
   
     
     
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
           
   
   
@@ -282,11 +280,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -308,7 +308,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../design-decisions/" class="md-tabs__link">
+        <a href="../../design-decisions/" class="md-tabs__link">
           
   
   
@@ -330,7 +330,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../api-reference/" class="md-tabs__link">
+        <a href="../../api-reference/" class="md-tabs__link">
           
   
   
@@ -352,7 +352,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../use-cases/" class="md-tabs__link">
+        <a href="../../use-cases/" class="md-tabs__link">
           
   
   
@@ -374,7 +374,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../operations/" class="md-tabs__link">
+        <a href="../../operations/" class="md-tabs__link">
           
   
   
@@ -396,7 +396,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../whats-new/" class="md-tabs__link">
+        <a href="../../whats-new/" class="md-tabs__link">
           
   
   
@@ -418,7 +418,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../whats-next/" class="md-tabs__link">
+        <a href="../../whats-next/" class="md-tabs__link">
           
   
   
@@ -440,7 +440,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="compliance/" class="md-tabs__link">
+        <a href="../../user-guide/compliance/" class="md-tabs__link">
           
   
   
@@ -460,7 +460,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../faq/" class="md-tabs__link">
+      <a href="../../faq/" class="md-tabs__link">
         
   
   
@@ -479,7 +479,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../contributing/" class="md-tabs__link">
+      <a href="../../contributing/" class="md-tabs__link">
         
   
   
@@ -516,9 +516,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../assets/images/logo.svg" alt="logo">
+  <img src="../../assets/images/logo.svg" alt="logo">
 
     </a>
     Kubernaut
@@ -545,7 +545,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -609,7 +609,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting-started/" class="md-nav__link ">
+            <a href="../../getting-started/" class="md-nav__link ">
               
   
   
@@ -653,7 +653,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/why-kubernaut/" class="md-nav__link">
+      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
         
   
   
@@ -681,7 +681,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/aiops-landscape/" class="md-nav__link">
+      <a href="../../getting-started/aiops-landscape/" class="md-nav__link">
         
   
   
@@ -709,7 +709,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/market-comparison/" class="md-nav__link">
+      <a href="../../getting-started/market-comparison/" class="md-nav__link">
         
   
   
@@ -737,7 +737,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -765,7 +765,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -793,7 +793,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/architecture-overview/" class="md-nav__link">
+      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
         
   
   
@@ -809,6 +809,688 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/trust-ladder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Ladder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signals & Alert Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflow-authoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authoring Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rego-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policy Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human Approval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Effectiveness Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/audit-and-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit & Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/data-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMap References
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ConfigMap References
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-kubernaut-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernaut Agent SDK Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIAnalysis Approval Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -882,696 +1564,11 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    User Guide
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-              
-              <label class="md-nav__link md-nav__link--active" for="__nav_3" id="__nav_3_label" tabindex="">
-                <span class="md-nav__icon md-icon"></span>
-              </label>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    User Guide
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="trust-ladder/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Trust Ladder
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="concepts/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Core Concepts
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="signals/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Signals & Alert Routing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="workflows/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Remediation Workflows
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="workflow-authoring/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Authoring Workflows
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="policies/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rego Policies
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="rego-reference/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Rego Policy Reference
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="notifications/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Notification Channels
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="approval/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Human Approval
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="effectiveness/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Effectiveness Monitoring
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="audit-and-observability/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Audit & Observability
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="data-lifecycle/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Data Lifecycle
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="interactive-sessions/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Interactive Sessions
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="configuration/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Configuration Reference
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    
-    
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-          
-          
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
-        
-          
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
-            
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    ConfigMap References
-  
-
-    
-  </span>
-  
-  
-
-            <span class="md-nav__icon md-icon"></span>
-          </label>
-        
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    ConfigMap References
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="configmap-kubernaut-agent/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Kubernaut Agent SDK Config
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="configmap-policies/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    SignalProcessing Rego Policies
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="configmap-approval/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    AIAnalysis Approval Policy
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="configmap-notification/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Notification Routing
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="../architecture/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1589,13 +1586,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1615,7 +1612,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -1643,7 +1640,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/gateway/" class="md-nav__link">
+      <a href="../gateway/" class="md-nav__link">
         
   
   
@@ -1671,7 +1668,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/signal-processing/" class="md-nav__link">
+      <a href="../signal-processing/" class="md-nav__link">
         
   
   
@@ -1699,7 +1696,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/ai-analysis/" class="md-nav__link">
+      <a href="../ai-analysis/" class="md-nav__link">
         
   
   
@@ -1727,7 +1724,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/kubernaut-agent-investigation/" class="md-nav__link">
+      <a href="../kubernaut-agent-investigation/" class="md-nav__link">
         
   
   
@@ -1755,7 +1752,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/remediation-routing/" class="md-nav__link">
+      <a href="../remediation-routing/" class="md-nav__link">
         
   
   
@@ -1783,7 +1780,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/workflow-selection/" class="md-nav__link">
+      <a href="../workflow-selection/" class="md-nav__link">
         
   
   
@@ -1811,7 +1808,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/workflow-execution/" class="md-nav__link">
+      <a href="../workflow-execution/" class="md-nav__link">
         
   
   
@@ -1839,7 +1836,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/effectiveness/" class="md-nav__link">
+      <a href="../effectiveness/" class="md-nav__link">
         
   
   
@@ -1867,7 +1864,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/notification/" class="md-nav__link">
+      <a href="../notification/" class="md-nav__link">
         
   
   
@@ -1895,7 +1892,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/async-propagation/" class="md-nav__link">
+      <a href="../async-propagation/" class="md-nav__link">
         
   
   
@@ -1923,7 +1920,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/audit-pipeline/" class="md-nav__link">
+      <a href="../audit-pipeline/" class="md-nav__link">
         
   
   
@@ -1951,7 +1948,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/data-persistence/" class="md-nav__link">
+      <a href="../data-persistence/" class="md-nav__link">
         
   
   
@@ -1976,10 +1973,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../architecture/apifrontend/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -1995,6 +2019,142 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#overview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#agentic-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agentic Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#session-lifecycle" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session Lifecycle
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Session Lifecycle">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lease-based-distributed-locking" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lease-based distributed locking
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#session-takeover-sec-takeover-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session takeover (SEC-TAKEOVER-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#disconnect-handling-dd-interactive-002" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Disconnect handling (DD-INTERACTIVE-002)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#graceful-shutdown-sessiondrainer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graceful shutdown — SessionDrainer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sse-streaming" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSE Streaming
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#integration-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integration Points
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#health-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Health Checks
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -2007,7 +2167,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/security-rbac/" class="md-nav__link">
+      <a href="../security-rbac/" class="md-nav__link">
         
   
   
@@ -2067,7 +2227,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../design-decisions/" class="md-nav__link ">
+            <a href="../../design-decisions/" class="md-nav__link ">
               
   
   
@@ -2150,7 +2310,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../api-reference/" class="md-nav__link ">
+            <a href="../../api-reference/" class="md-nav__link ">
               
   
   
@@ -2194,7 +2354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/crds/" class="md-nav__link">
+      <a href="../../api-reference/crds/" class="md-nav__link">
         
   
   
@@ -2222,7 +2382,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/operator-cr/" class="md-nav__link">
+      <a href="../../api-reference/operator-cr/" class="md-nav__link">
         
   
   
@@ -2250,7 +2410,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/datastorage-api/" class="md-nav__link">
+      <a href="../../api-reference/datastorage-api/" class="md-nav__link">
         
   
   
@@ -2278,7 +2438,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/kubernaut-agent-api/" class="md-nav__link">
+      <a href="../../api-reference/kubernaut-agent-api/" class="md-nav__link">
         
   
   
@@ -2306,7 +2466,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/apifrontend-api/" class="md-nav__link">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
         
   
   
@@ -2334,7 +2494,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/mcp-tools/" class="md-nav__link">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
         
   
   
@@ -2402,7 +2562,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../use-cases/" class="md-nav__link ">
+            <a href="../../use-cases/" class="md-nav__link ">
               
   
   
@@ -2446,7 +2606,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/multi-path-remediation/" class="md-nav__link">
+      <a href="../../use-cases/multi-path-remediation/" class="md-nav__link">
         
   
   
@@ -2474,7 +2634,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/remediation-history-feedback/" class="md-nav__link">
+      <a href="../../use-cases/remediation-history-feedback/" class="md-nav__link">
         
   
   
@@ -2502,7 +2662,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
+      <a href="../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
         
   
   
@@ -2530,7 +2690,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/supported-scenarios/" class="md-nav__link">
+      <a href="../../use-cases/supported-scenarios/" class="md-nav__link">
         
   
   
@@ -2598,7 +2758,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../operations/" class="md-nav__link ">
+            <a href="../../operations/" class="md-nav__link ">
               
   
   
@@ -2642,7 +2802,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/monitoring/" class="md-nav__link">
+      <a href="../../operations/monitoring/" class="md-nav__link">
         
   
   
@@ -2670,7 +2830,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/event-exporter/" class="md-nav__link">
+      <a href="../../operations/event-exporter/" class="md-nav__link">
         
   
   
@@ -2698,7 +2858,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/troubleshooting/" class="md-nav__link">
+      <a href="../../operations/troubleshooting/" class="md-nav__link">
         
   
   
@@ -2726,7 +2886,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/disconnected-install/" class="md-nav__link">
+      <a href="../../operations/disconnected-install/" class="md-nav__link">
         
   
   
@@ -2786,7 +2946,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../whats-new/" class="md-nav__link ">
+            <a href="../../whats-new/" class="md-nav__link ">
               
   
   
@@ -2857,7 +3017,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../whats-next/" class="md-nav__link ">
+            <a href="../../whats-next/" class="md-nav__link ">
               
   
   
@@ -2961,7 +3121,7 @@
   
   
     <li class="md-nav__item">
-      <a href="compliance/" class="md-nav__link">
+      <a href="../../user-guide/compliance/" class="md-nav__link">
         
   
   
@@ -2996,7 +3156,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../faq/" class="md-nav__link">
+      <a href="../../faq/" class="md-nav__link">
         
   
   
@@ -3023,7 +3183,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         
   
   
@@ -3060,20 +3220,237 @@
 
 
 
-<h1 id="user-guide">User Guide<a class="headerlink" href="#user-guide" title="Permanent link">&para;</a></h1>
-<p>Learn how to operate Kubernaut and get the most out of automated remediation.</p>
+<h1 id="api-frontend-architecture">API Frontend Architecture<a class="headerlink" href="#api-frontend-architecture" title="Permanent link">&para;</a></h1>
+<div class="admonition warning">
+<p class="admonition-title">This page is under active development for v1.5 GA</p>
+</div>
+<p>The API Frontend (AF) is the unified external protocol layer introduced in v1.5. It provides MCP, A2A, and REST access to Kubernaut for operators, AI agents, and the Backstage console.</p>
+<h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
+<p>The AF sits between external clients and the Kubernaut Engine, handling:</p>
 <ul>
-<li><strong><a href="concepts/">Core Concepts</a></strong> — The data model, service roles, and remediation lifecycle. Explains the six-stage pipeline, phase state machine, and the role of each CRD in the system.</li>
-<li><strong><a href="signals/">Signals &amp; Alert Routing</a></strong> — How alerts reach Kubernaut and how scope is managed. Details the Gateway ingestion flow, adapters, and how scope is determined for signal processing.</li>
-<li><strong><a href="workflows/">Remediation Workflows</a></strong> — Writing, building, and registering workflow schemas, action types, lifecycle management, and scoring. Covers the full workflow schema model and how workflows are scored and selected.</li>
-<li><strong><a href="policies/">Rego Policies</a></strong> — Signal classification policies (severity, priority, environment) and AI Analysis approval gates. Shows how to configure classification rules and AI approval thresholds.</li>
-<li><strong><a href="notifications/">Notification Channels</a></strong> — Configuring console, file, log, and Slack notification channels with routing and credentials. Covers all supported channel types, routing rules, and credential management.</li>
-<li><strong><a href="approval/">Human Approval</a></strong> — Approval gates, confidence thresholds, and the approval flow. Describes when approval is required and how to configure confidence thresholds.</li>
-<li><strong><a href="effectiveness/">Effectiveness Monitoring</a></strong> — How Kubernaut evaluates whether a fix worked. Explains the timing model, health scoring, and how Kubernaut determines if a fix succeeded.</li>
-<li><strong><a href="audit-and-observability/">Audit &amp; Observability</a></strong> — Audit trails, event types, and compliance. Documents audit trails, event types, and compliance reporting.</li>
-<li><strong><a href="data-lifecycle/">Data Lifecycle</a></strong> — CRD retention, PostgreSQL persistence, and reconstruction. Describes retention policies, PostgreSQL persistence, and data reconstruction.</li>
-<li><strong><a href="configuration/">Configuration Reference</a></strong> — Namespace labels, signal source RBAC, LLM provider setup, timeouts, TLS, hot-reload, and all Helm values. Complete reference for all Helm values and service configuration.</li>
+<li><strong>Protocol translation</strong> — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls</li>
+<li><strong>Authentication</strong> — OIDC/OAuth2 via JWKS validation with JWT claim extraction</li>
+<li><strong>Authorization</strong> — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache</li>
+<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing</li>
+<li><strong>Streaming</strong> — Relays Server-Sent Events from KA's SSE endpoint to MCP clients</li>
 </ul>
+<h2 id="agentic-architecture">Agentic Architecture<a class="headerlink" href="#agentic-architecture" title="Permanent link">&para;</a></h2>
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 420" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" style="width:100%;height:auto">
+  <rect width="820" height="420" fill="white"/>
+
+  <!-- ── External Clients row ── -->
+  <text x="410" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#64748B" letter-spacing="1.5">EXTERNAL CLIENTS</text>
+
+  <rect x="16" y="34" width="186" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="16" y="34" width="186" height="5" rx="3" fill="#0891B2"/>
+  <text x="109" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">MCP (AI Interface)</text>
+  <text x="109" y="74" text-anchor="middle" font-size="9" fill="#888">Claude, Copilot, custom agents</text>
+
+  <rect x="214" y="34" width="186" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="214" y="34" width="186" height="5" rx="3" fill="#0891B2"/>
+  <text x="307" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">A2A Agent</text>
+  <text x="307" y="74" text-anchor="middle" font-size="9" fill="#888">Agent-to-Agent protocol</text>
+
+  <rect x="412" y="34" width="186" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="412" y="34" width="186" height="5" rx="3" fill="#0891B2"/>
+  <text x="505" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Backstage</text>
+  <text x="505" y="74" text-anchor="middle" font-size="9" fill="#888">Operator console</text>
+
+  <rect x="610" y="34" width="194" height="52" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="610" y="34" width="194" height="5" rx="3" fill="#0891B2"/>
+  <text x="707" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">OIDC / OAuth2</text>
+  <text x="707" y="74" text-anchor="middle" font-size="9" fill="#888">DEX, Keycloak</text>
+
+  <!-- ── Arrows: clients → AF ── -->
+  <line x1="109" y1="86" x2="109" y2="106" stroke="#B0B0B0" stroke-width="1.3"/>
+  <line x1="307" y1="86" x2="307" y2="106" stroke="#B0B0B0" stroke-width="1.3"/>
+  <line x1="505" y1="86" x2="505" y2="106" stroke="#B0B0B0" stroke-width="1.3"/>
+  <line x1="707" y1="86" x2="707" y2="106" stroke="#B0B0B0" stroke-width="1.3"/>
+
+  <!-- ── API Frontend bar ── -->
+  <rect x="16" y="108" width="788" height="56" rx="10" fill="#8B5CF6" stroke="#7C3AED" stroke-width="1.5"/>
+  <text x="410" y="134" text-anchor="middle" font-size="16" font-weight="700" fill="white">API Frontend</text>
+  <text x="410" y="152" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.8)">MCP Streamable HTTP · A2A JSON-RPC · OIDC Auth · RBAC</text>
+
+  <!-- ── Arrows: AF → Engine ── -->
+  <line x1="250" y1="164" x2="250" y2="190" stroke="#B0B0B0" stroke-width="1.3"/>
+  <line x1="570" y1="164" x2="570" y2="190" stroke="#B0B0B0" stroke-width="1.3"/>
+
+  <!-- ── Kubernaut Engine container ── -->
+  <rect x="16" y="192" width="788" height="214" rx="12" fill="#0F172A"/>
+  <text x="410" y="216" text-anchor="middle" font-size="13" font-weight="700" fill="rgba(255,255,255,0.9)" letter-spacing="1">KUBERNAUT ENGINE</text>
+
+  <!-- Row 1: Gateway + Remediation Orchestrator -->
+  <rect x="36" y="228" width="160" height="48" rx="8" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)"/>
+  <rect x="36" y="228" width="160" height="4" rx="2" fill="#0891B2"/>
+  <text x="116" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="white">Gateway</text>
+  <text x="116" y="266" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">Webhook intake + dedup</text>
+
+  <rect x="216" y="228" width="380" height="48" rx="8" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.25)"/>
+  <rect x="216" y="228" width="380" height="4" rx="2" fill="white"/>
+  <text x="406" y="252" text-anchor="middle" font-size="12" font-weight="700" fill="white">Remediation Orchestrator</text>
+  <text x="406" y="266" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">Owns RR lifecycle — creates child CRDs</text>
+
+  <rect x="616" y="228" width="168" height="48" rx="8" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.15)"/>
+  <rect x="616" y="228" width="168" height="4" rx="2" fill="#6366F1"/>
+  <text x="700" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="white">Kubernaut Agent</text>
+  <text x="700" y="266" text-anchor="middle" font-size="9" fill="rgba(255,255,255,0.55)">LLM investigation (Go)</text>
+
+  <!-- Row 2: 5 phase controllers -->
+  <rect x="36" y="290" width="142" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="36" y="290" width="142" height="3" rx="2" fill="#0891B2"/>
+  <text x="107" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="white">Signal Processing</text>
+  <text x="107" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">Rego classification</text>
+
+  <rect x="188" y="290" width="142" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="188" y="290" width="142" height="3" rx="2" fill="#6366F1"/>
+  <text x="259" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="white">AI Analysis</text>
+  <text x="259" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">LLM RCA + selection</text>
+
+  <rect x="340" y="290" width="142" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="340" y="290" width="142" height="3" rx="2" fill="#D97706"/>
+  <text x="411" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="white">Workflow Exec.</text>
+  <text x="411" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">Tekton / Job / Ansible</text>
+
+  <rect x="492" y="290" width="142" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="492" y="290" width="142" height="3" rx="2" fill="#059669"/>
+  <text x="563" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="white">Effectiveness</text>
+  <text x="563" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">Health scoring + drift</text>
+
+  <rect x="644" y="290" width="142" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="644" y="290" width="142" height="3" rx="2" fill="#DC2626"/>
+  <text x="715" y="312" text-anchor="middle" font-size="10" font-weight="600" fill="white">Notification</text>
+  <text x="715" y="325" text-anchor="middle" font-size="8" fill="rgba(255,255,255,0.45)">Slack / PD / Teams</text>
+
+  <!-- Row 3: Support services -->
+  <rect x="36" y="348" width="240" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="36" y="348" width="3" height="44" rx="2" fill="#64748B"/>
+  <text x="54" y="370" font-size="10" font-weight="600" fill="white">DataStorage</text>
+  <text x="54" y="383" font-size="8" fill="rgba(255,255,255,0.45)">PostgreSQL + Valkey</text>
+
+  <rect x="290" y="348" width="240" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="290" y="348" width="3" height="44" rx="2" fill="#64748B"/>
+  <text x="308" y="370" font-size="10" font-weight="600" fill="white">AuthWebhook</text>
+  <text x="308" y="383" font-size="8" fill="rgba(255,255,255,0.45)">RAR override validation</text>
+
+  <rect x="544" y="348" width="240" height="44" rx="6" fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.12)"/>
+  <rect x="544" y="348" width="3" height="44" rx="2" fill="#64748B"/>
+  <text x="562" y="370" font-size="10" font-weight="600" fill="white">LLM Provider</text>
+  <text x="562" y="383" font-size="8" fill="rgba(255,255,255,0.45)">OpenAI / Anthropic / Vertex AI</text>
+</svg>
+</div>
+
+<h2 id="session-lifecycle">Session Lifecycle<a class="headerlink" href="#session-lifecycle" title="Permanent link">&para;</a></h2>
+<p>Session management spans two layers:</p>
+<ul>
+<li><strong>KA MCP layer</strong> (<code>internal/kubernautagent/mcp/</code>) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (<code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_discover_workflows</code>) to KA's MCP server.</li>
+<li><strong>AF session layer</strong> (<code>pkg/apifrontend/session/</code>) — Manages <code>InvestigationSession</code> CRDs with <strong>deferred creation</strong>: the CRD is not created when the A2A session starts, but only when <code>af_create_rr</code> succeeds and calls <code>MaterializeCRD()</code>. Sessions that never produce a RemediationRequest leave no cluster footprint.</li>
+</ul>
+<h3 id="lease-based-distributed-locking">Lease-based distributed locking<a class="headerlink" href="#lease-based-distributed-locking" title="Permanent link">&para;</a></h3>
+<p>The <code>LeaseSessionManager</code> in KA uses Kubernetes coordination/v1 Leases (prefix: <code>kubernaut-interactive-</code>) for single-driver guarantee (BR-INTERACTIVE-002):</p>
+<ul>
+<li><strong>Acquisition</strong> — On <code>action:start</code>, KA creates a Lease in <code>kubernaut-system</code></li>
+<li><strong>TTL</strong> — Default session TTL is 30 minutes; configurable via <code>InteractiveConfig.SessionTTL</code></li>
+<li><strong>Inactivity timeout</strong> — Sessions expire after a configurable period of no activity</li>
+<li><strong>Max sessions</strong> — Configurable cap; rejects new sessions when capacity is exhausted (SEC-03)</li>
+<li><strong>Orphan reclamation</strong> — On startup, KA scans for Leases whose holder identity no longer exists and reclaims them</li>
+<li><strong>Same-user reconnect</strong> — If the same user reconnects, the existing Lease is reused</li>
+</ul>
+<h3 id="session-takeover-sec-takeover-001">Session takeover (SEC-TAKEOVER-001)<a class="headerlink" href="#session-takeover-sec-takeover-001" title="Permanent link">&para;</a></h3>
+<p>When User B connects to a session owned by User A:</p>
+<ol>
+<li>User A's investigation is <strong>abandoned</strong> (not completed) — prevents identity confusion</li>
+<li>The Lease holder is updated to User B</li>
+<li>An audit event is emitted recording the takeover</li>
+<li>User B starts a fresh investigation in the same session context</li>
+</ol>
+<h3 id="disconnect-handling-dd-interactive-002">Disconnect handling (DD-INTERACTIVE-002)<a class="headerlink" href="#disconnect-handling-dd-interactive-002" title="Permanent link">&para;</a></h3>
+<p>The <code>SessionClosedHandler</code> monitors MCP connection closures via the <code>DelegatingEventStore</code>. On disconnect, it triggers session release and reconstruction.</p>
+<h3 id="graceful-shutdown-sessiondrainer">Graceful shutdown — SessionDrainer<a class="headerlink" href="#graceful-shutdown-sessiondrainer" title="Permanent link">&para;</a></h3>
+<p>When a KA pod receives SIGTERM (BR-OPS-013):</p>
+<ol>
+<li>The <code>SessionDrainer</code> notifies all connected MCP clients that the server is shutting down</li>
+<li>In-flight tool executions are given time to complete</li>
+<li>All active session Leases are released</li>
+<li>Pod terminates only after all sessions are drained</li>
+</ol>
+<h2 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h2>
+<p>The AF streams investigation output to clients via <strong>Server-Sent Events</strong>:</p>
+<ul>
+<li>Token-by-token output from LLM responses</li>
+<li>Keepalive pings at regular intervals to maintain the connection</li>
+<li>Investigation progress events (phase transitions, tool calls, results)</li>
+</ul>
+<h2 id="integration-points">Integration Points<a class="headerlink" href="#integration-points" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Target</th>
+<th>Protocol</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Kubernaut Agent</strong></td>
+<td>MCP JSON-RPC + HTTP/REST</td>
+<td>MCP tool proxying, SSE streaming</td>
+</tr>
+<tr>
+<td><strong>DataStorage</strong></td>
+<td>HTTP/REST</td>
+<td>Workflow catalog, remediation history, audit events</td>
+</tr>
+<tr>
+<td><strong>LLM Provider</strong></td>
+<td>HTTP/REST (via KA)</td>
+<td>Severity triage with configurable confidence threshold</td>
+</tr>
+<tr>
+<td><strong>OIDC Provider</strong></td>
+<td>OAuth2/OIDC</td>
+<td>User authentication via JWKS</td>
+</tr>
+<tr>
+<td><strong>Kubernetes API</strong></td>
+<td>SubjectAccessReview</td>
+<td>SAR-based tool authorization (verb <code>use</code>, group <code>kubernaut.ai</code>, resource <code>tools</code>)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Probe</th>
+<th>Endpoint</th>
+<th>Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Liveness</td>
+<td><code>GET /healthz</code></td>
+<td><strong>8081</strong> (plain HTTP)</td>
+</tr>
+<tr>
+<td>Readiness</td>
+<td><code>GET /readyz</code></td>
+<td><strong>8081</strong> (plain HTTP)</td>
+</tr>
+<tr>
+<td>Metrics</td>
+<td><code>/metrics</code></td>
+<td><strong>9090</strong> (plain HTTP)</td>
+</tr>
+<tr>
+<td>API</td>
+<td>HTTPS</td>
+<td><strong>8443</strong></td>
+</tr>
+</tbody>
+</table>
 
 
 
@@ -3109,7 +3486,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../getting-started/architecture-overview/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Architecture Overview">
+          <a href="../data-persistence/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data Persistence">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3119,20 +3496,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Architecture Overview
+                Data Persistence
               </div>
             </div>
           </a>
         
         
           
-          <a href="trust-ladder/" class="md-footer__link md-footer__link--next" aria-label="Next: Trust Ladder">
+          <a href="../security-rbac/" class="md-footer__link md-footer__link--next" aria-label="Next: Security &amp; RBAC">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Trust Ladder
+                Security & RBAC
               </div>
             </div>
             <div class="md-footer__button md-icon">
@@ -3189,12 +3566,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../assets/extra.js"></script>
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

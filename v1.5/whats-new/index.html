@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1484,6 +1514,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../architecture/apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2051,6 +2111,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2216,6 +2280,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -2942,6 +3062,160 @@
 Kubernaut does not support in-place upgrades — each release is a fresh install.
 Review the changes below to understand what differs from the version you are currently running.</p>
 <hr />
+<h2 id="v15">v1.5<a class="headerlink" href="#v15" title="Permanent link">&para;</a></h2>
+<h3 id="api-frontend-new-service">API Frontend — new service<a class="headerlink" href="#api-frontend-new-service" title="Permanent link">&para;</a></h3>
+<p>Kubernaut v1.5 introduces the <strong>API Frontend</strong> (AF), the 11th microservice. It acts as the unified external protocol layer for MCP, A2A, and REST clients — replacing direct access to internal services with a single authenticated entry point.</p>
+<ul>
+<li><strong>MCP gateway</strong> — Exposes investigation, workflow discovery, and remediation tools via the Model Context Protocol</li>
+<li><strong>A2A support</strong> — Agent-to-Agent protocol with agent card discovery at <code>/.well-known/agent-card.json</code></li>
+<li><strong>SSE streaming</strong> — Real-time investigation output streamed token-by-token via Server-Sent Events</li>
+<li><strong>SAR authorization</strong> — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results</li>
+<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing</li>
+</ul>
+<p>See <a href="../architecture/apifrontend/">API Frontend Architecture</a> for the full design, and <a href="../user-guide/configuration/#api-frontend-v15">Configuration: API Frontend</a> for Helm values.</p>
+<h3 id="interactive-mcp-sessions">Interactive MCP sessions<a class="headerlink" href="#interactive-mcp-sessions" title="Permanent link">&para;</a></h3>
+<p>Operators and AI agents can now connect to Kubernaut via MCP for <strong>interactive investigation and remediation</strong>. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.</p>
+<p>The API Frontend exposes <strong>23 <code>kubernaut_*</code> MCP tools</strong> on its MCP endpoint (<code>POST /mcp</code>), including 6 interactive session lifecycle tools dispatched to the Kubernaut Agent:</p>
+<table>
+<thead>
+<tr>
+<th>Domain</th>
+<th>Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Interactive lifecycle</strong></td>
+<td><code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+</tr>
+<tr>
+<td><strong>Investigation</strong></td>
+<td><code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_stream_investigation</code></td>
+</tr>
+<tr>
+<td><strong>Workflow</strong></td>
+<td><code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code></td>
+</tr>
+<tr>
+<td><strong>CRD operations</strong></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code></td>
+</tr>
+<tr>
+<td><strong>Data &amp; history</strong></td>
+<td><code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code></td>
+</tr>
+<tr>
+<td><strong>Presentation</strong></td>
+<td><code>kubernaut_present_decision</code></td>
+</tr>
+</tbody>
+</table>
+<p>The Kubernaut Agent also runs a separate MCP server (<code>/api/v1/mcp</code>) with 3 tools (<code>kubernaut_investigate</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_complete_no_action</code>) for direct client connections with Lease-based session management.</p>
+<p>See <a href="../user-guide/interactive-sessions/">Interactive Sessions</a> for the operator guide and <a href="../api-reference/apifrontend-api/">API Frontend API</a> for the full tool reference.</p>
+<h3 id="interactive-workflow-discovery-with-llm-populated-parameters">Interactive workflow discovery with LLM-populated parameters<a class="headerlink" href="#interactive-workflow-discovery-with-llm-populated-parameters" title="Permanent link">&para;</a></h3>
+<p>The <code>discover_workflows</code> action on <code>kubernaut_investigate</code> returns workflow alternatives with <strong>parameters pre-populated by the LLM</strong> based on the root cause analysis (PR #1171, PR #1188). Operators review and edit parameters before confirming execution via <code>kubernaut_select_workflow</code>.</p>
+<p>Parameter safety is enforced through <strong>comprehensive validation with LLM self-correction</strong> (PR #1187): type checking against the workflow's declared parameter schema, regex pattern matching, required field enforcement, and automatic retry when the LLM provides invalid values.</p>
+<p>See <a href="../user-guide/workflows/#parameters">Workflow Authoring: Parameters</a> for the parameter schema reference.</p>
+<h3 id="breaking-sar-based-tool-authorization-replaces-file-based-rbac">Breaking: SAR-based tool authorization replaces file-based RBAC<a class="headerlink" href="#breaking-sar-based-tool-authorization-replaces-file-based-rbac" title="Permanent link">&para;</a></h3>
+<p>The API Frontend's static <code>rbac_roles.yaml</code> ConfigMap has been <strong>replaced by Kubernetes-native SubjectAccessReview (SAR)</strong> authorization at <code>tools/call</code> time (PR #1222). <code>tools/list</code> remains unfiltered (ADR-020).</p>
+<p><strong>Migration required</strong>: customers who customized <code>rbac_roles.yaml</code> must create equivalent <code>ClusterRoleBinding</code> resources. The Helm chart ships 6 per-persona <code>ClusterRoles</code>:</p>
+<table>
+<thead>
+<tr>
+<th>ClusterRole</th>
+<th>Persona</th>
+<th>MCP Tools</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut-tool-sre</code></td>
+<td>Investigation + remediation (no approval)</td>
+<td>20</td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-ai-orchestrator</code></td>
+<td>Automated agent orchestration</td>
+<td>15</td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-cicd</code></td>
+<td>CI/CD pipeline integration</td>
+<td>3</td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-observability</code></td>
+<td>Read-only observability</td>
+<td>5</td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-l3-audit</code></td>
+<td>Compliance and auditing</td>
+<td>6</td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-remediation-approver</code></td>
+<td>Human approval workflows</td>
+<td>4</td>
+</tr>
+</tbody>
+</table>
+<p>SAR uses verb <code>use</code> on resource <code>tools</code> in apiGroup <code>kubernaut.ai</code>. Authorization is fail-closed: SAR API errors deny the tool call. Results are cached with a configurable TTL (default 30s via <code>apifrontend.config.rbac.sarCacheTTL</code>).</p>
+<p>See <a href="../architecture/security-rbac/#tool-authorization-v15">Security &amp; RBAC: Tool Authorization</a> for the full model and binding examples.</p>
+<h3 id="unified-serviceaccount-model-adr-022">Unified ServiceAccount model (ADR-022)<a class="headerlink" href="#unified-serviceaccount-model-adr-022" title="Permanent link">&para;</a></h3>
+<p>All AF Kubernetes API calls use the <strong>AF pod's own ServiceAccount</strong> — there is no per-user impersonation or token forwarding. Application-level authorization is enforced entirely through SAR-based tool gating; user attribution is preserved in the application audit trail (<code>tool.executed</code> events with <code>UserID</code>, <code>actor_ip</code>).</p>
+<p>See <a href="../architecture/security-rbac/#unified-sa-model">Security &amp; RBAC: Unified SA model</a> for accepted risks and mitigations.</p>
+<h3 id="generic-cluster-context-tools-replace-narrow-triage-tools">Generic cluster context tools replace narrow triage tools<a class="headerlink" href="#generic-cluster-context-tools-replace-narrow-triage-tools" title="Permanent link">&para;</a></h3>
+<p>The 4 narrow AF triage tools (<code>af_get_pods</code>, <code>af_get_workloads</code>, <code>af_list_events</code>, <code>af_resolve_owner</code>) have been replaced with 3 generic <strong>internal</strong> tools that can inspect any namespaced Kubernetes resource (#1230):</p>
+<table>
+<thead>
+<tr>
+<th>New Tool</th>
+<th>Replaces</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubectl_get</code></td>
+<td><code>af_get_pods</code>, <code>af_get_workloads</code> (single)</td>
+<td>Get any namespaced resource by kind/name/namespace</td>
+</tr>
+<tr>
+<td><code>kubectl_list</code></td>
+<td><code>af_get_pods</code>, <code>af_get_workloads</code> (list)</td>
+<td>List any namespaced resources with optional label selector</td>
+</tr>
+<tr>
+<td><code>kubectl_list_events</code></td>
+<td><code>af_list_events</code></td>
+<td>List events with reason/object filters (renamed for consistency)</td>
+</tr>
+</tbody>
+</table>
+<p><code>af_resolve_owner</code> is removed — KA independently resolves the owner chain during RCA. The new tools use <code>RESTMapper</code> for dynamic kind-to-GVR resolution. Secret <code>.data</code> fields are redacted before returning to the LLM.</p>
+<p>All cluster context tools (<code>kubectl_*</code>, <code>af_check_existing_rr</code>, <code>af_create_rr</code>) are <strong>internal to the AF's LLM agent</strong> — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of <strong>23 <code>kubernaut_*</code> MCP tools</strong> spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.</p>
+<h3 id="session-takeover-security-sec-takeover-001">Session takeover security (SEC-TAKEOVER-001)<a class="headerlink" href="#session-takeover-security-sec-takeover-001" title="Permanent link">&para;</a></h3>
+<p>When a second user connects to an active MCP session, the original user's investigation is <strong>abandoned, not completed</strong>. This prevents a takeover from inheriting or completing work under a different identity. The abandoned session is logged as an audit event.</p>
+<h3 id="datastorage-advanced-configuration-v15">DataStorage advanced configuration (v1.5)<a class="headerlink" href="#datastorage-advanced-configuration-v15" title="Permanent link">&para;</a></h3>
+<p>Three new configuration sub-blocks for DataStorage:</p>
+<ul>
+<li><strong><code>server</code></strong> — <code>maxBodySize</code> (5 MiB default), <code>corsAllowedOrigins</code> for browser-based access, <code>signerCertDir</code> for audit event signing</li>
+<li><strong><code>redis</code></strong> — <code>dlqMaxLen</code> (10,000), TLS configuration for Redis/Valkey connections</li>
+<li><strong><code>retention</code></strong> — Automatic data retention cleanup with configurable <code>interval</code> (24h), <code>batchSize</code> (1,000), and <code>defaultDays</code> (2,555 ≈ 7 years)</li>
+</ul>
+<p>See <a href="../user-guide/configuration/#datastorage">Configuration: DataStorage</a> for all parameters.</p>
+<h3 id="olm-first-disconnected-installation">OLM-first disconnected installation<a class="headerlink" href="#olm-first-disconnected-installation" title="Permanent link">&para;</a></h3>
+<p>The <a href="../operations/disconnected-install/">disconnected installation guide</a> has been rewritten with the <strong>Operator (OLM) path as the primary method</strong>. The Helm chart path is retained as a development/testing appendix.</p>
+<p>The OLM flow uses <code>oc-mirror</code> v2 with an upstream digest-pinned <code>ImageSetConfiguration</code> from the operator repository, producing IDMS and CatalogSource resources automatically.</p>
+<h3 id="lease-rbac-for-session-management">Lease RBAC for session management<a class="headerlink" href="#lease-rbac-for-session-management" title="Permanent link">&para;</a></h3>
+<p>The Kubernaut Agent ServiceAccount now requires <code>list</code> permission on <code>coordination.k8s.io/leases</code> (in addition to the existing create/get/update/delete) for orphaned session reclamation at startup. The Helm chart and Operator both provision this automatically.</p>
+<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>SessionDrainer</strong> (BR-OPS-013) — Active MCP sessions are drained before KA pod termination during rolling updates</li>
+<li><strong>Race-safe session transitions</strong> — Mutex-protected session state machine prevents concurrent state corruption</li>
+</ul>
+<hr />
 <h2 id="v14">v1.4<a class="headerlink" href="#v14" title="Permanent link">&para;</a></h2>
 <h3 id="prompt-injection-defense-shadow-agent">Prompt injection defense — Shadow Agent<a class="headerlink" href="#prompt-injection-defense-shadow-agent" title="Permanent link">&para;</a></h3>
 <p>Kubernaut v1.4 introduces a <strong>fail-closed shadow agent</strong> that evaluates every LLM tool output for prompt injection. Two evaluation layers provide defense-in-depth:</p>
@@ -2971,7 +3245,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>See <a href="../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK Config</a> for the updated reference.</p>
 <h3 id="parallel-tool-execution">Parallel tool execution<a class="headerlink" href="#parallel-tool-execution" title="Permanent link">&para;</a></h3>
 <p>The <a href="../architecture/kubernaut-agent-investigation/">investigation pipeline</a> now executes multiple LLM tool calls concurrently when the model returns batched requests. The investigation prompt also instructs the LLM to batch independent tool calls for reduced round-trips.</p>
-<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_1">Platform hardening<a class="headerlink" href="#platform-hardening_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Inconclusive outcome exponential backoff</strong> (#1091) — <code>Inconclusive</code> outcomes trigger exponential backoff (1m → 10m cap) and 3-strikes blocking, preventing RR flood for persistent alerts</li>
 <li><strong>SA token refresh</strong> (#1055) — Custom token path constructor with 401 cache invalidation for Kubernaut Agent</li>
@@ -3222,6 +3496,8 @@ Review the changes below to understand what differs from the version you are cur
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/extra.js"></script>
       
     
   </body>

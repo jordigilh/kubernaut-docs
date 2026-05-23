@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1484,6 +1514,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2051,6 +2111,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2216,6 +2280,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -3763,34 +3883,76 @@
 </thead>
 <tbody>
 <tr>
-<td><code>af_tool_calls_total</code></td>
+<td><code>af_http_requests_total</code></td>
 <td>Counter</td>
-<td><code>tool</code>, <code>status</code></td>
-<td>MCP/A2A tool invocations by tool name and outcome</td>
-</tr>
-<tr>
-<td><code>af_a2a_tasks_total</code></td>
-<td>Counter</td>
-<td><code>task_type</code>, <code>status</code></td>
-<td>A2A task executions by type and outcome</td>
-</tr>
-<tr>
-<td><code>af_session_active</code></td>
-<td>Gauge</td>
-<td>--</td>
-<td>Currently active API sessions</td>
-</tr>
-<tr>
-<td><code>af_session_duration_seconds</code></td>
-<td>Histogram</td>
-<td>--</td>
-<td>Session duration from connect to disconnect</td>
+<td><code>method</code>, <code>path</code>, <code>status</code></td>
+<td>Total HTTP requests</td>
 </tr>
 <tr>
 <td><code>af_http_request_duration_seconds</code></td>
 <td>Histogram</td>
-<td><code>endpoint</code>, <code>method</code>, <code>status</code></td>
-<td>HTTP request duration</td>
+<td><code>method</code>, <code>path</code>, <code>status</code></td>
+<td>HTTP request latency distribution</td>
+</tr>
+<tr>
+<td><code>af_http_panics_total</code></td>
+<td>Counter</td>
+<td>--</td>
+<td>HTTP handler panics recovered</td>
+</tr>
+<tr>
+<td><code>af_tool_calls_total</code></td>
+<td>Counter</td>
+<td><code>tool</code>, <code>result</code></td>
+<td>MCP/A2A tool invocations by tool name and result</td>
+</tr>
+<tr>
+<td><code>af_tool_call_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>tool</code>, <code>type</code></td>
+<td>Tool execution latency by tool name and type</td>
+</tr>
+<tr>
+<td><code>af_downstream_request_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>dependency</code>, <code>status_class</code></td>
+<td>Downstream HTTP request duration (KA, DS)</td>
+</tr>
+<tr>
+<td><code>af_auth_duration_seconds</code></td>
+<td>Histogram</td>
+<td><code>result</code></td>
+<td>Authentication latency distribution</td>
+</tr>
+<tr>
+<td><code>af_rate_limit_rejections_total</code></td>
+<td>Counter</td>
+<td><code>tier</code>, <code>reason</code></td>
+<td>Rate limit rejections</td>
+</tr>
+<tr>
+<td><code>af_sse_active_connections</code></td>
+<td>Gauge</td>
+<td>--</td>
+<td>Currently active SSE connections</td>
+</tr>
+<tr>
+<td><code>af_auth_circuit_breaker_state</code></td>
+<td>Gauge</td>
+<td><code>provider</code></td>
+<td>Authentication circuit breaker state (0=closed, 1=open)</td>
+</tr>
+<tr>
+<td><code>af_llm_tokens_total</code></td>
+<td>Counter</td>
+<td><code>direction</code>, <code>model</code></td>
+<td>LLM tokens consumed by direction (input/output) and model</td>
+</tr>
+<tr>
+<td><code>af_sessions_active</code></td>
+<td>Gauge</td>
+<td><code>phase</code></td>
+<td>Active InvestigationSessions by phase</td>
 </tr>
 </tbody>
 </table>
@@ -4111,6 +4273,8 @@
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

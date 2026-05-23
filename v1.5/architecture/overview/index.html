@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1486,6 +1516,8 @@
       
         
           
+        
+      
         
       
         
@@ -2174,6 +2206,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../security-rbac/" class="md-nav__link">
         
   
@@ -2284,6 +2344,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2449,6 +2513,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -3192,8 +3312,10 @@
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>  └─ WorkflowExecution (Orchestrator → WE Controller)
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  └─ EffectivenessAssessment (Orchestrator → EM Controller)
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  └─ NotificationRequest (Orchestrator → Notification Controller)
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>InvestigationSession (API Frontend — v1.5+, interactive MCP/A2A sessions)
 </span></code></pre></div>
-<p>All child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its <a href="../remediation-routing/#phase-state-machine">phase state machine</a>.</p>
+<p>Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. <code>InvestigationSession</code> CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its <a href="../remediation-routing/#phase-state-machine">phase state machine</a>.</p>
 <details class="note">
 <summary>Detailed sub-phase breakdown</summary>
 <table>
@@ -3329,12 +3451,21 @@
 <td>Persistent storage (audit, workflow catalog, remediation history, effectiveness), workflow scoring</td>
 <td><a href="../data-persistence/">Data Persistence</a></td>
 </tr>
+<tr>
+<td><strong>API Frontend</strong></td>
+<td>MCP/A2A/REST gateway, SAR-based tool authorization, session management (v1.5+)</td>
+<td><a href="../apifrontend/">API Frontend</a></td>
+</tr>
 </tbody>
 </table>
 <h2 id="service-topology">Service Topology<a class="headerlink" href="#service-topology" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TB
     subgraph Ingress["Signal Ingestion"]
         GW[Gateway&lt;br/&gt;&lt;small&gt;Signals → CRD&lt;/small&gt;]
+    end
+
+    subgraph External_API["External API Layer v1.5+"]
+        AF[API Frontend&lt;br/&gt;&lt;small&gt;MCP / A2A&lt;/small&gt;]
     end
 
     subgraph Core["Core Pipeline"]
@@ -3359,6 +3490,10 @@
         PG[(PostgreSQL)]
         RD[(Valkey)]
     end
+
+    AF -.-&gt;|MCP tools| KA
+    AF -.-&gt;|history, catalog| DS
+    AF --&gt;|InvestigationSession| AF
 
     GW --&gt;|RemediationRequest| RO
     RO --&gt;|SignalProcessing| SP
@@ -3443,9 +3578,16 @@
 <td>NT Controller</td>
 <td>Outcome notification</td>
 </tr>
+<tr>
+<td>—</td>
+<td><code>InvestigationSession</code></td>
+<td>API Frontend</td>
+<td>AF (SessionCleanup)</td>
+<td>Interactive MCP/A2A session state (v1.5+); deferred — materialized only after RR creation</td>
+</tr>
 </tbody>
 </table>
-<p>Each CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly.</p>
+<p>Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. The <code>InvestigationSession</code> CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut) managed by the API Frontend's session cleanup reconciler.</p>
 <h2 id="namespace-model">Namespace Model<a class="headerlink" href="#namespace-model" title="Permanent link">&para;</a></h2>
 <p>All Kubernaut services run in the <code>kubernaut-system</code> namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate <code>kubernaut-workflows</code> namespace. By default, executions use the execution namespace default ServiceAccount (commonly configured as <code>kubernaut-workflow-runner</code> in shared-SA deployments). Starting with v1.2, workflows can declare a dedicated ServiceAccount via <code>spec.execution.serviceAccountName</code> on the <code>RemediationWorkflow</code> CRD (propagated to <code>WorkflowExecution.spec.serviceAccountName</code>), enabling per-workflow least-privilege RBAC. See <a href="../security-rbac/#per-workflow-serviceaccount-v12">Security &amp; RBAC -- Per-Workflow ServiceAccount</a> for details.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>
@@ -3495,7 +3637,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Three-port</strong> behavior applies to <strong>Gateway</strong>, <strong>DataStorage</strong>, <strong>Kubernaut Agent</strong>, and the <strong>AIAnalysis</strong> controller. Other controllers (<strong>Remediation Orchestrator</strong>, <strong>Signal Processing</strong>, <strong>Workflow Execution</strong>, <strong>Notification</strong>, <strong>Effectiveness Monitor</strong>) expose <strong>metrics on 9090</strong> as their Service port; they do not use the 8080/8081 API/health split.</p>
+<p><strong>Three-port</strong> behavior applies to <strong>Gateway</strong>, <strong>DataStorage</strong>, <strong>Kubernaut Agent</strong>, the <strong>AIAnalysis</strong> controller, and the <strong>API Frontend</strong> (v1.5+). Other controllers (<strong>Remediation Orchestrator</strong>, <strong>Signal Processing</strong>, <strong>Workflow Execution</strong>, <strong>Notification</strong>, <strong>Effectiveness Monitor</strong>) expose <strong>metrics on 9090</strong> as their Service port; they do not use the 8080/8081 API/health split.</p>
 <p><strong>Auth Webhook</strong> is an exception: the Service uses <strong>port 443</strong> with <strong>targetPort 9443</strong> for admission traffic; health checks use <strong>8081</strong> (<code>/healthz</code>, <code>/readyz</code>) like the other Go components.</p>
 <h2 id="error-handling-patterns">Error Handling Patterns<a class="headerlink" href="#error-handling-patterns" title="Permanent link">&para;</a></h2>
 <p>All controllers share common error handling patterns:</p>
@@ -3662,6 +3804,8 @@
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

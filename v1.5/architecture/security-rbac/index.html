@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/architecture/security-rbac/">
       
       
-        <link rel="prev" href="../data-persistence/">
+        <link rel="prev" href="../apifrontend/">
       
       
         <link rel="next" href="../../design-decisions/">
@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1486,6 +1516,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -2160,6 +2220,28 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#lease-rbac-for-interactive-sessions-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lease RBAC for Interactive Sessions (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-frontend-rbac-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Frontend RBAC (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2316,6 +2398,100 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#tool-authorization-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Authorization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tool Authorization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sar-based-tool-authorization-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAR-based tool authorization (v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-persona-clusterroles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-persona ClusterRoles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#binding-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binding example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sar-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAR caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-from-rbac_rolesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration from rbac_roles.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unified-sa-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified ServiceAccount model (v1.5, ADR-022)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2424,6 +2600,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2589,6 +2769,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -3311,7 +3547,7 @@
 <p>Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources.</p>
 <div class="admonition info">
 <p class="admonition-title">Helm vs Operator RBAC</p>
-<p>The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the <strong>Operator</strong> prefixes each name with the CR's namespace (e.g., <code>kubernaut-system-gateway-role</code>) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates <strong>13</strong> baseline ClusterRoles, plus <strong>2</strong> additional ones (<code>alertmanager-view</code>, <code>gateway-signal-source</code>) when <code>spec.monitoring.enabled: true</code>. An optional <code>workflowexecution-awx</code> ClusterRole is created when Ansible integration is enabled.</p>
+<p>The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the <strong>Operator</strong> prefixes each name with the CR's namespace (e.g., <code>kubernaut-system-gateway-role</code>) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates <strong>14</strong> baseline ClusterRoles (including the API Frontend ClusterRole in v1.5+), plus <strong>2</strong> additional ones (<code>alertmanager-view</code>, <code>gateway-signal-source</code>) when <code>spec.monitoring.enabled: true</code>, <strong>6</strong> per-persona tool ClusterRoles for SAR authorization (v1.5+), and an optional <code>workflowexecution-awx</code> ClusterRole when Ansible integration is enabled.</p>
 <p>The Operator also supports <code>spec.kubernautAgent.additionalClusterRoleBindings</code> — a list of pre-existing ClusterRole names to bind to the Kubernaut Agent ServiceAccount (max 64). <strong>Use with caution</strong>: any writable cluster-scoped privileges referenced here are granted to the agent, creating a privilege escalation path. Restrict who may edit the Kubernaut CR via cluster RBAC. See the <a href="https://github.com/jordigilh/kubernaut-operator/blob/main/docs/security/threat-model.md">Operator threat model</a> for details.</p>
 </div>
 <h2 id="signal-ingestion">Signal Ingestion<a class="headerlink" href="#signal-ingestion" title="Permanent link">&para;</a></h2>
@@ -3810,9 +4046,102 @@
 <td>get, list, watch</td>
 <td>Monitoring investigation</td>
 </tr>
+<tr>
+<td><code>config.openshift.io</code></td>
+<td>nodes, clusteroperators, clusterversions, infrastructures</td>
+<td>get, list, watch</td>
+<td>OCP platform investigation (Operator only)</td>
+</tr>
 </tbody>
 </table>
 <p>This read-only access allows the LLM to investigate root causes using live cluster data without making changes.</p>
+<h3 id="lease-rbac-for-interactive-sessions-v15">Lease RBAC for Interactive Sessions (v1.5+)<a class="headerlink" href="#lease-rbac-for-interactive-sessions-v15" title="Permanent link">&para;</a></h3>
+<p>Interactive MCP sessions use Kubernetes Leases for distributed locking. The Kubernaut Agent ServiceAccount requires Lease permissions in addition to its existing investigator role:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>coordination.k8s.io</code></td>
+<td><code>leases</code></td>
+<td>get, create, update, delete, <strong>list</strong></td>
+<td>Session locking + orphan reclamation</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>list</code> verb (new in v1.5) is required for <code>ReconcileOrphanedLeases</code> — on startup, KA scans for Leases whose holder identity no longer exists and reclaims them.</p>
+<div class="admonition note">
+<p class="admonition-title">Automatic provisioning</p>
+<p>Both the Helm chart and the Kubernaut Operator provision this permission automatically. Only custom RBAC configurations need manual updating.</p>
+</div>
+<h3 id="api-frontend-rbac-v15">API Frontend RBAC (v1.5+)<a class="headerlink" href="#api-frontend-rbac-v15" title="Permanent link">&para;</a></h3>
+<p>The API Frontend ServiceAccount requires:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>investigationsessions</code>, <code>investigationsessions/status</code></td>
+<td>get, list, watch, create, update, patch, delete</td>
+<td>Session CRD management</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>remediationrequests</code></td>
+<td>get, list, watch, create, update, patch</td>
+<td>RR lifecycle for MCP/A2A sessions</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>remediationapprovalrequests</code>, <code>remediationapprovalrequests/status</code></td>
+<td>get, list, create, update, patch</td>
+<td>Approval request access</td>
+</tr>
+<tr>
+<td><code>authorization.k8s.io</code></td>
+<td><code>subjectaccessreviews</code></td>
+<td>create</td>
+<td>SAR-based tool authorization</td>
+</tr>
+<tr>
+<td><em>(core)</em></td>
+<td><code>events</code></td>
+<td>get, list, create, patch</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><em>(core)</em></td>
+<td><code>pods</code>, <code>replicationcontrollers</code></td>
+<td>get, list</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td><code>deployments</code>, <code>replicasets</code>, <code>statefulsets</code>, <code>daemonsets</code></td>
+<td>get, list</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code>, <code>cronjobs</code></td>
+<td>get</td>
+<td>Cluster context triage tools</td>
+</tr>
+</tbody>
+</table>
 <h2 id="infrastructure-and-hooks">Infrastructure and Hooks<a class="headerlink" href="#infrastructure-and-hooks" title="Permanent link">&para;</a></h2>
 <h3 id="postgresql-and-valkey">PostgreSQL and Valkey<a class="headerlink" href="#postgresql-and-valkey" title="Permanent link">&para;</a></h3>
 <p>Both run with dedicated ServiceAccounts that have <code>automountServiceAccountToken: false</code>, preventing unnecessary API token mounting.</p>
@@ -4002,6 +4331,138 @@
 </div>
 </div>
 <p>Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).</p>
+<h2 id="tool-authorization-v15">Tool Authorization<a class="headerlink" href="#tool-authorization-v15" title="Permanent link">&para;</a></h2>
+<h3 id="sar-based-tool-authorization-v15">SAR-based tool authorization (v1.5)<a class="headerlink" href="#sar-based-tool-authorization-v15" title="Permanent link">&para;</a></h3>
+<p>v1.5 replaces the API Frontend's file-based <code>rbac_roles.yaml</code> with <strong>Kubernetes-native SubjectAccessReview (SAR)</strong> authorization (PR #1222). Every MCP <code>tools/call</code> invocation triggers a SAR check before execution. <code>tools/list</code> is unfiltered (ADR-020) — authorization is enforced only at call time.</p>
+<h3 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT</li>
+<li>On each tool invocation, AF issues a SAR: <code>can &lt;user&gt; use tools/&lt;tool-name&gt; in apiGroup kubernaut.ai?</code></li>
+<li>The Kubernetes API server evaluates the user's ClusterRoleBindings</li>
+<li>If denied (or if the SAR API is unreachable), the tool call is rejected — <strong>fail-closed</strong></li>
+</ol>
+<p>All 3 AF RBAC code paths (MCP bridge <code>checkRBAC()</code>, A2A agent <code>newRBACGuard()</code>, and main wiring) delegate to the <code>SARChecker</code>.</p>
+<h3 id="per-persona-clusterroles">Per-persona ClusterRoles<a class="headerlink" href="#per-persona-clusterroles" title="Permanent link">&para;</a></h3>
+<p>The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (<code>apifrontend.config.rbac.personas</code>):</p>
+<table>
+<thead>
+<tr>
+<th>ClusterRole</th>
+<th>Persona</th>
+<th>MCP Tools</th>
+<th>Tool List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut-tool-sre</code></td>
+<td>Investigation + remediation (no approval)</td>
+<td>20</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_stream_investigation</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-ai-orchestrator</code></td>
+<td>Automated agent orchestration</td>
+<td>15</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_stream_investigation</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-cicd</code></td>
+<td>CI/CD pipeline integration</td>
+<td>3</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-observability</code></td>
+<td>Read-only observability</td>
+<td>5</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-l3-audit</code></td>
+<td>Compliance and auditing</td>
+<td>6</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-remediation-approver</code></td>
+<td>Human approval workflows</td>
+<td>4</td>
+<td><code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_approve</code>, <code>kubernaut_watch</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition info">
+<p class="admonition-title">Internal tools</p>
+<p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>af_check_existing_rr</code>, <code>af_create_rr</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
+</div>
+<h3 id="binding-example">Binding example<a class="headerlink" href="#binding-example" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRoleBinding</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team-kubernaut-tools</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">subjects</span><span class="p">:</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">roleRef</span><span class="p">:</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-tool-sre</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span></code></pre></div>
+<h3 id="sar-caching">SAR caching<a class="headerlink" href="#sar-caching" title="Permanent link">&para;</a></h3>
+<p>Authorization results are cached with a SHA256-keyed TTL cache (default 30s) to avoid per-call SAR overhead:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</span></code></pre></div>
+<h3 id="migration-from-rbac_rolesyaml">Migration from rbac_roles.yaml<a class="headerlink" href="#migration-from-rbac_rolesyaml" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Breaking change</p>
+<p>The <code>rbac_roles.yaml</code> ConfigMap and <code>RBACConfig.GroupMapping</code> are removed in v1.5. Customers who customized file-based RBAC must create equivalent ClusterRoleBindings.</p>
+</div>
+<ol>
+<li>Identify which tools each role had access to</li>
+<li>Map those to the closest per-persona ClusterRole (or create a custom one with <code>verb: use</code> on <code>resource: tools</code> in <code>apiGroup: kubernaut.ai</code>)</li>
+<li>Create ClusterRoleBindings for your OIDC groups</li>
+<li>The <code>rbac_roles.yaml</code> ConfigMap is no longer read</li>
+</ol>
+<h3 id="unified-sa-model">Unified ServiceAccount model (v1.5, ADR-022)<a class="headerlink" href="#unified-sa-model" title="Permanent link">&para;</a></h3>
+<p>All AF Kubernetes API calls use the <strong>AF pod's own ServiceAccount</strong> — there is no per-user impersonation or OIDC-direct token forwarding. This simplifies the security model: the AF SA has a fixed, auditable set of permissions, and application-level authorization is enforced entirely through SAR-based tool gating (see <a href="#per-persona-clusterroles">Per-persona ClusterRoles</a>).</p>
+<p><strong>User attribution</strong> is preserved in the application audit trail (<code>tool.executed</code> events include <code>UserID</code>, <code>actor_ip</code>, <code>target_namespace</code>, <code>target_kind</code>) rather than in Kubernetes audit logs.</p>
+<p><strong>Accepted risks</strong> (documented in ADR-022):</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEC-01</td>
+<td>AF SA has broad kubernaut CRD access</td>
+<td>Namespace-scoped where possible; SAR gates each tool call</td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>K8s audit logs attribute actions to AF SA, not the end user</td>
+<td>Application audit trail carries user identity; correlate via <code>actor_ip</code></td>
+</tr>
+<tr>
+<td>SEC-04</td>
+<td>AF SA privilege aggregation</td>
+<td>ClusterRole is explicit and minimal; reviewed per release</td>
+</tr>
+<tr>
+<td>SEC-09</td>
+<td>Persona misconfiguration could over-grant</td>
+<td>Helm values are the source of truth; <code>kubernaut-tool-*</code> roles are data-driven</td>
+</tr>
+</tbody>
+</table>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and other signal sources</li>
@@ -4043,7 +4504,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../data-persistence/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Data Persistence">
+          <a href="../apifrontend/" class="md-footer__link md-footer__link--prev" aria-label="Previous: API Frontend">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -4053,7 +4514,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Data Persistence
+                API Frontend
               </div>
             </div>
           </a>
@@ -4127,6 +4588,8 @@
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

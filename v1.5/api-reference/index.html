@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1484,6 +1514,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../architecture/apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2053,6 +2113,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2219,6 +2283,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -2939,13 +3059,14 @@
 
 <h1 id="api-reference">API Reference<a class="headerlink" href="#api-reference" title="Permanent link">&para;</a></h1>
 <ul>
-<li><strong><a href="crds/">Custom Resources (CRDs)</a></strong> — Spec, status, and phase definitions for all 9 CRD types. Documents the full spec and status schema for each CRD in the remediation pipeline.</li>
+<li><strong><a href="crds/">Custom Resources (CRDs)</a></strong> — Spec, status, and phase definitions for all 10 CRD types (v1.5+). Documents the full spec and status schema for each CRD in the remediation pipeline.</li>
 <li><strong><a href="operator-cr/">Operator CR</a></strong> — API reference for the <code>Kubernaut</code> CR (<code>kubernaut.ai/v1alpha1</code>) used by the Kubernaut Operator. Documents all spec fields, type definitions, status, and RBAC resources.</li>
 <li><strong><a href="datastorage-api/">DataStorage API</a></strong> — REST API for audit events, workflow catalog, and reconstruction. REST endpoints for querying audit data, workflow catalog, and reconstruction.</li>
 <li><strong><a href="kubernaut-agent-api/">Kubernaut Agent</a></strong> — Session-based async API for LLM-powered root cause analysis. Documents endpoints for LLM-driven investigation, infrastructure label detection, and workflow discovery.</li>
+<li><strong><a href="apifrontend-api/">API Frontend</a></strong> — MCP/A2A/REST gateway for external clients (v1.5+). Documents MCP tool endpoints, SSE streaming, session management, and SAR authorization.</li>
 </ul>
 <h2 id="error-responses-rfc-7807">Error Responses (RFC 7807)<a class="headerlink" href="#error-responses-rfc-7807" title="Permanent link">&para;</a></h2>
-<p>All Kubernaut HTTP APIs return errors in <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC 7807 Problem Details</a> format. This applies to the Gateway signal ingestion endpoint, the DataStorage REST API, and Kubernaut Agent.</p>
+<p>All Kubernaut HTTP APIs return errors in <a href="https://datatracker.ietf.org/doc/html/rfc7807">RFC 7807 Problem Details</a> format. This applies to the Gateway signal ingestion endpoint, the DataStorage REST API, Kubernaut Agent, and the API Frontend.</p>
 <p><strong>Content-Type</strong>: <code>application/problem+json</code></p>
 <p><strong>Structure</strong>:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
@@ -3170,6 +3291,8 @@
     
     
       <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../assets/extra.js"></script>
       
     
   </body>

@@ -1175,6 +1175,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Reinstalling">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#v14-v15-migration-notes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        v1.4 → v1.5 migration notes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1321,6 +1338,8 @@
       
         
           
+        
+      
         
       
         
@@ -1750,6 +1769,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1803,10 +1850,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1824,8 +1871,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1973,6 +2020,8 @@
       
         
           
+        
+      
         
       
         
@@ -2430,6 +2479,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2540,6 +2617,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2705,6 +2786,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -3492,7 +3629,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.4.0</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.4.0</code>).</p>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0-rc2</code>).</p>
 <p><strong>Minimal Kubernaut CR:</strong></p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
@@ -3522,6 +3659,7 @@
 <li>Runs embedded database schema migrations</li>
 <li>Installs and upgrades the 9 Kubernaut workload CRDs</li>
 <li>Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies</li>
+<li>Applies preferred pod anti-affinity to all deployments (spread across nodes by <code>kubernetes.io/hostname</code>)</li>
 <li>Configures OCP Routes and service-serving CA TLS</li>
 <li>Reports per-service readiness status on the <code>Kubernaut</code> CR</li>
 <li>Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)</li>
@@ -3919,6 +4057,13 @@ With GCP Workload Identity the secret can be omitted.</p>
 <p>Kubernaut does not support in-place upgrades. To move to a new version,
 perform a fresh install. See <a href="../../whats-new/">What's New</a> for
 changes between releases.</p>
+<h3 id="v14-v15-migration-notes">v1.4 → v1.5 migration notes<a class="headerlink" href="#v14-v15-migration-notes" title="Permanent link">&para;</a></h3>
+<p>v1.5 introduces breaking changes that require manual steps during reinstall:</p>
+<ol>
+<li><strong>SAR-based tool authorization</strong> — The API Frontend's <code>rbac_roles.yaml</code> ConfigMap is removed. Create <code>ClusterRoleBindings</code> mapping OIDC groups to the <a href="../../architecture/security-rbac/#tool-authorization-v15">per-persona ClusterRoles</a> shipped in the Helm chart.</li>
+<li><strong>11th service — API Frontend</strong> — Resource planning must account for the new service. See <a href="../../user-guide/configuration/#api-frontend-v15">Configuration: API Frontend</a> for resource defaults.</li>
+<li><strong>Lease RBAC</strong> — The Kubernaut Agent ServiceAccount now requires <code>list</code> on <code>coordination.k8s.io/leases</code>. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.</li>
+</ol>
 <h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">&para;</a></h2>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
@@ -4130,6 +4275,8 @@ changes between releases.</p>
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

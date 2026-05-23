@@ -862,6 +862,8 @@
       
         
       
+        
+      
     
     
     
@@ -1261,6 +1263,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
@@ -1314,10 +1344,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_15" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
         
           
-          <label class="md-nav__link" for="__nav_3_15" id="__nav_3_15_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
             
   
   
@@ -1335,8 +1365,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_15_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_15">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1486,6 +1516,8 @@
       
         
           
+        
+      
         
       
         
@@ -2185,6 +2217,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../security-rbac/" class="md-nav__link">
         
   
@@ -2295,6 +2355,10 @@
       
         
           
+        
+      
+        
+      
         
       
         
@@ -2460,6 +2524,62 @@
     
   
     Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
   
 
     
@@ -3380,6 +3500,21 @@
 <td>Kubernetes namespace</td>
 </tr>
 <tr>
+<td><code>actor_ip</code></td>
+<td><code>string</code></td>
+<td>Client IP address of the actor (v1.5+, AF events)</td>
+</tr>
+<tr>
+<td><code>target_namespace</code></td>
+<td><code>string</code></td>
+<td>Namespace of the target K8s resource (v1.5+, AF events)</td>
+</tr>
+<tr>
+<td><code>target_kind</code></td>
+<td><code>string</code></td>
+<td>Kind of the target K8s resource (v1.5+, AF events)</td>
+</tr>
+<tr>
 <td><code>event_data</code></td>
 <td><code>JSONB</code></td>
 <td>Service-specific payload</td>
@@ -3419,7 +3554,7 @@
 <li><strong>Cross-service tracing</strong> -- Follow a remediation across all services</li>
 </ul>
 <h2 id="emitting-services">Emitting Services<a class="headerlink" href="#emitting-services" title="Permanent link">&para;</a></h2>
-<p>All 10 Go services (<code>cmd/*/main.go</code>: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent) emit audit events:</p>
+<p>All 11 Go services (<code>cmd/*/main.go</code>: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent, API Frontend) emit audit events:</p>
 <table>
 <thead>
 <tr>
@@ -3478,6 +3613,11 @@
 <td><strong>DataStorage</strong></td>
 <td><code>datastorage.*</code>, <code>workflow.catalog.*</code></td>
 <td><code>workflow.created</code>, <code>workflow.updated</code>, <code>actiontype.created</code>, <code>actiontype.updated</code>, <code>actiontype.disabled</code>, <code>actiontype.reenabled</code>, <code>actiontype.disable_denied</code>, <code>workflow.catalog.actions_listed</code>, <code>workflow.catalog.workflows_listed</code>, <code>workflow.catalog.workflow_retrieved</code>, <code>workflow.catalog.selection_validated</code></td>
+</tr>
+<tr>
+<td><strong>API Frontend</strong></td>
+<td><code>apifrontend.*</code></td>
+<td><code>rr.created</code>, <code>rr.deduplicated</code>, <code>ka.delegated</code>, <code>ka.result_received</code>, <code>user.decision</code>, <code>severity_triage.completed</code>, <code>severity_triage.failed</code>, <code>session.completed</code>, <code>jwt.delegation</code>, <code>mcp.session_init</code>, <code>circuitbreaker.trip</code>, <code>triage.started</code>, <code>triage.completed</code></td>
 </tr>
 </tbody>
 </table>
@@ -3690,6 +3830,8 @@
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

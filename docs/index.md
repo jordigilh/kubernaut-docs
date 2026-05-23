@@ -52,7 +52,7 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     ---
 
-    Understand the 10-service microservices architecture, CRD communication patterns, and data flows.
+    Understand the 11-service microservices architecture, CRD communication patterns, and data flows.
 
     [:octicons-arrow-right-24: Architecture Overview](getting-started/architecture-overview.md)
 
@@ -64,11 +64,11 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     [:octicons-arrow-right-24: API Reference](api-reference/index.md)
 
--   :material-new-box:{ .lg .middle } **What's New in v1.4**
+-   :material-new-box:{ .lg .middle } **What's New in v1.5**
 
     ---
 
-    Dry-run mode, Shadow Agent prompt injection defense, operator workflow overrides, and more.
+    API Frontend, interactive MCP sessions, SAR-based tool authorization, unified SA model, and more.
 
     [:octicons-arrow-right-24: Release Highlights](whats-new/index.md)
 
@@ -76,7 +76,7 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     ---
 
-    v1.5 roadmap — interactive sessions, Backstage console, MCP/A2A integration, fleet operations.
+    Backstage console, declarative recipes, fleet operations, natural language signal intake.
 
     [:octicons-arrow-right-24: Roadmap](whats-next/index.md)
 
@@ -96,17 +96,17 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
 Kubernaut automates the entire incident response lifecycle through a CRD-native pipeline.
 
-<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
-<img src="assets/images/pipeline-phases.svg" alt="Kubernaut Remediation Pipeline — 5 phases" style="width:100%">
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0" id="pipeline-svg-wrap">
+<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — 6 phases + interactive mode"></object>
 </div>
 
-Select a phase to learn more:
+Click a phase card above, or select a tab:
 
 === "1 · Signal Processing"
 
     **CRD:** `SignalProcessing`
 
-    AlertManager webhooks and Kubernetes Events are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:
+    AlertManager webhooks, Kubernetes Events, and A2A/Interactive sessions (v1.5) are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:
 
     - **Severity** — normalized to a standard scale (critical, high, medium, low).
     - **Environment** — inferred from namespace labels (production, staging, development).
@@ -123,7 +123,13 @@ Select a phase to learn more:
     Three-phased pipeline:
 
     - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
-    - **Select** — Using the RCA and server-side enrichment (historical context, detectable labels), the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
+    - **Enrich** — Server-side enrichment adds historical context, detectable labels, and prior remediation outcomes.
+    - **Select** — Using the RCA and enrichment data, the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
+
+    **Kubernaut Agent** — The AI Analysis phase is powered by the Kubernaut Agent (KA), which drives both autonomous and interactive investigations:
+
+    - **Autonomous** — KA runs LLM-driven investigation with 36 native Go tools, performs server-side enrichment, and selects the best-matching workflow without operator involvement.
+    - **Interactive (v1.5)** — When an operator connects via the API Frontend, KA manages Lease-based sessions with SSE streaming of investigation events. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
 
 === "3 · Approval"
 
@@ -170,6 +176,32 @@ Select a phase to learn more:
     - **Routing:** Label-based rules with regex matching and fan-out to multiple channels.
     - **Reliability:** Circuit-breaker retry with exponential backoff per channel.
     - **Audit:** Every delivery attempt (success or failure) is recorded with correlation IDs linking back to the originating `RemediationRequest`.
+
+=== "API Frontend (v1.5)"
+
+    **CRD:** `InvestigationSession` &nbsp; **Services:** API Frontend ↔ Kubernaut Agent
+
+    The interactive path is a **parallel entry point**, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:
+
+    1. **Investigate** — AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
+    2. **Discover** — After RCA, AF calls `kubernaut_discover_workflows` to present workflow options with LLM-populated parameters.
+    3. **Select** — Operator picks a workflow via `kubernaut_select_workflow` → KA creates the `RemediationRequest`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
+    4. **Watch** — AF monitors CRD status transitions and reports progress to the user until a terminal phase.
+
+    The investigation creates an `InvestigationSession` CRD (deferred until RR creation). The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See [Interactive Sessions](user-guide/interactive-sessions.md).
+
+    **SAR-gated personas** — All MCP/A2A tool access is gated by SubjectAccessReview against 6 per-persona ClusterRoles:
+
+    | Persona | MCP Tools | Tool Domains |
+    |---|---|---|
+    | **SRE** | 20 | **RemediationRequest:** `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_cancel_remediation`, `kubernaut_watch`<br>**Investigation:** `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation`<br>**Interactive:** `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`<br>**Workflow:** `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_list_workflows`<br>**Data:** `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`<br>**Presentation:** `kubernaut_present_decision` |
+    | **AI Orchestrator** | 15 | **RemediationRequest:** `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`<br>**Investigation:** `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation`<br>**Interactive:** `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`<br>**Workflow:** `kubernaut_discover_workflows`, `kubernaut_select_workflow`<br>**Presentation:** `kubernaut_present_decision` |
+    | **CI/CD** | 3 | **RemediationRequest:** `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
+    | **Observability** | 5 | **RemediationRequest:** `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`<br>**Workflow:** `kubernaut_list_workflows`<br>**Data:** `kubernaut_get_effectiveness` |
+    | **L3 Audit** | 6 | **RemediationRequest:** `kubernaut_list_remediations`, `kubernaut_get_remediation`<br>**Workflow:** `kubernaut_list_workflows`<br>**Data:** `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+    | **Remediation Approver** | 4 | **RemediationApprovalRequest:** `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_approve`, `kubernaut_watch` |
+
+    See [MCP Tool Reference](api-reference/mcp-tools.md) for full tool descriptions, parameters, and response examples. See [Per-persona ClusterRoles](architecture/security-rbac.md#per-persona-clusterroles) for the RBAC reference.
 
 ---
 

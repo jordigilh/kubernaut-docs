@@ -80,7 +80,7 @@ graph TB
     end
 
     subgraph External_API["External API Layer v1.5+"]
-        AF[API Frontend<br/><small>MCP / A2A / REST</small>]
+        AF[API Frontend<br/><small>MCP / A2A</small>]
     end
 
     subgraph Core["Core Pipeline"]

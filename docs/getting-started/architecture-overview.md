@@ -71,7 +71,7 @@ Kubernaut is a microservices platform with 11 services (v1.5+; 10 in v1.4) that 
   <rect x="624" y="16" width="180" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
   <rect x="624" y="16" width="180" height="5" rx="3" fill="#8B5CF6"/>
   <text x="714" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">API Frontend</text>
-  <text x="714" y="54" text-anchor="middle" font-size="9" fill="#888">MCP / A2A / REST (v1.5+)</text>
+  <text x="714" y="54" text-anchor="middle" font-size="9" fill="#888">MCP / A2A (v1.5+)</text>
   <!-- Support Services -->
   <rect x="30" y="182" width="760" height="80" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
   <rect x="30" y="182" width="6" height="80" rx="3" fill="#64748B"/>

@@ -242,10 +242,14 @@ The API Frontend ServiceAccount requires:
 
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|
-| `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management (PR #1224) |
-| `kubernaut.ai` | `remediationrequests` | get, list, create | RR access for interactive sessions |
+| `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management |
+| `kubernaut.ai` | `remediationrequests` | get, list, watch, create, update, patch | RR lifecycle for MCP/A2A sessions |
+| `kubernaut.ai` | `remediationapprovalrequests`, `remediationapprovalrequests/status` | get, list, create, update, patch | Approval request access |
 | `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
-| _(core)_ | `users`, `groups` | impersonate | Triage tool delegation (default mode; `serviceaccounts` removed in PR #1227) |
+| _(core)_ | `events` | get, list, create, patch | Cluster context triage tools |
+| _(core)_ | `pods`, `replicationcontrollers` | get, list | Cluster context triage tools |
+| `apps` | `deployments`, `replicasets`, `statefulsets`, `daemonsets` | get, list | Cluster context triage tools |
+| `batch` | `jobs`, `cronjobs` | get | Cluster context triage tools |
 
 ## Infrastructure and Hooks
 
@@ -390,10 +394,10 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 | ClusterRole | Persona | Tool Count | Tools |
 |---|---|---|---|
-| `kubernaut-tool-sre` | Full SRE access | 18 | All SAR-gated tools |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 14 | Remediation lifecycle (5) + investigation (4) + cluster context (5) |
+| `kubernaut-tool-sre` | Full SRE access | 26 | All 23 MCP tools + 3 internal `kubectl_*` + `af_check_existing_rr` + `af_create_rr` |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 19 | CRD ops (3) + investigation (3) + interactive (6) + stream + discovery/selection + presentation + internal triage (5) |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
-| `kubernaut-tool-observability` | Read-only observability | 7 | list/get/watch + effectiveness + workflows + cluster context (3) |
+| `kubernaut-tool-observability` | Read-only observability | 5 | list/get/watch + effectiveness + workflows |
 | `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | list/get + workflows + history + effectiveness + audit trail |
 | `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_approve`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
 
@@ -435,36 +439,23 @@ apifrontend:
 3. Create ClusterRoleBindings for your OIDC groups
 4. The `rbac_roles.yaml` ConfigMap is no longer read
 
-### OIDC-direct mode — eliminating impersonation (v1.5)
+### Unified ServiceAccount model (v1.5, ADR-022) {: #unified-sa-model }
 
-The AF's 3 read-only triage tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`) make K8s API calls as the authenticated user. By default, this uses **impersonation** (`Impersonate-User` / `Impersonate-Group` headers), which requires the AF ClusterRole to have `impersonate` on `users` and `groups`.
+All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is no per-user impersonation or OIDC-direct token forwarding. This simplifies the security model: the AF SA has a fixed, auditable set of permissions, and application-level authorization is enforced entirely through SAR-based tool gating (see [Per-persona ClusterRoles](#per-persona-clusterroles)).
 
-v1.5 adds an opt-in **OIDC-direct mode** (PR #1227) that forwards the user's raw OIDC JWT as a bearer token instead of impersonating. This eliminates impersonation privileges entirely, addressing CIS benchmark and SOC 2 audit concerns.
+**User attribution** is preserved in the application audit trail (`tool.executed` events include `UserID`, `actor_ip`, `target_namespace`, `target_kind`) rather than in Kubernetes audit logs.
 
-```yaml
-apifrontend:
-  config:
-    rbac:
-      useOIDCDirect: true   # default: false (impersonation)
-```
+!!! note "History"
+    Earlier v1.5 pre-releases included impersonation and an opt-in OIDC-direct mode (PR #1227). PR #1233 (ADR-022) removed both in favor of the unified SA model. The AF ClusterRole no longer includes `impersonate` verbs.
 
-**How it works:** The `NewOIDCDirectDynamicFactory` creates a `rest.Config` with `BearerToken: identity.RawToken` instead of `Impersonate` headers. The base config is deep-copied via `rest.CopyConfig`; `BearerTokenFile` is cleared and `Impersonate` config zeroed. Fail-closed: missing identity, empty token, or expired token all return errors.
+**Accepted risks** (documented in ADR-022):
 
-**Compatible deployments** (K8s API server trusts the same OIDC provider as AF):
-
-- Self-managed K8s / kubeadm
-- OpenShift (integrated OAuth)
-- EKS with OIDC identity provider association
-- AKS with OIDC issuer
-
-**Not compatible** (impersonation remains the default):
-
-- GKE (only trusts Google IAM)
-- EKS without OIDC association
-- Any deployment where K8s and AF use different identity providers
-
-!!! tip "Quick win: `serviceaccounts` removed"
-    PR #1227 also removes `serviceaccounts` from the impersonation resources in the AF ClusterRole — no AF code path impersonates a service account, so this eliminates the highest-risk vector immediately, regardless of whether OIDC-direct is enabled.
+| ID | Risk | Mitigation |
+|---|---|---|
+| SEC-01 | AF SA has broad kubernaut CRD access | Namespace-scoped where possible; SAR gates each tool call |
+| SEC-02 | K8s audit logs attribute actions to AF SA, not the end user | Application audit trail carries user identity; correlate via `actor_ip` |
+| SEC-04 | AF SA privilege aggregation | ClusterRole is explicit and minimal; reviewed per release |
+| SEC-09 | Persona misconfiguration could over-grant | Helm values are the source of truth; `kubernaut-tool-*` roles are data-driven |
 
 ## Next Steps
 

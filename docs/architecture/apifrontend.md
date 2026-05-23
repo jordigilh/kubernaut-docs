@@ -11,7 +11,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
 - **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
 - **Authorization** — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache
-- **Session proxy** — MCP tool calls proxied to KA, where Lease-based session management is implemented
+- **MCP bridge** — Dispatches 23 `kubernaut_*` tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing
 - **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
 ## Agentic Architecture
@@ -124,7 +124,10 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 
 ## Session Lifecycle
 
-Interactive MCP sessions are managed by the **Kubernaut Agent's MCP layer** (`internal/kubernautagent/mcp/`), not the API Frontend. The AF proxies MCP protocol to KA, which owns session state.
+Session management spans two layers:
+
+- **KA MCP layer** (`internal/kubernautagent/mcp/`) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (`kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_select_workflow`, `kubernaut_discover_workflows`) to KA's MCP server.
+- **AF session layer** (`pkg/apifrontend/session/`) — Manages `InvestigationSession` CRDs with **deferred creation**: the CRD is not created when the A2A session starts, but only when `af_create_rr` succeeds and calls `MaterializeCRD()`. Sessions that never produce a RemediationRequest leave no cluster footprint.
 
 ### Lease-based distributed locking
 

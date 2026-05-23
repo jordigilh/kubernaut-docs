@@ -16,7 +16,7 @@ Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It a
 - **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
 - **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
 - **SAR authorization** — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results
-- **MCP proxy** — Proxies MCP Streamable HTTP and A2A JSON-RPC to the Kubernaut Agent, where session management (Lease-based locking, orphan reclamation, `SessionDrainer`) is implemented
+- **MCP bridge** — Dispatches 23 `kubernaut_*` tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
 
 See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
 
@@ -50,7 +50,7 @@ The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kub
 
 | ClusterRole | Persona |
 |---|---|
-| `kubernaut-tool-sre` | Full SRE access (all 18 tools) |
+| `kubernaut-tool-sre` | Full SRE access (all 26 tools including internal) |
 | `kubernaut-tool-ai-orchestrator` | Automated agent orchestration |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration |
 | `kubernaut-tool-observability` | Read-only observability |
@@ -61,17 +61,15 @@ SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorizatio
 
 See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the full model and binding examples.
 
-### OIDC-direct mode for triage tools
+### Unified ServiceAccount model (ADR-022)
 
-An opt-in authentication mode (PR #1227) that forwards the user's raw OIDC JWT as a bearer token to the K8s API server, eliminating the need for impersonation privileges. Enable via `apifrontend.config.rbac.useOIDCDirect: true`. Compatible with any deployment where the K8s API server trusts the same OIDC provider as the API Frontend. Impersonation remains the default for non-compatible environments.
+All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is no per-user impersonation or token forwarding. Application-level authorization is enforced entirely through SAR-based tool gating; user attribution is preserved in the application audit trail (`tool.executed` events with `UserID`, `actor_ip`).
 
-Additionally, `serviceaccounts` has been removed from the AF ClusterRole's impersonation resources — no AF code path impersonates a service account.
-
-See [Security & RBAC: OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15) for the full model and compatibility matrix.
+See [Security & RBAC: Unified SA model](../architecture/security-rbac.md#unified-sa-model) for accepted risks and mitigations.
 
 ### Generic cluster context tools replace narrow triage tools
 
-The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events`, `af_resolve_owner`) have been replaced with 3 generic tools that can inspect any namespaced Kubernetes resource (#1230):
+The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events`, `af_resolve_owner`) have been replaced with 3 generic **internal** tools that can inspect any namespaced Kubernetes resource (#1230):
 
 | New Tool | Replaces | Purpose |
 |---|---|---|
@@ -80,6 +78,8 @@ The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events
 | `kubectl_list_events` | `af_list_events` | List events with reason/object filters (renamed for consistency) |
 
 `af_resolve_owner` is removed — KA independently resolves the owner chain during RCA. The new tools use `RESTMapper` for dynamic kind-to-GVR resolution. Secret `.data` fields are redacted before returning to the LLM.
+
+All cluster context tools (`kubectl_*`, `af_check_existing_rr`, `af_create_rr`) are **internal to the AF's LLM agent** — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of **23 `kubernaut_*` tools** spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 

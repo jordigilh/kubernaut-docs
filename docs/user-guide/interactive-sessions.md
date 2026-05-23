@@ -19,7 +19,7 @@ The interactive flow has four phases:
 
 ## Connecting via MCP
 
-Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a single MCP Streamable HTTP endpoint (`POST /mcp`) that proxies tool calls to the Kubernaut Agent, where the MCP tools are registered.
+Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 23 tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via REST/DataStorage.
 
 ### Prerequisites
 
@@ -29,22 +29,23 @@ Any MCP-compatible client can connect to Kubernaut's interactive sessions. The A
 
 ## MCP Tools
 
-The Kubernaut Agent registers **3 MCP tools** via the [go-sdk MCP server](https://github.com/modelcontextprotocol/go-sdk):
+The API Frontend exposes **23 tools** on `POST /mcp`. For interactive investigation, the key tools are:
 
-### `kubernaut_investigate`
+### Interactive session lifecycle
 
-The primary investigation tool with **8 actions**:
+These tools are dispatched to the Kubernaut Agent's MCP server (`kubernaut_investigate` with per-action routing):
 
-| Action | Description |
+| Tool | Description |
 |---|---|
-| `start` | Start a new interactive investigation for a RemediationRequest |
-| `message` | Send a follow-up message in a multi-turn conversation |
-| `complete` | Mark the investigation as complete |
-| `cancel` | Cancel the investigation |
-| `takeover` | Take over a session owned by another user (SEC-TAKEOVER-001) |
-| `status` | Check the current status — returns mode (autonomous/interactive/not_found) and driver |
-| `reconnect` | Reconnect to an existing session after a disconnect |
-| `discover_workflows` | After RCA, run workflow discovery and return alternatives with LLM-populated parameters |
+| `kubernaut_start_investigation` | Start a new investigation for a RemediationRequest (via KA REST) |
+| `kubernaut_takeover` | Take over a session owned by another user (SEC-TAKEOVER-001) |
+| `kubernaut_message` | Send a follow-up message in a multi-turn conversation |
+| `kubernaut_complete` | Mark the investigation as complete |
+| `kubernaut_cancel` | Cancel the investigation |
+| `kubernaut_status` | Check the current status — returns mode (autonomous/interactive/not_found) and driver |
+| `kubernaut_reconnect` | Reconnect to an existing session after a disconnect |
+| `kubernaut_discover_workflows` | After RCA, run workflow discovery and return alternatives with LLM-populated parameters |
+| `kubernaut_stream_investigation` | Stream live SSE events from KA until a terminal state |
 
 **Input schema:**
 
@@ -170,7 +171,7 @@ Kubernaut supports both modes simultaneously:
 |---|---|---|
 | **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator connects via MCP |
 | **Workflow selection** | LLM selects automatically | Operator chooses from alternatives via `discover_workflows` |
-| **Approval** | Rego policy + RAR gate | Operator's selection is the approval |
+| **Approval** | Rego policy + RAR gate | Same Rego policy + RAR gate; operator identity is exposed via `input.identity` (user, groups), enabling policies to auto-approve trusted operators |
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
 | **Pipeline** | Full 6-stage pipeline | Same pipeline, operator-driven at selection stage |
 

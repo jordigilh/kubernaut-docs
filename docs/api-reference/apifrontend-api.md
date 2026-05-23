@@ -66,7 +66,7 @@ Returns `501` when MCP is disabled in the AF configuration.
 }
 ```
 
-The AF proxies tool calls to the Kubernaut Agent's MCP server, where the 3 interactive tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) are registered.
+The AF runs its own MCP server with **23 `kubernaut_*` tools** (see [A2A tools](#a2a-json-rpc-20) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA REST (autonomous investigation), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). The Kubernaut Agent runs a separate MCP server at `/api/v1/mcp` with 3 interactive-mode tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections.
 
 ### A2A JSON-RPC 2.0
 
@@ -76,16 +76,30 @@ POST /a2a/invoke
 
 Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication.
 
-The A2A agent uses **18 SAR-gated Google ADK tools** organized in four domains:
+The A2A agent uses **23 SAR-gated `kubernaut_*` tools** exposed on the MCP endpoint, organized in six domains:
 
-| Domain | Tools |
+| Domain | Tools | Backend |
+|---|---|---|
+| **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request` | K8s API (AF SA) |
+| **Autonomous investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation` | KA REST |
+| **Interactive session lifecycle** | `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
+| **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` | KA MCP |
+| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
+| **Presentation** | `kubernaut_present_decision` | Local |
+
+The `kubernaut_*` investigation tools dispatch to the Kubernaut Agent (`kubernaut_start_investigation`/`kubernaut_poll_investigation` via KA REST; `kubernaut_select_workflow`/`kubernaut_discover_workflows` via KA MCP). The `kubernaut_*` CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)). The `kubernaut_*` data tools query DataStorage. `kubernaut_present_decision` is handled locally by the AF.
+
+The AF's LLM agent also uses **5 internal tools** that are not exposed via MCP — they run inside the AF's own agent loop for cluster inspection and RR creation:
+
+| Tool | Purpose |
 |---|---|
-| **Remediation lifecycle** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch` |
-| **Investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_select_workflow`, `kubernaut_present_decision` |
-| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
-| **Cluster context** | `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr` |
+| `kubectl_get` | Get any namespaced K8s resource by kind/name/namespace (Secret `.data` redacted) |
+| `kubectl_list` | List namespaced K8s resources with optional label selector (Secret `.data` redacted) |
+| `kubectl_list_events` | List K8s events with reason/object filters |
+| `af_check_existing_rr` | Check for duplicate RemediationRequest before creation |
+| `af_create_rr` | Create RemediationRequest CRD; triggers deferred `InvestigationSession` CRD materialization |
 
-The `kubernaut_*` investigation tools proxy to the Kubernaut Agent (via REST or MCP). The `kubernaut_*` CRD tools operate on RemediationRequest resources via the Kubernetes API. The `kubectl_*` cluster context tools query any namespaced Kubernetes resource using the authenticated user's identity (via impersonation or [OIDC-direct mode](../architecture/security-rbac.md#oidc-direct-mode-eliminating-impersonation-v15)) with dynamic kind-to-GVR resolution via `RESTMapper`. Secret `.data` fields are redacted before returning to the LLM. The `kubernaut_*` data tools query DataStorage. The AF also uses internal orchestration tools (`kubernaut_discover_workflows`, `kubernaut_stream_investigation`) that are not SAR-gated — they are invoked by the AF's own agent loop, not exposed directly to A2A callers.
+All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via the same `newRBACGuard()` as MCP tools.
 
 ### Agent Card Discovery
 
@@ -120,7 +134,7 @@ The AF emits **14 audit events** to DataStorage (PR #1191 shared AuditStore norm
 | **User decisions** | `user.decision` |
 | **Severity triage** | `severity_triage.completed`, `severity_triage.failed` |
 | **Session lifecycle** | `session.completed` (includes `duration_ms`) |
-| **Auth** | `impersonation.created`, `jwt.delegation` |
+| **Auth** | `jwt.delegation` |
 | **MCP** | `mcp.session_init` (deduplicated per `Mcp-Session-Id`) |
 | **Resilience** | `circuitbreaker.trip` |
 | **Triage** | `triage.started`, `triage.completed` |

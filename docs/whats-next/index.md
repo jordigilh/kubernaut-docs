@@ -45,7 +45,7 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
     v1.5 ships two complementary tool surfaces. See [What's New: v1.5](../whats-new/index.md#v15).
 
     - **MCP (interactive)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate` with 8 actions, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for operator-in-the-loop sessions.
-    - **A2A (agent-to-agent)** — 18 SAR-gated Google ADK tools on the API Frontend spanning remediation lifecycle, investigation, data/history, and cluster context, plus internal orchestration tools. SAR-gated via per-persona ClusterRoles.
+    - **A2A (agent-to-agent)** — 23 SAR-gated `kubernaut_*` tools on the API Frontend spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. 5 additional cluster context and orchestration tools are internal to the AF's LLM agent. SAR-gated via per-persona ClusterRoles.
 
 The items below are planned expansions beyond the v1.5 surface.
 

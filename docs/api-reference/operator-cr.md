@@ -302,7 +302,7 @@ The operator creates **14** baseline ClusterRoles (namespace-prefixed as `{names
 | `data-storage-auth-middleware` | DataStorage auth | |
 | `data-storage-client` | DataStorage client | |
 | `authwebhook-role` | Auth Webhook | |
-| `apifrontend-role` | API Frontend | v1.5+ — SAR, impersonation, InvestigationSession CRD |
+| `apifrontend-role` | API Frontend | v1.5+ — SAR, InvestigationSession CRD, RR/RAR access, cluster context triage |
 | `alertmanager-view` | Monitoring only | When `spec.monitoring.enabled: true` |
 | `gateway-signal-source` | Monitoring only | When `spec.monitoring.enabled: true` |
 | `kubernaut-tool-sre` | SAR tool persona | v1.5+ — from `spec.apiFrontend.rbac.roleBindings` |

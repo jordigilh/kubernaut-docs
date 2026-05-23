@@ -30,9 +30,11 @@ RemediationRequest (Gateway)
   └─ WorkflowExecution (Orchestrator → WE Controller)
   └─ EffectivenessAssessment (Orchestrator → EM Controller)
   └─ NotificationRequest (Orchestrator → Notification Controller)
+
+InvestigationSession (API Frontend — v1.5+, interactive MCP/A2A sessions)
 ```
 
-All child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
+Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. `InvestigationSession` CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
 
 ??? note "Detailed sub-phase breakdown"
 
@@ -106,6 +108,7 @@ graph TB
 
     AF -.->|MCP tools| KA
     AF -.->|history, catalog| DS
+    AF -->|InvestigationSession| AF
 
     GW -->|RemediationRequest| RO
     RO -->|SignalProcessing| SP
@@ -143,8 +146,9 @@ The complete CRD lifecycle for a single remediation follows the natural flow:
 | 5 | `WorkflowExecution` | Orchestrator | WE Controller | Run remediation workflow |
 | 6 | `EffectivenessAssessment` | Orchestrator | EM Controller | Post-execution verification |
 | 7 | `NotificationRequest` | Orchestrator | NT Controller | Outcome notification |
+| — | `InvestigationSession` | API Frontend | AF (SessionCleanup) | Interactive MCP/A2A session state (v1.5+); deferred — materialized only after RR creation |
 
-Each CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly.
+Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. The `InvestigationSession` CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut) managed by the API Frontend's session cleanup reconciler.
 
 ## Namespace Model
 

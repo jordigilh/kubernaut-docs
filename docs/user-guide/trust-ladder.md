@@ -4,31 +4,92 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
 
 ## The Trust Ladder
 
-```mermaid
-graph LR
-    subgraph v14["Available (v1.4)"]
-        L1["Level 1<br/><b>Observe</b><br/><small>Global dry-run</small>"]
-        L3["Level 3<br/><b>Approve</b><br/><small>RAR gate</small>"]
-        L4["Level 4<br/><b>Automate</b><br/><small>Full autonomous</small>"]
-    end
-    subgraph v15["Planned (v1.5)"]
-        L2["Level 2<br/><b>Selective Trust</b><br/><small>Per-workflow dry-run</small>"]
-    end
-    L1 --> L2 --> L3 --> L4
-```
+<div style="max-width:100%;overflow-x:auto;margin:1.5rem 0">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 320" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" style="width:100%;height:auto">
+  <rect width="820" height="320" fill="white"/>
 
-| Level | Name | Human Involvement | Available |
-|---|---|---|---|
-| **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution | **v1.4** (global dry-run) |
-| **2** | Selective Trust | Trusted workflows execute; new ones stay in dry-run | v1.5 (per-workflow dry-run) |
-| **3** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects | **v1.4** |
-| **4** | **Automate** | Matched workflows execute without human intervention | **v1.4** |
+  <!-- Title -->
+  <text x="24" y="28" font-size="14" font-weight="700" fill="#0F172A" letter-spacing="0.5">Trust Ladder</text>
+  <text x="24" y="46" font-size="10" fill="#64748B">Build confidence incrementally — from full human oversight to autonomous remediation.</text>
 
-Operators typically start at Level 1 (observe) or Level 3 (approve) and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
+  <!-- L1: Observe (shortest — 120px tall) -->
+  <rect x="16" y="180" width="186" height="120" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="16" y="180" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="28" y="204" font-size="13" font-weight="700" fill="#0F172A">Observe</text>
+  <text x="28" y="220" font-size="9" fill="#64748B">Global dry-run mode. Kubernaut</text>
+  <text x="28" y="232" font-size="9" fill="#64748B">investigates and selects workflows</text>
+  <text x="28" y="244" font-size="9" fill="#64748B">but does not execute. Operators</text>
+  <text x="28" y="256" font-size="9" fill="#64748B">review RCA and selections via</text>
+  <text x="28" y="268" font-size="9" fill="#64748B">audit events and notifications.</text>
+
+  <!-- L2: Approve (160px tall) -->
+  <rect x="214" y="140" width="186" height="160" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="214" y="140" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="226" y="164" font-size="13" font-weight="700" fill="#0F172A">Approve</text>
+  <text x="226" y="180" font-size="9" fill="#64748B">Rego policy gates remediation.</text>
+  <text x="226" y="192" font-size="9" fill="#64748B">Human approves, rejects, or</text>
+  <text x="226" y="204" font-size="9" fill="#64748B">overrides the AI-selected</text>
+  <text x="226" y="216" font-size="9" fill="#64748B">workflow via RAR. Shadow agent</text>
+  <text x="226" y="228" font-size="9" fill="#64748B">alignment provides an additional</text>
+  <text x="226" y="240" font-size="9" fill="#64748B">safety layer independent of</text>
+  <text x="226" y="252" font-size="9" fill="#64748B">the trust level.</text>
+
+  <!-- L3: Security & Autonomy (200px tall) -->
+  <rect x="412" y="100" width="186" height="200" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="412" y="100" width="186" height="4" rx="3" fill="#DC2626"/>
+  <text x="424" y="124" font-size="13" font-weight="700" fill="#0F172A">Security &amp; Autonomy</text>
+  <text x="424" y="140" font-size="9" fill="#64748B">SAR-based tool authorization</text>
+  <text x="424" y="152" font-size="9" fill="#64748B">with 6 per-persona ClusterRoles.</text>
+  <text x="424" y="164" font-size="9" fill="#64748B">Interactive MCP sessions for</text>
+  <text x="424" y="176" font-size="9" fill="#64748B">operator-in-the-loop investigation</text>
+  <text x="424" y="188" font-size="9" fill="#64748B">and workflow discovery. A2A</text>
+  <text x="424" y="200" font-size="9" fill="#64748B">protocol for external agent</text>
+  <text x="424" y="212" font-size="9" fill="#64748B">delegation. API Frontend as the</text>
+  <text x="424" y="224" font-size="9" fill="#64748B">unified external protocol layer.</text>
+
+  <!-- L4: Full Autonomy (240px tall) -->
+  <rect x="610" y="60" width="194" height="240" rx="6" fill="white" stroke="#E5E7EB"/>
+  <rect x="610" y="60" width="194" height="4" rx="3" fill="#DC2626"/>
+  <text x="622" y="84" font-size="13" font-weight="700" fill="#0F172A">Full Autonomy</text>
+  <text x="622" y="100" font-size="9" fill="#64748B">Matched workflows execute</text>
+  <text x="622" y="112" font-size="9" fill="#64748B">without human intervention.</text>
+  <text x="622" y="124" font-size="9" fill="#64748B">Effectiveness Monitor verifies</text>
+  <text x="622" y="136" font-size="9" fill="#64748B">fixes and feeds scores back</text>
+  <text x="622" y="148" font-size="9" fill="#64748B">into future investigations.</text>
+  <text x="622" y="166" font-size="9" fill="#64748B">Operators monitor outcomes</text>
+  <text x="622" y="178" font-size="9" fill="#64748B">via notifications, dashboards,</text>
+  <text x="622" y="190" font-size="9" fill="#64748B">and Effectiveness Monitor</text>
+  <text x="622" y="202" font-size="9" fill="#64748B">metrics. Rollback to Approve</text>
+  <text x="622" y="214" font-size="9" fill="#64748B">at any time by updating the</text>
+  <text x="622" y="226" font-size="9" fill="#64748B">Rego policy — no pod restart.</text>
+
+  <!-- Arrows connecting the levels -->
+  <line x1="202" y1="250" x2="214" y2="230" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+  <line x1="400" y1="210" x2="412" y2="190" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+  <line x1="598" y1="190" x2="610" y2="170" stroke="#D1D5DB" stroke-width="1.3" marker-end="url(#tl-arrow)"/>
+
+  <defs>
+    <marker id="tl-arrow" markerWidth="7" markerHeight="5" refX="6" refY="2.5" orient="auto">
+      <polygon points="0 0, 7 2.5, 0 5" fill="#D1D5DB"/>
+    </marker>
+  </defs>
+</svg>
+</div>
+
+| Level | Name | Description |
+|---|---|---|
+| **1** | **Observe** | Operator sees what Kubernaut *would* do — no execution (global dry-run) |
+| **2** | **Approve** | Rego policy gates remediation via RAR — operator approves/rejects/overrides |
+| **3** | **Security & Autonomy** | SAR-based tool authorization, per-persona ClusterRoles, interactive MCP sessions, A2A delegation |
+| **4** | **Full Autonomy** | Matched workflows execute without human intervention |
+
+At every level, operators can connect via **[Interactive MCP Sessions](interactive-sessions.md)** (v1.5) for real-time investigation and workflow selection.
+
+Operators typically start at Level 1 (observe) or Level 2 (approve) and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
 
 ---
 
-## Level 3: Approve (Available Now) {: #level-3-approve }
+## Level 2: Approve (Available Now) {: #level-3-approve }
 
 At this level, the Rego approval policy determines which remediations require human review. When `require_approval` evaluates to `true`, a **RemediationApprovalRequest (RAR)** is created before execution. The operator reviews Kubernaut's recommendation — the selected workflow, confidence score, root cause analysis, and detected infrastructure labels — and either approves or rejects it.
 
@@ -96,7 +157,7 @@ You're ready to graduate a workflow to Level 4 when:
 
 ---
 
-## Level 4: Automate (Available Now) {: #level-4-automate }
+## Level 4: Full Autonomy (Available Now) {: #level-4-automate }
 
 At this level, matched workflows execute without human intervention. The operator monitors outcomes via notifications and Effectiveness Monitor dashboards.
 
@@ -202,20 +263,33 @@ remediationOrchestrator:
 
 ---
 
-## Level 2: Selective Trust (Planned — v1.5) {: #level-2-selective-trust }
+## Level 3: Security & Autonomy (v1.5) {: #level-3-security-autonomy }
 
-!!! note "Not yet available"
-    Level 2 depends on **per-workflow dry-run overrides** ([kubernaut#116](https://github.com/jordigilh/kubernaut/issues/116)), planned for v1.5. Global dry-run (Level 1) is available in v1.4.
+At this level, organizations layer **SAR-based tool authorization** and **interactive MCP sessions** on top of the existing approval gate, establishing fine-grained control over who can do what and enabling operator-in-the-loop investigation.
 
-At this level, trusted workflows that have been validated in dry-run mode graduate to real execution, while new or untested workflows continue to complete with outcome `DryRun`.
+### What v1.5 adds
 
-**Planned capabilities:**
+- **SAR-based tool authorization** — Kubernetes-native SubjectAccessReview replaces file-based RBAC. Six per-persona ClusterRoles control which tools each group can invoke. See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15).
+- **Interactive MCP sessions** — Operators connect via MCP for real-time investigation, workflow discovery with LLM-populated parameters, and guided remediation. See [Interactive Sessions](interactive-sessions.md).
+- **Session takeover security** (SEC-TAKEOVER-001) — Identity-aware session management prevents privilege confusion during takeover.
 
-- Per-workflow dry-run overrides (disable dry-run for trusted workflows)
-- New workflows automatically enter dry-run until explicitly graduated
-- Effectiveness Monitor data drives graduation confidence
+### Configuration
 
-**Goal:** Graduate individual workflows as confidence grows, building a library of trusted automations.
+SAR authorization is configured via the API Frontend's `rbac.personas` values. Bind per-persona ClusterRoles to OIDC groups:
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      sarCacheTTL: 30s
+      personas:
+        sre: [kubernaut_list_remediations, kubernaut_get_remediation, ...]
+        cicd: [kubernaut_list_remediations, kubernaut_get_remediation, kubernaut_watch]
+```
+
+See the [Helm values reference](../user-guide/configuration.md#api-frontend-v15) for the full persona-to-tool mapping.
+
+**Goal:** Establish enterprise-grade security boundaries while enabling operator-AI collaboration.
 
 ---
 
@@ -251,15 +325,16 @@ For teams new to Kubernaut, we recommend the following progression:
 
 ---
 
-## Future: Agentic Enhancements (v1.5+) {: #agentic-enhancements }
+## Agentic Enhancements {: #agentic-enhancements }
 
-The v1.5 release will introduce agentic integration features that enhance every trust level:
+v1.5 introduced agentic integration features that enhance every trust level:
 
-| Feature | Enhancement |
-|---|---|
-| **MCP Interactive Mode** ([#703](https://github.com/jordigilh/kubernaut/issues/703)) | Operators investigate and review remediations through any MCP-compatible chat interface |
-| **Kubernaut Console** ([#713](https://github.com/jordigilh/kubernaut/issues/713)) | Web dashboard with chat UI, live remediation streaming, and workflow management |
-| **A2A Protocol** ([#705](https://github.com/jordigilh/kubernaut/issues/705)) | External AI agents can delegate remediation to Kubernaut |
-| **Natural Language Investigation** ([#714](https://github.com/jordigilh/kubernaut/issues/714)) | Trigger investigations by describing the problem in plain text |
+| Feature | Status | Enhancement |
+|---|---|---|
+| **MCP Interactive Mode** ([#703](https://github.com/jordigilh/kubernaut/issues/703)) | **Shipped (v1.5)** | Operators investigate and review remediations through any MCP-compatible chat interface |
+| **A2A Protocol** | **Shipped (v1.5)** | External AI agents can delegate remediation to Kubernaut via `POST /a2a/invoke` |
+| **SAR Tool Authorization** (PR #1222) | **Shipped (v1.5)** | Kubernetes-native per-persona tool authorization with 6 ClusterRoles |
+| **Kubernaut Console** | **Planned** | Web dashboard with chat UI, live remediation streaming, and workflow management |
+| **Natural Language Investigation** | **Planned** | Trigger investigations by describing the problem in plain text |
 
 These features are **complementary** to the Trust Ladder — they enhance how operators interact at each level (e.g., MCP chat during dry-run review at Level 1, Console dashboards for monitoring at Level 4) without changing the fundamental graduation model.

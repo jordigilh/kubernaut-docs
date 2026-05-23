@@ -67,26 +67,35 @@ Kubernaut is a microservices platform with 11 services (v1.5+; 10 in v1.4) that 
   <rect x="646" y="108" width="136" height="5" rx="3" fill="#DC2626"/>
   <text x="714" y="132" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">Notification</text>
   <text x="714" y="148" text-anchor="middle" font-size="9" fill="#888">Slack / PagerDuty / Teams</text>
+  <!-- API Frontend (v1.5+) -->
+  <rect x="624" y="16" width="180" height="48" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="624" y="16" width="180" height="5" rx="3" fill="#8B5CF6"/>
+  <text x="714" y="40" text-anchor="middle" font-size="12" font-weight="700" fill="#1a1a1a">API Frontend</text>
+  <text x="714" y="54" text-anchor="middle" font-size="9" fill="#888">MCP / A2A (v1.5+)</text>
   <!-- Support Services -->
   <rect x="30" y="182" width="760" height="80" rx="10" fill="white" stroke="#E0E0E0" stroke-width="1"/>
   <rect x="30" y="182" width="6" height="80" rx="3" fill="#64748B"/>
   <text x="50" y="200" font-size="11" font-weight="700" fill="#64748B">Support Services</text>
-  <rect x="42" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="42" y="210" width="240" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
   <rect x="42" y="210" width="5" height="42" rx="2" fill="#64748B"/>
   <text x="60" y="228" font-size="12" font-weight="600" fill="#1a1a1a">DataStorage</text>
   <text x="60" y="242" font-size="9" fill="#888">PostgreSQL + Valkey</text>
-  <rect x="418" y="210" width="360" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
-  <rect x="418" y="210" width="5" height="42" rx="2" fill="#64748B"/>
-  <text x="436" y="228" font-size="12" font-weight="600" fill="#1a1a1a">AuthWebhook</text>
-  <text x="436" y="242" font-size="9" fill="#888">RAR override validation</text>
+  <rect x="298" y="210" width="240" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="298" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="316" y="228" font-size="12" font-weight="600" fill="#1a1a1a">AuthWebhook</text>
+  <text x="316" y="242" font-size="9" fill="#888">RAR override validation</text>
+  <rect x="554" y="210" width="224" height="42" rx="8" fill="#F5F5F5" stroke="#E0E0E0"/>
+  <rect x="554" y="210" width="5" height="42" rx="2" fill="#64748B"/>
+  <text x="572" y="228" font-size="12" font-weight="600" fill="#1a1a1a">Kubernaut Agent</text>
+  <text x="572" y="242" font-size="9" fill="#888">LLM investigation (Go)</text>
 </svg>
 </div>
 
-The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Five phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history.
+The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history. The **API Frontend** (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. `InvestigationSession` CRDs are created with **deferred materialization** — the CRD only appears in the cluster after a RemediationRequest is successfully created via `af_create_rr`, so sessions that never produce an RR leave no cluster footprint.
 
 ## Remediation Pipeline
 
-The pipeline processes signals through five CRD-native phases:
+The pipeline processes signals through six CRD-native phases:
 
 | Phase | What it does | CRD |
 |---|---|---|
@@ -95,6 +104,7 @@ The pipeline processes signals through five CRD-native phases:
 | **3. Approval** | Policy-gated review — auto-approve low-risk, manual review via Slack/Console, operator param override | `RemediationApprovalRequest` |
 | **4. Execution** | Run remediation via Tekton Pipelines, Kubernetes Jobs, or Ansible (AWX/AAP) with per-workflow SA | `WorkflowExecution` |
 | **5. Effectiveness** | Verify fix via alert resolution, spec drift detection, cooldown monitoring; health score feeds future RCA | `EffectivenessAssessment` |
+| **6. Notification** | Deliver outcome notifications to Slack, PagerDuty, Microsoft Teams, console, or file; retry with exponential backoff and circuit breaker | `NotificationRequest` |
 
 For a detailed breakdown of all sub-phases and tools, see the [Architecture: Investigation Pipeline](../architecture/kubernaut-agent-investigation.md).
 
@@ -110,9 +120,22 @@ Each CRD is owned by a dedicated controller. See [System Overview](../architectu
 
 See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and Kubernaut Agent.
 
+## Pipeline Modes (v1.5+)
+
+Kubernaut supports two pipeline modes simultaneously:
+
+| | Autonomous | Interactive |
+|---|---|---|
+| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator connects via MCP through API Frontend |
+| **Workflow selection** | LLM selects automatically | Operator chooses from LLM-populated alternatives |
+| **Approval** | Rego policy + RAR gate | Same Rego policy + RAR gate; identity-aware policies can auto-approve trusted operators |
+| **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
+
+Both modes use the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously can be joined mid-flight by an operator via the API Frontend. See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
+
 ## Communication Pattern
 
-All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, and EM queries AlertManager and Prometheus for effectiveness assessment.
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its 14 MCP tools to multiple backends (K8s API, Kubernaut Agent REST/MCP, DataStorage).
 
 This architecture provides:
 
@@ -123,7 +146,7 @@ This architecture provides:
 
 ## Custom Resources
 
-Kubernaut defines 9 CRD types. Each CRD is owned by a dedicated controller. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
+Kubernaut defines 10 CRD types (v1.5+; 9 in v1.4), all in API group `kubernaut.ai/v1alpha1` and namespaced. The six pipeline CRDs are each owned by a dedicated controller. `RemediationWorkflow` and `ActionType` are catalog resources managed by the AuthWebhook. `RemediationRequest` is the top-level orchestration CRD. `InvestigationSession` (v1.5+) is created and managed by the API Frontend for interactive MCP/A2A sessions. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
 
 ## Remediation Lifecycle
 

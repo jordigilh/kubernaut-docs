@@ -3,7 +3,7 @@
 Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources.
 
 !!! info "Helm vs Operator RBAC"
-    The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the **Operator** prefixes each name with the CR's namespace (e.g., `kubernaut-system-gateway-role`) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates **13** baseline ClusterRoles, plus **2** additional ones (`alertmanager-view`, `gateway-signal-source`) when `spec.monitoring.enabled: true`. An optional `workflowexecution-awx` ClusterRole is created when Ansible integration is enabled.
+    The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the **Operator** prefixes each name with the CR's namespace (e.g., `kubernaut-system-gateway-role`) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates **14** baseline ClusterRoles (including the API Frontend ClusterRole in v1.5+), plus **2** additional ones (`alertmanager-view`, `gateway-signal-source`) when `spec.monitoring.enabled: true`, **6** per-persona tool ClusterRoles for SAR authorization (v1.5+), and an optional `workflowexecution-awx` ClusterRole when Ansible integration is enabled.
 
     The Operator also supports `spec.kubernautAgent.additionalClusterRoleBindings` — a list of pre-existing ClusterRole names to bind to the Kubernaut Agent ServiceAccount (max 64). **Use with caution**: any writable cluster-scoped privileges referenced here are granted to the agent, creating a privilege escalation path. Restrict who may edit the Kubernaut CR via cluster RBAC. See the [Operator threat model](https://github.com/jordigilh/kubernaut-operator/blob/main/docs/security/threat-model.md) for details.
 
@@ -219,8 +219,37 @@ Kubernaut Agent itself has a broad **read-only** ClusterRole (`kubernaut-agent-i
 | `security.istio.io` | authorizationpolicies, peerauthentications, requestauthentications | get, list, watch | Istio security policy investigation |
 | `networking.istio.io` | virtualservices, destinationrules, gateways, serviceentries | get, list, watch | Istio networking investigation |
 | `monitoring.coreos.com` | prometheusrules, servicemonitors, podmonitors, probes | get, list, watch | Monitoring investigation |
+| `config.openshift.io` | nodes, clusteroperators, clusterversions, infrastructures | get, list, watch | OCP platform investigation (Operator only) |
 
 This read-only access allows the LLM to investigate root causes using live cluster data without making changes.
+
+### Lease RBAC for Interactive Sessions (v1.5+)
+
+Interactive MCP sessions use Kubernetes Leases for distributed locking. The Kubernaut Agent ServiceAccount requires Lease permissions in addition to its existing investigator role:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| `coordination.k8s.io` | `leases` | get, create, update, delete, **list** | Session locking + orphan reclamation |
+
+The `list` verb (new in v1.5) is required for `ReconcileOrphanedLeases` — on startup, KA scans for Leases whose holder identity no longer exists and reclaims them.
+
+!!! note "Automatic provisioning"
+    Both the Helm chart and the Kubernaut Operator provision this permission automatically. Only custom RBAC configurations need manual updating.
+
+### API Frontend RBAC (v1.5+)
+
+The API Frontend ServiceAccount requires:
+
+| apiGroup | Resources | Verbs | Purpose |
+|---|---|---|---|
+| `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management |
+| `kubernaut.ai` | `remediationrequests` | get, list, watch, create, update, patch | RR lifecycle for MCP/A2A sessions |
+| `kubernaut.ai` | `remediationapprovalrequests`, `remediationapprovalrequests/status` | get, list, create, update, patch | Approval request access |
+| `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
+| _(core)_ | `events` | get, list, create, patch | Cluster context triage tools |
+| _(core)_ | `pods`, `replicationcontrollers` | get, list | Cluster context triage tools |
+| `apps` | `deployments`, `replicasets`, `statefulsets`, `daemonsets` | get, list | Cluster context triage tools |
+| `batch` | `jobs`, `cronjobs` | get | Cluster context triage tools |
 
 ## Infrastructure and Hooks
 
@@ -343,6 +372,91 @@ Verify your cluster's CNI plugin supports NetworkPolicy enforcement (Calico, Cil
     ```
 
 Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).
+
+## Tool Authorization {: #tool-authorization-v15 }
+
+### SAR-based tool authorization (v1.5)
+
+v1.5 replaces the API Frontend's file-based `rbac_roles.yaml` with **Kubernetes-native SubjectAccessReview (SAR)** authorization (PR #1222). Every MCP `tools/call` invocation triggers a SAR check before execution. `tools/list` is unfiltered (ADR-020) — authorization is enforced only at call time.
+
+### How it works
+
+1. Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT
+2. On each tool invocation, AF issues a SAR: `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?`
+3. The Kubernetes API server evaluates the user's ClusterRoleBindings
+4. If denied (or if the SAR API is unreachable), the tool call is rejected — **fail-closed**
+
+All 3 AF RBAC code paths (MCP bridge `checkRBAC()`, A2A agent `newRBACGuard()`, and main wiring) delegate to the `SARChecker`.
+
+### Per-persona ClusterRoles
+
+The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`apifrontend.config.rbac.personas`):
+
+| ClusterRole | Persona | MCP Tools | Tool List |
+|---|---|---|---|
+| `kubernaut-tool-sre` | Investigation + remediation (no approval) | 20 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
+| `kubernaut-tool-observability` | Read-only observability | 5 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_approve`, `kubernaut_watch` |
+
+!!! info "Internal tools"
+    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
+
+### Binding example
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: sre-team-kubernaut-tools
+subjects:
+  - kind: Group
+    name: sre-team
+    apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: kubernaut-tool-sre
+  apiGroup: rbac.authorization.k8s.io
+```
+
+### SAR caching
+
+Authorization results are cached with a SHA256-keyed TTL cache (default 30s) to avoid per-call SAR overhead:
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      sarCacheTTL: 30s
+```
+
+### Migration from rbac_roles.yaml
+
+!!! warning "Breaking change"
+    The `rbac_roles.yaml` ConfigMap and `RBACConfig.GroupMapping` are removed in v1.5. Customers who customized file-based RBAC must create equivalent ClusterRoleBindings.
+
+1. Identify which tools each role had access to
+2. Map those to the closest per-persona ClusterRole (or create a custom one with `verb: use` on `resource: tools` in `apiGroup: kubernaut.ai`)
+3. Create ClusterRoleBindings for your OIDC groups
+4. The `rbac_roles.yaml` ConfigMap is no longer read
+
+### Unified ServiceAccount model (v1.5, ADR-022) {: #unified-sa-model }
+
+All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is no per-user impersonation or OIDC-direct token forwarding. This simplifies the security model: the AF SA has a fixed, auditable set of permissions, and application-level authorization is enforced entirely through SAR-based tool gating (see [Per-persona ClusterRoles](#per-persona-clusterroles)).
+
+**User attribution** is preserved in the application audit trail (`tool.executed` events include `UserID`, `actor_ip`, `target_namespace`, `target_kind`) rather than in Kubernetes audit logs.
+
+
+**Accepted risks** (documented in ADR-022):
+
+| ID | Risk | Mitigation |
+|---|---|---|
+| SEC-01 | AF SA has broad kubernaut CRD access | Namespace-scoped where possible; SAR gates each tool call |
+| SEC-02 | K8s audit logs attribute actions to AF SA, not the end user | Application audit trail carries user identity; correlate via `actor_ip` |
+| SEC-04 | AF SA privilege aggregation | ClusterRole is explicit and minimal; reviewed per release |
+| SEC-09 | Persona misconfiguration could over-grant | Helm values are the source of truth; `kubernaut-tool-*` roles are data-driven |
 
 ## Next Steps
 

@@ -31,8 +31,9 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `workflowExecution` | [WorkflowExecutionSpec](#workflowexecutionspec) | — | Execution namespace, cooldown, Tekton toggle |
 | `effectivenessMonitor` | EffectivenessMonitorSpec | — | Stabilization/validity windows |
 | `gateway` | [GatewaySpec](#gatewayspec) | — | Route, CORS, trusted proxies, deduplication |
+| `apiFrontend` | [APIFrontendSpec](#apifrontendspec) | enabled | MCP/A2A gateway, OIDC auth, SAR-based tool authorization (v1.5+) |
 | `authWebhook` | AuthWebhookSpec | — | Logging, resources |
-| `dataStorage` | DataStorageSpec | — | Logging, resources |
+| `dataStorage` | [DataStorageSpec](#datastoragespec) | — | Endpoint propagation delay, retention, logging, resources |
 | `networkPolicies` | [NetworkPoliciesSpec](#networkpoliciesspec) | disabled | Kubernetes NetworkPolicy creation |
 
 ---
@@ -46,7 +47,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `host` | string | **yes** | — | PostgreSQL hostname |
 | `port` | int | no | `5432` | PostgreSQL port |
 | `secretName` | string | **yes** | — | Secret containing `username`, `password`, `database` keys |
-| `sslMode` | string | no | — | SSL mode: `disable`, `require`, `verify-ca`, `verify-full` |
+| `sslMode` | string | no | — | SSL mode: `require`, `verify-ca`, `verify-full`. The `disable` value is rejected by CR validation. |
 
 ### ValkeySpec
 
@@ -172,6 +173,91 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `config.corsAllowedOrigins` | []string | CORS allowed origins |
 | `config.deduplicationCooldown` | string | Signal deduplication cooldown |
 
+### APIFrontendSpec (v1.5+) {: #apifrontendspec }
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `enabled` | *bool | no | `true` | Deploy the API Frontend. Set `false` to skip all AF resources |
+| `auth` | [APIFrontendAuthSpec](#apifrontendauthspec) | no | — | OIDC authentication |
+| `rateLimit` | [APIFrontendRateLimitSpec](#apifrontendratelimitspec) | no | — | Request rate limiting |
+| `shutdown` | [APIFrontendShutdownSpec](#apifrontendshutdownspec) | no | — | Graceful shutdown |
+| `externalURL` | string | no | auto-derived | A2A agent card discovery URL (must be HTTPS when set) |
+| `rbac` | [APIFrontendRBACSpec](#apifrontendrbacspec) | no | — | SAR-based tool authorization and role bindings |
+| `logging` | LoggingSpec | no | — | Log level |
+| `resources` | ResourceRequirements | no | — | CPU/memory requests and limits |
+
+### APIFrontendAuthSpec {: #apifrontendauthspec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `issuerURL` | string | — | OIDC issuer URL (e.g., `https://login.kubernaut.ai/realms/kubernaut`) |
+| `audience` | string | `kubernaut-apifrontend` | Expected JWT audience claim |
+| `jwtProviders` | [][JWTProviderSpec](#jwtproviderspec) | — | One or more OIDC JWT providers |
+| `allowInsecureJWKS` | bool | `false` | Permit HTTP JWKS URLs for dev/test. **Must be `false` in production.** |
+
+### JWTProviderSpec {: #jwtproviderspec }
+
+| Field | Type | Description |
+|---|---|---|
+| `name` | string | Human-readable provider name (1–63 chars) |
+| `jwksURL` | string | JWKS endpoint URL. Must use HTTPS unless `allowInsecureJWKS` is true |
+
+### APIFrontendRBACSpec {: #apifrontendrbacspec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `sarCacheTTL` | string | `30s` | Cache duration for SAR results (Go duration format) |
+| `roleBindings` | [][ToolRoleBinding](#toolrolebinding) | — | Maps persona-based tool roles to OIDC groups |
+
+### ToolRoleBinding {: #toolrolebinding }
+
+| Field | Type | Description |
+|---|---|---|
+| `role` | string | Persona name. One of: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver` |
+| `groups` | []string | OIDC group names to bind to this role (min 1) |
+
+**Example:**
+
+```yaml
+spec:
+  apiFrontend:
+    auth:
+      issuerURL: https://dex.kubernaut.svc.cluster.local:5556/dex
+      audience: kubernaut-apifrontend
+    rbac:
+      sarCacheTTL: 30s
+      roleBindings:
+        - role: sre
+          groups: ["sre-team", "platform-eng"]
+        - role: observability
+          groups: ["monitoring-team"]
+        - role: remediation-approver
+          groups: ["change-mgmt"]
+```
+
+### APIFrontendRateLimitSpec {: #apifrontendratelimitspec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `ipRequestsPerSec` | *int | `50` | Per-IP requests per second |
+| `userRequestsPerSec` | *int | `20` | Per-user requests per second |
+| `maxConcurrentSessions` | *int | `100` | Maximum concurrent MCP/A2A sessions |
+
+### APIFrontendShutdownSpec {: #apifrontendshutdownspec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `drainSeconds` | *int | `15` | Seconds to wait for in-flight requests to drain (0–300) |
+
+### DataStorageSpec {: #datastoragespec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `endpointPropagationDelay` | string | `10s` | Delay before newly created endpoints are considered ready |
+| `retention` | RetentionSpec | — | Periodic purge of expired audit events (FedRAMP AU-11) |
+| `logging` | LoggingSpec | — | Log level |
+| `resources` | ResourceRequirements | — | CPU/memory requests and limits |
+
 ### NetworkPoliciesSpec
 
 | Field | Type | Default | Description |
@@ -188,33 +274,41 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | Field | Type | Description |
 |---|---|---|
 | `phase` | KubernautPhase | Current phase: `Validating`, `Migrating`, `Deploying`, `Running`, `Degraded`, `Error` |
-| `conditions` | []metav1.Condition | Standard Kubernetes conditions |
+| `conditions` | []metav1.Condition | Standard Kubernetes conditions (includes `AnsibleReady`, `ToolRBACBound`) |
 | `services` | []ServiceStatus | Per-service readiness (`name`, `ready`, `readyReplicas`, `desiredReplicas`) |
 | `lastMigrationHash` | string | Hash of last successful DB migration |
 | `lastMigrationTime` | metav1.Time | Timestamp of last migration |
 | `boundAdditionalClusterRoles` | []string | Currently bound additional ClusterRoles |
+| `boundToolRoleBindings` | []string | Currently managed tool role binding CRB names (for stale-pruning and finalizer cleanup) |
 
 ---
 
 ## RBAC
 
-The operator creates **13** baseline ClusterRoles (namespace-prefixed as `{namespace}-{base}`), plus **2** monitoring-only ClusterRoles when `spec.monitoring.enabled: true`. See [Security & RBAC](../architecture/security-rbac.md) for the full permission matrix.
+The operator creates **14** baseline ClusterRoles (namespace-prefixed as `{namespace}-{base}`), plus **2** monitoring-only ClusterRoles when `spec.monitoring.enabled: true`, **6** per-persona tool ClusterRoles for SAR authorization, and optionally **1** Ansible ClusterRole. See [Security & RBAC](../architecture/security-rbac.md) for the full permission matrix.
 
-| ClusterRole base name | Component |
-|---|---|
-| `gateway-role` | Gateway |
-| `aianalysis-controller` | AI Analysis |
-| `kubernaut-agent-client` | KA ↔ service access |
-| `kubernaut-agent-investigator` | KA cluster-wide read |
-| `signalprocessing-controller` | Signal Processing |
-| `remediationorchestrator-controller` | Remediation Orchestrator |
-| `workflowexecution-controller` | Workflow Execution |
-| `workflow-runner` | Workflow Runner (Jobs) |
-| `effectivenessmonitor-controller` | Effectiveness Monitor |
-| `notification-controller` | Notification |
-| `data-storage-auth-middleware` | DataStorage auth |
-| `data-storage-client` | DataStorage client |
-| `authwebhook-role` | Auth Webhook |
-| `alertmanager-view` | Monitoring only |
-| `gateway-signal-source` | Monitoring only |
-| `workflowexecution-awx` | Ansible only |
+| ClusterRole base name | Component | Notes |
+|---|---|---|
+| `gateway-role` | Gateway | |
+| `aianalysis-controller` | AI Analysis | |
+| `kubernaut-agent-client` | KA ↔ service access | |
+| `kubernaut-agent-investigator` | KA cluster-wide read | |
+| `signalprocessing-controller` | Signal Processing | |
+| `remediationorchestrator-controller` | Remediation Orchestrator | |
+| `workflowexecution-controller` | Workflow Execution | |
+| `workflow-runner` | Workflow Runner (Jobs) | |
+| `effectivenessmonitor-controller` | Effectiveness Monitor | |
+| `notification-controller` | Notification | |
+| `data-storage-auth-middleware` | DataStorage auth | |
+| `data-storage-client` | DataStorage client | |
+| `authwebhook-role` | Auth Webhook | |
+| `apifrontend-role` | API Frontend | v1.5+ — SAR, InvestigationSession CRD, RR/RAR access, cluster context triage |
+| `alertmanager-view` | Monitoring only | When `spec.monitoring.enabled: true` |
+| `gateway-signal-source` | Monitoring only | When `spec.monitoring.enabled: true` |
+| `kubernaut-tool-sre` | SAR tool persona | v1.5+ — from `spec.apiFrontend.rbac.roleBindings` |
+| `kubernaut-tool-ai-orchestrator` | SAR tool persona | v1.5+ |
+| `kubernaut-tool-cicd` | SAR tool persona | v1.5+ |
+| `kubernaut-tool-observability` | SAR tool persona | v1.5+ |
+| `kubernaut-tool-l3-audit` | SAR tool persona | v1.5+ |
+| `kubernaut-tool-remediation-approver` | SAR tool persona | v1.5+ |
+| `workflowexecution-awx` | Ansible only | When `spec.ansible.enabled: true` |

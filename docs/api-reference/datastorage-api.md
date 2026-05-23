@@ -25,7 +25,7 @@ https://data-storage-service.kubernaut-system.svc.cluster.local:8080
 |---|---|---|
 | `POST` | `/api/v1/audit/events` | Store a single audit event |
 | `POST` | `/api/v1/audit/events/batch` | Store a batch of audit events |
-| `GET` | `/api/v1/audit/events` | Query audit events (with filters) |
+| `GET` | `/api/v1/audit/events` | Query audit events (with filters, including JSONB `detail_key`/`detail_value` for correlation — PR #1201) |
 | `POST` | `/api/v1/audit/notifications` | Store a notification audit event |
 
 ### Remediation Reconstruction

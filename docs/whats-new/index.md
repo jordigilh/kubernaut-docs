@@ -6,6 +6,117 @@ Review the changes below to understand what differs from the version you are cur
 
 ---
 
+## v1.5
+
+### API Frontend — new service
+
+Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It acts as the unified external protocol layer for MCP, A2A, and REST clients — replacing direct access to internal services with a single authenticated entry point.
+
+- **MCP gateway** — Exposes investigation, workflow discovery, and remediation tools via the Model Context Protocol
+- **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
+- **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
+- **SAR authorization** — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results
+- **MCP bridge** — Dispatches 23 `kubernaut_*` MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
+
+See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
+
+### Interactive MCP sessions
+
+Operators and AI agents can now connect to Kubernaut via MCP for **interactive investigation and remediation**. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.
+
+The API Frontend exposes **23 `kubernaut_*` MCP tools** on its MCP endpoint (`POST /mcp`), including 6 interactive session lifecycle tools dispatched to the Kubernaut Agent:
+
+| Domain | Tools |
+|---|---|
+| **Interactive lifecycle** | `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| **Investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation` |
+| **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` |
+| **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request` |
+| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| **Presentation** | `kubernaut_present_decision` |
+
+The Kubernaut Agent also runs a separate MCP server (`/api/v1/mcp`) with 3 tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections with Lease-based session management.
+
+See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide and [API Frontend API](../api-reference/apifrontend-api.md) for the full tool reference.
+
+### Interactive workflow discovery with LLM-populated parameters
+
+The `discover_workflows` action on `kubernaut_investigate` returns workflow alternatives with **parameters pre-populated by the LLM** based on the root cause analysis (PR #1171, PR #1188). Operators review and edit parameters before confirming execution via `kubernaut_select_workflow`.
+
+Parameter safety is enforced through **comprehensive validation with LLM self-correction** (PR #1187): type checking against the workflow's declared parameter schema, regex pattern matching, required field enforcement, and automatic retry when the LLM provides invalid values.
+
+See [Workflow Authoring: Parameters](../user-guide/workflows.md#parameters) for the parameter schema reference.
+
+### Breaking: SAR-based tool authorization replaces file-based RBAC
+
+The API Frontend's static `rbac_roles.yaml` ConfigMap has been **replaced by Kubernetes-native SubjectAccessReview (SAR)** authorization at `tools/call` time (PR #1222). `tools/list` remains unfiltered (ADR-020).
+
+**Migration required**: customers who customized `rbac_roles.yaml` must create equivalent `ClusterRoleBinding` resources. The Helm chart ships 6 per-persona `ClusterRoles`:
+
+| ClusterRole | Persona | MCP Tools |
+|---|---|---|
+| `kubernaut-tool-sre` | Investigation + remediation (no approval) | 20 |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 |
+| `kubernaut-tool-observability` | Read-only observability | 5 |
+| `kubernaut-tool-l3-audit` | Compliance and auditing | 6 |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 |
+
+SAR uses verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Authorization is fail-closed: SAR API errors deny the tool call. Results are cached with a configurable TTL (default 30s via `apifrontend.config.rbac.sarCacheTTL`).
+
+See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for the full model and binding examples.
+
+### Unified ServiceAccount model (ADR-022)
+
+All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is no per-user impersonation or token forwarding. Application-level authorization is enforced entirely through SAR-based tool gating; user attribution is preserved in the application audit trail (`tool.executed` events with `UserID`, `actor_ip`).
+
+See [Security & RBAC: Unified SA model](../architecture/security-rbac.md#unified-sa-model) for accepted risks and mitigations.
+
+### Generic cluster context tools replace narrow triage tools
+
+The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events`, `af_resolve_owner`) have been replaced with 3 generic **internal** tools that can inspect any namespaced Kubernetes resource (#1230):
+
+| New Tool | Replaces | Purpose |
+|---|---|---|
+| `kubectl_get` | `af_get_pods`, `af_get_workloads` (single) | Get any namespaced resource by kind/name/namespace |
+| `kubectl_list` | `af_get_pods`, `af_get_workloads` (list) | List any namespaced resources with optional label selector |
+| `kubectl_list_events` | `af_list_events` | List events with reason/object filters (renamed for consistency) |
+
+`af_resolve_owner` is removed — KA independently resolves the owner chain during RCA. The new tools use `RESTMapper` for dynamic kind-to-GVR resolution. Secret `.data` fields are redacted before returning to the LLM.
+
+All cluster context tools (`kubectl_*`, `af_check_existing_rr`, `af_create_rr`) are **internal to the AF's LLM agent** — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of **23 `kubernaut_*` MCP tools** spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.
+
+### Session takeover security (SEC-TAKEOVER-001)
+
+When a second user connects to an active MCP session, the original user's investigation is **abandoned, not completed**. This prevents a takeover from inheriting or completing work under a different identity. The abandoned session is logged as an audit event.
+
+### DataStorage advanced configuration (v1.5)
+
+Three new configuration sub-blocks for DataStorage:
+
+- **`server`** — `maxBodySize` (5 MiB default), `corsAllowedOrigins` for browser-based access, `signerCertDir` for audit event signing
+- **`redis`** — `dlqMaxLen` (10,000), TLS configuration for Redis/Valkey connections
+- **`retention`** — Automatic data retention cleanup with configurable `interval` (24h), `batchSize` (1,000), and `defaultDays` (2,555 ≈ 7 years)
+
+See [Configuration: DataStorage](../user-guide/configuration.md#datastorage) for all parameters.
+
+### OLM-first disconnected installation
+
+The [disconnected installation guide](../operations/disconnected-install.md) has been rewritten with the **Operator (OLM) path as the primary method**. The Helm chart path is retained as a development/testing appendix.
+
+The OLM flow uses `oc-mirror` v2 with an upstream digest-pinned `ImageSetConfiguration` from the operator repository, producing IDMS and CatalogSource resources automatically.
+
+### Lease RBAC for session management
+
+The Kubernaut Agent ServiceAccount now requires `list` permission on `coordination.k8s.io/leases` (in addition to the existing create/get/update/delete) for orphaned session reclamation at startup. The Helm chart and Operator both provision this automatically.
+
+### Platform hardening
+
+- **SessionDrainer** (BR-OPS-013) — Active MCP sessions are drained before KA pod termination during rolling updates
+- **Race-safe session transitions** — Mutex-protected session state machine prevents concurrent state corruption
+
+---
+
 ## v1.4
 
 ### Prompt injection defense — Shadow Agent

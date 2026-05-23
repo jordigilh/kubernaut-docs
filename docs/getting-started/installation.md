@@ -34,7 +34,7 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | Valkey / Redis | 7+ | **BYO** — provide connection details via `spec.valkey` |
 | LLM provider | — | Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output |
 
-**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:1.4.0` (note: no `v` prefix, unlike component images which use `v1.4.0`).
+**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
 
 **Minimal Kubernaut CR:**
 
@@ -67,6 +67,7 @@ spec:
 - Runs embedded database schema migrations
 - Installs and upgrades the 9 Kubernaut workload CRDs
 - Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Applies preferred pod anti-affinity to all deployments (spread across nodes by `kubernetes.io/hostname`)
 - Configures OCP Routes and service-serving CA TLS
 - Reports per-service readiness status on the `Kubernaut` CR
 - Cleans up cluster-scoped RBAC and workflow namespace on CR deletion (workload CRDs are retained by design)
@@ -421,6 +422,14 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 Kubernaut does not support in-place upgrades. To move to a new version,
 perform a fresh install. See [What's New](../whats-new/index.md) for
 changes between releases.
+
+### v1.4 → v1.5 migration notes
+
+v1.5 introduces breaking changes that require manual steps during reinstall:
+
+1. **SAR-based tool authorization** — The API Frontend's `rbac_roles.yaml` ConfigMap is removed. Create `ClusterRoleBindings` mapping OIDC groups to the [per-persona ClusterRoles](../architecture/security-rbac.md#tool-authorization-v15) shipped in the Helm chart.
+2. **11th service — API Frontend** — Resource planning must account for the new service. See [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for resource defaults.
+3. **Lease RBAC** — The Kubernaut Agent ServiceAccount now requires `list` on `coordination.k8s.io/leases`. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.
 
 ## Uninstalling
 

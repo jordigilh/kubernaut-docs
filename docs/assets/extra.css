@@ -10,7 +10,27 @@
   --kn-em: #059669;
   --kn-notif: #DC2626;
   --kn-gw: #0891B2;
+  --kn-af: #64748B;
   --kn-support: #64748B;
+}
+
+/* Pipeline phase cards: hover lift */
+.phase-card:hover > g > rect:first-child,
+.phase-card:hover > rect:first-child {
+  filter: brightness(0.97);
+}
+
+.phase-card {
+  transition: transform 0.15s ease;
+}
+
+.phase-card:hover {
+  opacity: 0.92;
+}
+
+/* Hide the "Select a phase" prompt — cards handle navigation */
+#pipeline-svg + p {
+  display: none;
 }
 
 /* Mermaid: transparent background for any remaining diagrams */

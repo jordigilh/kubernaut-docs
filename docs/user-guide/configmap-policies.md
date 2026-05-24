@@ -8,7 +8,7 @@ The SignalProcessing controller uses a single Rego policy file (`policy.rego`) f
 |---|---|
 | ConfigMap name | `signalprocessing-policy` (Rego) + `signalprocessing-proactive-signal-mappings` (optional, YAML) |
 | Mount path | `/etc/signalprocessing/policy.rego` (Rego) + `/etc/signalprocessing/proactive-signal-mappings.yaml` (mappings) |
-| Required | Yes -- chart fails at install if neither `signalprocessing.policies.content` nor `signalprocessing.policies.existingConfigMap` is set |
+| Required | **Yes** — Helm requires `policies.content` or `policies.existingConfigMap`; the operator rejects the CR if `spec.signalProcessing.policy.configMapName` is empty |
 
 ## Provisioning
 

@@ -113,9 +113,12 @@ The Analyzing handler evaluates a Rego policy to determine whether the remediati
 - **Input**: Full analysis context (see below)
 - **Output**: `require_approval` (boolean) and `reason` (string)
 
-**When no policy is mounted**, the controller auto-approves all remediations. Operators provide their own `approval.rego` to enforce custom gates.
+!!! warning "Required prerequisite"
+    The operator **rejects the Kubernaut CR** if `spec.aiAnalysis.policy.configMapName` is empty. You must create a ConfigMap containing an `approval.rego` key before applying the CR. See [Installation Prerequisites](../getting-started/installation.md#prerequisites).
 
-The **default shipped policy** (bundled for reference) gates on:
+    With Helm, use `--set-file aianalysis.policies.content=my-approval.rego` or provide `aianalysis.policies.existingConfigMap`.
+
+The **reference policy** (bundled in the chart at `charts/kubernaut/files/defaults/approval.rego`) gates on:
 
 - **Production** — always requires approval
 - **Non-production** — auto-approved when `remediation_target` is present

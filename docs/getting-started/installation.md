@@ -25,7 +25,7 @@ The operator is available through OLM (Operator Lifecycle Manager) or direct dep
 
 For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
 
-### Prerequisites (Operator)
+### Prerequisites (Operator) {: #prerequisites }
 
 | Requirement | Version | Notes |
 |---|---|---|
@@ -33,6 +33,12 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | PostgreSQL | 15+ | **BYO** — the operator does not deploy a database; provide connection details via `spec.postgresql` |
 | Valkey / Redis | 7+ | **BYO** — provide connection details via `spec.valkey` |
 | LLM provider | — | Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output |
+| LLM credentials Secret | — | Secret containing the LLM API key (e.g. `OPENAI_API_KEY`) |
+| SP classification policy | — | ConfigMap with key `policy.rego` — see [Rego Policies](../user-guide/policies.md) |
+| AA approval policy | — | ConfigMap with key `approval.rego` — see [Approval Policy](../user-guide/configmap-approval.md) |
+
+!!! warning "CR validation"
+    The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
 
 **Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
 
@@ -56,6 +62,12 @@ spec:
       provider: openai
       model: gpt-4o
       credentialsSecretName: kubernaut-llm
+  signalProcessing:
+    policy:
+      configMapName: signalprocessing-policy   # must contain key: policy.rego
+  aiAnalysis:
+    policy:
+      configMapName: aianalysis-policies        # must contain key: approval.rego
 ```
 
 !!! note "Disconnected installs"

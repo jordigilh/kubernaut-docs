@@ -9,9 +9,11 @@ Kubernaut supports human-in-the-loop approval gates to ensure that remediations 
 
 Approval is determined by a **user-replaceable Rego policy** evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the `aianalysis-policies` ConfigMap -- the policy is not hardcoded.
 
-### Default Policy Behavior
+### Reference Policy Behavior
 
-The shipped `approval.rego` makes decisions based on **environment**, **remediation target presence**, and **sensitive resource kinds**:
+The chart includes a reference `approval.rego` (at `charts/kubernaut/files/defaults/approval.rego`) that you can use as a starting point. With the operator, you **must** provide this policy in a ConfigMap before applying the CR — see [Installation Prerequisites](../getting-started/installation.md#prerequisites).
+
+The reference policy makes decisions based on **environment**, **remediation target presence**, and **sensitive resource kinds**:
 
 - **Production namespaces** (`kubernaut.ai/environment=production`) — always require approval, regardless of confidence. Environment matching is **case-insensitive** (e.g., `Production`, `production`, `PRODUCTION` all match).
 - **Sensitive resource kinds** (Node, StatefulSet) — always require approval, regardless of environment

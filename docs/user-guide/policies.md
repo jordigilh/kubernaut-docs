@@ -7,8 +7,8 @@ All policies are deployed as ConfigMaps and can be customized. See [SignalProces
 !!! info "Case-insensitive matching (v1.2)"
     Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is **case-insensitive**. For example, `Production`, `production`, and `PRODUCTION` all match equivalently. The default policies use `lower()` for comparisons. Custom policies should follow the same pattern.
 
-!!! info "Embedded default SP Rego (v1.2)"
-    Starting with v1.2, the Helm chart ships a default `signalprocessing-policy.rego` so installations work without `--set-file`. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.
+!!! warning "Required prerequisites (operator deployments)"
+    The Kubernaut Operator **rejects the CR** if `spec.signalProcessing.policy.configMapName` or `spec.aiAnalysis.policy.configMapName` is empty. You must create the policy ConfigMaps **before** applying the Kubernaut CR. The Helm chart can generate them from `--set-file`, but operator deployments require explicit user-provided ConfigMaps. See [Installation Prerequisites](../getting-started/installation.md#prerequisites).
 
 ## Policy Overview
 

@@ -167,7 +167,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `routing` | RORoutingSpec | Backoff, cooldown, and failure threshold settings |
 | `effectivenessAssessment` | ROEffectivenessSpec | Stabilization window |
 | `asyncPropagation` | ROAsyncPropagationSpec | Delays for GitOps sync, operator reconcile, proactive alerts |
-| `dryRun` | bool | Enable global dry-run (Level 1 — Observe) |
+| `dryRun` | bool | Enable global dry-run (Stage 1 — Observe) |
 | `dryRunHoldPeriod` | string | Hold period before marking DryRun complete |
 | `notifications` | RONotificationsSpec | Self-resolved notification toggle |
 | `retention` | RORetentionSpec | Terminal RR retention period (default: 24h) |

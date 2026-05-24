@@ -101,7 +101,7 @@ Hub-and-spoke deployment using [OCM](https://open-cluster-management.io/) (Open 
 
 Accept signals described in plain language — not just structured Prometheus alerts or Kubernetes events. Operators, chat bots, and external agents can trigger investigations by describing symptoms conversationally. Kubernaut resolves the intent (cluster, service, symptom) and opens an investigation automatically. Operators, chat bots, and external agents can trigger investigations by describing symptoms conversationally. See [Interactive Sessions](../user-guide/interactive-sessions.md) for examples.
 
-## Observe Mode (Trust Ladder Level 2)
+## Observe Mode (Trust Ladder Stage 2)
 
 Building on v1.4's global dry-run mode, a future release will add operator dashboard visibility through the Backstage console and a guided onboarding path for new clusters.
 

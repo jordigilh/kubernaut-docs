@@ -133,6 +133,9 @@ ai:
     temperature: 0.7          # Creativity vs determinism (0.0--1.0)
     maxRetries: 3             # LLM call retry count
     timeoutSeconds: 120       # Per-call timeout
+    tlsCaFile: ""             # Custom CA cert for LLM endpoint (PEM, absolute path)
+    tlsCertFile: ""           # Client certificate for mTLS to LLM proxy (#1342, absolute path)
+    tlsKeyFile: ""            # Client key for mTLS to LLM proxy (#1342, absolute path)
     customHeaders:            # Optional custom HTTP headers (see Custom Headers section)
       - name: "X-Custom"
         value: "..."
@@ -146,6 +149,10 @@ ai:
       clientId: ""
       clientSecret: ""
       scopes: ["scope1"]
+    circuitBreaker:           # Resilience for LLM HTTP calls
+      enabled: false
+      failureThreshold: 5     # Failures before opening
+      timeout: 30s            # Duration in open state before half-open
 
 integrations:
   toolsets: {}              # Optional: data source toolsets
@@ -330,6 +337,38 @@ The Secret is marked `optional: true` — the agent starts without it but all LL
 - **0.7** (default): Balanced.
 - **0.8--1.0**: More creative. May discover non-obvious root causes but less consistent.
 
+## mTLS for LLM Proxy (#1342)
+
+Both the Kubernaut Agent and the API Frontend support **mutual TLS (mTLS)** for outbound LLM HTTP calls. This is required when a corporate LLM proxy mandates client certificate authentication.
+
+| Field | Description |
+|---|---|
+| `tlsCaFile` | PEM-encoded CA certificate for verifying the LLM endpoint (server verification is mandatory — SC-8) |
+| `tlsCertFile` | Client certificate presented during the TLS handshake (absolute path, e.g. `/etc/kubernaut/certs/llm-client.crt`) |
+| `tlsKeyFile` | Client private key (absolute path, e.g. `/etc/kubernaut/certs/llm-client.key`) |
+
+**Validation rules:**
+
+- `tlsCertFile` and `tlsKeyFile` must **both** be set or both be empty (pair validation).
+- Both must be **absolute paths**.
+- When mTLS is configured, `tlsCaFile` is **required** — the transport chain always verifies the server certificate.
+
+**Transport chain:** The mTLS transport is the innermost layer. On top of it, the chain applies OAuth2 (if configured), custom headers, and circuit breaker wrapping. For `vertex_ai`, GCP OAuth2 is layered on top of the mTLS transport via `WithBaseTransport`.
+
+```yaml
+ai:
+  llm:
+    provider: vertex_ai
+    model: claude-sonnet-4-20250514
+    vertexProject: my-project
+    vertexLocation: us-east4
+    tlsCaFile: /etc/kubernaut/certs/llm-ca.pem
+    tlsCertFile: /etc/kubernaut/certs/llm-client.crt
+    tlsKeyFile: /etc/kubernaut/certs/llm-client.key
+```
+
+The same fields are available under `apifrontend.config.agent.llm.*` for the AF's LLM provider. See [AF LLM Configuration](../user-guide/configuration.md#af-llm-configuration-v15).
+
 ## Custom Headers
 
 !!! info "Added in v1.3 (Issue #417)"
@@ -407,6 +446,8 @@ Reloadable changes are detected via an **fsnotify** file watcher (**~60s** kubel
 
 - `ai.llm.provider`
 - `ai.llm.oauth2.tokenUrl`, `ai.llm.oauth2.clientId`, `ai.llm.oauth2.clientSecret`
+- `ai.llm.tlsCertFile`, `ai.llm.tlsKeyFile`, `ai.llm.tlsCaFile` (TLS state is built at startup)
+- `ai.llm.circuitBreaker.*`
 
 **Hot-reloadable fields**: `model`, `endpoint`, `apiKey`, `azureApiVersion`, `vertexProject`, `vertexLocation`, `bedrockRegion`, `temperature`, `maxRetries`, `timeoutSeconds`, `customHeaders`, `oauth2.scopes`
 

@@ -464,7 +464,7 @@ When a human operator approves or rejects a `RemediationApprovalRequest` (RAR) v
 
 1. The operator's OIDC token is validated and a `TokenReview` resolves the human identity (username + groups).
 2. The AF ServiceAccount patches the RAR's `status.decision` on behalf of the human user.
-3. The `decidedVia` field on the RAR status records the delegation chain — `"af-intermediary"` when the AF facilitates the decision, blank when the RAR is decided directly (e.g., by the operator CRD controller).
+3. The `decidedVia` field on the RAR status records the trusted intermediary's SA identity (e.g. `system:serviceaccount:kubernaut-system:kubernaut-apifrontend`). The auth webhook sets this field; it is blank when the RAR is decided directly (e.g., by the operator CRD controller).
 
 This allows the AF to record **who** made the decision (the human) while executing the Kubernetes API call with its own SA token — consistent with the unified SA model above.
 
@@ -489,6 +489,17 @@ apifrontend:
 ```
 
 Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.
+
+### Auth Mode Auto-Detection (#1309) {: #auth-auto-detect }
+
+The AF auto-detects its authentication mode from the configuration:
+
+| Condition | Mode | Behavior |
+|---|---|---|
+| JWT providers configured | **OIDC/JWKS** | Validates bearer tokens against configured issuers and JWKS endpoints |
+| No JWT providers + TokenReview wired | **K8s TokenReview** | Validates tokens via the Kubernetes API server's TokenReview endpoint |
+
+This removes the need for an explicit `authMode` toggle — the AF infers the correct strategy from which providers are present in the configuration.
 
 ## Next Steps
 

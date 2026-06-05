@@ -222,74 +222,55 @@ Backend: **K8s API** (AF ServiceAccount) — operates on `kubernaut.ai/v1alpha1/
 
 ## Investigation
 
-### Autonomous
+- **`kubernaut_investigate`** — Start, resume, or join an investigation (consolidates former `start_investigation`, `poll_investigation`, `stream_investigation`, and `takeover` tools — #1307, #1332)
 
-Backend: **KA REST** — dispatches to the Kubernaut Agent's REST API.
+    Backend: **KA MCP** — dispatches to the Kubernaut Agent's MCP server.
 
-- **`kubernaut_start_investigation`** — Start an AI-powered investigation, returning a session ID for tracking
+    - `namespace` (`string`) — Target resource namespace (required for new investigations)
+    - `name` (`string`) — Target resource / RR name (required for new investigations)
+    - `session_id` (`string`) — Resume or poll an existing session (mutually exclusive with namespace/name)
 
-    - `namespace` (`string`) **(required)** — Target resource namespace
-    - `name` (`string`) **(required)** — Target resource / RR name
-    - `kind` (`string`) — Target resource kind
+    When called with `namespace`+`name`, starts a new investigation and blocks until the investigation completes or times out (15 min default). When called with `session_id`, resumes/polls an existing session. In A2A mode, blocks until completion; in MCP mode, streams SSE events in real time.
 
-    **When to use:** Begin an autonomous investigation. Use the returned `session_id` with `kubernaut_poll_investigation` or `kubernaut_stream_investigation` to track progress.
+    **When to use:** Single entry point for all investigation workflows — new autonomous investigations, resuming polling, or joining an in-progress session. Follow up with `kubernaut_discover_workflows` after the investigation completes.
 
-    ??? example "Response"
+    ??? example "Response (new investigation)"
         ```json
         {
           "session_id": "sess-abc123",
-          "status": "started",
-          "message": "Investigation started for prod/api-server (session: sess-abc123)"
-        }
-        ```
-
-    **Personas:** SRE, AI Orchestrator
-
----
-
-- **`kubernaut_poll_investigation`** — Check investigation progress (blocks ~15 s, 5 polls at 3 s intervals)
-
-    - `session_id` (`string`) **(required)** — Investigation session ID
-
-    Re-call if status is `in_progress`.
-
-    **When to use:** Lightweight polling alternative when SSE streaming is unavailable. Prefer `kubernaut_stream_investigation` for real-time narrative.
-
-    ??? example "Response"
-        ```json
-        {
-          "status": "completed",
-          "summary": "Root cause identified: OOMKilled due to memory limit...",
-          "poll_count": 3
-        }
-        ```
-
-    **Personas:** SRE, AI Orchestrator
-
----
-
-- **`kubernaut_stream_investigation`** — Stream live investigation events in real time (default timeout: 15 min)
-
-    - `session_id` (`string`) **(required)** — Investigation session ID
-
-    Blocks until terminal SSE event or timeout.
-
-    **When to use:** Best experience for interactive users — see the AI agent's reasoning unfold in real time. Use after `kubernaut_start_investigation`.
-
-    ??? example "Response"
-        ```json
-        {
           "status": "completed",
           "summary": "Root cause identified: OOMKilled due to memory limit...",
           "events": [
             { "type": "progress", "phase": "inspection", "text": "Checking pod status..." },
             { "type": "progress", "phase": "analysis", "text": "Analyzing resource limits..." }
-          ],
-          "event_log": "Checking pod status...\nAnalyzing resource limits..."
+          ]
         }
         ```
 
     **Personas:** SRE, AI Orchestrator
+
+---
+
+- **`kubernaut_await_session`** — Wait for an active investigation session to become available on a RemediationRequest
+
+    Backend: **K8s API** — polls the InvestigationSession CRD until phase is `Active`.
+
+    - `rr_id` (`string`) **(required)** — Remediation request ID (`namespace/name`)
+
+    Blocks until an InvestigationSession with phase `Active` is found or timeout (default: 60 s). Useful when the operator wants to interact with a session that was triggered autonomously (from an alert) but hasn't yet reached the interactive phase.
+
+    **When to use:** Wait for an autonomous investigation to become joinable before calling `kubernaut_message` or `kubernaut_reconnect`.
+
+    ??? example "Response"
+        ```json
+        {
+          "status": "active",
+          "session_id": "sess-abc123",
+          "message": "Session active for prod/api-server"
+        }
+        ```
+
+    **Personas:** SRE, AI Orchestrator, CI/CD, Observability, Remediation Approver
 
 ---
 
@@ -306,17 +287,6 @@ All interactive tools share a common response shape:
   "message": "string (optional)"
 }
 ```
-
-- **`kubernaut_takeover`** — Take over an existing investigation for human-in-the-loop participation
-
-    - `rr_id` (`string`) **(required)** — Remediation request ID (`namespace/name`)
-    - `message` (`string`) — Optional message (max 10 240 chars)
-
-    **When to use:** Join an in-progress autonomous investigation. The AI agent pauses and the session becomes interactive.
-
-    **Personas:** SRE, AI Orchestrator
-
----
 
 - **`kubernaut_message`** — Send a message to an active investigation session
 
@@ -447,6 +417,9 @@ All interactive tools share a common response shape:
 
     - `kind` (`string`) — Filter by resource kind
 
+    !!! note "Bridge-only for AF agent"
+        This tool is available on the MCP bridge for remote clients but was **removed from the AF agent's internal LLM tool set** (AC-6 security). The AF agent uses `kubernaut_discover_workflows` instead, which follows the RCA → discovery → selection pipeline.
+
     **When to use:** Browse the full workflow catalog without an active investigation. Unlike `kubernaut_discover_workflows`, this does not require a session and returns catalog entries without LLM-based recommendations.
 
     ??? example "Response"
@@ -465,6 +438,53 @@ All interactive tools share a common response shape:
         ```
 
     **Personas:** SRE, Observability, L3 Audit
+
+---
+
+- **`kubernaut_remediate`** — Create a RemediationRequest from an interactive session
+
+    Backend: **K8s API** (AF ServiceAccount)
+
+    - `namespace` (`string`) **(required)** — Target resource namespace
+    - `name` (`string`) **(required)** — Target resource name
+    - `kind` (`string`) **(required)** — Target resource kind
+
+    Creates a new `RemediationRequest` CRD and links it to the active investigation session. This is the interactive equivalent of the autonomous pipeline's signal-triggered RR creation.
+
+    **When to use:** After `kubernaut_investigate` identifies a problem and the operator wants to trigger the remediation pipeline. The AF agent calls `kubernaut_check_existing_remediation` first to prevent duplicates.
+
+    ??? example "Response"
+        ```json
+        {
+          "rr_id": "prod/oom-fix-abc",
+          "status": "created",
+          "message": "RemediationRequest created for prod/api-server"
+        }
+        ```
+
+    **Personas:** SRE, AI Orchestrator (internal — called by AF agent on behalf of the user)
+
+---
+
+- **`kubernaut_check_existing_remediation`** — Check for an existing active RemediationRequest before creating a duplicate
+
+    Backend: **K8s API** (AF ServiceAccount)
+
+    - `namespace` (`string`) **(required)** — Target resource namespace
+    - `name` (`string`) **(required)** — Target resource name
+
+    **When to use:** Called before `kubernaut_remediate` to prevent duplicate RR creation. Returns the existing RR if one is active for the target resource.
+
+    ??? example "Response"
+        ```json
+        {
+          "exists": true,
+          "rr_id": "prod/oom-fix-abc",
+          "phase": "Running"
+        }
+        ```
+
+    **Personas:** SRE, AI Orchestrator (internal — called by AF agent on behalf of the user)
 
 ---
 
@@ -589,18 +609,17 @@ kubernaut_list_approval_requests(namespace, decision="pending")
 ### Autonomous investigation flow
 
 ```
-kubernaut_start_investigation(namespace, name)
-  → kubernaut_stream_investigation(session_id)
-    → kubernaut_discover_workflows(rr_id)
-      → kubernaut_select_workflow(rr_id, workflow_id)
-        → kubernaut_watch(namespace, name)
+kubernaut_investigate(namespace, name)
+  → kubernaut_discover_workflows(rr_id)
+    → kubernaut_select_workflow(rr_id, workflow_id)
+      → kubernaut_watch(namespace, name)
 ```
 
 ### Interactive investigation flow
 
 ```
 kubernaut_list_remediations(namespace)
-  → kubernaut_takeover(rr_id)
+  → kubernaut_await_session(rr_id)
     → kubernaut_message(rr_id, message)  # repeat as needed
       → kubernaut_discover_workflows(rr_id)
         → kubernaut_select_workflow(rr_id, workflow_id)
@@ -622,9 +641,8 @@ kubernaut_list_remediations(namespace)
 
 | Backend | Tools |
 |---------|-------|
-| **K8s API** (AF SA) | `list_remediations`, `get_remediation`, `cancel_remediation`, `watch`, `approve`, `list_approval_requests`, `get_approval_request` |
-| **KA REST** | `start_investigation`, `poll_investigation`, `stream_investigation` |
-| **KA MCP** | `takeover`, `message`, `complete`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow` |
+| **K8s API** (AF SA) | `list_remediations`, `get_remediation`, `cancel_remediation`, `watch`, `approve`, `list_approval_requests`, `get_approval_request`, `await_session`, `check_existing_remediation`, `remediate` |
+| **KA MCP** | `investigate`, `message`, `complete`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow` |
 | **DataStorage** | `list_workflows`, `get_remediation_history`, `get_effectiveness`, `get_audit_trail` |
 | **Local** | `present_decision` |
 
@@ -636,17 +654,15 @@ All tool names below are prefixed with `kubernaut_`.
 
 | Tool | SRE | AI Orch. | CI/CD | Obs. | L3 Audit | Approver |
 |------|:---:|:--------:|:-----:|:----:|:--------:|:--------:|
-| `list_remediations` | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: | |
-| `get_remediation` | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: | |
+| `list_remediations` | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: |
+| `get_remediation` | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: | :material-check: |
 | `cancel_remediation` | :material-check: | | | | | |
 | `watch` | :material-check: | :material-check: | :material-check: | :material-check: | | :material-check: |
 | `list_approval_requests` | | | | | | :material-check: |
 | `get_approval_request` | | | | | | :material-check: |
-| `approve` | | | | | | :material-check: |
-| `start_investigation` | :material-check: | :material-check: | | | | |
-| `poll_investigation` | :material-check: | :material-check: | | | | |
-| `stream_investigation` | :material-check: | :material-check: | | | | |
-| `takeover` | :material-check: | :material-check: | | | | |
+| `approve` | :material-check: | | | | | :material-check: |
+| `await_session` | :material-check: | :material-check: | :material-check: | :material-check: | | :material-check: |
+| `investigate` | :material-check: | :material-check: | | | | |
 | `message` | :material-check: | :material-check: | | | | |
 | `complete` | :material-check: | :material-check: | | | | |
 | `cancel` | :material-check: | :material-check: | | | | |
@@ -654,11 +670,11 @@ All tool names below are prefixed with `kubernaut_`.
 | `reconnect` | :material-check: | :material-check: | | | | |
 | `discover_workflows` | :material-check: | :material-check: | | | | |
 | `select_workflow` | :material-check: | :material-check: | | | | |
+| `present_decision` | :material-check: | :material-check: | | | | |
 | `list_workflows` | :material-check: | | | :material-check: | :material-check: | |
 | `get_remediation_history` | :material-check: | | | | :material-check: | |
 | `get_effectiveness` | :material-check: | | | :material-check: | :material-check: | |
 | `get_audit_trail` | :material-check: | | | | :material-check: | |
-| `present_decision` | :material-check: | :material-check: | | | | |
 
 ---
 
@@ -669,8 +685,8 @@ These are **not** exposed via MCP/A2A, are **not** SAR-gated, and cannot be call
 
 | Tool | Purpose |
 |------|---------|
-| `kubectl_get` | Get any namespaced K8s resource by kind/name/namespace (Secret `.data` redacted) |
-| `kubectl_list` | List namespaced K8s resources with optional label selector (Secret `.data` redacted) |
+| `kubectl_get` | Get any namespaced K8s resource by kind/name/namespace (Secret `.data` redacted). Supports `api_group` for kind disambiguation (#1311). |
+| `kubectl_list` | List namespaced K8s resources with optional label selector (Secret `.data` redacted). Supports `api_group` for kind disambiguation (#1311). |
 | `kubectl_list_events` | List K8s events with reason/object filters |
-| `af_check_existing_rr` | Check for duplicate RemediationRequest before creation |
-| `af_create_rr` | Create a new RemediationRequest CRD |
+| `kubernaut_check_existing_remediation` | Check for duplicate RemediationRequest before creation |
+| `kubernaut_remediate` | Create a new RemediationRequest CRD from an interactive session |

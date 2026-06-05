@@ -46,7 +46,7 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
 
     - **API Frontend MCP** — 23 `kubernaut_*` MCP tools on `POST /mcp` spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.
     - **KA MCP (direct)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) with Lease-based session management for direct client connections.
-    - **Internal (ADK-only)** — 5 tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) internal to the AF's LLM agent for cluster context and RR creation.
+    - **Internal (ADK-only)** — 5 tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) internal to the AF's LLM agent for cluster context and RR creation.
 
 The items below are planned expansions beyond the v1.5 surface.
 

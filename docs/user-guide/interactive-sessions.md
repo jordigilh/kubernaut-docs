@@ -37,15 +37,14 @@ These tools are dispatched to the Kubernaut Agent's MCP server (`kubernaut_inves
 
 | Tool | Description |
 |---|---|
-| `kubernaut_start_investigation` | Start a new investigation for a RemediationRequest (via KA REST) |
-| `kubernaut_takeover` | Take over a session owned by another user (SEC-TAKEOVER-001) |
+| `kubernaut_investigate` | Start, resume, or join an investigation (consolidates former `start_investigation`, `poll_investigation`, `stream_investigation`, `takeover`) |
+| `kubernaut_await_session` | Wait for an active investigation session to become available |
 | `kubernaut_message` | Send a follow-up message in a multi-turn conversation |
 | `kubernaut_complete` | Mark the investigation as complete |
 | `kubernaut_cancel` | Cancel the investigation |
 | `kubernaut_status` | Check the current status — returns mode (autonomous/interactive/not_found) and driver |
 | `kubernaut_reconnect` | Reconnect to an existing session after a disconnect |
 | `kubernaut_discover_workflows` | After RCA, run workflow discovery and return alternatives with LLM-populated parameters |
-| `kubernaut_stream_investigation` | Stream live SSE events from KA until a terminal state |
 
 **Input schema:**
 
@@ -144,7 +143,7 @@ Each interactive session is backed by a Kubernetes Lease (prefix: `kubernaut-int
 2. **Active** — The session is renewed periodically; investigation proceeds
 3. **Message** — Multi-turn conversation within the active session
 4. **Reconnect** — The same user can reconnect after a disconnect
-5. **Takeover** — A different user connecting causes the original session to be abandoned (SEC-TAKEOVER-001)
+5. **Join** — A different user connecting via `kubernaut_investigate` causes the original session to transition (DD-INTERACTIVE-002)
 6. **Complete/Cancel** — The session Lease is released
 
 ### Session limits and timeouts
@@ -175,4 +174,4 @@ Kubernaut supports both modes simultaneously:
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
 | **Pipeline** | Full 6-stage pipeline | Same pipeline, operator-driven at selection stage |
 
-Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `action:reconnect`.
+Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `kubernaut_await_session` followed by `kubernaut_reconnect`.

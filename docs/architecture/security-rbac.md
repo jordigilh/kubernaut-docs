@@ -402,7 +402,7 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 | `kubernaut-tool-remediation-approver` | Human approval workflows | 7 | `kubernaut_approve`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
 
 !!! info "Internal tools"
-    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
+    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
 
 ### Binding example
 
@@ -457,6 +457,38 @@ All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is
 | SEC-02 | K8s audit logs attribute actions to AF SA, not the end user | Application audit trail carries user identity; correlate via `actor_ip` |
 | SEC-04 | AF SA privilege aggregation | ClusterRole is explicit and minimal; reviewed per release |
 | SEC-09 | Persona misconfiguration could over-grant | Helm values are the source of truth; `kubernaut-tool-*` roles are data-driven |
+
+### Trusted Intermediary Delegation (#1287) {: #trusted-intermediary }
+
+When a human operator approves or rejects a `RemediationApprovalRequest` (RAR) via the MCP bridge, the API Frontend acts as a **trusted intermediary**:
+
+1. The operator's OIDC token is validated and a `TokenReview` resolves the human identity (username + groups).
+2. The AF ServiceAccount patches the RAR's `status.decision` on behalf of the human user.
+3. The `decidedVia` field on the RAR status records the delegation chain — `"af-intermediary"` when the AF facilitates the decision, blank when the RAR is decided directly (e.g., by the operator CRD controller).
+
+This allows the AF to record **who** made the decision (the human) while executing the Kubernetes API call with its own SA token — consistent with the unified SA model above.
+
+### TokenReview Identity Enrichment {: #tokenreview }
+
+When a client connects via OIDC, the AF performs a Kubernetes `TokenReview` to resolve the full user identity (username, UID, groups, extras). This enriched identity is:
+
+- Used in every SAR check for tool authorization
+- Injected into the Rego policy context as `input.identity` (see [Rego Reference](../user-guide/rego-reference.md))
+- Recorded in application audit trail events
+
+### OIDC CA Trust (#1245) {: #oidc-ca-trust }
+
+For environments using a private OIDC provider (non-public CA), the AF supports a custom CA certificate via the `oidcCaFile` configuration field:
+
+```yaml
+apifrontend:
+  config:
+    auth:
+      issuerURL: https://idp.internal.corp.com
+      oidcCaFile: /etc/certs/oidc-ca.pem
+```
+
+Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.
 
 ## Next Steps
 

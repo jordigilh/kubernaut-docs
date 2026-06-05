@@ -797,12 +797,9 @@ _Validation:_
 | `Deduplicated`| FailurePhaseDeduplicated indicates an RR that inherited a failure from a<br />deduplicated WorkflowExecution collision . Excluded from<br />consecutive failure counting per .|
 
 
-### InvestigationSession
+### InvestigationSession (embedded)
 
-
-InvestigationSession tracks the async Kubernaut Agent session lifecycle.
- AA controller session tracking
- Session regeneration on 404 (KA restart)
+InvestigationSession is also embedded in [AIAnalysisStatus](#aianalysisstatus) for autonomous pipeline session tracking. See [InvestigationSession CRD](#investigationsession) for the standalone resource.
 
 _Appears in:_
 - [AIAnalysisStatus](#aianalysisstatus)
@@ -889,6 +886,39 @@ _Validation:_
 | `High`||
 | `Medium`||
 | `Low`||
+
+
+## InvestigationSession
+
+InvestigationSession is a standalone CRD (short name: `isess`) that represents an interactive investigation session created by the API Frontend. It tracks the lifecycle of MCP sessions connected to a RemediationRequest.
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `apiVersion`| _string_| `kubernaut.ai/v1alpha1`|
+| `kind`| _string_| `InvestigationSession`|
+| `metadata`| _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_| Refer to the Kubernetes API documentation for fields of `metadata`.|
+| `spec`| _[InvestigationSessionSpec](#investigationsessionspec)_||
+| `status`| _[InvestigationSessionStatus](#investigationsessionstatus)_||
+
+
+### InvestigationSessionSpec
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `remediationRequestRef`| _[ObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectreference-v1-core)_| Reference to the RemediationRequest this session investigates|
+| `userIdentity`| _string_| OIDC identity of the user who started the session (from TokenReview)|
+| `sessionType`| _string_| Type of session: `interactive`, `autonomous`|
+
+
+### InvestigationSessionStatus
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `phase`| _string_| Current session phase: `Pending`, `Active`, `Completed`, `Cancelled`, `Disconnected`|
+| `sessionID`| _string_| Session ID as assigned by the Kubernaut Agent|
+| `startedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the session became active|
+| `completedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the session reached a terminal state|
+| `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Standard Kubernetes conditions|
 
 
 ## NotificationRequest
@@ -1225,6 +1255,7 @@ _Appears in:_
 | ---| ---| ---|
 | `decision`| _[ApprovalDecision](#approvaldecision)_| Decision made by operator or system (timeout)<br />Empty string indicates pending decision|
 | `decidedBy`| _string_| Who made the decision (username or "system" for timeout)|
+| `decidedVia`| _string_| How the decision was facilitated: `"af-intermediary"` when the AF acts as a [trusted intermediary](../architecture/security-rbac.md#trusted-intermediary) on behalf of a human user, empty when decided directly (#1287)|
 | `decidedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the decision was made|
 | `decisionMessage`| _string_| Optional message from the decision maker|
 | `workflowOverride`| _[WorkflowOverride](#workflowoverride)_| Operator workflow/parameter override (#594).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.|

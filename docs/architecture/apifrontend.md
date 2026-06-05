@@ -11,7 +11,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
 - **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
 - **Authorization** — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache
-- **MCP bridge** — Dispatches 23 `kubernaut_*` MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing
+- **MCP bridge** — Dispatches 21 `kubernaut_*` MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing
 - **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
 ## Agentic Architecture
@@ -127,7 +127,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 Session management spans two layers:
 
 - **KA MCP layer** (`internal/kubernautagent/mcp/`) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (`kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_select_workflow`, `kubernaut_discover_workflows`) to KA's MCP server.
-- **AF session layer** (`pkg/apifrontend/session/`) — Manages `InvestigationSession` CRDs with **deferred creation**: the CRD is not created when the A2A session starts, but only when `af_create_rr` succeeds and calls `MaterializeCRD()`. Sessions that never produce a RemediationRequest leave no cluster footprint.
+- **AF session layer** (`pkg/apifrontend/session/`) — Manages `InvestigationSession` CRDs with **deferred creation**: the CRD is not created when the A2A session starts, but only when `kubernaut_remediate` succeeds and calls `MaterializeCRD()`. Sessions that never produce a RemediationRequest leave no cluster footprint.
 
 ### Lease-based distributed locking
 
@@ -184,13 +184,17 @@ The AF streams investigation output to clients via **Server-Sent Events**:
 
 The AF runs its own LLM-backed agent for the A2A handler. The LLM config (`agent.llm` in the AF config.yaml) mirrors the KA `ai.llm` schema so operators use one config style across services.
 
-Supported providers: `vertex_ai` (Claude on Vertex AI), `gemini` (Gemini on Vertex AI), `anthropic` (Anthropic direct). When `provider` is empty, the A2A handler returns HTTP 501.
+Supported providers: `vertex_ai` (Claude on Vertex AI — requires `vertexProject` + `vertexLocation`), `gemini` (Gemini API direct — requires `apiKeyFile` or OAuth2), `anthropic` (Anthropic API direct — requires `apiKeyFile` or OAuth2). When `provider` is empty, the A2A handler returns HTTP 501.
 
 **Multi-provider factory** — The AF uses a transport chain that resolves the provider at startup, wires TLS (including mTLS client certificates for corporate LLM gateways via `tlsCertFile`/`tlsKeyFile` — #1342), and applies an optional circuit breaker around all outbound LLM HTTP calls.
 
 **File-based API key** — The `apiKeyFile` field replaces the former `LLM_API_KEY` environment variable (#1251). Mount the key as a Kubernetes Secret volume; the AF reads it at startup and trims whitespace.
 
 **OAuth2 client credentials** — For auth-gated LLM gateways, configure `oauth2.enabled: true` with `tokenURL`, `scopes`, and a `credentialsDir` containing `client-id` and `client-secret` files. Token refresh is handled automatically.
+
+**InstructionProvider** (#1276) — The A2A agent's system prompt is dynamically generated per-request by the `InstructionProvider`. This replaces the static `Instruction` string and injects the controller namespace, available tool names, and persona context into the LLM prompt at runtime.
+
+**KA bearer token** — The `kaBearerTokenFile` config field provides the AF with a bearer token for authenticating to the KA MCP server (#1287). When set, the AF includes this token in the `Authorization` header of all KA MCP requests.
 
 See [AF LLM Configuration](../user-guide/configuration.md#af-llm-configuration-v15) for the full field reference.
 

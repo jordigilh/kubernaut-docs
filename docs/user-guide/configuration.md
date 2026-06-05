@@ -106,9 +106,9 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `gateway.config.server.k8sRequestTimeout` | Timeout for Kubernetes API requests (TokenReview, SAR) | `15s` |
 | `gateway.config.middleware.trustedProxyCIDRs` | Trusted proxy CIDRs for `X-Forwarded-For` extraction. Empty = fail-closed (proxy headers never trusted). | `[]` |
 | `gateway.config.cors.allowedOrigins` | CORS allowed origins (string array). Gateway is an M2M API; the default rejects all browser clients. | `["https://no-browser-clients.invalid"]` |
-| `gateway.config.cors.allowedMethods` | HTTP methods allowed in CORS preflight | `["GET","POST","OPTIONS"]` |
+| `gateway.config.cors.allowedMethods` | HTTP methods allowed in CORS preflight | `["GET","POST","PUT","PATCH","DELETE","OPTIONS"]` |
 | `gateway.config.cors.allowCredentials` | Whether the `Access-Control-Allow-Credentials` header is set | `false` |
-| `gateway.config.cors.maxAge` | CORS preflight cache duration (seconds) | `3600` |
+| `gateway.config.cors.maxAge` | CORS preflight cache duration (seconds) | `300` |
 | `gateway.config.deduplication.cooldownPeriod` | Signal deduplication cooldown | `5m` |
 | `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
 
@@ -211,7 +211,7 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.enabled` | Enable API Frontend deployment | `true` |
 | `apifrontend.replicas` | Number of replicas | `1` |
 | `apifrontend.logging.level` | Log level | `INFO` |
-| `apifrontend.config.server.httpPort` | Primary API port | `8443` |
+| `apifrontend.config.server.httpPort` | Primary API port. Overridden by `PORT` environment variable if set (platform injection, e.g. Cloud Run). | `8443` |
 | `apifrontend.config.server.metricsPort` | Prometheus metrics port | `9090` |
 | `apifrontend.config.server.healthPort` | Health check port | `8081` |
 | `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
@@ -250,6 +250,7 @@ The API Frontend has its own LLM provider for the A2A agent handler. The schema 
 | `apifrontend.config.agent.llm.circuitBreaker.failureThreshold` | Failures before opening | `5` |
 | `apifrontend.config.agent.llm.circuitBreaker.timeout` | Duration in open state before half-open | `30s` |
 | `apifrontend.config.agent.llm.customHeaders` | Custom HTTP headers injected into LLM requests (name/value or name/filePath) | `[]` |
+| `apifrontend.config.agent.kaBearerTokenFile` | Path to bearer token file for AF→KA MCP client authentication (#1287). When set, the AF sends this token in the `Authorization` header of KA MCP requests. | `""` |
 
 ```yaml
 apifrontend:

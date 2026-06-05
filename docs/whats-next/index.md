@@ -44,7 +44,7 @@ Searchable workflow catalog with natural language filtering, KPI metrics, and a 
 !!! note "v1.5 ships both MCP and A2A tool surfaces"
     v1.5 ships a unified tool surface on the API Frontend. See [What's New: v1.5](../whats-new/index.md#v15).
 
-    - **API Frontend MCP** — 23 `kubernaut_*` MCP tools on `POST /mcp` spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.
+    - **API Frontend MCP** — 21 `kubernaut_*` MCP tools on `POST /mcp` spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.
     - **KA MCP (direct)** — 3 tools on the Kubernaut Agent (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) with Lease-based session management for direct client connections.
     - **Internal (ADK-only)** — 5 tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) internal to the AF's LLM agent for cluster context and RR creation.
 

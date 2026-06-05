@@ -180,6 +180,20 @@ The AF streams investigation output to clients via **Server-Sent Events**:
 | **OIDC Provider** | OAuth2/OIDC | User authentication via JWKS |
 | **Kubernetes API** | SubjectAccessReview | SAR-based tool authorization (verb `use`, group `kubernaut.ai`, resource `tools`) |
 
+## LLM Provider (A2A Agent)
+
+The AF runs its own LLM-backed agent for the A2A handler. The LLM config (`agent.llm` in the AF config.yaml) mirrors the KA `ai.llm` schema so operators use one config style across services.
+
+Supported providers: `vertex_ai` (Claude on Vertex AI), `gemini` (Gemini on Vertex AI), `anthropic` (Anthropic direct). When `provider` is empty, the A2A handler returns HTTP 501.
+
+**Multi-provider factory** — The AF uses a transport chain that resolves the provider at startup, wires TLS (including mTLS client certificates for corporate LLM gateways via `tlsCertFile`/`tlsKeyFile` — #1342), and applies an optional circuit breaker around all outbound LLM HTTP calls.
+
+**File-based API key** — The `apiKeyFile` field replaces the former `LLM_API_KEY` environment variable (#1251). Mount the key as a Kubernetes Secret volume; the AF reads it at startup and trims whitespace.
+
+**OAuth2 client credentials** — For auth-gated LLM gateways, configure `oauth2.enabled: true` with `tokenURL`, `scopes`, and a `credentialsDir` containing `client-id` and `client-secret` files. Token refresh is handled automatically.
+
+See [AF LLM Configuration](../user-guide/configuration.md#af-llm-configuration-v15) for the full field reference.
+
 ## Health Checks
 
 | Probe | Endpoint | Port |

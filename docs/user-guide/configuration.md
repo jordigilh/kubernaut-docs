@@ -105,7 +105,10 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `gateway.config.server.writeTimeout` | HTTP write timeout | `30s` |
 | `gateway.config.server.k8sRequestTimeout` | Timeout for Kubernetes API requests (TokenReview, SAR) | `15s` |
 | `gateway.config.middleware.trustedProxyCIDRs` | Trusted proxy CIDRs for `X-Forwarded-For` extraction. Empty = fail-closed (proxy headers never trusted). | `[]` |
-| `gateway.config.cors.allowedOrigins` | CORS allowed origins. Gateway is an M2M API; the default rejects all browser clients. | `https://no-browser-clients.invalid` |
+| `gateway.config.cors.allowedOrigins` | CORS allowed origins (string array). Gateway is an M2M API; the default rejects all browser clients. | `["https://no-browser-clients.invalid"]` |
+| `gateway.config.cors.allowedMethods` | HTTP methods allowed in CORS preflight | `["GET","POST","OPTIONS"]` |
+| `gateway.config.cors.allowCredentials` | Whether the `Access-Control-Allow-Credentials` header is set | `false` |
+| `gateway.config.cors.maxAge` | CORS preflight cache duration (seconds) | `3600` |
 | `gateway.config.deduplication.cooldownPeriod` | Signal deduplication cooldown | `5m` |
 | `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
 

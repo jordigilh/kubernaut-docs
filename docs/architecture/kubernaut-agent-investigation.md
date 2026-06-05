@@ -671,7 +671,7 @@ Kubernaut Agent and the Kubernaut Agent SDK cap tool and audit text so the model
 | Tool | Description |
 |---|---|
 | `kubectl_describe` | Describe a Kubernetes resource |
-| `kubectl_get` | Get resource YAML or JSON |
+| `kubectl_get` | Get resource YAML or JSON. Optional `api_group` parameter for kind disambiguation (#1311). |
 | `kubectl_find_resource` | Find resources by label or name pattern |
 | `kubectl_events` | Get events for a resource or namespace |
 | `kubectl_get_yaml` | Get raw YAML for a resource |

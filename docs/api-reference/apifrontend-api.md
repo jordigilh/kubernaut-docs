@@ -104,7 +104,7 @@ The AF's A2A agent also uses **5 internal tools** that are SAR-gated but not exp
 
 All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via `newRBACGuard()`.
 
-When `severityTriage.enabled: true` and a Prometheus URL is configured, 3 additional alert tools are registered: `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`. See [MCP Tool Reference — Alert tools](mcp-tools.md#alert-tools-registered-when-severitytriageenabled-true--prometheus-configured).
+When `severityTriage.enabled: true` and a Prometheus URL is configured, 3 additional alert tools are registered: `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`. See [MCP Tool Reference — Alert tools](mcp-tools.md#alert-tools).
 
 ### A2A Streaming Events {: #a2a-streaming-events }
 

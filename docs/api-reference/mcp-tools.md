@@ -655,7 +655,7 @@ However, they **are** SAR-gated on the A2A path via `newRBACGuard()` and are inc
 | `kubernaut_check_existing_remediation` | Check for duplicate RemediationRequest before creation. Params: `namespace`, `kind`, `name`. |
 | `kubernaut_remediate` | Create a new RemediationRequest CRD. Params: `namespace`, `kind`, `name`, `api_version` (required with namespace/kind/name, #1372), `description`, `rr_id`. |
 
-### Alert tools (registered when `severityTriage.enabled: true` + Prometheus configured)
+### Alert tools (registered when `severityTriage.enabled: true` + Prometheus configured) {: #alert-tools }
 
 These tools are only available when the AF has a Prometheus connection configured via `severityTriage.prometheusURL`. They enable the A2A agent to query firing alerts and create alert-driven RemediationRequests.
 

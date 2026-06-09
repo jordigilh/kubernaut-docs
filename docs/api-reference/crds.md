@@ -218,6 +218,19 @@ _Appears in:_
 | `catalogStatus`| _[CatalogStatus](#catalogstatus)_| CatalogStatus reflects the DS catalog lifecycle state.|
 
 
+### CatalogStatus
+
+_Underlying type:_ _string_
+
+CatalogStatus reflects the Data Storage catalog lifecycle state of an ActionType or RemediationWorkflow.
+
+| Value | Description |
+|---|---|
+| `Pending` | Not yet registered with Data Storage |
+| `Active` | Successfully registered and available for discovery |
+| `Failed` | Registration failed (see conditions for details) |
+
+
 ### AlignmentFindingStatus
 
 

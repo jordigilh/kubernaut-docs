@@ -929,7 +929,7 @@ The spec is **immutable** after creation (CEL validation: `self == oldSelf`).
 
 ### InvestigationSessionStatus
 
-Status is mutable by the AF only (RBAC-restricted).
+Status is mutable by the AF and the AIAnalysis controller (RBAC-restricted). The AA controller sets terminal phases (`Completed`, `Failed`) when a KA investigation ends (#1376).
 
 | Field| Type| Description|
 | ---| ---| ---|
@@ -1150,8 +1150,30 @@ _Appears in:_
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `detectedLabels`| _DetectedLabels_| DetectedLabels contains cluster characteristics computed by KA's<br />LabelDetector during get_namespaced_resource_context or get_cluster_resource_context tool invocations.|
-| `setAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| SetAt records when the PostRCAContext was populated.<br />Used as the immutability guard: once SetAt is non-nil, the entire<br />PostRCAContext becomes immutable via CEL validation.|
+| `detectedLabels`| _[DetectedLabels](#detectedlabels)_| DetectedLabels contains cluster characteristics computed by KA's LabelDetector during investigation.|
+| `setAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| SetAt records when the PostRCAContext was populated. Immutability guard: once non-nil, the entire PostRCAContext is immutable via CEL validation.|
+
+
+### DetectedLabels
+
+Cluster infrastructure characteristics detected by the Kubernaut Agent's `LabelDetector` during investigation. Stored in `AIAnalysis.status.postRCAContext.detectedLabels` and propagated to DataStorage for workflow scoring.
+
+| Field | Type | Description |
+|---|---|---|
+| `failedDetections` | _string array_ | Field names where detection failed (RBAC, timeout, API error). Valid values: any field name below. Labels with failed detections are stripped before scoring. |
+| `gitOpsManaged` | _boolean_ | ArgoCD/Flux annotations or owner references detected |
+| `gitOpsTool` | _string_ | GitOps tool identifier: `argocd`, `flux` |
+| `pdbProtected` | _boolean_ | PodDisruptionBudget exists for the resource |
+| `hpaEnabled` | _boolean_ | HorizontalPodAutoscaler targets the resource |
+| `stateful` | _boolean_ | Resource is StatefulSet or has PersistentVolumeClaims |
+| `helmManaged` | _boolean_ | Helm release labels detected |
+| `networkIsolated` | _boolean_ | NetworkPolicy exists in the namespace |
+| `serviceMesh` | _string_ | Service mesh sidecar: `istio`, `linkerd` |
+| `resourceQuotaConstrained` | _boolean_ | Namespace has an active ResourceQuota (not scored, available for Rego policies) |
+| `virtualMachine` | _boolean_ | VM/VMI/VMIM/DataVolume in owner chain or target kind (#1378) |
+| `liveMigratable` | _boolean_ | VM has `spec.evictionStrategy=LiveMigrate` (only when `virtualMachine` is true) |
+| `cdiManaged` | _boolean_ | PVC has `cdi.kubevirt.io/storage.import.*` annotations |
+| `storageBackend` | _string_ | StorageClass provisioner mapping: `odf-ceph`, `lvms`, `local` |
 
 
 ### Priority
@@ -1615,7 +1637,7 @@ _Appears in:_
 | `actionType`| _string_| ActionType is the action type from the taxonomy (PascalCase).|
 | `labels`| _[RemediationWorkflowLabels](#remediationworkflowlabels)_| Labels contains mandatory matching/filtering criteria for discovery|
 | `customLabels`| _object (keys:string, values:string)_| CustomLabels contains operator-defined key-value labels for additional filtering|
-| `detectedLabels`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| DetectedLabels contains author-declared infrastructure requirements. Expected keys: `gitOpsManaged`, `gitOpsTool`, `pdbProtected`, `hpaEnabled`, `stateful`, `helmManaged`, `networkIsolated`, `serviceMesh`. See [Detected Labels](../user-guide/workflows.md#detected-labels) for valid values and scoring weights.|
+| `detectedLabels`| _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_| DetectedLabels contains author-declared infrastructure requirements. Expected keys: `gitOpsManaged`, `gitOpsTool`, `pdbProtected`, `hpaEnabled`, `stateful`, `helmManaged`, `networkIsolated`, `serviceMesh`, `resourceQuotaConstrained`, `virtualMachine`, `liveMigratable`, `cdiManaged`, `storageBackend`. See [Detected Labels](../user-guide/workflows.md#detected-labels) for valid values and scoring weights.|
 | `execution`| _[RemediationWorkflowExecution](#remediationworkflowexecution)_| Execution contains execution engine configuration|
 | `dependencies`| _[RemediationWorkflowDependencies](#remediationworkflowdependencies)_| Dependencies declares infrastructure resources required by the workflow|
 | `maintainers`| _[RemediationWorkflowMaintainer](#remediationworkflowmaintainer) array_| Maintainers is optional maintainer information|

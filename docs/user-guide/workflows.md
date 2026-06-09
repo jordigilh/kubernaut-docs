@@ -425,18 +425,28 @@ detectedLabels:
   stateful: "true"
   networkIsolated: "true"
   serviceMesh: "istio"       # istio | linkerd | "*"
+  resourceQuotaConstrained: "true"
+  virtualMachine: "true"
+  liveMigratable: "true"
+  cdiManaged: "true"
+  storageBackend: "odf-ceph" # odf-ceph | lvms | local | "*"
 ```
 
-| Label | Type | Valid Values |
-|---|---|---|
-| `gitOpsManaged` | boolean | `"true"` only |
-| `gitOpsTool` | string | `argocd`, `flux`, `"*"` |
-| `pdbProtected` | boolean | `"true"` only |
-| `hpaEnabled` | boolean | `"true"` only |
-| `stateful` | boolean | `"true"` only |
-| `helmManaged` | boolean | `"true"` only |
-| `networkIsolated` | boolean | `"true"` only |
-| `serviceMesh` | string | `istio`, `linkerd`, `"*"` |
+| Label | Type | Valid Values | Category |
+|---|---|---|---|
+| `gitOpsManaged` | boolean | `"true"` only | GitOps management |
+| `gitOpsTool` | string | `argocd`, `flux`, `"*"` | GitOps management |
+| `pdbProtected` | boolean | `"true"` only | Workload protection |
+| `hpaEnabled` | boolean | `"true"` only | Workload protection |
+| `stateful` | boolean | `"true"` only | Workload characteristics |
+| `helmManaged` | boolean | `"true"` only | Workload characteristics |
+| `networkIsolated` | boolean | `"true"` only | Security posture |
+| `serviceMesh` | string | `istio`, `linkerd`, `"*"` | Security posture |
+| `resourceQuotaConstrained` | boolean | `"true"` only | Resource constraints |
+| `virtualMachine` | boolean | `"true"` only | Virtualization (CNV) |
+| `liveMigratable` | boolean | `"true"` only | Virtualization (CNV) |
+| `cdiManaged` | boolean | `"true"` only | Virtualization (CNV) |
+| `storageBackend` | string | `odf-ceph`, `lvms`, `local`, `"*"` | Virtualization (CNV) |
 
 Workflows that declare detected labels earn scoring boosts when the target resource matches -- see [Workflow Search and Scoring](#workflow-search-and-scoring).
 
@@ -798,14 +808,21 @@ The base score is 0.5 (5.0/10.0). Boosts increase it, penalties decrease it. The
 |---|---|---|---|
 | `gitOpsManaged` | +0.10 | -- | -- |
 | `gitOpsTool` | +0.10 | +0.05 | +0.05 |
+| `virtualMachine` | +0.08 | -- | -- |
 | `pdbProtected` | +0.05 | -- | -- |
 | `serviceMesh` | +0.05 | +0.025 | +0.025 |
+| `storageBackend` | +0.05 | +0.025 | +0.025 |
+| `liveMigratable` | +0.04 | -- | -- |
 | `networkIsolated` | +0.03 | -- | -- |
+| `cdiManaged` | +0.03 | -- | -- |
 | `helmManaged` | +0.02 | -- | -- |
 | `stateful` | +0.02 | -- | -- |
 | `hpaEnabled` | +0.02 | -- | -- |
 
-Maximum possible boost: **0.39** (all labels match exactly).
+Maximum possible boost: **0.59** (all labels match exactly).
+
+!!! note "`resourceQuotaConstrained` is not scored"
+    The `resourceQuotaConstrained` label is detected and stored but does not contribute to workflow scoring. It is available for Rego policy evaluation via `input.analysis.detectedLabels`.
 
 **Penalty rules** (high-impact only):
 

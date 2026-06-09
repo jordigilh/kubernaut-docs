@@ -129,15 +129,21 @@ final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_pen
 |---|---|---|
 | `gitOpsManaged` | +0.10 | -0.10 |
 | `gitOpsTool` | +0.10 | -0.10 |
+| `virtualMachine` | +0.08 | -- |
 | `pdbProtected` | +0.05 | -- |
 | `serviceMesh` | +0.05 | -- |
+| `storageBackend` | +0.05 | -- |
+| `liveMigratable` | +0.04 | -- |
 | `networkIsolated` | +0.03 | -- |
+| `cdiManaged` | +0.03 | -- |
 | `helmManaged` | +0.02 | -- |
 | `stateful` | +0.02 | -- |
 | `hpaEnabled` | +0.02 | -- |
 
-**Maximum boost**: +0.39 (all labels exact match)
+**Maximum boost**: +0.59 (all labels exact match)
 **Maximum penalty**: -0.20 (GitOps mismatch only)
+
+`resourceQuotaConstrained` is detected and available for Rego policies but does not participate in workflow scoring.
 
 ### Wildcard Weighting
 

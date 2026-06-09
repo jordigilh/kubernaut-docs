@@ -200,17 +200,23 @@ This fingerprint uniquely identifies the current configuration state. When sent 
 
 Probes the cluster to detect infrastructure characteristics of the root owner:
 
-| Label | Detection Method |
-|---|---|
-| `gitOpsManaged` | ArgoCD/Flux annotations or owner references |
-| `gitOpsTool` | Which GitOps tool (`argocd`, `flux`) |
-| `helmManaged` | Helm release labels |
-| `pdbProtected` | PodDisruptionBudget exists for the resource |
-| `hpaEnabled` | HorizontalPodAutoscaler targets the resource |
-| `stateful` | Resource is StatefulSet or has PersistentVolumeClaims |
-| `networkIsolated` | NetworkPolicy exists in the namespace |
-| `serviceMesh` | Istio/Linkerd sidecar annotations |
-| `resourceQuotaConstrained` | Namespace has an active `ResourceQuota` |
+| Label | Detection Method | Category |
+|---|---|---|
+| `gitOpsManaged` | ArgoCD/Flux annotations or owner references | GitOps |
+| `gitOpsTool` | Which GitOps tool (`argocd`, `flux`) | GitOps |
+| `helmManaged` | Helm release labels | Workload |
+| `pdbProtected` | PodDisruptionBudget exists for the resource | Protection |
+| `hpaEnabled` | HorizontalPodAutoscaler targets the resource | Protection |
+| `stateful` | Resource is StatefulSet or has PersistentVolumeClaims | Workload |
+| `networkIsolated` | NetworkPolicy exists in the namespace | Security |
+| `serviceMesh` | Istio/Linkerd sidecar annotations | Security |
+| `resourceQuotaConstrained` | Namespace has an active `ResourceQuota` | Constraints |
+| `virtualMachine` | VM/VMI/VMIM/DataVolume in owner chain or target kind (#1378) | CNV |
+| `liveMigratable` | VM has `spec.evictionStrategy=LiveMigrate` (only when `virtualMachine` is true) | CNV |
+| `cdiManaged` | PVC has `cdi.kubevirt.io/storage.import.*` annotations | CNV |
+| `storageBackend` | StorageClass provisioner mapping: `odf-ceph`, `lvms`, `local` | CNV |
+
+CNV detection uses a RESTMapper pre-check and skips gracefully on non-CNV/KubeVirt clusters.
 
 When `resourceQuotaConstrained` is detected, the `LabelDetector` also surfaces **`quota_details`** as a structured `map[string]QuotaResourceUsage` in the resource context response, containing per-resource `hard` and `used` values from all `ResourceQuota` objects in the namespace (e.g., `cpu: {hard: "4", used: "2.5"}`). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.
 

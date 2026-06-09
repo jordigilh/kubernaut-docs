@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -6028,6 +6028,7 @@
 <p><code>RemediationWorkflow</code> resources use <strong>deterministic UUIDs</strong> (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across <strong>PVC wipes</strong> and database replays as long as the spec is unchanged. <code>ActionType</code> entries are keyed by their <code>actionType</code> identifier string.</p>
 <h2 id="auth-webhook-startup-reconciliation">Auth Webhook startup reconciliation<a class="headerlink" href="#auth-webhook-startup-reconciliation" title="Permanent link">&para;</a></h2>
 <p>On startup, the Auth Webhook runs a <strong>Runnable</strong> that lists cluster <code>ActionType</code> objects, then <code>RemediationWorkflow</code> objects, and <strong>reconciles</strong> them with DataStorage through <strong>idempotent creates</strong>. This repopulates the catalog after storage loss or drift without duplicating rows.</p>
+<p><strong>Graceful degradation</strong> (#1246) — Individual <code>RemediationWorkflow</code> registration failures do not crash the pod. The reconciler logs the error, emits a <code>authwebhook.workflow.registration_failed</code> audit event, and continues with the remaining workflows. The webhook starts serving admission requests as soon as the reconciler completes, regardless of individual failures.</p>
 <h2 id="database-migrations">Database migrations<a class="headerlink" href="#database-migrations" title="Permanent link">&para;</a></h2>
 <p>Schema changes use an <strong>append-only</strong> migration chain managed by <a href="https://github.com/pressly/goose"><strong>goose</strong></a>. The strategy is:</p>
 <ul>

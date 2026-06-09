@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3330,9 +3330,9 @@
 <p class="admonition-title">Case-insensitive matching (v1.2)</p>
 <p>Starting with v1.2, environment and severity matching in both workflow discovery filters and approval Rego policies is <strong>case-insensitive</strong>. For example, <code>Production</code>, <code>production</code>, and <code>PRODUCTION</code> all match equivalently. The default policies use <code>lower()</code> for comparisons. Custom policies should follow the same pattern.</p>
 </div>
-<div class="admonition info">
-<p class="admonition-title">Embedded default SP Rego (v1.2)</p>
-<p>Starting with v1.2, the Helm chart ships a default <code>signalprocessing-policy.rego</code> so installations work without <code>--set-file</code>. Users who previously relied on an empty ConfigMap should be aware the chart now generates a default policy with standard severity, priority, and environment rules.</p>
+<div class="admonition warning">
+<p class="admonition-title">Required prerequisites (operator deployments)</p>
+<p>The Kubernaut Operator <strong>rejects the CR</strong> if <code>spec.signalProcessing.policy.configMapName</code> or <code>spec.aiAnalysis.policy.configMapName</code> is empty. You must create the policy ConfigMaps <strong>before</strong> applying the Kubernaut CR. The Helm chart can generate them from <code>--set-file</code>, but operator deployments require explicit user-provided ConfigMaps. See <a href="../../getting-started/installation/#prerequisites">Installation Prerequisites</a>.</p>
 </div>
 <h2 id="policy-overview">Policy Overview<a class="headerlink" href="#policy-overview" title="Permanent link">&para;</a></h2>
 <table>

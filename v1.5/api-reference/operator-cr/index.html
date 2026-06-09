@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -2429,6 +2429,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#signalprocessingspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SignalProcessingSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#aianalysisspec" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3430,6 +3441,18 @@
 <strong>CRD schema</strong>: <a href="https://github.com/jordigilh/kubernaut-operator/blob/main/config/crd/bases/kubernaut.ai_kubernauts.yaml"><code>kubernaut-operator/config/crd/bases/kubernaut.ai_kubernauts.yaml</code></a></p>
 <hr />
 <h2 id="spec-kubernautspec"><code>spec</code> (KubernautSpec)<a class="headerlink" href="#spec-kubernautspec" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">CR validation (<a href="https://github.com/jordigilh/kubernaut-operator/issues/128">kubernaut-operator#128</a>)</p>
+<p>The operator runs <code>ValidateKubernaut</code> checks and <strong>rejects the CR</strong> if any of the following are missing:</p>
+<ul>
+<li><code>spec.aiAnalysis.policy.configMapName</code> — must reference a ConfigMap containing key <code>approval.rego</code></li>
+<li><code>spec.signalProcessing.policy.configMapName</code> — must reference a ConfigMap containing key <code>policy.rego</code></li>
+<li><code>spec.kubernautAgent.llm.provider</code> — LLM provider name</li>
+<li><code>spec.kubernautAgent.llm.model</code> — LLM model name</li>
+<li><code>spec.kubernautAgent.llm.credentialsSecretName</code> — Secret with LLM API credentials</li>
+</ul>
+<p>Create these resources <strong>before</strong> applying the Kubernaut CR. See <a href="../../getting-started/installation/#prerequisites">Installation Prerequisites</a>.</p>
+</div>
 <h3 id="required-fields">Required fields<a class="headerlink" href="#required-fields" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3496,13 +3519,13 @@
 <td><code>aiAnalysis</code></td>
 <td><a href="#aianalysisspec">AIAnalysisSpec</a></td>
 <td>—</td>
-<td>Rego approval policy ConfigMap, confidence threshold</td>
+<td><strong>Required policy ConfigMap</strong> — Rego approval policy, confidence threshold</td>
 </tr>
 <tr>
 <td><code>signalProcessing</code></td>
-<td>SignalProcessingSpec</td>
+<td><a href="#signalprocessingspec">SignalProcessingSpec</a></td>
 <td>—</td>
-<td>Rego classification policy ConfigMap, proactive mappings</td>
+<td><strong>Required policy ConfigMap</strong> — Rego classification policy, proactive mappings</td>
 </tr>
 <tr>
 <td><code>remediationOrchestrator</code></td>
@@ -3998,6 +4021,28 @@
 </tr>
 </tbody>
 </table>
+<h3 id="signalprocessingspec">SignalProcessingSpec<a class="headerlink" href="#signalprocessingspec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>policy.configMapName</code></td>
+<td>string</td>
+<td><strong>Required</strong> — ConfigMap containing key <code>policy.rego</code> with SP classification rules</td>
+</tr>
+<tr>
+<td><code>proactiveSignalMappings.configMapName</code></td>
+<td>string</td>
+<td>ConfigMap containing proactive signal mapping YAML</td>
+</tr>
+</tbody>
+</table>
 <h3 id="aianalysisspec">AIAnalysisSpec<a class="headerlink" href="#aianalysisspec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4011,7 +4056,7 @@
 <tr>
 <td><code>policy.configMapName</code></td>
 <td>string</td>
-<td><strong>Required</strong> — ConfigMap containing <code>approval.rego</code></td>
+<td><strong>Required</strong> — ConfigMap containing key <code>approval.rego</code></td>
 </tr>
 <tr>
 <td><code>confidenceThreshold</code></td>
@@ -4053,7 +4098,7 @@
 <tr>
 <td><code>dryRun</code></td>
 <td>bool</td>
-<td>Enable global dry-run (Level 1 — Observe)</td>
+<td>Enable global dry-run (Stage 1 — Observe)</td>
 </tr>
 <tr>
 <td><code>dryRunHoldPeriod</code></td>

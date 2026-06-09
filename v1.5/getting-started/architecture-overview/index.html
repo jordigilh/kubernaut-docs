@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3349,7 +3349,7 @@
 </svg>
 </div>
 
-<p>The <strong>Gateway</strong> receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The <strong>Remediation Orchestrator</strong> coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The <strong>DataStorage</strong> foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history. The <strong>API Frontend</strong> (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. <code>InvestigationSession</code> CRDs are created with <strong>deferred materialization</strong> — the CRD only appears in the cluster after a RemediationRequest is successfully created via <code>af_create_rr</code>, so sessions that never produce an RR leave no cluster footprint.</p>
+<p>The <strong>Gateway</strong> receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The <strong>Remediation Orchestrator</strong> coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The <strong>DataStorage</strong> foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history. The <strong>API Frontend</strong> (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. <code>InvestigationSession</code> CRDs are created with <strong>deferred materialization</strong> — the CRD only appears in the cluster after a RemediationRequest is successfully created via <code>kubernaut_remediate</code>, so sessions that never produce an RR leave no cluster footprint.</p>
 <h2 id="remediation-pipeline">Remediation Pipeline<a class="headerlink" href="#remediation-pipeline" title="Permanent link">&para;</a></h2>
 <p>The pipeline processes signals through six CRD-native phases:</p>
 <table>

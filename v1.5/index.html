@@ -93,7 +93,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../.">
       <strong>View stable documentation.</strong>
@@ -3308,23 +3308,23 @@
 <tbody>
 <tr>
 <td><strong>SRE</strong></td>
-<td>20</td>
-<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code><br><strong>Investigation:</strong> <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_stream_investigation</code><br><strong>Interactive:</strong> <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code><br><strong>Workflow:</strong> <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_list_workflows</code><br><strong>Data:</strong> <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code><br><strong>Presentation:</strong> <code>kubernaut_present_decision</code></td>
+<td>19</td>
+<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_approve</code><br><strong>Investigation:</strong> <code>kubernaut_investigate</code><br><strong>Interactive:</strong> <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code><br><strong>Workflow:</strong> <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_list_workflows</code><br><strong>Data:</strong> <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code><br><strong>Presentation:</strong> <code>kubernaut_present_decision</code></td>
 </tr>
 <tr>
 <td><strong>AI Orchestrator</strong></td>
-<td>15</td>
-<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code><br><strong>Investigation:</strong> <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_stream_investigation</code><br><strong>Interactive:</strong> <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code><br><strong>Workflow:</strong> <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code><br><strong>Presentation:</strong> <code>kubernaut_present_decision</code></td>
+<td>13</td>
+<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code><br><strong>Investigation:</strong> <code>kubernaut_investigate</code><br><strong>Interactive:</strong> <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code><br><strong>Workflow:</strong> <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code><br><strong>Presentation:</strong> <code>kubernaut_present_decision</code></td>
 </tr>
 <tr>
 <td><strong>CI/CD</strong></td>
-<td>3</td>
-<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code></td>
+<td>4</td>
+<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
 </tr>
 <tr>
 <td><strong>Observability</strong></td>
-<td>5</td>
-<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code><br><strong>Workflow:</strong> <code>kubernaut_list_workflows</code><br><strong>Data:</strong> <code>kubernaut_get_effectiveness</code></td>
+<td>6</td>
+<td><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code><br><strong>Workflow:</strong> <code>kubernaut_list_workflows</code><br><strong>Data:</strong> <code>kubernaut_get_effectiveness</code></td>
 </tr>
 <tr>
 <td><strong>L3 Audit</strong></td>
@@ -3333,8 +3333,8 @@
 </tr>
 <tr>
 <td><strong>Remediation Approver</strong></td>
-<td>4</td>
-<td><strong>RemediationApprovalRequest:</strong> <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_approve</code>, <code>kubernaut_watch</code></td>
+<td>7</td>
+<td><strong>RemediationApprovalRequest:</strong> <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_approve</code><br><strong>RemediationRequest:</strong> <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
 </tr>
 </tbody>
 </table>

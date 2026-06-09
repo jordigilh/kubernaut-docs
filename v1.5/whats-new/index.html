@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../..">
       <strong>View stable documentation.</strong>
@@ -3070,12 +3070,12 @@ Review the changes below to understand what differs from the version you are cur
 <li><strong>A2A support</strong> — Agent-to-Agent protocol with agent card discovery at <code>/.well-known/agent-card.json</code></li>
 <li><strong>SSE streaming</strong> — Real-time investigation output streamed token-by-token via Server-Sent Events</li>
 <li><strong>SAR authorization</strong> — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results</li>
-<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing</li>
+<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing</li>
 </ul>
 <p>See <a href="../architecture/apifrontend/">API Frontend Architecture</a> for the full design, and <a href="../user-guide/configuration/#api-frontend-v15">Configuration: API Frontend</a> for Helm values.</p>
 <h3 id="interactive-mcp-sessions">Interactive MCP sessions<a class="headerlink" href="#interactive-mcp-sessions" title="Permanent link">&para;</a></h3>
 <p>Operators and AI agents can now connect to Kubernaut via MCP for <strong>interactive investigation and remediation</strong>. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.</p>
-<p>The API Frontend exposes <strong>23 <code>kubernaut_*</code> MCP tools</strong> on its MCP endpoint (<code>POST /mcp</code>), including 6 interactive session lifecycle tools dispatched to the Kubernaut Agent:</p>
+<p>The API Frontend exposes <strong>21 <code>kubernaut_*</code> MCP tools</strong> on its MCP endpoint (<code>POST /mcp</code>), organized by domain:</p>
 <table>
 <thead>
 <tr>
@@ -3085,20 +3085,16 @@ Review the changes below to understand what differs from the version you are cur
 </thead>
 <tbody>
 <tr>
-<td><strong>Interactive lifecycle</strong></td>
-<td><code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td><strong>Investigation &amp; session lifecycle</strong></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
-<td><strong>Investigation</strong></td>
-<td><code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_stream_investigation</code></td>
+<td><strong>CRD operations</strong></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_await_session</code></td>
 </tr>
 <tr>
 <td><strong>Workflow</strong></td>
 <td><code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code></td>
-</tr>
-<tr>
-<td><strong>CRD operations</strong></td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code></td>
 </tr>
 <tr>
 <td><strong>Data &amp; history</strong></td>
@@ -3194,7 +3190,7 @@ Review the changes below to understand what differs from the version you are cur
 </tbody>
 </table>
 <p><code>af_resolve_owner</code> is removed — KA independently resolves the owner chain during RCA. The new tools use <code>RESTMapper</code> for dynamic kind-to-GVR resolution. Secret <code>.data</code> fields are redacted before returning to the LLM.</p>
-<p>All cluster context tools (<code>kubectl_*</code>, <code>af_check_existing_rr</code>, <code>af_create_rr</code>) are <strong>internal to the AF's LLM agent</strong> — they run inside the AF's agent loop and are not exposed to external MCP clients. The external MCP/A2A surface consists of <strong>23 <code>kubernaut_*</code> MCP tools</strong> spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.</p>
+<p>All internal tools (<code>kubectl_*</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) run inside the AF's A2A agent loop and are not exposed on the MCP bridge. They are still SAR-gated via <code>newRBACGuard()</code> and included in per-persona ClusterRoles. The external MCP surface consists of <strong>21 <code>kubernaut_*</code> MCP tools</strong> spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.</p>
 <h3 id="session-takeover-security-sec-takeover-001">Session takeover security (SEC-TAKEOVER-001)<a class="headerlink" href="#session-takeover-security-sec-takeover-001" title="Permanent link">&para;</a></h3>
 <p>When a second user connects to an active MCP session, the original user's investigation is <strong>abandoned, not completed</strong>. This prevents a takeover from inheriting or completing work under a different identity. The abandoned session is logged as an audit event.</p>
 <h3 id="datastorage-advanced-configuration-v15">DataStorage advanced configuration (v1.5)<a class="headerlink" href="#datastorage-advanced-configuration-v15" title="Permanent link">&para;</a></h3>

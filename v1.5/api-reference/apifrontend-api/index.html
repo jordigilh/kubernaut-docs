@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3294,12 +3294,13 @@
 </span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="p">}</span>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The AF runs its own MCP server with <strong>23 <code>kubernaut_*</code> MCP tools</strong> (see <a href="#a2a-json-rpc-20">A2A tools</a> for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA REST (autonomous investigation), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). The Kubernaut Agent runs a separate MCP server at <code>/api/v1/mcp</code> with 3 interactive-mode tools (<code>kubernaut_investigate</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_complete_no_action</code>) for direct client connections.</p>
+<p>The AF runs its own MCP server with <strong>21 <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge (see <a href="../mcp-tools/">MCP Tool Reference</a> for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) are used only inside the A2A agent loop and are not exposed on the MCP bridge.</p>
 <h3 id="a2a-json-rpc-20">A2A JSON-RPC 2.0<a class="headerlink" href="#a2a-json-rpc-20" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>POST /a2a/invoke
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>POST /                  # root alias — same handler
 </span></code></pre></div>
-<p>Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include <code>message/send</code>. Requires Bearer JWT authentication.</p>
-<p>The A2A agent uses <strong>23 SAR-gated <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP endpoint, organized in six domains:</p>
+<p>Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include <code>message/send</code>. Requires Bearer JWT authentication. <code>POST /</code> is an alias for <code>POST /a2a/invoke</code>, providing A2A spec conformance for clients that expect the root path.</p>
+<p>The A2A agent uses <strong>21 SAR-gated <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge, plus 5 internal tools, organized in six domains:</p>
 <table>
 <thead>
 <tr>
@@ -3311,17 +3312,12 @@
 <tbody>
 <tr>
 <td><strong>CRD operations</strong></td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_await_session</code></td>
 <td>K8s API (AF SA)</td>
 </tr>
 <tr>
-<td><strong>Autonomous investigation</strong></td>
-<td><code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_stream_investigation</code></td>
-<td>KA REST</td>
-</tr>
-<tr>
-<td><strong>Interactive session lifecycle</strong></td>
-<td><code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td><strong>Investigation &amp; session lifecycle</strong></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 <td>KA MCP</td>
 </tr>
 <tr>
@@ -3345,8 +3341,8 @@
 <p class="admonition-title">Upstream Helm gap (<a href="https://github.com/jordigilh/kubernaut/issues/1239">#1239</a>)</p>
 <p><code>kubernaut_list_approval_requests</code> and <code>kubernaut_get_approval_request</code> are not yet in the Helm <code>values.yaml</code> persona definitions. They belong in the <code>remediation-approver</code> persona per <a href="https://github.com/jordigilh/kubernaut/issues/1235">#1235</a>. The documentation reflects the intended design. See <a href="../../architecture/security-rbac/#per-persona-clusterroles">per-persona ClusterRoles</a>.</p>
 </div>
-<p>The <code>kubernaut_*</code> investigation tools dispatch to the Kubernaut Agent (<code>kubernaut_start_investigation</code>/<code>kubernaut_poll_investigation</code> via KA REST; <code>kubernaut_select_workflow</code>/<code>kubernaut_discover_workflows</code> via KA MCP). The <code>kubernaut_*</code> CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>). The <code>kubernaut_*</code> data tools query DataStorage. <code>kubernaut_present_decision</code> is handled locally by the AF.</p>
-<p>The AF's LLM agent also uses <strong>5 internal tools</strong> that are not exposed via MCP — they run inside the AF's own agent loop for cluster inspection and RR creation:</p>
+<p><code>kubernaut_investigate</code> dispatches to the Kubernaut Agent's MCP server (maps to KA's <code>kubernaut_investigate</code> with <code>action=start</code>). The AF decomposes the remaining KA actions (<code>message</code>, <code>complete</code>, <code>cancel</code>, <code>status</code>, <code>reconnect</code>, <code>discover_workflows</code>) into individual MCP tools. CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>). Data tools query DataStorage. <code>kubernaut_present_decision</code> is handled locally by the AF.</p>
+<p>The AF's A2A agent also uses <strong>5 internal tools</strong> that are SAR-gated but not exposed on the MCP bridge:</p>
 <table>
 <thead>
 <tr>
@@ -3368,16 +3364,16 @@
 <td>List K8s events with reason/object filters</td>
 </tr>
 <tr>
-<td><code>af_check_existing_rr</code></td>
+<td><code>kubernaut_check_existing_remediation</code></td>
 <td>Check for duplicate RemediationRequest before creation</td>
 </tr>
 <tr>
-<td><code>af_create_rr</code></td>
-<td>Create RemediationRequest CRD; triggers deferred <code>InvestigationSession</code> CRD materialization</td>
+<td><code>kubernaut_remediate</code></td>
+<td>Create a new RemediationRequest CRD</td>
 </tr>
 </tbody>
 </table>
-<p>All internal tools use the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>) and are SAR-gated on the A2A path via the same <code>newRBACGuard()</code> as MCP tools.</p>
+<p>All internal tools use the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>) and are SAR-gated on the A2A path via <code>newRBACGuard()</code>.</p>
 <h3 id="agent-card-discovery">Agent Card Discovery<a class="headerlink" href="#agent-card-discovery" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>GET /.well-known/agent-card.json
 </span></code></pre></div>

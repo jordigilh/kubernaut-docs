@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -1691,6 +1691,17 @@
     <span class="md-ellipsis">
       
         Temperature Tuning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mtls-for-llm-proxy-1342" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        mTLS for LLM Proxy (#1342)
       
     </span>
   </a>
@@ -3573,28 +3584,35 @@
 </span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span><span class="w">          </span><span class="c1"># Creativity vs determinism (0.0--1.0)</span>
 </span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">    </span><span class="nt">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">             </span><span class="c1"># LLM call retry count</span>
 </span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w">       </span><span class="c1"># Per-call timeout</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span><span class="w">            </span><span class="c1"># Optional custom HTTP headers (see Custom Headers section)</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Custom&quot;</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
-</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Request-Cert&quot;</span>
-</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
-</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">    </span><span class="nt">oauth2</span><span class="p">:</span><span class="w">                   </span><span class="c1"># Optional OAuth2 client credentials</span>
-</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">      </span><span class="nt">tokenUrl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Must use https:// when enabled</span>
-</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">      </span><span class="nt">clientId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">      </span><span class="nt">clientSecret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">      </span><span class="nt">scopes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;scope1&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a>
-</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="nt">integrations</span><span class="p">:</span>
-</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">  </span><span class="nt">toolsets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">              </span><span class="c1"># Optional: data source toolsets</span>
-</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">    </span><span class="c1"># prometheus/metrics:</span>
-</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">    </span><span class="c1">#   enabled: true</span>
-</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">    </span><span class="c1">#   config:</span>
-</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">    </span><span class="c1">#     prometheusUrl: &quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">             </span><span class="c1"># Custom CA cert for LLM endpoint (PEM, absolute path)</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">           </span><span class="c1"># Client certificate for mTLS to LLM proxy (#1342, absolute path)</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Client key for mTLS to LLM proxy (#1342, absolute path)</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span><span class="w">            </span><span class="c1"># Optional custom HTTP headers (see Custom Headers section)</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Custom&quot;</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Request-Cert&quot;</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">    </span><span class="nt">oauth2</span><span class="p">:</span><span class="w">                   </span><span class="c1"># Optional OAuth2 client credentials</span>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">      </span><span class="nt">tokenUrl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Must use https:// when enabled</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">      </span><span class="nt">clientId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">      </span><span class="nt">clientSecret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">      </span><span class="nt">scopes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;scope1&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">    </span><span class="nt">circuitBreaker</span><span class="p">:</span><span class="w">           </span><span class="c1"># Resilience for LLM HTTP calls</span>
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">      </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">     </span><span class="c1"># Failures before opening</span>
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span><span class="w">            </span><span class="c1"># Duration in open state before half-open</span>
 </span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a>
-</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a><span class="w">  </span><span class="nt">mcpServers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">            </span><span class="c1"># Optional: Model Context Protocol servers</span>
+</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a><span class="nt">integrations</span><span class="p">:</span>
+</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="w">  </span><span class="nt">toolsets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">              </span><span class="c1"># Optional: data source toolsets</span>
+</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">    </span><span class="c1"># prometheus/metrics:</span>
+</span><span id="__span-5-44"><a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="w">    </span><span class="c1">#   enabled: true</span>
+</span><span id="__span-5-45"><a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">    </span><span class="c1">#   config:</span>
+</span><span id="__span-5-46"><a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="w">    </span><span class="c1">#     prometheusUrl: &quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
+</span><span id="__span-5-47"><a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a>
+</span><span id="__span-5-48"><a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a><span class="w">  </span><span class="nt">mcpServers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">            </span><span class="c1"># Optional: Model Context Protocol servers</span>
 </span></code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Operator: BYO runtime ConfigMap</p>
@@ -3792,6 +3810,48 @@
 <li><strong>0.7</strong> (default): Balanced.</li>
 <li><strong>0.8--1.0</strong>: More creative. May discover non-obvious root causes but less consistent.</li>
 </ul>
+<h2 id="mtls-for-llm-proxy-1342">mTLS for LLM Proxy (#1342)<a class="headerlink" href="#mtls-for-llm-proxy-1342" title="Permanent link">&para;</a></h2>
+<p>Both the Kubernaut Agent and the API Frontend support <strong>mutual TLS (mTLS)</strong> for outbound LLM HTTP calls. This is required when a corporate LLM proxy mandates client certificate authentication.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>tlsCaFile</code></td>
+<td>PEM-encoded CA certificate for verifying the LLM endpoint (server verification is mandatory — SC-8)</td>
+</tr>
+<tr>
+<td><code>tlsCertFile</code></td>
+<td>Client certificate presented during the TLS handshake (absolute path, e.g. <code>/etc/kubernaut/certs/llm-client.crt</code>)</td>
+</tr>
+<tr>
+<td><code>tlsKeyFile</code></td>
+<td>Client private key (absolute path, e.g. <code>/etc/kubernaut/certs/llm-client.key</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Validation rules:</strong></p>
+<ul>
+<li><code>tlsCertFile</code> and <code>tlsKeyFile</code> must <strong>both</strong> be set or both be empty (pair validation).</li>
+<li>Both must be <strong>absolute paths</strong>.</li>
+<li>When mTLS is configured, <code>tlsCaFile</code> is <strong>required</strong> — the transport chain always verifies the server certificate.</li>
+</ul>
+<p><strong>Transport chain:</strong> The mTLS transport is the innermost layer. On top of it, the chain applies OAuth2 (if configured), custom headers, and circuit breaker wrapping. For <code>vertex_ai</code>, GCP OAuth2 is layered on top of the mTLS transport via <code>WithBaseTransport</code>.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertex_ai</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east4</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-ca.pem</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.crt</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.key</span>
+</span></code></pre></div>
+<p>The same fields are available under <code>apifrontend.config.agent.llm.*</code> for the AF's LLM provider. See <a href="../configuration/#af-llm-configuration-v15">AF LLM Configuration</a>.</p>
 <h2 id="custom-headers">Custom Headers<a class="headerlink" href="#custom-headers" title="Permanent link">&para;</a></h2>
 <div class="admonition info">
 <p class="admonition-title">Added in v1.3 (Issue #417)</p>
@@ -3826,28 +3886,28 @@
 </tbody>
 </table>
 <h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="c1"># Static value — suitable for non-sensitive identifiers</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Team-Id&quot;</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform-sre&quot;</span>
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a>
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">      </span><span class="c1"># Secret reference — resolves the env var LLM_PROXY_TOKEN at startup</span>
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a>
-</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">      </span><span class="c1"># File path — re-read on every request (supports cert/token rotation)</span>
-</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Client-Cert&quot;</span>
-</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">      </span><span class="c1"># Static value — suitable for non-sensitive identifiers</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Team-Id&quot;</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform-sre&quot;</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">      </span><span class="c1"># Secret reference — resolves the env var LLM_PROXY_TOKEN at startup</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">      </span><span class="c1"># File path — re-read on every request (supports cert/token rotation)</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Client-Cert&quot;</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
 </span></code></pre></div>
 <p>To expose a Kubernetes Secret as an environment variable for <code>secretKeyRef</code>, add an <code>env</code> entry to the Kubernaut Agent Deployment:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">env</span><span class="p">:</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM_PROXY_TOKEN</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-proxy-credentials</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">env</span><span class="p">:</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM_PROXY_TOKEN</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-proxy-credentials</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
 </span></code></pre></div>
 <h3 id="validation-rules">Validation Rules<a class="headerlink" href="#validation-rules" title="Permanent link">&para;</a></h3>
 <ul>
@@ -3898,6 +3958,8 @@
 <ul>
 <li><code>ai.llm.provider</code></li>
 <li><code>ai.llm.oauth2.tokenUrl</code>, <code>ai.llm.oauth2.clientId</code>, <code>ai.llm.oauth2.clientSecret</code></li>
+<li><code>ai.llm.tlsCertFile</code>, <code>ai.llm.tlsKeyFile</code>, <code>ai.llm.tlsCaFile</code> (TLS state is built at startup)</li>
+<li><code>ai.llm.circuitBreaker.*</code></li>
 </ul>
 <p><strong>Hot-reloadable fields</strong>: <code>model</code>, <code>endpoint</code>, <code>apiKey</code>, <code>azureApiVersion</code>, <code>vertexProject</code>, <code>vertexLocation</code>, <code>bedrockRegion</code>, <code>temperature</code>, <code>maxRetries</code>, <code>timeoutSeconds</code>, <code>customHeaders</code>, <code>oauth2.scopes</code></p>
 <p>Active investigations are pinned to the client/model snapshot at start — reload only affects new investigations.</p>

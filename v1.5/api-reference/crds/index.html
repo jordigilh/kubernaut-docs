@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -2533,6 +2533,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#connectionstate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConnectionState
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#dedupcontext" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2747,11 +2758,50 @@
   
 </li>
         
-          <li class="md-nav__item">
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#investigationsession" class="md-nav__link">
     <span class="md-ellipsis">
       
         InvestigationSession
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="InvestigationSession">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#investigationsessionspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InvestigationSessionSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#investigationsessionstatus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InvestigationSessionStatus
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kasession" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        KASession
       
     </span>
   </a>
@@ -3238,6 +3288,39 @@
     <span class="md-ellipsis">
       
         SelectedWorkflow
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sessionjoinmode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SessionJoinMode
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sessionphase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SessionPhase
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sessionuser" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SessionUser
       
     </span>
   </a>
@@ -4592,8 +4675,8 @@ Once created by RemediationOrchestrator, spec cannot be modified to ensure:
 </tr>
 <tr>
 <td><code>investigationSession</code></td>
-<td><em><a href="#investigationsession">InvestigationSession</a></em></td>
-<td>Tracks the async submit/poll session with Kubernaut Agent<br />InvestigationSession tracks the async KA session for submit/poll pattern</td>
+<td><em><a href="#kasession">KASession</a></em></td>
+<td>Tracks the async submit/poll session with Kubernaut Agent<br />KASession tracks the async KA session for submit/poll pattern</td>
 </tr>
 <tr>
 <td><code>interactiveSession</code></td>
@@ -5316,6 +5399,29 @@ Preserves audit trail when operators clear execution blocks after investigation<
 <tr>
 <td><code>IneffectiveChain</code></td>
 <td>BlockReasonIneffectiveChain indicates consecutive remediations for the same target<br />have been ineffective (resource keeps reverting or health doesn't improve).<br />Escalates to human review via NotificationRequest.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="connectionstate">ConnectionState<a class="headerlink" href="#connectionstate" title="Permanent link">&para;</a></h3>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p>ConnectionState represents the SSE connection state.</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsessionstatus">InvestigationSessionStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Connected</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Disconnected</code></td>
+<td></td>
 </tr>
 </tbody>
 </table>
@@ -6084,10 +6190,152 @@ Lightweight summary for both Tekton PipelineRun and K8s Job backends</p>
 </tr>
 </tbody>
 </table>
-<h3 id="investigationsession">InvestigationSession<a class="headerlink" href="#investigationsession" title="Permanent link">&para;</a></h3>
-<p>InvestigationSession tracks the async Kubernaut Agent session lifecycle.
+<h2 id="investigationsession">InvestigationSession<a class="headerlink" href="#investigationsession" title="Permanent link">&para;</a></h2>
+<p>InvestigationSession links an A2A task to kubernaut pipeline CRDs.
+It enables session persistence across AF restarts and user reconnections.
+OwnerReference to the associated RemediationRequest ensures automatic
+garbage collection when the RR's retention TTL expires.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apiVersion</code></td>
+<td><em>string</em></td>
+<td><code>kubernaut.ai/v1alpha1</code></td>
+</tr>
+<tr>
+<td><code>kind</code></td>
+<td><em>string</em></td>
+<td><code>InvestigationSession</code></td>
+</tr>
+<tr>
+<td><code>metadata</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta">ObjectMeta</a></em></td>
+<td>Refer to the Kubernetes API documentation for fields of <code>metadata</code>.</td>
+</tr>
+<tr>
+<td><code>spec</code></td>
+<td><em><a href="#investigationsessionspec">InvestigationSessionSpec</a></em></td>
+<td></td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td><em><a href="#investigationsessionstatus">InvestigationSessionStatus</a></em></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="investigationsessionspec">InvestigationSessionSpec<a class="headerlink" href="#investigationsessionspec" title="Permanent link">&para;</a></h3>
+<p>InvestigationSessionSpec defines the desired state (immutable after creation).</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsession">InvestigationSession</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>remediationRequestRef</code></td>
+<td><em><a href="#objectref">ObjectRef</a></em></td>
+<td>RemediationRequestRef references the RR this session investigates.<br />The InvestigationSession MUST be created in the same namespace as the RR.<br />OwnerReference is set to this RR for cascade deletion.</td>
+</tr>
+<tr>
+<td><code>a2aTaskID</code></td>
+<td><em>string</em></td>
+<td>A2ATaskID is the A2A task identifier for client reconnection.</td>
+</tr>
+<tr>
+<td><code>userIdentity</code></td>
+<td><em><a href="#sessionuser">SessionUser</a></em></td>
+<td>UserIdentity captures the authenticated user from the originating JWT.</td>
+</tr>
+<tr>
+<td><code>joinMode</code></td>
+<td><em><a href="#sessionjoinmode">SessionJoinMode</a></em></td>
+<td>JoinMode indicates whether the user started or joined the investigation.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="investigationsessionstatus">InvestigationSessionStatus<a class="headerlink" href="#investigationsessionstatus" title="Permanent link">&para;</a></h3>
+<p>InvestigationSessionStatus defines the observed state (mutable, AF-only).</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsession">InvestigationSession</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>phase</code></td>
+<td><em><a href="#sessionphase">SessionPhase</a></em></td>
+<td>Phase is the current lifecycle state.</td>
+</tr>
+<tr>
+<td><code>aiAnalysisRef</code></td>
+<td><em>string</em></td>
+<td>AIAnalysisRef is the name of the discovered AIAnalysis CRD.</td>
+</tr>
+<tr>
+<td><code>kaCorrelationID</code></td>
+<td><em>string</em></td>
+<td>KACorrelationID is the correlation ID from KA's /analyze response.</td>
+</tr>
+<tr>
+<td><code>connectionState</code></td>
+<td><em><a href="#connectionstate">ConnectionState</a></em></td>
+<td>ConnectionState tracks the SSE connection state.</td>
+</tr>
+<tr>
+<td><code>startedAt</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta">Time</a></em></td>
+<td>StartedAt is the session creation timestamp.</td>
+</tr>
+<tr>
+<td><code>completedAt</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta">Time</a></em></td>
+<td>CompletedAt is the timestamp when the session reached a terminal state.</td>
+</tr>
+<tr>
+<td><code>disconnectedAt</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta">Time</a></em></td>
+<td>DisconnectedAt is the last disconnect timestamp.</td>
+</tr>
+<tr>
+<td><code>reconnectedAt</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta">Time</a></em></td>
+<td>ReconnectedAt is the last reconnect timestamp.</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td><em>string</em></td>
+<td>Message is a human-readable description of the current state.</td>
+</tr>
+<tr>
+<td><code>conditions</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta">Condition</a> array</em></td>
+<td>Conditions provide detailed status information.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="kasession">KASession<a class="headerlink" href="#kasession" title="Permanent link">&para;</a></h3>
+<p>KASession tracks the async Kubernaut Agent session lifecycle.
  AA controller session tracking
- Session regeneration on 404 (KA restart)</p>
+ Session regeneration on 404 (KA restart)
+the root InvestigationSession type in api/investigationsession/v1alpha1/.</p>
 <p><em>Appears in:</em>
 - <a href="#aianalysisstatus">AIAnalysisStatus</a></p>
 <table>
@@ -7937,6 +8185,11 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td><em>boolean</em></td>
 <td>PreviouslyExisted indicates if this workflow was re-registered after deletion</td>
 </tr>
+<tr>
+<td><code>conditions</code></td>
+<td><em><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta">Condition</a> array</em></td>
+<td>Conditions represent the latest available observations of the workflow's state.</td>
+</tr>
 </tbody>
 </table>
 <h3 id="resourceidentifier">ResourceIdentifier<a class="headerlink" href="#resourceidentifier" title="Permanent link">&para;</a></h3>
@@ -8185,6 +8438,90 @@ Workflow name is derived from the CRD's metadata.name (not duplicated in spec).<
 <td><code>serviceAccountName</code></td>
 <td><em>string</em></td>
 <td>ServiceAccountName is the pre-existing ServiceAccount resolved from the<br />DS workflow catalog . Propagated to the WFE for pod execution.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sessionjoinmode">SessionJoinMode<a class="headerlink" href="#sessionjoinmode" title="Permanent link">&para;</a></h3>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p>SessionJoinMode indicates how the session was initiated.</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsessionspec">InvestigationSessionSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>takeover</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sessionphase">SessionPhase<a class="headerlink" href="#sessionphase" title="Permanent link">&para;</a></h3>
+<p><em>Underlying type:</em> <em>string</em></p>
+<p>SessionPhase represents the lifecycle state of an InvestigationSession.</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsessionstatus">InvestigationSessionStatus</a></p>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Active</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Disconnected</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Completed</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Cancelled</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>Failed</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sessionuser">SessionUser<a class="headerlink" href="#sessionuser" title="Permanent link">&para;</a></h3>
+<p>SessionUser captures the authenticated user's identity from JWT.
+Named SessionUser (not UserIdentity) to avoid collision with internal/auth.UserIdentity.</p>
+<p><em>Appears in:</em>
+- <a href="#investigationsessionspec">InvestigationSessionSpec</a></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username</code></td>
+<td><em>string</em></td>
+<td>Username from JWT sub claim.</td>
+</tr>
+<tr>
+<td><code>groups</code></td>
+<td><em>string array</em></td>
+<td>Groups from JWT groups claim (RBAC-relevant only).</td>
 </tr>
 </tbody>
 </table>

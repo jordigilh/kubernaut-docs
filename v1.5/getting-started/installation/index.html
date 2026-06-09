@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -834,7 +834,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#prerequisites-operator" class="md-nav__link">
+  <a href="#prerequisites" class="md-nav__link">
     <span class="md-ellipsis">
       
         Prerequisites (Operator)
@@ -873,7 +873,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#prerequisites" class="md-nav__link">
+  <a href="#prerequisites_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Prerequisites
@@ -3597,7 +3597,7 @@
 <li><strong>Custom CatalogSource</strong> — For disconnected or custom environments, create a <code>CatalogSource</code> pointing to the operator index image</li>
 </ol>
 <p>For complete installation instructions, see the <a href="https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation">Kubernaut Operator Installation Guide</a>.</p>
-<h3 id="prerequisites-operator">Prerequisites (Operator)<a class="headerlink" href="#prerequisites-operator" title="Permanent link">&para;</a></h3>
+<h3 id="prerequisites">Prerequisites (Operator)<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -3627,9 +3627,28 @@
 <td>—</td>
 <td>Any <a href="../../user-guide/configmap-kubernaut-agent/#supported-providers">supported provider</a> with JSON structured output</td>
 </tr>
+<tr>
+<td>LLM credentials Secret</td>
+<td>—</td>
+<td>Secret containing the LLM API key (e.g. <code>OPENAI_API_KEY</code>)</td>
+</tr>
+<tr>
+<td>SP classification policy</td>
+<td>—</td>
+<td>ConfigMap with key <code>policy.rego</code> — see <a href="../../user-guide/policies/">Rego Policies</a></td>
+</tr>
+<tr>
+<td>AA approval policy</td>
+<td>—</td>
+<td>ConfigMap with key <code>approval.rego</code> — see <a href="../../user-guide/configmap-approval/">Approval Policy</a></td>
+</tr>
 </tbody>
 </table>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0-rc2</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">CR validation</p>
+<p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
+</div>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0-rc10</code>).</p>
 <p><strong>Minimal Kubernaut CR:</strong></p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
@@ -3648,6 +3667,12 @@
 </span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
 </span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
 </span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-llm</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span><span class="w">   </span><span class="c1"># must contain key: policy.rego</span>
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span><span class="w">        </span><span class="c1"># must contain key: approval.rego</span>
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Disconnected installs</p>
@@ -3671,7 +3696,7 @@
 <p class="admonition-title">Not for production</p>
 <p>The Helm chart is intended for development, testing, and CI. For production deployments, use the <a href="#kubernaut-operator-production">Kubernaut Operator</a>.</p>
 </div>
-<h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
+<h3 id="prerequisites_1">Prerequisites<a class="headerlink" href="#prerequisites_1" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>

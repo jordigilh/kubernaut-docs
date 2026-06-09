@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3250,7 +3250,7 @@
 </tr>
 <tr>
 <td>Required</td>
-<td>Yes -- chart fails at install if neither <code>signalprocessing.policies.content</code> nor <code>signalprocessing.policies.existingConfigMap</code> is set</td>
+<td><strong>Yes</strong> — Helm requires <code>policies.content</code> or <code>policies.existingConfigMap</code>; the operator rejects the CR if <code>spec.signalProcessing.policy.configMapName</code> is empty</td>
 </tr>
 </tbody>
 </table>

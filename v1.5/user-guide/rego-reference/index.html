@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3498,7 +3498,7 @@
 </div>
 <hr />
 <h2 id="signal-processing-policy">Signal Processing Policy<a class="headerlink" href="#signal-processing-policy" title="Permanent link">&para;</a></h2>
-<p>All SP classification rules live in a single <code>policy.rego</code> file under <code>package signalprocessing</code> (<a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md">ADR-060</a>). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.</p>
+<p>All SP classification rules live in a single <code>policy.rego</code> file under <code>package signalprocessing</code> (<a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md">ADR-060</a>). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.</p>
 <h3 id="common-input-schema">Common Input Schema<a class="headerlink" href="#common-input-schema" title="Permanent link">&para;</a></h3>
 <p>All SP rules receive the same <code>PolicyInput</code> struct:</p>
 <table>
@@ -4249,35 +4249,35 @@
 <tbody>
 <tr>
 <td>SP unified evaluator</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/pkg/signalprocessing/evaluator/evaluator.go"><code>pkg/signalprocessing/evaluator/evaluator.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/evaluator/evaluator.go"><code>pkg/signalprocessing/evaluator/evaluator.go</code></a></td>
 </tr>
 <tr>
 <td>SP policy input types</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/pkg/signalprocessing/evaluator/types.go"><code>pkg/signalprocessing/evaluator/types.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/evaluator/types.go"><code>pkg/signalprocessing/evaluator/types.go</code></a></td>
 </tr>
 <tr>
 <td>SP signal mode classifier</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/pkg/signalprocessing/classifier/signalmode.go"><code>pkg/signalprocessing/classifier/signalmode.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/classifier/signalmode.go"><code>pkg/signalprocessing/classifier/signalmode.go</code></a></td>
 </tr>
 <tr>
 <td>SP example policy</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/charts/kubernaut/examples/signalprocessing-policy.rego"><code>charts/kubernaut/examples/signalprocessing-policy.rego</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/charts/kubernaut/examples/signalprocessing-policy.rego"><code>charts/kubernaut/examples/signalprocessing-policy.rego</code></a></td>
 </tr>
 <tr>
 <td>SP deploy policies</td>
-<td><a href="https://github.com/jordigilh/kubernaut/tree/v1.5.0-rc2/deploy/signalprocessing/policies"><code>deploy/signalprocessing/policies/</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/tree/v1.5.0-rc10/deploy/signalprocessing/policies"><code>deploy/signalprocessing/policies/</code></a></td>
 </tr>
 <tr>
 <td>AA approval evaluator</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/pkg/aianalysis/rego/evaluator.go"><code>pkg/aianalysis/rego/evaluator.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/aianalysis/rego/evaluator.go"><code>pkg/aianalysis/rego/evaluator.go</code></a></td>
 </tr>
 <tr>
 <td>AA input builder</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/pkg/aianalysis/handlers/analyzing.go"><code>pkg/aianalysis/handlers/analyzing.go</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/aianalysis/handlers/analyzing.go"><code>pkg/aianalysis/handlers/analyzing.go</code></a></td>
 </tr>
 <tr>
 <td>AA approval policy (test)</td>
-<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc2/test/unit/aianalysis/testdata/policies/approval.rego"><code>test/unit/aianalysis/testdata/policies/approval.rego</code></a></td>
+<td><a href="https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/test/unit/aianalysis/testdata/policies/approval.rego"><code>test/unit/aianalysis/testdata/policies/approval.rego</code></a></td>
 </tr>
 </tbody>
 </table>

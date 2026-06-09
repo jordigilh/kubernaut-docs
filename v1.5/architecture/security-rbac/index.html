@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -2486,6 +2486,50 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#trusted-intermediary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trusted Intermediary Delegation (#1287)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokenreview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenReview Identity Enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oidc-ca-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OIDC CA Trust (#1245)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-auto-detect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Mode Auto-Detection (#1309)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -4356,27 +4400,27 @@
 <tbody>
 <tr>
 <td><code>kubernaut-tool-sre</code></td>
-<td>Investigation + remediation (no approval)</td>
-<td>20</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_stream_investigation</code></td>
+<td>Full investigation + remediation</td>
+<td>19</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-ai-orchestrator</code></td>
-<td>Automated agent orchestration</td>
-<td>15</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_start_investigation</code>, <code>kubernaut_poll_investigation</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_stream_investigation</code></td>
+<td>Automated agent orchestration (no approval)</td>
+<td>13</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-cicd</code></td>
 <td>CI/CD pipeline integration</td>
-<td>3</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code></td>
+<td>4</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-observability</code></td>
 <td>Read-only observability</td>
-<td>5</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
+<td>6</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-l3-audit</code></td>
@@ -4387,14 +4431,14 @@
 <tr>
 <td><code>kubernaut-tool-remediation-approver</code></td>
 <td>Human approval workflows</td>
-<td>4</td>
-<td><code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_approve</code>, <code>kubernaut_watch</code></td>
+<td>7</td>
+<td><code>kubernaut_approve</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
 </tr>
 </tbody>
 </table>
 <div class="admonition info">
 <p class="admonition-title">Internal tools</p>
-<p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>af_check_existing_rr</code>, <code>af_create_rr</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
+<p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
 </div>
 <h3 id="binding-example">Binding example<a class="headerlink" href="#binding-example" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
@@ -4463,6 +4507,54 @@
 </tr>
 </tbody>
 </table>
+<h3 id="trusted-intermediary">Trusted Intermediary Delegation (#1287)<a class="headerlink" href="#trusted-intermediary" title="Permanent link">&para;</a></h3>
+<p>When a human operator approves or rejects a <code>RemediationApprovalRequest</code> (RAR) via the MCP bridge, the API Frontend acts as a <strong>trusted intermediary</strong>:</p>
+<ol>
+<li>The operator's OIDC token is validated and a <code>TokenReview</code> resolves the human identity (username + groups).</li>
+<li>The AF ServiceAccount patches the RAR's <code>status.decision</code> on behalf of the human user.</li>
+<li>The <code>decidedVia</code> field on the RAR status records the trusted intermediary's SA identity (e.g. <code>system:serviceaccount:kubernaut-system:kubernaut-apifrontend</code>). The auth webhook sets this field; it is blank when the RAR is decided directly (e.g., by the operator CRD controller).</li>
+</ol>
+<p>This allows the AF to record <strong>who</strong> made the decision (the human) while executing the Kubernetes API call with its own SA token — consistent with the unified SA model above.</p>
+<h3 id="tokenreview">TokenReview Identity Enrichment<a class="headerlink" href="#tokenreview" title="Permanent link">&para;</a></h3>
+<p>When a client connects via OIDC, the AF performs a Kubernetes <code>TokenReview</code> to resolve the full user identity (username, UID, groups, extras). This enriched identity is:</p>
+<ul>
+<li>Used in every SAR check for tool authorization</li>
+<li>Injected into the Rego policy context as <code>input.identity</code> (see <a href="../../user-guide/rego-reference/">Rego Reference</a>)</li>
+<li>Recorded in application audit trail events</li>
+</ul>
+<h3 id="oidc-ca-trust">OIDC CA Trust (#1245)<a class="headerlink" href="#oidc-ca-trust" title="Permanent link">&para;</a></h3>
+<p>For environments using a private OIDC provider (non-public CA), the AF supports a custom CA certificate via the <code>oidcCaFile</code> configuration field:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://idp.internal.corp.com</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">oidcCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/certs/oidc-ca.pem</span>
+</span></code></pre></div>
+<p>Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.</p>
+<h3 id="auth-auto-detect">Auth Mode Auto-Detection (#1309)<a class="headerlink" href="#auth-auto-detect" title="Permanent link">&para;</a></h3>
+<p>The AF auto-detects its authentication mode from the configuration:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JWT providers configured</td>
+<td><strong>OIDC/JWKS</strong></td>
+<td>Validates bearer tokens against configured issuers and JWKS endpoints</td>
+</tr>
+<tr>
+<td>No JWT providers + TokenReview wired</td>
+<td><strong>K8s TokenReview</strong></td>
+<td>Validates tokens via the Kubernetes API server's TokenReview endpoint</td>
+</tr>
+</tbody>
+</table>
+<p>This removes the need for an explicit <code>authMode</code> toggle — the AF infers the correct strategy from which providers are present in the configuration.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and other signal sources</li>

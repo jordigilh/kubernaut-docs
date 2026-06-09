@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3382,8 +3382,12 @@
 <li><strong>Input</strong>: Full analysis context (see below)</li>
 <li><strong>Output</strong>: <code>require_approval</code> (boolean) and <code>reason</code> (string)</li>
 </ul>
-<p><strong>When no policy is mounted</strong>, the controller auto-approves all remediations. Operators provide their own <code>approval.rego</code> to enforce custom gates.</p>
-<p>The <strong>default shipped policy</strong> (bundled for reference) gates on:</p>
+<div class="admonition warning">
+<p class="admonition-title">Required prerequisite</p>
+<p>The operator <strong>rejects the Kubernaut CR</strong> if <code>spec.aiAnalysis.policy.configMapName</code> is empty. You must create a ConfigMap containing an <code>approval.rego</code> key before applying the CR. See <a href="../../getting-started/installation/#prerequisites">Installation Prerequisites</a>.</p>
+<p>With Helm, use <code>--set-file aianalysis.policies.content=my-approval.rego</code> or provide <code>aianalysis.policies.existingConfigMap</code>.</p>
+</div>
+<p>The <strong>reference policy</strong> (bundled in the chart at <code>charts/kubernaut/files/defaults/approval.rego</code>) gates on:</p>
 <ul>
 <li><strong>Production</strong> — always requires approval</li>
 <li><strong>Non-production</strong> — auto-approved when <code>remediation_target</code> is present</li>

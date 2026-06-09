@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../..">
       <strong>View stable documentation.</strong>
@@ -3092,9 +3092,9 @@
 <p class="admonition-title">v1.5 ships both MCP and A2A tool surfaces</p>
 <p>v1.5 ships a unified tool surface on the API Frontend. See <a href="../whats-new/#v15">What's New: v1.5</a>.</p>
 <ul>
-<li><strong>API Frontend MCP</strong> — 23 <code>kubernaut_*</code> MCP tools on <code>POST /mcp</code> spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.</li>
+<li><strong>API Frontend MCP</strong> — 21 <code>kubernaut_*</code> MCP tools on <code>POST /mcp</code> spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. SAR-gated via 6 per-persona ClusterRoles.</li>
 <li><strong>KA MCP (direct)</strong> — 3 tools on the Kubernaut Agent (<code>kubernaut_investigate</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_complete_no_action</code>) with Lease-based session management for direct client connections.</li>
-<li><strong>Internal (ADK-only)</strong> — 5 tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>af_check_existing_rr</code>, <code>af_create_rr</code>) internal to the AF's LLM agent for cluster context and RR creation.</li>
+<li><strong>Internal (ADK-only)</strong> — 5 tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) internal to the AF's LLM agent for cluster context and RR creation.</li>
 </ul>
 </div>
 <p>The items below are planned expansions beyond the v1.5 surface.</p>
@@ -3135,7 +3135,7 @@
 </div>
 <h2 id="natural-language-signal-intake">Natural Language Signal Intake<a class="headerlink" href="#natural-language-signal-intake" title="Permanent link">&para;</a></h2>
 <p>Accept signals described in plain language — not just structured Prometheus alerts or Kubernetes events. Operators, chat bots, and external agents can trigger investigations by describing symptoms conversationally. Kubernaut resolves the intent (cluster, service, symptom) and opens an investigation automatically. Operators, chat bots, and external agents can trigger investigations by describing symptoms conversationally. See <a href="../user-guide/interactive-sessions/">Interactive Sessions</a> for examples.</p>
-<h2 id="observe-mode-trust-ladder-level-2">Observe Mode (Trust Ladder Level 2)<a class="headerlink" href="#observe-mode-trust-ladder-level-2" title="Permanent link">&para;</a></h2>
+<h2 id="observe-mode-trust-ladder-stage-2">Observe Mode (Trust Ladder Stage 2)<a class="headerlink" href="#observe-mode-trust-ladder-stage-2" title="Permanent link">&para;</a></h2>
 <p>Building on v1.4's global dry-run mode, a future release will add operator dashboard visibility through the Backstage console and a guided onboarding path for new clusters.</p>
 <hr />
 <div class="admonition info">

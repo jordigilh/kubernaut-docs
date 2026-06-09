@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3625,7 +3625,11 @@
 <tbody>
 <tr>
 <td><strong>8080</strong></td>
-<td>Primary API. Serves <strong>HTTPS</strong> when TLS certificate files exist under <code>tls.interService.certDir</code>; otherwise plain HTTP.</td>
+<td>Primary API for Gateway, DataStorage, AIAnalysis. Serves <strong>HTTPS</strong> when TLS certificate files exist under <code>tls.interService.certDir</code>; otherwise plain HTTP.</td>
+</tr>
+<tr>
+<td><strong>8443</strong></td>
+<td>Primary API for <strong>Kubernaut Agent</strong> and <strong>API Frontend</strong> (v1.5+). Always <strong>HTTPS</strong>.</td>
 </tr>
 <tr>
 <td><strong>8081</strong></td>
@@ -3637,7 +3641,7 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Three-port</strong> behavior applies to <strong>Gateway</strong>, <strong>DataStorage</strong>, <strong>Kubernaut Agent</strong>, the <strong>AIAnalysis</strong> controller, and the <strong>API Frontend</strong> (v1.5+). Other controllers (<strong>Remediation Orchestrator</strong>, <strong>Signal Processing</strong>, <strong>Workflow Execution</strong>, <strong>Notification</strong>, <strong>Effectiveness Monitor</strong>) expose <strong>metrics on 9090</strong> as their Service port; they do not use the 8080/8081 API/health split.</p>
+<p><strong>Three-port</strong> behavior applies to <strong>Gateway</strong>, <strong>DataStorage</strong>, <strong>Kubernaut Agent</strong>, the <strong>AIAnalysis</strong> controller, and the <strong>API Frontend</strong> (v1.5+). The Kubernaut Agent and API Frontend default to port <strong>8443</strong> (HTTPS); Gateway, DataStorage, and AIAnalysis default to port <strong>8080</strong>. Other controllers (<strong>Remediation Orchestrator</strong>, <strong>Signal Processing</strong>, <strong>Workflow Execution</strong>, <strong>Notification</strong>, <strong>Effectiveness Monitor</strong>) expose <strong>metrics on 9090</strong> as their Service port; they do not use the API/health split.</p>
 <p><strong>Auth Webhook</strong> is an exception: the Service uses <strong>port 443</strong> with <strong>targetPort 9443</strong> for admission traffic; health checks use <strong>8081</strong> (<code>/healthz</code>, <code>/readyz</code>) like the other Go components.</p>
 <h2 id="error-handling-patterns">Error Handling Patterns<a class="headerlink" href="#error-handling-patterns" title="Permanent link">&para;</a></h2>
 <p>All controllers share common error handling patterns:</p>

@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -3320,9 +3320,9 @@
 <p>Kubernaut Agent API enums are defined per schema and include lowercase and snake_case values. Always follow the enum values declared in the OpenAPI spec for each field.</p>
 </div>
 <h2 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h2>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://kubernaut-agent.kubernaut-system.svc.cluster.local:8080
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://kubernaut-agent.kubernaut-system.svc.cluster.local:8443
 </span></code></pre></div>
-<p>Internal services use the short form <code>https://kubernaut-agent:8080</code> when communicating within the same namespace (HTTPS when inter-service TLS is enabled).</p>
+<p>Internal services use the short form <code>https://kubernaut-agent:8443</code> when communicating within the same namespace.</p>
 <h2 id="session-based-async-pattern">Session-Based Async Pattern<a class="headerlink" href="#session-based-async-pattern" title="Permanent link">&para;</a></h2>
 <p>The API uses a submit-poll-result pattern to handle long-running LLM investigations:</p>
 <pre class="mermaid"><code>sequenceDiagram
@@ -3430,7 +3430,7 @@
 <h3 id="audit-investigation-completion">Audit: investigation completion<a class="headerlink" href="#audit-investigation-completion" title="Permanent link">&para;</a></h3>
 <p>Audit events of type <code>aiagent.response.complete</code> include LLM token totals on the payload: <strong><code>total_prompt_tokens</code></strong> and <strong><code>total_completion_tokens</code></strong>, for cost and usage tracking in the audit trail.</p>
 <h3 id="health-and-metrics-v13">Health and metrics (v1.3+)<a class="headerlink" href="#health-and-metrics-v13" title="Permanent link">&para;</a></h3>
-<p>Liveness and readiness are on <strong>port 8081</strong> (plain HTTP): <code>GET /healthz</code>, <code>GET /readyz</code> (readiness checks SDK, context API, and Prometheus client). <strong>Prometheus</strong> metrics are on <strong>port 9090</strong> (<code>GET /metrics</code>, plain HTTP). The primary REST API remains on <strong>port 8080</strong> (<strong>HTTPS</strong> when inter-service TLS is configured).</p>
+<p>Liveness and readiness are on <strong>port 8081</strong> (plain HTTP): <code>GET /healthz</code>, <code>GET /readyz</code> (readiness checks SDK, context API, and Prometheus client). <strong>Prometheus</strong> metrics are on <strong>port 9090</strong> (<code>GET /metrics</code>, plain HTTP). The primary REST API is on <strong>port 8443</strong> (HTTPS).</p>
 <table>
 <thead>
 <tr>
@@ -3455,7 +3455,7 @@
 </tr>
 <tr>
 <td><code>GET</code></td>
-<td>8080</td>
+<td>8443</td>
 <td><code>/config</code></td>
 <td>Configuration snapshot (dev mode only)</td>
 </tr>

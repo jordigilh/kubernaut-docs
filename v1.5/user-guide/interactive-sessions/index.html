@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -1388,10 +1388,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#kubernaut_select_workflow" class="md-nav__link">
+  <a href="#kubernaut_investigate" class="md-nav__link">
     <span class="md-ellipsis">
       
-        kubernaut_select_workflow
+        kubernaut_investigate
       
     </span>
   </a>
@@ -1399,10 +1399,43 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#kubernaut_complete_no_action" class="md-nav__link">
+  <a href="#kubernaut_message" class="md-nav__link">
     <span class="md-ellipsis">
       
-        kubernaut_complete_no_action
+        kubernaut_message
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut_complete-kubernaut_cancel-kubernaut_status-kubernaut_reconnect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kubernaut_complete / kubernaut_cancel / kubernaut_status / kubernaut_reconnect
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut_discover_workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kubernaut_discover_workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut_select_workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kubernaut_select_workflow
       
     </span>
   </a>
@@ -3295,7 +3328,7 @@
 <li><strong>Watch Effectiveness</strong> — After execution, the AF watches the RemediationRequest CRD and relays phase transitions back to the user.</li>
 </ol>
 <h2 id="connecting-via-mcp">Connecting via MCP<a class="headerlink" href="#connecting-via-mcp" title="Permanent link">&para;</a></h2>
-<p>Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (<code>POST /mcp</code>) with 23 <code>kubernaut_*</code> MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via REST/DataStorage.</p>
+<p>Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (<code>POST /mcp</code>) with 21 <code>kubernaut_*</code> MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via DataStorage.</p>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
 <li>OIDC provider configured for the API Frontend (DEX, Keycloak, etc.)</li>
@@ -3303,9 +3336,9 @@
 <li>MCP client supporting Streamable HTTP transport (spec 2025-03-26)</li>
 </ul>
 <h2 id="mcp-tools">MCP Tools<a class="headerlink" href="#mcp-tools" title="Permanent link">&para;</a></h2>
-<p>The API Frontend exposes <strong>23 MCP tools</strong> on <code>POST /mcp</code>. For interactive investigation, the key tools are:</p>
+<p>The API Frontend exposes <strong>21 MCP tools</strong> on <code>POST /mcp</code>. For interactive investigation, the key tools are:</p>
 <h3 id="interactive-session-lifecycle">Interactive session lifecycle<a class="headerlink" href="#interactive-session-lifecycle" title="Permanent link">&para;</a></h3>
-<p>These tools are dispatched to the Kubernaut Agent's MCP server (<code>kubernaut_investigate</code> with per-action routing):</p>
+<p>The AF decomposes the Kubernaut Agent's single <code>kubernaut_investigate</code> tool (which uses an <code>action</code> parameter internally) into separate MCP tools. Each tool below has its own input schema and is individually SAR-gated.</p>
 <table>
 <thead>
 <tr>
@@ -3315,12 +3348,12 @@
 </thead>
 <tbody>
 <tr>
-<td><code>kubernaut_start_investigation</code></td>
-<td>Start a new investigation for a RemediationRequest (via KA REST)</td>
+<td><code>kubernaut_investigate</code></td>
+<td>Start a new investigation — by existing RR (<code>rr_id</code>) or by creating one (<code>namespace</code> + <code>kind</code> + <code>name</code>)</td>
 </tr>
 <tr>
-<td><code>kubernaut_takeover</code></td>
-<td>Take over a session owned by another user (SEC-TAKEOVER-001)</td>
+<td><code>kubernaut_await_session</code></td>
+<td>Wait for an active investigation session to become ready</td>
 </tr>
 <tr>
 <td><code>kubernaut_message</code></td>
@@ -3328,7 +3361,7 @@
 </tr>
 <tr>
 <td><code>kubernaut_complete</code></td>
-<td>Mark the investigation as complete</td>
+<td>Mark the investigation as complete (maps to KA <code>action=complete</code>)</td>
 </tr>
 <tr>
 <td><code>kubernaut_cancel</code></td>
@@ -3336,7 +3369,7 @@
 </tr>
 <tr>
 <td><code>kubernaut_status</code></td>
-<td>Check the current status — returns mode (autonomous/interactive/not_found) and driver</td>
+<td>Check the current status — returns mode (<code>autonomous</code> / <code>interactive</code> / <code>not_found</code>) and driver</td>
 </tr>
 <tr>
 <td><code>kubernaut_reconnect</code></td>
@@ -3344,64 +3377,59 @@
 </tr>
 <tr>
 <td><code>kubernaut_discover_workflows</code></td>
-<td>After RCA, run workflow discovery and return alternatives with LLM-populated parameters</td>
-</tr>
-<tr>
-<td><code>kubernaut_stream_investigation</code></td>
-<td>Stream live SSE events from KA until a terminal state</td>
+<td>After RCA, discover matching workflows with LLM-populated parameters</td>
 </tr>
 </tbody>
 </table>
-<p><strong>Input schema:</strong></p>
+<h3 id="kubernaut_investigate"><code>kubernaut_investigate</code><a class="headerlink" href="#kubernaut_investigate" title="Permanent link">&para;</a></h3>
+<p>Start an interactive investigation. Provide either an existing RR name <strong>or</strong> target resource coordinates to create a new RR + InvestigationSession:</p>
+<p><strong>Existing RR:</strong></p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start&quot;</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="p">}</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>All actions require <code>rr_id</code> — the tool operates on an existing RemediationRequest. The <code>message</code> action additionally requires a <code>message</code> field for multi-turn conversation.</p>
-<p><strong>Start an investigation:</strong></p>
+<p><strong>New RR (creates RR + IS):</strong></p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p">{</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;start&quot;</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="p">}</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;checkout-service&quot;</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Send a follow-up message:</strong></p>
+<h3 id="kubernaut_message"><code>kubernaut_message</code><a class="headerlink" href="#kubernaut_message" title="Permanent link">&para;</a></h3>
+<p>Send a follow-up message in an active session:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="p">{</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;message&quot;</span><span class="p">,</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you also check the memory limits on the sidecar containers?&quot;</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="p">}</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Can you also check the memory limits on the sidecar containers?&quot;</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><strong>Discover workflows after RCA:</strong></p>
+<h3 id="kubernaut_complete-kubernaut_cancel-kubernaut_status-kubernaut_reconnect"><code>kubernaut_complete</code> / <code>kubernaut_cancel</code> / <code>kubernaut_status</code> / <code>kubernaut_reconnect</code><a class="headerlink" href="#kubernaut_complete-kubernaut_cancel-kubernaut_status-kubernaut_reconnect" title="Permanent link">&para;</a></h3>
+<p>All four tools share the same input schema:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="p">{</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">&quot;action&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;discover_workflows&quot;</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><code>kubernaut_complete</code> closes the investigation with an RCA summary. If no workflow is needed, it is the equivalent of the KA's <code>kubernaut_complete_no_action</code> tool.</p>
+<h3 id="kubernaut_discover_workflows"><code>kubernaut_discover_workflows</code><a class="headerlink" href="#kubernaut_discover_workflows" title="Permanent link">&para;</a></h3>
+<p>Discover available workflows after RCA:</p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
 </span></code></pre></div>
 <h3 id="kubernaut_select_workflow"><code>kubernaut_select_workflow</code><a class="headerlink" href="#kubernaut_select_workflow" title="Permanent link">&para;</a></h3>
-<p>Select a workflow from the discovery results. Requires a prior <code>discover_workflows</code> call.</p>
-<p><strong>Input schema:</strong></p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rollback-config&quot;</span><span class="p">,</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;checkout-service&quot;</span><span class="p">,</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">  </span><span class="nt">&quot;api_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;apps/v1&quot;</span><span class="p">,</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">  </span><span class="nt">&quot;spec_hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;a1b2c3d4&quot;</span><span class="p">,</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">  </span><span class="nt">&quot;incident_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inc-2026-0512&quot;</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="p">}</span>
-</span></code></pre></div>
-<p>Only <code>rr_id</code> and <code>workflow_id</code> are required. The remaining fields are optional — when <code>kind</code> is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. <code>api_version</code> disambiguates Kinds that exist in multiple API groups (e.g., <code>Event</code>). <code>spec_hash</code> and <code>incident_id</code> enable correlation with prior investigations.</p>
-<p>Parameters are validated against the workflow's declared schema. If validation fails, the LLM attempts self-correction automatically (PR #1187).</p>
-<h3 id="kubernaut_complete_no_action"><code>kubernaut_complete_no_action</code><a class="headerlink" href="#kubernaut_complete_no_action" title="Permanent link">&para;</a></h3>
-<p>Close an investigation without selecting a workflow. Can be called at any point in the session — no discovery gate required.</p>
+<p>Select a workflow from the discovery results. Requires a prior <code>kubernaut_discover_workflows</code> call.</p>
 <p><strong>Input schema:</strong></p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="p">{</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-b83e19d4a7f1-5c2d09ae&quot;</span><span class="p">,</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Root cause is external — vendor API outage, not actionable by us&quot;</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="p">}</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rollback-config&quot;</span><span class="p">,</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;checkout-service&quot;</span><span class="p">,</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;production&quot;</span><span class="p">,</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nt">&quot;rollback_revision&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;3&quot;</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="p">}</span>
 </span></code></pre></div>
+<p>Only <code>rr_id</code> and <code>workflow_id</code> are required. When <code>kind</code> is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. <code>parameters</code> passes workflow-specific key-value pairs validated against the workflow's declared schema.</p>
 <h2 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h2>
 <p>Real-time investigation output is available via the Kubernaut Agent's SSE endpoint:</p>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>GET /api/v1/incident/session/{session_id}/stream
@@ -3416,7 +3444,7 @@
 <li><strong>Active</strong> — The session is renewed periodically; investigation proceeds</li>
 <li><strong>Message</strong> — Multi-turn conversation within the active session</li>
 <li><strong>Reconnect</strong> — The same user can reconnect after a disconnect</li>
-<li><strong>Takeover</strong> — A different user connecting causes the original session to be abandoned (SEC-TAKEOVER-001)</li>
+<li><strong>Join</strong> — A different user connecting via <code>kubernaut_investigate</code> causes the original session to transition (DD-INTERACTIVE-002)</li>
 <li><strong>Complete/Cancel</strong> — The session Lease is released</li>
 </ol>
 <h3 id="session-limits-and-timeouts">Session limits and timeouts<a class="headerlink" href="#session-limits-and-timeouts" title="Permanent link">&para;</a></h3>
@@ -3447,7 +3475,7 @@
 </tbody>
 </table>
 <h3 id="disconnect-handling">Disconnect handling<a class="headerlink" href="#disconnect-handling" title="Permanent link">&para;</a></h3>
-<p>If a client disconnects unexpectedly, the Kubernaut Agent's <code>SessionClosedHandler</code> detects the MCP connection closure and triggers session release and reconstruction (DD-INTERACTIVE-002). The same user can reconnect via <code>action:reconnect</code>.</p>
+<p>If a client disconnects unexpectedly, the Kubernaut Agent's <code>SessionClosedHandler</code> detects the MCP connection closure and triggers session release and reconstruction (DD-INTERACTIVE-002). The same user can reconnect via <code>kubernaut_reconnect</code>.</p>
 <h3 id="pod-restarts">Pod restarts<a class="headerlink" href="#pod-restarts" title="Permanent link">&para;</a></h3>
 <p>On KA pod restart, the <code>LeaseSessionManager</code> scans for orphaned Leases (those whose holder identity no longer exists) and reclaims them. The <code>SessionDrainer</code> handles graceful shutdown — notifying connected clients and releasing all Leases before the pod terminates (BR-OPS-013).</p>
 <h2 id="autonomous-vs-interactive">Autonomous vs Interactive<a class="headerlink" href="#autonomous-vs-interactive" title="Permanent link">&para;</a></h2>
@@ -3488,7 +3516,7 @@
 </tr>
 </tbody>
 </table>
-<p>Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via <code>action:reconnect</code>.</p>
+<p>Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via <code>kubernaut_await_session</code> followed by <code>kubernaut_investigate</code>.</p>
 
 
 

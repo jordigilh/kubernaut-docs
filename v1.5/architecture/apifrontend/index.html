@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -2141,6 +2141,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#llm-provider-a2a-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLM Provider (A2A Agent)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#health-checks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3231,7 +3242,7 @@
 <li><strong>Protocol translation</strong> — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls</li>
 <li><strong>Authentication</strong> — OIDC/OAuth2 via JWKS validation with JWT claim extraction</li>
 <li><strong>Authorization</strong> — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache</li>
-<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA REST, KA MCP, DataStorage) with per-tool routing</li>
+<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing</li>
 <li><strong>Streaming</strong> — Relays Server-Sent Events from KA's SSE endpoint to MCP clients</li>
 </ul>
 <h2 id="agentic-architecture">Agentic Architecture<a class="headerlink" href="#agentic-architecture" title="Permanent link">&para;</a></h2>
@@ -3344,8 +3355,8 @@
 <h2 id="session-lifecycle">Session Lifecycle<a class="headerlink" href="#session-lifecycle" title="Permanent link">&para;</a></h2>
 <p>Session management spans two layers:</p>
 <ul>
-<li><strong>KA MCP layer</strong> (<code>internal/kubernautagent/mcp/</code>) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (<code>kubernaut_takeover</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_discover_workflows</code>) to KA's MCP server.</li>
-<li><strong>AF session layer</strong> (<code>pkg/apifrontend/session/</code>) — Manages <code>InvestigationSession</code> CRDs with <strong>deferred creation</strong>: the CRD is not created when the A2A session starts, but only when <code>af_create_rr</code> succeeds and calls <code>MaterializeCRD()</code>. Sessions that never produce a RemediationRequest leave no cluster footprint.</li>
+<li><strong>KA MCP layer</strong> (<code>internal/kubernautagent/mcp/</code>) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (<code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_discover_workflows</code>) to KA's MCP server.</li>
+<li><strong>AF session layer</strong> (<code>pkg/apifrontend/session/</code>) — Manages <code>InvestigationSession</code> CRDs with <strong>deferred creation</strong>: the CRD is not created when the A2A session starts, but only when <code>kubernaut_remediate</code> succeeds and calls <code>MaterializeCRD()</code>. Sessions that never produce a RemediationRequest leave no cluster footprint.</li>
 </ul>
 <h3 id="lease-based-distributed-locking">Lease-based distributed locking<a class="headerlink" href="#lease-based-distributed-locking" title="Permanent link">&para;</a></h3>
 <p>The <code>LeaseSessionManager</code> in KA uses Kubernetes coordination/v1 Leases (prefix: <code>kubernaut-interactive-</code>) for single-driver guarantee (BR-INTERACTIVE-002):</p>
@@ -3419,6 +3430,15 @@
 </tr>
 </tbody>
 </table>
+<h2 id="llm-provider-a2a-agent">LLM Provider (A2A Agent)<a class="headerlink" href="#llm-provider-a2a-agent" title="Permanent link">&para;</a></h2>
+<p>The AF runs its own LLM-backed agent for the A2A handler. The LLM config (<code>agent.llm</code> in the AF config.yaml) mirrors the KA <code>ai.llm</code> schema so operators use one config style across services.</p>
+<p>Supported providers: <code>vertex_ai</code> (Claude on Vertex AI — requires <code>vertexProject</code> + <code>vertexLocation</code>), <code>gemini</code> (Gemini API direct — requires <code>apiKeyFile</code> or OAuth2), <code>anthropic</code> (Anthropic API direct — requires <code>apiKeyFile</code> or OAuth2). When <code>provider</code> is empty, the A2A handler returns HTTP 501.</p>
+<p><strong>Multi-provider factory</strong> — The AF uses a transport chain that resolves the provider at startup, wires TLS (including mTLS client certificates for corporate LLM gateways via <code>tlsCertFile</code>/<code>tlsKeyFile</code> — #1342), and applies an optional circuit breaker around all outbound LLM HTTP calls.</p>
+<p><strong>File-based API key</strong> — The <code>apiKeyFile</code> field replaces the former <code>LLM_API_KEY</code> environment variable (#1251). Mount the key as a Kubernetes Secret volume; the AF reads it at startup and trims whitespace.</p>
+<p><strong>OAuth2 client credentials</strong> — For auth-gated LLM gateways, configure <code>oauth2.enabled: true</code> with <code>tokenURL</code>, <code>scopes</code>, and a <code>credentialsDir</code> containing <code>client-id</code> and <code>client-secret</code> files. Token refresh is handled automatically.</p>
+<p><strong>InstructionProvider</strong> (#1276) — The A2A agent's system prompt is dynamically generated per-request by the <code>InstructionProvider</code>. This replaces the static <code>Instruction</code> string and injects the controller namespace, available tool names, and persona context into the LLM prompt at runtime.</p>
+<p><strong>KA bearer token</strong> — The <code>kaBearerTokenFile</code> config field provides the AF with a bearer token for authenticating to the KA MCP server (#1287). When set, the AF includes this token in the <code>Authorization</code> header of all KA MCP requests.</p>
+<p>See <a href="../../user-guide/configuration/#af-llm-configuration-v15">AF LLM Configuration</a> for the full field reference.</p>
 <h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

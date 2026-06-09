@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -2425,17 +2425,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#autonomous" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Autonomous
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#interactive-session-lifecycle" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2519,10 +2508,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#interactive-investigation-flow" class="md-nav__link">
+  <a href="#interactive-investigation-flow-new-rr" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Interactive investigation flow
+        Interactive investigation flow (new RR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactive-investigation-flow-existing-rr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interactive investigation flow (existing RR)
       
     </span>
   </a>
@@ -2568,10 +2568,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#internal-tools-not-mcp-exposed" class="md-nav__link">
+  <a href="#internal-tools-a2a-agent-only" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Internal Tools (Not MCP-Exposed)
+        Internal Tools (A2A Agent Only)
       
     </span>
   </a>
@@ -3293,7 +3293,7 @@
 
 
 <h1 id="mcp-tool-reference">MCP Tool Reference<a class="headerlink" href="#mcp-tool-reference" title="Permanent link">&para;</a></h1>
-<p>The API Frontend exposes <strong>23 <code>kubernaut_*</code> MCP tools</strong> on its Streamable HTTP endpoint (<code>POST /mcp</code>).
+<p>The API Frontend exposes <strong>21 <code>kubernaut_*</code> MCP tools</strong> on its Streamable HTTP endpoint (<code>POST /mcp</code>).
 Each tool is SAR-gated via <a href="../../architecture/security-rbac/#per-persona-clusterroles">per-persona ClusterRoles</a>, rate-limited, and audit-logged.</p>
 <p>All tools return JSON in MCP <code>CallToolResult</code> text content. Default timeout is 30 s (configurable per tool).
 RBAC is fail-closed — SAR errors deny the call.</p>
@@ -3305,11 +3305,14 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <hr />
 <h2 id="remediationrequest">RemediationRequest<a class="headerlink" href="#remediationrequest" title="Permanent link">&para;</a></h2>
 <p>Backend: <strong>K8s API</strong> (AF ServiceAccount) — operates on <code>kubernaut.ai/v1alpha1/remediationrequests</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">Namespace model (ADR-057)</p>
+<p>All CRD tools operate in the <strong>controller namespace</strong> (typically <code>kubernaut-system</code>), injected server-side. The <code>namespace</code> parameter is <strong>not exposed</strong> to callers. <code>rr_id</code> and <code>rar_id</code> are <strong>plain resource names</strong> (e.g. <code>oom-fix-abc</code>), not <code>namespace/name</code> pairs.</p>
+</div>
 <ul>
 <li>
 <p><strong><code>kubernaut_list_remediations</code></strong> — List active and recent remediations with optional filtering</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) <strong>(required)</strong> — Kubernetes namespace</li>
 <li><code>phase</code> (<code>string</code>) — Filter by <code>status.overallPhase</code> (e.g. <code>Pending</code>, <code>Running</code>, <code>Completed</code>, <code>Failed</code>)</li>
 <li><code>kind</code> (<code>string</code>) — Filter by <code>spec.targetResource.kind</code></li>
 <li><code>name</code> (<code>string</code>) — Filter by <code>spec.targetResource.name</code></li>
@@ -3320,19 +3323,18 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <div class="language-json highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p">{</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;remediations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod/oom-fix-abc&quot;</span><span class="p">,</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Running&quot;</span><span class="p">,</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">      </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-server&quot;</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="p">}</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Running&quot;</span><span class="p">,</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-server&quot;</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
-<p><strong>Personas:</strong> SRE, AI Orchestrator, CI/CD, Observability, L3 Audit</p>
+<p><strong>Personas:</strong> SRE, AI Orchestrator, CI/CD, Observability, L3 Audit, Remediation Approver</p>
 </li>
 </ul>
 <hr />
@@ -3340,25 +3342,23 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_get_remediation</code></strong> — Get details of a specific remediation</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) — Remediation namespace</li>
-<li><code>name</code> (<code>string</code>) — Remediation name</li>
-<li><code>rr_id</code> (<code>string</code>) — Shorthand <code>namespace/name</code></li>
+<li><code>rr_id</code> (<code>string</code>) — RR name</li>
+<li><code>name</code> (<code>string</code>) — RR name (alias for <code>rr_id</code>)</li>
 </ul>
-<p>Provide <code>rr_id</code> <strong>or</strong> both <code>namespace</code> + <code>name</code>.</p>
+<p>Provide <code>rr_id</code> <strong>or</strong> <code>name</code>.</p>
 <p><strong>When to use:</strong> Inspect a known remediation for phase, target resource, and status. Follow up after <code>kubernaut_list_remediations</code>.</p>
 <details class="example">
 <summary>Response</summary>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p">{</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod/oom-fix-abc&quot;</span><span class="p">,</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Completed&quot;</span><span class="p">,</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">  </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-server&quot;</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="p">}</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Completed&quot;</span><span class="p">,</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">&quot;target&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;api-server&quot;</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
-<p><strong>Personas:</strong> SRE, AI Orchestrator, CI/CD, Observability, L3 Audit</p>
+<p><strong>Personas:</strong> SRE, AI Orchestrator, CI/CD, Observability, L3 Audit, Remediation Approver</p>
 </li>
 </ul>
 <hr />
@@ -3366,11 +3366,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_cancel_remediation</code></strong> — Cancel an active remediation that has not yet reached a terminal state</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) — Remediation namespace</li>
-<li><code>name</code> (<code>string</code>) — Remediation name</li>
-<li><code>rr_id</code> (<code>string</code>) — Shorthand <code>namespace/name</code></li>
+<li><code>rr_id</code> (<code>string</code>) — RR name</li>
+<li><code>name</code> (<code>string</code>) — RR name (alias for <code>rr_id</code>)</li>
 </ul>
-<p>Provide <code>rr_id</code> <strong>or</strong> both <code>namespace</code> + <code>name</code>. Fails if the phase is already terminal (<code>Completed</code>, <code>Failed</code>, <code>Cancelled</code>).</p>
+<p>Provide <code>rr_id</code> <strong>or</strong> <code>name</code>. Fails if the phase is already terminal (<code>Completed</code>, <code>Failed</code>, <code>Cancelled</code>).</p>
 <p><strong>When to use:</strong> Abort a remediation that is no longer needed or was started in error. Check phase with <code>kubernaut_get_remediation</code> first.</p>
 <details class="example">
 <summary>Response</summary>
@@ -3388,10 +3387,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_watch</code></strong> — Stream live status updates for a remediation and its related resources</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) <strong>(required)</strong> — Remediation namespace</li>
-<li><code>name</code> (<code>string</code>) <strong>(required)</strong> — Remediation name</li>
+<li><code>rr_id</code> (<code>string</code>) — RR name</li>
+<li><code>name</code> (<code>string</code>) — RR name (alias for <code>rr_id</code>)</li>
 </ul>
-<p>Blocks until terminal phase, context cancellation, or internal 10-minute cap.</p>
+<p>Blocks until terminal phase, <code>AwaitingApproval</code> (yields so the LLM can approve), context cancellation, or internal 15-minute cap.</p>
 <p><strong>When to use:</strong> Stay in the remediation journey — call after <code>kubernaut_select_workflow</code> to see phase transitions in real time (<code>Pending</code> → <code>Approved</code> → <code>Running</code> → <code>Completed</code>/<code>Failed</code>).</p>
 <details class="example">
 <summary>Response</summary>
@@ -3418,7 +3417,6 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_list_approval_requests</code></strong> — List approval requests with optional filtering by decision status</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) <strong>(required)</strong> — Namespace to list RARs in</li>
 <li><code>decision</code> (<code>string</code>) — Filter: <code>pending</code>, <code>approved</code>, <code>rejected</code>, <code>expired</code> (empty = all)</li>
 </ul>
 <p><strong>When to use:</strong> Discover pending approval requests. First step in the approval UX flow before drilling into a specific RAR.</p>
@@ -3449,11 +3447,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_get_approval_request</code></strong> — Get full details of a specific approval request for review before deciding</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) — RAR namespace</li>
-<li><code>name</code> (<code>string</code>) — RAR name</li>
-<li><code>rar_id</code> (<code>string</code>) — Shorthand <code>namespace/name</code></li>
+<li><code>rar_id</code> (<code>string</code>) — RAR name</li>
+<li><code>name</code> (<code>string</code>) — RAR name (alias for <code>rar_id</code>)</li>
 </ul>
-<p>Provide <code>rar_id</code> <strong>or</strong> both <code>namespace</code> + <code>name</code>.</p>
+<p>Provide <code>rar_id</code> <strong>or</strong> <code>name</code>.</p>
 <p><strong>When to use:</strong> Inspect an RAR's investigation summary, evidence, recommended actions, and alternatives before calling <code>kubernaut_approve</code>.</p>
 <details class="example">
 <summary>Response</summary>
@@ -3491,9 +3488,8 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <li>
 <p><strong><code>kubernaut_approve</code></strong> — Approve or reject a pending remediation approval request</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) <strong>(required)</strong> — RAR namespace</li>
 <li><code>rar_name</code> (<code>string</code>) <strong>(required)</strong> — RemediationApprovalRequest name</li>
-<li><code>decision</code> (<code>string</code>) <strong>(required)</strong> — <code>Approved</code>, <code>Rejected</code>, or <code>Expired</code></li>
+<li><code>decision</code> (<code>string</code>) <strong>(required)</strong> — <code>Approved</code> or <code>Rejected</code> (enforced via InputSchema enum — <code>Expired</code> is <strong>not</strong> a valid input)</li>
 <li><code>reason</code> (<code>string</code>) — Decision rationale (stored as <code>status.decisionMessage</code>)</li>
 <li><code>workflow_override</code> (<code>string</code>) — Override workflow (stored as <code>status.workflowOverride.workflowName</code>)</li>
 </ul>
@@ -3511,24 +3507,27 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </ul>
 <hr />
 <h2 id="investigation">Investigation<a class="headerlink" href="#investigation" title="Permanent link">&para;</a></h2>
-<h3 id="autonomous">Autonomous<a class="headerlink" href="#autonomous" title="Permanent link">&para;</a></h3>
-<p>Backend: <strong>KA REST</strong> — dispatches to the Kubernaut Agent's REST API.</p>
 <ul>
 <li>
-<p><strong><code>kubernaut_start_investigation</code></strong> — Start an AI-powered investigation, returning a session ID for tracking</p>
+<p><strong><code>kubernaut_investigate</code></strong> — Start or join an investigation (consolidates former <code>start_investigation</code>, <code>poll_investigation</code>, <code>stream_investigation</code>, and <code>takeover</code> — #1307, #1332)</p>
+<p>Backend: <strong>KA MCP</strong> — dispatches to the Kubernaut Agent's MCP server.</p>
 <ul>
-<li><code>namespace</code> (<code>string</code>) <strong>(required)</strong> — Target resource namespace</li>
-<li><code>name</code> (<code>string</code>) <strong>(required)</strong> — Target resource / RR name</li>
-<li><code>kind</code> (<code>string</code>) — Target resource kind</li>
+<li><code>rr_id</code> (<code>string</code>) — Existing RR name (starts investigation on that RR)</li>
+<li><code>namespace</code> (<code>string</code>) — Target resource namespace (for creating a new RR + IS)</li>
+<li><code>kind</code> (<code>string</code>) — Target resource kind (required with <code>namespace</code>/<code>name</code>)</li>
+<li><code>name</code> (<code>string</code>) — Target resource name (required with <code>namespace</code>/<code>name</code>)</li>
 </ul>
-<p><strong>When to use:</strong> Begin an autonomous investigation. Use the returned <code>session_id</code> with <code>kubernaut_poll_investigation</code> or <code>kubernaut_stream_investigation</code> to track progress.</p>
+<p>Provide <code>rr_id</code> for an existing RR, <strong>or</strong> <code>namespace</code>+<code>kind</code>+<code>name</code> to create a new RR and InvestigationSession for interactive use. Service accounts cannot start interactive investigations (namespace/kind/name path).</p>
+<p>In A2A mode, blocks until the investigation completes and returns the full RCA summary. On the MCP bridge, returns immediately; live events are streamed in the background via SSE. If the RR already has an active investigation driven by another user, a structured <code>session_active</code> result is returned instead of an error.</p>
+<p><strong>When to use:</strong> Single entry point for all investigation workflows. Follow up with <code>kubernaut_discover_workflows</code> after the investigation completes.</p>
 <details class="example">
 <summary>Response</summary>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;session_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sess-abc123&quot;</span><span class="p">,</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;started&quot;</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Investigation started for prod/api-server (session: sess-abc123)&quot;</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="p">}</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Root cause identified: OOMKilled due to memory limit...&quot;</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, AI Orchestrator</p>
@@ -3537,71 +3536,34 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <hr />
 <ul>
 <li>
-<p><strong><code>kubernaut_poll_investigation</code></strong> — Check investigation progress (blocks ~15 s, 5 polls at 3 s intervals)</p>
+<p><strong><code>kubernaut_await_session</code></strong> — Wait for an investigation session to become ready on a RemediationRequest</p>
+<p>Backend: <strong>K8s API</strong> — watches/polls AIAnalysis resources until <code>status.investigationSession.id</code> is populated.</p>
 <ul>
-<li><code>session_id</code> (<code>string</code>) <strong>(required)</strong> — Investigation session ID</li>
+<li><code>rr_name</code> (<code>string</code>) <strong>(required)</strong> — RemediationRequest name</li>
 </ul>
-<p>Re-call if status is <code>in_progress</code>.</p>
-<p><strong>When to use:</strong> Lightweight polling alternative when SSE streaming is unavailable. Prefer <code>kubernaut_stream_investigation</code> for real-time narrative.</p>
+<p>Blocks until the AIAnalysis for the given RR has a non-empty session ID or timeout (default: <strong>3 minutes</strong>). Useful when the operator wants to interact with a session that was triggered autonomously (from an alert) but hasn't yet been submitted to KA.</p>
+<p><strong>When to use:</strong> Wait for an autonomous investigation to become joinable before calling <code>kubernaut_message</code> or <code>kubernaut_reconnect</code>.</p>
 <details class="example">
 <summary>Response</summary>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="p">{</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Root cause identified: OOMKilled due to memory limit...&quot;</span><span class="p">,</span>
-</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">&quot;poll_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span>
-</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="p">}</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">&quot;session_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sess-abc123&quot;</span><span class="p">,</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;ready&quot;</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
-<p><strong>Personas:</strong> SRE, AI Orchestrator</p>
-</li>
-</ul>
-<hr />
-<ul>
-<li>
-<p><strong><code>kubernaut_stream_investigation</code></strong> — Stream live investigation events in real time (default timeout: 15 min)</p>
-<ul>
-<li><code>session_id</code> (<code>string</code>) <strong>(required)</strong> — Investigation session ID</li>
-</ul>
-<p>Blocks until terminal SSE event or timeout.</p>
-<p><strong>When to use:</strong> Best experience for interactive users — see the AI agent's reasoning unfold in real time. Use after <code>kubernaut_start_investigation</code>.</p>
-<details class="example">
-<summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;completed&quot;</span><span class="p">,</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Root cause identified: OOMKilled due to memory limit...&quot;</span><span class="p">,</span>
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;inspection&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Checking pod status...&quot;</span><span class="w"> </span><span class="p">},</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;progress&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;analysis&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;text&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Analyzing resource limits...&quot;</span><span class="w"> </span><span class="p">}</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span><span class="nt">&quot;event_log&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Checking pod status...\nAnalyzing resource limits...&quot;</span>
-</span><span id="__span-9-9"><a id="__codelineno-9-9" name="__codelineno-9-9" href="#__codelineno-9-9"></a><span class="p">}</span>
-</span></code></pre></div>
-</details>
-<p><strong>Personas:</strong> SRE, AI Orchestrator</p>
+<p><strong>Personas:</strong> SRE, AI Orchestrator, CI/CD, Observability, Remediation Approver</p>
 </li>
 </ul>
 <hr />
 <h3 id="interactive-session-lifecycle">Interactive Session Lifecycle<a class="headerlink" href="#interactive-session-lifecycle" title="Permanent link">&para;</a></h3>
 <p>Backend: <strong>KA MCP</strong> — dispatches to the Kubernaut Agent's MCP server (<code>POST /api/v1/mcp</code>).</p>
 <p>All interactive tools share a common response shape:</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;session_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (optional)&quot;</span><span class="p">,</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (optional)&quot;</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="p">{</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">&quot;session_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (optional)&quot;</span><span class="p">,</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string (optional)&quot;</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="p">}</span>
 </span></code></pre></div>
-<ul>
-<li>
-<p><strong><code>kubernaut_takeover</code></strong> — Take over an existing investigation for human-in-the-loop participation</p>
-<ul>
-<li><code>rr_id</code> (<code>string</code>) <strong>(required)</strong> — Remediation request ID (<code>namespace/name</code>)</li>
-<li><code>message</code> (<code>string</code>) — Optional message (max 10 240 chars)</li>
-</ul>
-<p><strong>When to use:</strong> Join an in-progress autonomous investigation. The AI agent pauses and the session becomes interactive.</p>
-<p><strong>Personas:</strong> SRE, AI Orchestrator</p>
-</li>
-</ul>
-<hr />
 <ul>
 <li>
 <p><strong><code>kubernaut_message</code></strong> — Send a message to an active investigation session</p>
@@ -3675,26 +3637,26 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> After the investigation completes and the user asks to fix/remediate — present workflow options with pre-populated parameters. Follow up with <code>kubernaut_select_workflow</code>.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">      </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Adjust Memory Limits&quot;</span><span class="p">,</span>
-</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Increase container memory limits based on usage analysis&quot;</span><span class="p">,</span>
-</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
-</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">      </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="p">{</span>
-</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory_limit&quot;</span><span class="p">,</span>
-</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
-</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;New memory limit (e.g. 512Mi)&quot;</span><span class="p">,</span>
-</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">          </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">          </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;512Mi&quot;</span>
-</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="w">        </span><span class="p">}</span>
-</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">      </span><span class="p">]</span>
-</span><span id="__span-11-17"><a id="__codelineno-11-17" name="__codelineno-11-17" href="#__codelineno-11-17"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-11-18"><a id="__codelineno-11-18" name="__codelineno-11-18" href="#__codelineno-11-18"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-11-19"><a id="__codelineno-11-19" name="__codelineno-11-19" href="#__codelineno-11-19"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-11-20"><a id="__codelineno-11-20" name="__codelineno-11-20" href="#__codelineno-11-20"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Adjust Memory Limits&quot;</span><span class="p">,</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Increase container memory limits based on usage analysis&quot;</span><span class="p">,</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span><span class="p">,</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">      </span><span class="nt">&quot;parameters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">        </span><span class="p">{</span>
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;memory_limit&quot;</span><span class="p">,</span>
+</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">          </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;string&quot;</span><span class="p">,</span>
+</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">          </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;New memory limit (e.g. 512Mi)&quot;</span><span class="p">,</span>
+</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">          </span><span class="nt">&quot;required&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">          </span><span class="nt">&quot;default&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;512Mi&quot;</span>
+</span><span id="__span-10-15"><a id="__codelineno-10-15" name="__codelineno-10-15" href="#__codelineno-10-15"></a><span class="w">        </span><span class="p">}</span>
+</span><span id="__span-10-16"><a id="__codelineno-10-16" name="__codelineno-10-16" href="#__codelineno-10-16"></a><span class="w">      </span><span class="p">]</span>
+</span><span id="__span-10-17"><a id="__codelineno-10-17" name="__codelineno-10-17" href="#__codelineno-10-17"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-10-18"><a id="__codelineno-10-18" name="__codelineno-10-18" href="#__codelineno-10-18"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-10-19"><a id="__codelineno-10-19" name="__codelineno-10-19" href="#__codelineno-10-19"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-10-20"><a id="__codelineno-10-20" name="__codelineno-10-20" href="#__codelineno-10-20"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, AI Orchestrator</p>
@@ -3717,10 +3679,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> User has chosen a workflow from the discovery results. This triggers enrichment and creates a RemediationRequest. Follow up with <code>kubernaut_watch</code> to track execution.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;selected&quot;</span><span class="p">,</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Workflow adjust-memory-limits selected for prod/api-server&quot;</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="p">{</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;selected&quot;</span><span class="p">,</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Workflow adjust-memory-limits selected for prod/api-server&quot;</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, AI Orchestrator</p>
@@ -3734,20 +3696,24 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <ul>
 <li><code>kind</code> (<code>string</code>) — Filter by resource kind</li>
 </ul>
+<div class="admonition note">
+<p class="admonition-title">Bridge-only for AF agent</p>
+<p>This tool is available on the MCP bridge for remote clients but was <strong>removed from the AF agent's internal LLM tool set</strong> (AC-6 security). The AF agent uses <code>kubernaut_discover_workflows</code> instead, which follows the RCA → discovery → selection pipeline.</p>
+</div>
 <p><strong>When to use:</strong> Browse the full workflow catalog without an active investigation. Unlike <code>kubernaut_discover_workflows</code>, this does not require a session and returns catalog entries without LLM-based recommendations.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Adjust Memory Limits&quot;</span><span class="p">,</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Increase container memory limits&quot;</span><span class="p">,</span>
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span>
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="p">{</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">&quot;workflows&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Adjust Memory Limits&quot;</span><span class="p">,</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Increase container memory limits&quot;</span><span class="p">,</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">      </span><span class="nt">&quot;kind&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Deployment&quot;</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-12-9"><a id="__codelineno-12-9" name="__codelineno-12-9" href="#__codelineno-12-9"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-12-10"><a id="__codelineno-12-10" name="__codelineno-12-10" href="#__codelineno-12-10"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-12-11"><a id="__codelineno-12-11" name="__codelineno-12-11" href="#__codelineno-12-11"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, Observability, L3 Audit</p>
@@ -3768,18 +3734,18 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> Analyze past remediation outcomes for a resource, namespace, or time window. Useful for trend analysis and post-incident reviews.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">&quot;remediations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod/oom-fix-abc&quot;</span><span class="p">,</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">      </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Completed&quot;</span><span class="p">,</span>
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-22T14:00:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">      </span><span class="nt">&quot;workflow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="p">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">&quot;remediations&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod/oom-fix-abc&quot;</span><span class="p">,</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">      </span><span class="nt">&quot;namespace&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;prod&quot;</span><span class="p">,</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">      </span><span class="nt">&quot;phase&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Completed&quot;</span><span class="p">,</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">      </span><span class="nt">&quot;created_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-22T14:00:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">      </span><span class="nt">&quot;workflow&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, L3 Audit</p>
@@ -3796,12 +3762,12 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> Evaluate how well a workflow performs before recommending it. Compare success rates across workflows or namespaces.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">  </span><span class="nt">&quot;success_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">,</span>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span><span class="nt">&quot;avg_duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4m30s&quot;</span><span class="p">,</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">  </span><span class="nt">&quot;sample_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="p">{</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">&quot;workflow_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;adjust-memory-limits&quot;</span><span class="p">,</span>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">  </span><span class="nt">&quot;success_rate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.92</span><span class="p">,</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span><span class="nt">&quot;avg_duration&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4m30s&quot;</span><span class="p">,</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span><span class="nt">&quot;sample_size&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">24</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, Observability, L3 Audit</p>
@@ -3818,17 +3784,17 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> Compliance review — trace every action taken on a remediation from signal to completion. Required for L3 audits and post-incident reports.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="p">{</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-23T18:30:00Z&quot;</span><span class="p">,</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">      </span><span class="nt">&quot;event_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool.executed&quot;</span><span class="p">,</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">      </span><span class="nt">&quot;actor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice@corp.com&quot;</span><span class="p">,</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">      </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kubernaut_approve: Approved&quot;</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="p">}</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">  </span><span class="p">],</span>
-</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
-</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p">{</span>
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">&quot;events&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="p">{</span>
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">      </span><span class="nt">&quot;timestamp&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-05-23T18:30:00Z&quot;</span><span class="p">,</span>
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">      </span><span class="nt">&quot;event_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;tool.executed&quot;</span><span class="p">,</span>
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">      </span><span class="nt">&quot;actor&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;alice@corp.com&quot;</span><span class="p">,</span>
+</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">      </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;kubernaut_approve: Approved&quot;</span>
+</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span><span class="p">}</span>
+</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">  </span><span class="p">],</span>
+</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a><span class="w">  </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span>
+</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, L3 Audit</p>
@@ -3854,10 +3820,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong>When to use:</strong> Called by the AF agent to format investigation results into a structured decision prompt. Typically not called directly by external skills — the AF agent calls it internally after streaming an investigation.</p>
 <details class="example">
 <summary>Response</summary>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="p">{</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">&quot;presented&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Investigation complete.\n\nSummary: Memory limit insufficient...\n\nAvailable actions:\n  1. Adjust Memory Limits (Risk: Low)&quot;</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="p">{</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">&quot;presented&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Investigation complete.\n\nSummary: Memory limit insufficient...\n\nAvailable actions:\n  1. Adjust Memory Limits (Risk: Low)&quot;</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="p">}</span>
 </span></code></pre></div>
 </details>
 <p><strong>Personas:</strong> SRE, AI Orchestrator</p>
@@ -3866,27 +3832,33 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <hr />
 <h2 id="common-ux-flows">Common UX Flows<a class="headerlink" href="#common-ux-flows" title="Permanent link">&para;</a></h2>
 <h3 id="approval-flow">Approval flow<a class="headerlink" href="#approval-flow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubernaut_list_approval_requests(namespace, decision=&quot;pending&quot;)
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>  → kubernaut_get_approval_request(namespace, name)
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    → kubernaut_approve(namespace, rar_name, decision, reason)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>kubernaut_list_approval_requests(decision=&quot;pending&quot;)
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>  → kubernaut_get_approval_request(rar_id)
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>    → kubernaut_approve(rar_name, decision, reason)
 </span></code></pre></div>
 <h3 id="autonomous-investigation-flow">Autonomous investigation flow<a class="headerlink" href="#autonomous-investigation-flow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubernaut_start_investigation(namespace, name)
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  → kubernaut_stream_investigation(session_id)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubernaut_investigate(rr_id)
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>  → kubernaut_discover_workflows(rr_id)
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>    → kubernaut_select_workflow(rr_id, workflow_id)
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>      → kubernaut_watch(rr_id)
+</span></code></pre></div>
+<h3 id="interactive-investigation-flow-new-rr">Interactive investigation flow (new RR)<a class="headerlink" href="#interactive-investigation-flow-new-rr" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubernaut_investigate(namespace, kind, name)     # creates RR + IS
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  → kubernaut_message(rr_id, message)            # repeat as needed
 </span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    → kubernaut_discover_workflows(rr_id)
 </span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>      → kubernaut_select_workflow(rr_id, workflow_id)
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        → kubernaut_watch(namespace, name)
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>        → kubernaut_watch(rr_id)
 </span></code></pre></div>
-<h3 id="interactive-investigation-flow">Interactive investigation flow<a class="headerlink" href="#interactive-investigation-flow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubernaut_list_remediations(namespace)
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  → kubernaut_takeover(rr_id)
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    → kubernaut_message(rr_id, message)  # repeat as needed
+<h3 id="interactive-investigation-flow-existing-rr">Interactive investigation flow (existing RR)<a class="headerlink" href="#interactive-investigation-flow-existing-rr" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubernaut_list_remediations()
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>  → kubernaut_await_session(rr_name)
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    → kubernaut_message(rr_id, message)          # repeat as needed
 </span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>      → kubernaut_discover_workflows(rr_id)
 </span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>        → kubernaut_select_workflow(rr_id, workflow_id)
-</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>          → kubernaut_watch(namespace, name)
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>          → kubernaut_watch(rr_id)
 </span></code></pre></div>
 <h3 id="compliance-audit-flow">Compliance audit flow<a class="headerlink" href="#compliance-audit-flow" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubernaut_list_remediations(namespace)
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>kubernaut_list_remediations()
 </span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>  → kubernaut_get_remediation(rr_id)
 </span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>    → kubernaut_get_audit_trail(rr_id)
 </span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>      → kubernaut_get_effectiveness(workflow_id)
@@ -3903,15 +3875,11 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <tbody>
 <tr>
 <td><strong>K8s API</strong> (AF SA)</td>
-<td><code>list_remediations</code>, <code>get_remediation</code>, <code>cancel_remediation</code>, <code>watch</code>, <code>approve</code>, <code>list_approval_requests</code>, <code>get_approval_request</code></td>
-</tr>
-<tr>
-<td><strong>KA REST</strong></td>
-<td><code>start_investigation</code>, <code>poll_investigation</code>, <code>stream_investigation</code></td>
+<td><code>list_remediations</code>, <code>get_remediation</code>, <code>cancel_remediation</code>, <code>watch</code>, <code>approve</code>, <code>list_approval_requests</code>, <code>get_approval_request</code>, <code>await_session</code></td>
 </tr>
 <tr>
 <td><strong>KA MCP</strong></td>
-<td><code>takeover</code>, <code>message</code>, <code>complete</code>, <code>cancel</code>, <code>status</code>, <code>reconnect</code>, <code>discover_workflows</code>, <code>select_workflow</code></td>
+<td><code>investigate</code>, <code>message</code>, <code>complete</code>, <code>cancel</code>, <code>status</code>, <code>reconnect</code>, <code>discover_workflows</code>, <code>select_workflow</code></td>
 </tr>
 <tr>
 <td><strong>DataStorage</strong></td>
@@ -3946,7 +3914,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 </tr>
 <tr>
 <td><code>get_remediation</code></td>
@@ -3955,7 +3923,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 </tr>
 <tr>
 <td><code>cancel_remediation</code></td>
@@ -3995,7 +3963,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </tr>
 <tr>
 <td><code>approve</code></td>
-<td style="text-align: center;"></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"></td>
 <td style="text-align: center;"></td>
 <td style="text-align: center;"></td>
@@ -4003,34 +3971,16 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 </tr>
 <tr>
-<td><code>start_investigation</code></td>
+<td><code>await_session</code></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 </tr>
 <tr>
-<td><code>poll_investigation</code></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td><code>stream_investigation</code></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-</tr>
-<tr>
-<td><code>takeover</code></td>
+<td><code>investigate</code></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"></td>
@@ -4102,6 +4052,15 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"></td>
 </tr>
 <tr>
+<td><code>present_decision</code></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
 <td><code>list_workflows</code></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"></td>
@@ -4137,21 +4096,13 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"></td>
 </tr>
-<tr>
-<td><code>present_decision</code></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-<td style="text-align: center;"></td>
-</tr>
 </tbody>
 </table>
 <hr />
-<h2 id="internal-tools-not-mcp-exposed">Internal Tools (Not MCP-Exposed)<a class="headerlink" href="#internal-tools-not-mcp-exposed" title="Permanent link">&para;</a></h2>
-<p>The AF also uses 5 internal tools that run under the AF pod's own ServiceAccount inside the agent loop.
-These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and cannot be called by external clients.</p>
+<h2 id="internal-tools-a2a-agent-only">Internal Tools (A2A Agent Only)<a class="headerlink" href="#internal-tools-a2a-agent-only" title="Permanent link">&para;</a></h2>
+<p>The AF agent uses 5 additional tools inside its A2A agent loop.
+These are <strong>not</strong> exposed on the MCP bridge and cannot be called by external MCP clients.
+However, they <strong>are</strong> SAR-gated on the A2A path via <code>newRBACGuard()</code> and are included in per-persona ClusterRoles in <code>values.yaml</code>.</p>
 <table>
 <thead>
 <tr>
@@ -4162,26 +4113,30 @@ These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR
 <tbody>
 <tr>
 <td><code>kubectl_get</code></td>
-<td>Get any namespaced K8s resource by kind/name/namespace (Secret <code>.data</code> redacted)</td>
+<td>Get any namespaced K8s resource by kind/name/namespace (Secret <code>.data</code> redacted). GVR resolved via RESTMapper + static table.</td>
 </tr>
 <tr>
 <td><code>kubectl_list</code></td>
-<td>List namespaced K8s resources with optional label selector (Secret <code>.data</code> redacted)</td>
+<td>List namespaced K8s resources with optional label selector (Secret <code>.data</code> redacted). GVR resolved via RESTMapper + static table.</td>
 </tr>
 <tr>
 <td><code>kubectl_list_events</code></td>
 <td>List K8s events with reason/object filters</td>
 </tr>
 <tr>
-<td><code>af_check_existing_rr</code></td>
-<td>Check for duplicate RemediationRequest before creation</td>
+<td><code>kubernaut_check_existing_remediation</code></td>
+<td>Check for duplicate RemediationRequest before creation. Params: <code>namespace</code>, <code>kind</code>, <code>name</code>.</td>
 </tr>
 <tr>
-<td><code>af_create_rr</code></td>
-<td>Create a new RemediationRequest CRD</td>
+<td><code>kubernaut_remediate</code></td>
+<td>Create a new RemediationRequest CRD. Params: <code>namespace</code>, <code>kind</code>, <code>name</code>, <code>description</code>, <code>rr_id</code>.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">KA kubectl tools have <code>api_group</code></p>
+<p>The <strong>Kubernaut Agent's</strong> kubectl tools (<code>kubectl_get</code>, <code>kubectl_list</code> in KA) support an <code>api_group</code> parameter for kind disambiguation (#1311). The <strong>AF's</strong> internal <code>kubectl_get</code>/<code>kubectl_list</code> do not — they resolve GVR via RESTMapper and a static GVK table.</p>
+</div>
 
 
 

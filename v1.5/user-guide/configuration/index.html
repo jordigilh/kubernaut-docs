@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -1528,6 +1528,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="API Frontend (v1.5+)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#af-llm-configuration-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AF LLM Configuration (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -3913,7 +3930,7 @@
 </tr>
 </tbody>
 </table>
-<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.0-rc2</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.0-rc2</code>.</p>
+<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.0-rc10</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.0-rc10</code>.</p>
 <h3 id="gateway">Gateway<a class="headerlink" href="#gateway" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3966,8 +3983,23 @@
 </tr>
 <tr>
 <td><code>gateway.config.cors.allowedOrigins</code></td>
-<td>CORS allowed origins. Gateway is an M2M API; the default rejects all browser clients.</td>
-<td><code>https://no-browser-clients.invalid</code></td>
+<td>CORS allowed origins (string array). Gateway is an M2M API; the default rejects all browser clients.</td>
+<td><code>["https://no-browser-clients.invalid"]</code></td>
+</tr>
+<tr>
+<td><code>gateway.config.cors.allowedMethods</code></td>
+<td>HTTP methods allowed in CORS preflight</td>
+<td><code>["GET","POST","PUT","PATCH","DELETE","OPTIONS"]</code></td>
+</tr>
+<tr>
+<td><code>gateway.config.cors.allowCredentials</code></td>
+<td>Whether the <code>Access-Control-Allow-Credentials</code> header is set</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>gateway.config.cors.maxAge</code></td>
+<td>CORS preflight cache duration (seconds)</td>
+<td><code>300</code></td>
 </tr>
 <tr>
 <td><code>gateway.config.deduplication.cooldownPeriod</code></td>
@@ -4245,7 +4277,7 @@
 </tr>
 <tr>
 <td><code>apifrontend.config.server.httpPort</code></td>
-<td>Primary API port</td>
+<td>Primary API port. Overridden by <code>PORT</code> environment variable if set (platform injection, e.g. Cloud Run).</td>
 <td><code>8443</code></td>
 </tr>
 <tr>
@@ -4298,8 +4330,148 @@
 <td>CPU limit</td>
 <td><code>500m</code></td>
 </tr>
+<tr>
+<td><code>apifrontend.config.auth.issuerURL</code></td>
+<td>OIDC issuer URL for token validation</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.auth.audience</code></td>
+<td>Expected OIDC audience</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.rbac.sarCacheTTL</code></td>
+<td>SAR result cache TTL</td>
+<td><code>30s</code></td>
+</tr>
 </tbody>
 </table>
+<h4 id="af-llm-configuration-v15">AF LLM Configuration (v1.5+)<a class="headerlink" href="#af-llm-configuration-v15" title="Permanent link">&para;</a></h4>
+<p>The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's <code>ai.llm</code> section, supporting <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code> providers. When <code>provider</code> is empty, the A2A handler returns 501 (not configured).</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apifrontend.config.agent.llm.provider</code></td>
+<td>LLM provider: <code>vertex_ai</code>, <code>gemini</code>, <code>anthropic</code></td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.model</code></td>
+<td>Model name (e.g., <code>gemini-2.5-pro</code>)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.endpoint</code></td>
+<td>Custom LLM endpoint URL</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.apiKeyFile</code></td>
+<td>Absolute path to file containing LLM API key (replaces env var)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.vertexProject</code></td>
+<td>GCP project (required for <code>vertex_ai</code>)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.vertexLocation</code></td>
+<td>GCP region (required for <code>vertex_ai</code>)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.tlsCaFile</code></td>
+<td>Custom CA certificate for LLM endpoint</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.tlsCertFile</code></td>
+<td>Client certificate for mTLS (#1342)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.tlsKeyFile</code></td>
+<td>Client key for mTLS (#1342)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.timeoutSeconds</code></td>
+<td>HTTP timeout for LLM requests</td>
+<td><code>120</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.oauth2.enabled</code></td>
+<td>Enable OAuth2 client credentials for LLM gateway</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.oauth2.tokenURL</code></td>
+<td>OAuth2 token endpoint (must be https)</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.oauth2.scopes</code></td>
+<td>OAuth2 scopes</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.oauth2.credentialsDir</code></td>
+<td>Directory with <code>client-id</code> and <code>client-secret</code> files</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.circuitBreaker.enabled</code></td>
+<td>Enable circuit breaker for LLM HTTP calls</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.circuitBreaker.failureThreshold</code></td>
+<td>Failures before opening</td>
+<td><code>5</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.circuitBreaker.timeout</code></td>
+<td>Duration in open state before half-open</td>
+<td><code>30s</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.llm.customHeaders</code></td>
+<td>Custom HTTP headers injected into LLM requests (name/value or name/filePath)</td>
+<td><code>[]</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.agent.kaBearerTokenFile</code></td>
+<td>Path to bearer token file for AF→KA MCP client authentication (#1287). When set, the AF sends this token in the <code>Authorization</code> header of KA MCP requests.</td>
+<td><code>""</code></td>
+</tr>
+</tbody>
+</table>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">agent</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini-2.5-pro</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">apiKeyFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/secrets/llm/api-key</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/certs/llm-ca.pem</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="nt">circuitBreaker</span><span class="p">:</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">          </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">          </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">          </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60s</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">File-based API key</p>
+<p>The AF reads the API key from <code>apiKeyFile</code> at startup (not from an environment variable). Mount the key as a Kubernetes Secret volume. The <code>LLM_API_KEY</code> env var is no longer supported (#1251).</p>
+</div>
 <h3 id="controllers-common-parameters">Controllers (Common Parameters)<a class="headerlink" href="#controllers-common-parameters" title="Permanent link">&para;</a></h3>
 <p>All controllers (<code>aianalysis</code>, <code>signalprocessing</code>, <code>remediationorchestrator</code>, <code>workflowexecution</code>, <code>effectivenessmonitor</code>, <code>authwebhook</code>, <code>notification</code>) accept:</p>
 <table>
@@ -4669,12 +4841,12 @@
 </table>
 <h2 id="signal-source-authentication">Signal Source Authentication<a class="headerlink" href="#signal-source-authentication" title="Permanent link">&para;</a></h2>
 <p>External signal sources need RBAC authorization. Configure via Helm:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">gateway</span><span class="p">:</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">signalSources</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">signalSources</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
 </span></code></pre></div>
 <p>Each entry creates a <code>ClusterRoleBinding</code> granting the ServiceAccount permission to submit signals.</p>
 <p>See <a href="../../architecture/security-rbac/#signal-ingestion">Security &amp; RBAC -- Signal Ingestion</a> for the full TokenReview + SAR authentication flow and RBAC details. See <a href="../../getting-started/installation/#signal-source-authentication">Installation -- Signal Source Authentication</a> for AlertManager configuration examples.</p>
@@ -4684,7 +4856,7 @@
 <ol>
 <li>Copy the example SDK config from the chart:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>cp<span class="w"> </span>charts/kubernaut/examples/sdk-config.yaml<span class="w"> </span>my-sdk-config.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>cp<span class="w"> </span>charts/kubernaut/examples/sdk-config.yaml<span class="w"> </span>my-sdk-config.yaml
 </span></code></pre></div>
 <ol>
 <li>
@@ -4694,16 +4866,16 @@
 <p>Create the API key Secret:</p>
 </li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span><span class="s2">&quot;sk-...&quot;</span>
 </span></code></pre></div>
 <ol>
 <li>Pass the SDK config during install:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>...
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>...
 </span></code></pre></div>
 <h3 id="temperature-tuning">Temperature Tuning<a class="headerlink" href="#temperature-tuning" title="Permanent link">&para;</a></h3>
 <p>The <code>temperature</code> parameter in the SDK config (default 0.7) controls the LLM's creativity vs determinism:</p>
@@ -4889,21 +5061,21 @@
 <p>To enable the Ansible execution engine for workflows that run Ansible playbooks via AWX or AAP, configure the <code>workflowexecution.config.ansible</code> block.</p>
 <h3 id="1-create-the-awx-api-token-secret">1. Create the AWX API token secret<a class="headerlink" href="#1-create-the-awx-api-token-secret" title="Permanent link">&para;</a></h3>
 <p>Generate an API token in your AWX/AAP instance and store it in a Kubernetes Secret. The secret name is user-chosen -- it just needs to match <code>tokenSecretRef.name</code> in step 3.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>awx-api-token<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">token</span><span class="o">=</span>&lt;YOUR_AWX_API_TOKEN&gt;<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>awx-api-token<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">token</span><span class="o">=</span>&lt;YOUR_AWX_API_TOKEN&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>Replace <code>awx-api-token</code> with your preferred name (e.g. <code>aap-api-token</code> for AAP deployments).</p>
 <h3 id="2-grant-rbac-for-the-token-secret">2. Grant RBAC for the token secret<a class="headerlink" href="#2-grant-rbac-for-the-token-secret" title="Permanent link">&para;</a></h3>
 <p>The <code>workflowexecution-controller</code> ServiceAccount needs permission to read the token secret at startup. The chart does <strong>not</strong> create this RBAC automatically -- you must create it:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>role<span class="w"> </span>awx-token-reader<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--verb<span class="o">=</span>get<span class="w"> </span>--resource<span class="o">=</span>secrets<span class="w"> </span>--resource-name<span class="o">=</span>awx-api-token<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>
-</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>rolebinding<span class="w"> </span>awx-token-reader<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">  </span>--role<span class="o">=</span>awx-token-reader<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-7"><a id="__codelineno-9-7" name="__codelineno-9-7" href="#__codelineno-9-7"></a><span class="w">  </span>--serviceaccount<span class="o">=</span>kubernaut-system:workflowexecution-controller<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-8"><a id="__codelineno-9-8" name="__codelineno-9-8" href="#__codelineno-9-8"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>role<span class="w"> </span>awx-token-reader<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--verb<span class="o">=</span>get<span class="w"> </span>--resource<span class="o">=</span>secrets<span class="w"> </span>--resource-name<span class="o">=</span>awx-api-token<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>kubectl<span class="w"> </span>create<span class="w"> </span>rolebinding<span class="w"> </span>awx-token-reader<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">  </span>--role<span class="o">=</span>awx-token-reader<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>--serviceaccount<span class="o">=</span>kubernaut-system:workflowexecution-controller<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>Replace <code>awx-api-token</code> in <code>--resource-name</code> with the secret name you chose in step 1.</p>
 <div class="admonition warning">
@@ -4912,16 +5084,16 @@
 </div>
 <h3 id="3-configure-helm-values">3. Configure Helm values<a class="headerlink" href="#3-configure-helm-values" title="Permanent link">&para;</a></h3>
 <p>Uncomment the ansible block in your values file:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">workflowexecution</span><span class="p">:</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">ansible</span><span class="p">:</span>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="nt">apiURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://awx.example.com&quot;</span>
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="nt">insecure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">            </span><span class="c1"># set true to skip TLS verification</span>
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">      </span><span class="nt">organizationID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">          </span><span class="c1"># AWX organization ID for credential creation</span>
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">      </span><span class="nt">tokenSecretRef</span><span class="p">:</span>
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">awx-api-token</span><span class="w">      </span><span class="c1"># Secret created in step 1</span>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span><span class="w">               </span><span class="c1"># key within the Secret</span>
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># empty = release namespace (kubernaut-system)</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">workflowexecution</span><span class="p">:</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">ansible</span><span class="p">:</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">      </span><span class="nt">apiURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://awx.example.com&quot;</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">      </span><span class="nt">insecure</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">            </span><span class="c1"># set true to skip TLS verification</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">      </span><span class="nt">organizationID</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1</span><span class="w">          </span><span class="c1"># AWX organization ID for credential creation</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">      </span><span class="nt">tokenSecretRef</span><span class="p">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">awx-api-token</span><span class="w">      </span><span class="c1"># Secret created in step 1</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span><span class="w">               </span><span class="c1"># key within the Secret</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># empty = release namespace (kubernaut-system)</span>
 </span></code></pre></div>
 <table>
 <thead>
@@ -4973,12 +5145,12 @@
 </table>
 <h3 id="4-verify">4. Verify<a class="headerlink" href="#4-verify" title="Permanent link">&para;</a></h3>
 <p>After installing or upgrading with the ansible config, check the controller logs:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deployment/workflowexecution-controller<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>ansible
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>kubectl<span class="w"> </span>logs<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>deployment/workflowexecution-controller<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-i<span class="w"> </span>ansible
 </span></code></pre></div>
 <p>Expected output:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>&quot;Ansible executor registered&quot; &quot;awxURL&quot;=&quot;https://awx.example.com&quot; &quot;organizationID&quot;=1
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&quot;Ansible executor registered&quot; &quot;awxURL&quot;=&quot;https://awx.example.com&quot; &quot;organizationID&quot;=1
 </span></code></pre></div>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&quot;Executor registry initialized&quot; &quot;engines&quot;=[&quot;tekton&quot;,&quot;job&quot;,&quot;ansible&quot;]
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>&quot;Executor registry initialized&quot; &quot;engines&quot;=[&quot;tekton&quot;,&quot;job&quot;,&quot;ansible&quot;]
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Automatic K8s API credentials for playbooks</p>
@@ -5070,8 +5242,8 @@
 </ol>
 <p><strong>Automatic renewal</strong>: On <code>helm upgrade</code>, if the certificate expires within 30 days, it is automatically regenerated. Additionally, the AuthWebhook init-container patches the <code>caBundle</code> on every pod restart, making the TLS configuration self-healing.</p>
 <p><strong>Recovery</strong>: If the <code>authwebhook-ca</code> ConfigMap is accidentally deleted while <code>authwebhook-tls</code> still exists, delete the <code>authwebhook-tls</code> Secret and run <code>helm upgrade</code> to regenerate both:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut/kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-f<span class="w"> </span>my-values.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut/kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-f<span class="w"> </span>my-values.yaml
 </span></code></pre></div>
 <blockquote>
 <p><strong>Note</strong>: <code>helm template</code> output will not show <code>caBundle</code> on webhook configurations. This is expected -- the hook injects it at runtime after the webhook resources are created.</p>
@@ -5082,28 +5254,28 @@
 <ol>
 <li>Install cert-manager (v1.12+):</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Available<span class="w"> </span>deployment<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>cert-manager<span class="w"> </span>--timeout<span class="o">=</span>120s
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>kubectl<span class="w"> </span><span class="nb">wait</span><span class="w"> </span>--for<span class="o">=</span><span class="nv">condition</span><span class="o">=</span>Available<span class="w"> </span>deployment<span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>cert-manager<span class="w"> </span>--timeout<span class="o">=</span>120s
 </span></code></pre></div>
 <ol>
 <li>Create an Issuer or ClusterIssuer. For development with cert-manager, a self-signed issuer works:</li>
 </ol>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="nt">metadata</span><span class="p">:</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">selfsigned-issuer</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span><span class="nt">selfSigned</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cert-manager.io/v1</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterIssuer</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">selfsigned-issuer</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">  </span><span class="nt">selfSigned</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span>
 </span></code></pre></div>
 <p>For production, use your organization's CA or an ACME issuer (e.g., Let's Encrypt).</p>
 <ol>
 <li>Install the chart with cert-manager mode:</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>cert-manager<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">  </span>--set<span class="w"> </span>tls.certManager.issuerRef.name<span class="o">=</span>selfsigned-issuer<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>cert-manager<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>--set<span class="w"> </span>tls.certManager.issuerRef.name<span class="o">=</span>selfsigned-issuer<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
 </span></code></pre></div>
 <p>The chart creates a <code>Certificate</code> resource (<code>authwebhook-cert</code>) that provisions the <code>authwebhook-tls</code> Secret. cert-manager's <code>cainjector</code> automatically writes the <code>caBundle</code> into the webhook configurations via the <code>cert-manager.io/inject-ca-from</code> annotation.</p>
 <p><strong>No TLS hook jobs</strong> are created in this mode -- cert-manager handles the full lifecycle including renewal.</p>
@@ -5113,11 +5285,11 @@
 <li>Install cert-manager and create an Issuer/ClusterIssuer (see <a href="../../getting-started/installation/">Installation</a>)</li>
 <li>
 <p>Upgrade with the new mode:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>cert-manager<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>--set<span class="w"> </span>tls.certManager.issuerRef.name<span class="o">=</span>your-issuer<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>helm<span class="w"> </span>upgrade<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>cert-manager<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--set<span class="w"> </span>tls.certManager.issuerRef.name<span class="o">=</span>your-issuer<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
 </span></code></pre></div>
 </li>
 <li>
@@ -5125,8 +5297,8 @@
 </li>
 <li>
 <p>Verify the webhook is serving the new certificate:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.metadata.annotations}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>certificate<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>secret<span class="w"> </span>authwebhook-tls<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.metadata.annotations}&#39;</span>
 </span></code></pre></div>
 </li>
 </ol>
@@ -5139,10 +5311,10 @@
 <li>Pre-create the <code>authwebhook-ca</code> ConfigMap with the CA bundle</li>
 <li>Ensure the <code>caBundle</code> field on <code>ValidatingWebhookConfiguration</code> resources matches the CA</li>
 </ol>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>manual<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span>--set<span class="w"> </span>tls.mode<span class="o">=</span>manual<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span>-f<span class="w"> </span>my-values.yaml
 </span></code></pre></div>
 <p>This mode is useful when a service mesh (e.g., Istio) handles mTLS between the API server and webhooks, or when certificates are provisioned by an external PKI and injected via a sidecar or init container.</p>
 <h3 id="ca-bundle-self-healing">CA Bundle Self-Healing<a class="headerlink" href="#ca-bundle-self-healing" title="Permanent link">&para;</a></h3>

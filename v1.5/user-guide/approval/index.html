@@ -95,7 +95,7 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc2.
+    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
     Content may change before GA.
     <a href="../../..">
       <strong>View stable documentation.</strong>
@@ -1226,10 +1226,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#default-policy-behavior" class="md-nav__link">
+  <a href="#reference-policy-behavior" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Default Policy Behavior
+        Reference Policy Behavior
       
     </span>
   </a>
@@ -3392,8 +3392,9 @@
 </div>
 <h2 id="when-approval-is-required">When Approval Is Required<a class="headerlink" href="#when-approval-is-required" title="Permanent link">&para;</a></h2>
 <p>Approval is determined by a <strong>user-replaceable Rego policy</strong> evaluated during the AI Analysis phase. Operators control approval behavior by editing the Rego policy in the <code>aianalysis-policies</code> ConfigMap -- the policy is not hardcoded.</p>
-<h3 id="default-policy-behavior">Default Policy Behavior<a class="headerlink" href="#default-policy-behavior" title="Permanent link">&para;</a></h3>
-<p>The shipped <code>approval.rego</code> makes decisions based on <strong>environment</strong>, <strong>remediation target presence</strong>, and <strong>sensitive resource kinds</strong>:</p>
+<h3 id="reference-policy-behavior">Reference Policy Behavior<a class="headerlink" href="#reference-policy-behavior" title="Permanent link">&para;</a></h3>
+<p>The chart includes a reference <code>approval.rego</code> (at <code>charts/kubernaut/files/defaults/approval.rego</code>) that you can use as a starting point. With the operator, you <strong>must</strong> provide this policy in a ConfigMap before applying the CR — see <a href="../../getting-started/installation/#prerequisites">Installation Prerequisites</a>.</p>
+<p>The reference policy makes decisions based on <strong>environment</strong>, <strong>remediation target presence</strong>, and <strong>sensitive resource kinds</strong>:</p>
 <ul>
 <li><strong>Production namespaces</strong> (<code>kubernaut.ai/environment=production</code>) — always require approval, regardless of confidence. Environment matching is <strong>case-insensitive</strong> (e.g., <code>Production</code>, <code>production</code>, <code>PRODUCTION</code> all match).</li>
 <li><strong>Sensitive resource kinds</strong> (Node, StatefulSet) — always require approval, regardless of environment</li>

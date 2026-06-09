@@ -216,6 +216,9 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.config.server.healthPort` | Health check port | `8081` |
 | `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
 | `apifrontend.config.session.retentionTTL` | How long completed sessions are retained | `720h` |
+| `apifrontend.config.interactive.enabled` | Enable interactive session MCP tools. When `false`, 10 session-dependent tools are hidden from MCP enumeration and the A2A agent tool list, leaving 11 stateless CRD/data tools (#1366). | `true` |
+| `apifrontend.config.severityTriage.enabled` | Enable severity triage. Required for alert tools (`list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`). | `false` |
+| `apifrontend.config.severityTriage.prometheusURL` | Prometheus API URL for alert queries. Required when `severityTriage.enabled: true`. | `""` |
 | `apifrontend.config.severityTriage.cacheTTLSeconds` | Severity triage cache TTL | `30` |
 | `apifrontend.config.severityTriage.llmConfidence` | LLM confidence threshold for severity triage | `0.7` |
 | `apifrontend.resources.requests.memory` | Memory request | `64Mi` |

@@ -37,7 +37,7 @@ The AF decomposes the Kubernaut Agent's single `kubernaut_investigate` tool (whi
 
 | Tool | Description |
 |---|---|
-| `kubernaut_investigate` | Start a new investigation — by existing RR (`rr_id`) or by creating one (`namespace` + `kind` + `name`) |
+| `kubernaut_investigate` | Start a new investigation — by existing RR (`rr_id`) or by creating one (`api_version` + `namespace` + `kind` + `name`) |
 | `kubernaut_await_session` | Wait for an active investigation session to become ready |
 | `kubernaut_message` | Send a follow-up message in a multi-turn conversation |
 | `kubernaut_complete` | Mark the investigation as complete (maps to KA `action=complete`) |
@@ -62,6 +62,7 @@ Start an interactive investigation. Provide either an existing RR name **or** ta
 
 ```json
 {
+  "api_version": "apps/v1",
   "namespace": "production",
   "kind": "Deployment",
   "name": "checkout-service"
@@ -176,3 +177,6 @@ Kubernaut supports both modes simultaneously:
 | **Pipeline** | Full 6-stage pipeline | Same pipeline, operator-driven at selection stage |
 
 Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `kubernaut_await_session` followed by `kubernaut_investigate`.
+
+!!! note "Interactive-Autonomous parity (#1377)"
+    As of v1.5.0-rc11, the interactive and autonomous pipelines share the same KA tool set, enrichment pipeline, and scoring logic. The KA agent uses the same `kubernaut_investigate` tool internally for both modes — the only difference is whether the AF or an alert webhook initiates the investigation, and whether a `leaseHolder` is set on the `InvestigationSession`.

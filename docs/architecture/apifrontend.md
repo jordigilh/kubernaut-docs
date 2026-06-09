@@ -11,7 +11,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 - **Protocol translation** — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls
 - **Authentication** — OIDC/OAuth2 via JWKS validation with JWT claim extraction
 - **Authorization** — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache
-- **MCP bridge** — Dispatches 21 `kubernaut_*` MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing
+- **MCP bridge** — Dispatches 21 `kubernaut_*` MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing. When `interactive.enabled: false` (#1366), 10 session-dependent tools are hidden, leaving 11 stateless tools for CRD and data operations only.
 - **Streaming** — Relays Server-Sent Events from KA's SSE endpoint to MCP clients
 
 ## Agentic Architecture
@@ -197,6 +197,22 @@ Supported providers: `vertex_ai` (Claude on Vertex AI — requires `vertexProjec
 **KA bearer token** — The `kaBearerTokenFile` config field provides the AF with a bearer token for authenticating to the KA MCP server (#1287). When set, the AF includes this token in the `Authorization` header of all KA MCP requests.
 
 See [AF LLM Configuration](../user-guide/configuration.md#af-llm-configuration-v15) for the full field reference.
+
+## A2A Streaming Events
+
+A2A streaming uses `TaskStatusUpdateEvent` messages classified by `metadata.type`:
+
+| `metadata.type` | Purpose | `status.message` |
+|---|---|---|
+| `reasoning` | LLM inner thoughts / investigation deltas | Set (sanitized text) |
+| `status` | Orchestration progress (tool starts, phase transitions) | Set |
+| `output` | Final LLM answer | Set |
+| `investigation` | Investigation-specific events from KA | Set |
+| `keepalive` | Proxy idle-timeout prevention | **Not set** (metadata-only) |
+
+**Keepalive events** are emitted every **5 seconds** during long-running KA tool executions. They carry `{"type":"keepalive", "dot":"."}` in metadata but no `status.message`, preventing them from polluting the A2A task history. Clients that only render `status.message` will not see keepalive dots (by design).
+
+A2A integrators should inspect `metadata.type` to distinguish ephemeral events from history-worthy messages.
 
 ## Health Checks
 

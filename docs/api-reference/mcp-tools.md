@@ -629,6 +629,7 @@ All tool names below are prefixed with `kubernaut_`.
 | `cancel` | :material-check: | :material-check: | | | | |
 | `status` | :material-check: | :material-check: | | | | |
 | `reconnect` | :material-check: | :material-check: | | | | |
+| `takeover` | :material-check: | :material-check: | | | | |
 | `discover_workflows` | :material-check: | :material-check: | | | | |
 | `select_workflow` | :material-check: | :material-check: | | | | |
 | `present_decision` | :material-check: | :material-check: | | | | |

@@ -611,6 +611,8 @@ kubernaut_list_remediations()
 
 ## Persona Access Matrix
 
+The personas below are **predefined bootstrap roles** shipped with the Helm chart. Operators are encouraged to create their own ClusterRoles and ClusterRoleBindings tailored to their operational environment — the predefined set is a starting point, not a prescription.
+
 All tool names below are prefixed with `kubernaut_`.
 
 | Tool | SRE | AI Orch. | CI/CD | Obs. | L3 Audit | Approver |

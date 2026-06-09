@@ -797,12 +797,9 @@ _Validation:_
 | `Deduplicated`| FailurePhaseDeduplicated indicates an RR that inherited a failure from a<br />deduplicated WorkflowExecution collision . Excluded from<br />consecutive failure counting per .|
 
 
-### InvestigationSession
+### InvestigationSession (embedded)
 
-
-InvestigationSession tracks the async Kubernaut Agent session lifecycle.
- AA controller session tracking
- Session regeneration on 404 (KA restart)
+InvestigationSession is also embedded in [AIAnalysisStatus](#aianalysisstatus) for autonomous pipeline session tracking. See [InvestigationSession CRD](#investigationsession) for the standalone resource.
 
 _Appears in:_
 - [AIAnalysisStatus](#aianalysisstatus)
@@ -889,6 +886,74 @@ _Validation:_
 | `High`||
 | `Medium`||
 | `Low`||
+
+
+## InvestigationSession
+
+InvestigationSession is a standalone CRD (short name: `isess`) that represents an interactive investigation session created by the API Frontend. It tracks the lifecycle of MCP sessions connected to a RemediationRequest.
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `apiVersion`| _string_| `kubernaut.ai/v1alpha1`|
+| `kind`| _string_| `InvestigationSession`|
+| `metadata`| _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_| Refer to the Kubernetes API documentation for fields of `metadata`.|
+| `spec`| _[InvestigationSessionSpec](#investigationsessionspec)_||
+| `status`| _[InvestigationSessionStatus](#investigationsessionstatus)_||
+
+
+### InvestigationSessionSpec
+
+The spec is **immutable** after creation (CEL validation: `self == oldSelf`).
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `remediationRequestRef`| _[ObjectRef](#objectref)_| Reference to the RR this session investigates. IS must be in the same namespace. OwnerReference set to this RR for cascade deletion. |
+| `a2aTaskID`| _string_| A2A task identifier for client reconnection (1–256 chars). |
+| `userIdentity`| _[SessionUser](#sessionuser)_| Authenticated user from the originating JWT. |
+| `joinMode`| _string_| How the session was initiated: `start` or `takeover`. |
+
+#### ObjectRef
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `name`| _string_| Name of the referenced object (1–253 chars). |
+| `namespace`| _string_| Namespace of the referenced object (1–63 chars). |
+
+#### SessionUser
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `username`| _string_| Username from JWT `sub` claim (1–253 chars). |
+| `groups`| _string array_| Groups from JWT `groups` claim (max 64 items). |
+
+
+### InvestigationSessionStatus
+
+Status is mutable by the AF only (RBAC-restricted).
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `phase`| _string_| Current lifecycle state: `Active`, `Disconnected`, `Completed`, `Cancelled`, `Failed` |
+| `aiAnalysisRef`| _string_| Name of the discovered AIAnalysis CRD. |
+| `kaCorrelationID`| _string_| Correlation ID from KA's `/analyze` response. |
+| `connectionState`| _string_| SSE connection state: `Connected` or `Disconnected`. |
+| `startedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Session creation timestamp. |
+| `completedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the session reached a terminal state. |
+| `disconnectedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Last disconnect timestamp. |
+| `reconnectedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Last reconnect timestamp. |
+| `leaseHolder`| _string_| Identity of the current session driver (from KA Lease `holderIdentity`). Empty when no lease is held. |
+| `leaseAcquiredAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the lease was acquired. |
+| `message`| _string_| Human-readable description of the current state. |
+| `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Standard Kubernetes conditions (list map keyed by `type`). |
+
+#### Print columns
+
+| Name | JSON Path | Type |
+|------|-----------|------|
+| Phase | `.status.phase` | string |
+| Task ID | `.spec.a2aTaskID` | string |
+| User | `.spec.userIdentity.username` | string |
+| Age | `.metadata.creationTimestamp` | date |
 
 
 ## NotificationRequest
@@ -1225,6 +1290,7 @@ _Appears in:_
 | ---| ---| ---|
 | `decision`| _[ApprovalDecision](#approvaldecision)_| Decision made by operator or system (timeout)<br />Empty string indicates pending decision|
 | `decidedBy`| _string_| Who made the decision (username or "system" for timeout)|
+| `decidedVia`| _string_| Who facilitated the decision (trusted intermediary SA identity, e.g. `system:serviceaccount:kubernaut-system:kubernaut-apifrontend`). Empty for direct decisions. Set by the auth webhook when the AF SA delegates approval on behalf of a human user (#1287). |
 | `decidedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| When the decision was made|
 | `decisionMessage`| _string_| Optional message from the decision maker|
 | `workflowOverride`| _[WorkflowOverride](#workflowoverride)_| Operator workflow/parameter override (#594).<br />Only valid when Decision is Approved. Webhook validates the referenced RW.|

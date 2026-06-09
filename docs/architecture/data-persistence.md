@@ -671,6 +671,8 @@ The database includes procedural functions for automated analysis:
 
 On startup, the Auth Webhook runs a **Runnable** that lists cluster `ActionType` objects, then `RemediationWorkflow` objects, and **reconciles** them with DataStorage through **idempotent creates**. This repopulates the catalog after storage loss or drift without duplicating rows.
 
+**Graceful degradation** (#1246) — Individual `RemediationWorkflow` registration failures do not crash the pod. The reconciler logs the error, emits a `authwebhook.workflow.registration_failed` audit event, and continues with the remaining workflows. The webhook starts serving admission requests as soon as the reconciler completes, regardless of individual failures.
+
 ## Database migrations
 
 Schema changes use an **append-only** migration chain managed by [**goose**](https://github.com/pressly/goose). The strategy is:

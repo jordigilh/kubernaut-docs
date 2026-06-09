@@ -9,6 +9,17 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 
 ## `spec` (KubernautSpec)
 
+!!! warning "CR validation ([kubernaut-operator#128](https://github.com/jordigilh/kubernaut-operator/issues/128))"
+    The operator runs `ValidateKubernaut` checks and **rejects the CR** if any of the following are missing:
+
+    - `spec.aiAnalysis.policy.configMapName` — must reference a ConfigMap containing key `approval.rego`
+    - `spec.signalProcessing.policy.configMapName` — must reference a ConfigMap containing key `policy.rego`
+    - `spec.kubernautAgent.llm.provider` — LLM provider name
+    - `spec.kubernautAgent.llm.model` — LLM model name
+    - `spec.kubernautAgent.llm.credentialsSecretName` — Secret with LLM API credentials
+
+    Create these resources **before** applying the Kubernaut CR. See [Installation Prerequisites](../getting-started/installation.md#prerequisites).
+
 ### Required fields
 
 | Field | Type | Description |
@@ -25,8 +36,8 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `ansible` | [AnsibleSpec](#ansiblespec) | disabled | AWX/AAP integration |
 | `monitoring` | [MonitoringSpec](#monitoringspec) | enabled | OCP monitoring integration (Prometheus/AlertManager RBAC) |
 | `notification` | NotificationSpec | — | Slack, routing ConfigMap, logging, resources |
-| `aiAnalysis` | [AIAnalysisSpec](#aianalysisspec) | — | Rego approval policy ConfigMap, confidence threshold |
-| `signalProcessing` | SignalProcessingSpec | — | Rego classification policy ConfigMap, proactive mappings |
+| `aiAnalysis` | [AIAnalysisSpec](#aianalysisspec) | — | **Required policy ConfigMap** — Rego approval policy, confidence threshold |
+| `signalProcessing` | [SignalProcessingSpec](#signalprocessingspec) | — | **Required policy ConfigMap** — Rego classification policy, proactive mappings |
 | `remediationOrchestrator` | [RemediationOrchestratorSpec](#remediationorchestratorspec) | — | Timeouts, routing, dry-run, retention |
 | `workflowExecution` | [WorkflowExecutionSpec](#workflowexecutionspec) | — | Execution namespace, cooldown, Tekton toggle |
 | `effectivenessMonitor` | EffectivenessMonitorSpec | — | Stabilization/validity windows |
@@ -134,11 +145,18 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 |---|---|---|---|
 | `enabled` | *bool | `true` | When true, operator auto-derives Prometheus/AlertManager URLs and provisions 2 additional ClusterRoles (`alertmanager-view`, `gateway-signal-source`) |
 
+### SignalProcessingSpec
+
+| Field | Type | Description |
+|---|---|---|
+| `policy.configMapName` | string | **Required** — ConfigMap containing key `policy.rego` with SP classification rules |
+| `proactiveSignalMappings.configMapName` | string | ConfigMap containing proactive signal mapping YAML |
+
 ### AIAnalysisSpec
 
 | Field | Type | Description |
 |---|---|---|
-| `policy.configMapName` | string | **Required** — ConfigMap containing `approval.rego` |
+| `policy.configMapName` | string | **Required** — ConfigMap containing key `approval.rego` |
 | `confidenceThreshold` | string | Minimum confidence score for auto-approval |
 
 ### RemediationOrchestratorSpec
@@ -149,7 +167,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `routing` | RORoutingSpec | Backoff, cooldown, and failure threshold settings |
 | `effectivenessAssessment` | ROEffectivenessSpec | Stabilization window |
 | `asyncPropagation` | ROAsyncPropagationSpec | Delays for GitOps sync, operator reconcile, proactive alerts |
-| `dryRun` | bool | Enable global dry-run (Level 1 — Observe) |
+| `dryRun` | bool | Enable global dry-run (Stage 1 — Observe) |
 | `dryRunHoldPeriod` | string | Hold period before marking DryRun complete |
 | `notifications` | RONotificationsSpec | Self-resolved notification toggle |
 | `retention` | RORetentionSpec | Terminal RR retention period (default: 24h) |

@@ -9,7 +9,7 @@ The AIAnalysis controller uses a Rego policy to determine whether a proposed rem
 | ConfigMap name | `aianalysis-policies` |
 | Key | `approval.rego` |
 | Mount path | `/etc/aianalysis/policies/` |
-| Required | Yes -- chart fails at install if neither `policies.content` nor `policies.existingConfigMap` is set |
+| Required | **Yes** — Helm requires `policies.content` or `policies.existingConfigMap`; the operator rejects the CR if `spec.aiAnalysis.policy.configMapName` is empty |
 
 ## Provisioning
 

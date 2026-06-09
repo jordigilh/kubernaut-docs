@@ -238,6 +238,12 @@ spec:
       model: llama3
       endpoint: http://ollama.internal.svc:11434
       credentialsSecretName: kubernaut-llm
+  signalProcessing:
+    policy:
+      configMapName: signalprocessing-policy   # must contain key: policy.rego
+  aiAnalysis:
+    policy:
+      configMapName: aianalysis-policies        # must contain key: approval.rego
 ```
 
 No image overrides are needed — the operator reads `RELATED_IMAGE_*` env vars set by OLM, and IDMS transparently redirects them to the mirror registry.

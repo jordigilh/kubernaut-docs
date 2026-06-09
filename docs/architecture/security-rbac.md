@@ -394,15 +394,15 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 | ClusterRole | Persona | MCP Tools | Tool List |
 |---|---|---|---|
-| `kubernaut-tool-sre` | Investigation + remediation (no approval) | 20 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration | 15 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_stream_investigation` |
-| `kubernaut-tool-cicd` | CI/CD pipeline integration | 3 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch` |
-| `kubernaut-tool-observability` | Read-only observability | 5 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
+| `kubernaut-tool-sre` | Full investigation + remediation | 19 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration (no approval) | 13 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| `kubernaut-tool-cicd` | CI/CD pipeline integration | 4 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
+| `kubernaut-tool-observability` | Read-only observability | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
 | `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
-| `kubernaut-tool-remediation-approver` | Human approval workflows | 4 | `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_approve`, `kubernaut_watch` |
+| `kubernaut-tool-remediation-approver` | Human approval workflows | 7 | `kubernaut_approve`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
 
 !!! info "Internal tools"
-    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `af_check_existing_rr`, `af_create_rr`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
+    The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
 
 ### Binding example
 
@@ -457,6 +457,49 @@ All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is
 | SEC-02 | K8s audit logs attribute actions to AF SA, not the end user | Application audit trail carries user identity; correlate via `actor_ip` |
 | SEC-04 | AF SA privilege aggregation | ClusterRole is explicit and minimal; reviewed per release |
 | SEC-09 | Persona misconfiguration could over-grant | Helm values are the source of truth; `kubernaut-tool-*` roles are data-driven |
+
+### Trusted Intermediary Delegation (#1287) {: #trusted-intermediary }
+
+When a human operator approves or rejects a `RemediationApprovalRequest` (RAR) via the MCP bridge, the API Frontend acts as a **trusted intermediary**:
+
+1. The operator's OIDC token is validated and a `TokenReview` resolves the human identity (username + groups).
+2. The AF ServiceAccount patches the RAR's `status.decision` on behalf of the human user.
+3. The `decidedVia` field on the RAR status records the trusted intermediary's SA identity (e.g. `system:serviceaccount:kubernaut-system:kubernaut-apifrontend`). The auth webhook sets this field; it is blank when the RAR is decided directly (e.g., by the operator CRD controller).
+
+This allows the AF to record **who** made the decision (the human) while executing the Kubernetes API call with its own SA token — consistent with the unified SA model above.
+
+### TokenReview Identity Enrichment {: #tokenreview }
+
+When a client connects via OIDC, the AF performs a Kubernetes `TokenReview` to resolve the full user identity (username, UID, groups, extras). This enriched identity is:
+
+- Used in every SAR check for tool authorization
+- Injected into the Rego policy context as `input.identity` (see [Rego Reference](../user-guide/rego-reference.md))
+- Recorded in application audit trail events
+
+### OIDC CA Trust (#1245) {: #oidc-ca-trust }
+
+For environments using a private OIDC provider (non-public CA), the AF supports a custom CA certificate via the `oidcCaFile` configuration field:
+
+```yaml
+apifrontend:
+  config:
+    auth:
+      issuerURL: https://idp.internal.corp.com
+      oidcCaFile: /etc/certs/oidc-ca.pem
+```
+
+Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.
+
+### Auth Mode Auto-Detection (#1309) {: #auth-auto-detect }
+
+The AF auto-detects its authentication mode from the configuration:
+
+| Condition | Mode | Behavior |
+|---|---|---|
+| JWT providers configured | **OIDC/JWKS** | Validates bearer tokens against configured issuers and JWKS endpoints |
+| No JWT providers + TokenReview wired | **K8s TokenReview** | Validates tokens via the Kubernetes API server's TokenReview endpoint |
+
+This removes the need for an explicit `authMode` toggle — the AF infers the correct strategy from which providers are present in the configuration.
 
 ## Next Steps
 

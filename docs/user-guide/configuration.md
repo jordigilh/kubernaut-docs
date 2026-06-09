@@ -105,7 +105,10 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `gateway.config.server.writeTimeout` | HTTP write timeout | `30s` |
 | `gateway.config.server.k8sRequestTimeout` | Timeout for Kubernetes API requests (TokenReview, SAR) | `15s` |
 | `gateway.config.middleware.trustedProxyCIDRs` | Trusted proxy CIDRs for `X-Forwarded-For` extraction. Empty = fail-closed (proxy headers never trusted). | `[]` |
-| `gateway.config.cors.allowedOrigins` | CORS allowed origins. Gateway is an M2M API; the default rejects all browser clients. | `https://no-browser-clients.invalid` |
+| `gateway.config.cors.allowedOrigins` | CORS allowed origins (string array). Gateway is an M2M API; the default rejects all browser clients. | `["https://no-browser-clients.invalid"]` |
+| `gateway.config.cors.allowedMethods` | HTTP methods allowed in CORS preflight | `["GET","POST","PUT","PATCH","DELETE","OPTIONS"]` |
+| `gateway.config.cors.allowCredentials` | Whether the `Access-Control-Allow-Credentials` header is set | `false` |
+| `gateway.config.cors.maxAge` | CORS preflight cache duration (seconds) | `300` |
 | `gateway.config.deduplication.cooldownPeriod` | Signal deduplication cooldown | `5m` |
 | `gateway.auth.signalSources` | External signal sources requiring RBAC | `[]` |
 
@@ -208,7 +211,7 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.enabled` | Enable API Frontend deployment | `true` |
 | `apifrontend.replicas` | Number of replicas | `1` |
 | `apifrontend.logging.level` | Log level | `INFO` |
-| `apifrontend.config.server.httpPort` | Primary API port | `8443` |
+| `apifrontend.config.server.httpPort` | Primary API port. Overridden by `PORT` environment variable if set (platform injection, e.g. Cloud Run). | `8443` |
 | `apifrontend.config.server.metricsPort` | Prometheus metrics port | `9090` |
 | `apifrontend.config.server.healthPort` | Health check port | `8081` |
 | `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
@@ -219,6 +222,53 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.resources.requests.cpu` | CPU request | `50m` |
 | `apifrontend.resources.limits.memory` | Memory limit | `256Mi` |
 | `apifrontend.resources.limits.cpu` | CPU limit | `500m` |
+| `apifrontend.config.auth.issuerURL` | OIDC issuer URL for token validation | `""` |
+| `apifrontend.config.auth.audience` | Expected OIDC audience | `""` |
+| `apifrontend.config.rbac.sarCacheTTL` | SAR result cache TTL | `30s` |
+
+#### AF LLM Configuration (v1.5+)
+
+The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's `ai.llm` section, supporting `vertex_ai`, `gemini`, and `anthropic` providers. When `provider` is empty, the A2A handler returns 501 (not configured).
+
+| Parameter | Description | Default |
+|---|---|---|
+| `apifrontend.config.agent.llm.provider` | LLM provider: `vertex_ai`, `gemini`, `anthropic` | `""` |
+| `apifrontend.config.agent.llm.model` | Model name (e.g., `gemini-2.5-pro`) | `""` |
+| `apifrontend.config.agent.llm.endpoint` | Custom LLM endpoint URL | `""` |
+| `apifrontend.config.agent.llm.apiKeyFile` | Absolute path to file containing LLM API key (replaces env var) | `""` |
+| `apifrontend.config.agent.llm.vertexProject` | GCP project (required for `vertex_ai`) | `""` |
+| `apifrontend.config.agent.llm.vertexLocation` | GCP region (required for `vertex_ai`) | `""` |
+| `apifrontend.config.agent.llm.tlsCaFile` | Custom CA certificate for LLM endpoint | `""` |
+| `apifrontend.config.agent.llm.tlsCertFile` | Client certificate for mTLS (#1342) | `""` |
+| `apifrontend.config.agent.llm.tlsKeyFile` | Client key for mTLS (#1342) | `""` |
+| `apifrontend.config.agent.llm.timeoutSeconds` | HTTP timeout for LLM requests | `120` |
+| `apifrontend.config.agent.llm.oauth2.enabled` | Enable OAuth2 client credentials for LLM gateway | `false` |
+| `apifrontend.config.agent.llm.oauth2.tokenURL` | OAuth2 token endpoint (must be https) | `""` |
+| `apifrontend.config.agent.llm.oauth2.scopes` | OAuth2 scopes | `[]` |
+| `apifrontend.config.agent.llm.oauth2.credentialsDir` | Directory with `client-id` and `client-secret` files | `""` |
+| `apifrontend.config.agent.llm.circuitBreaker.enabled` | Enable circuit breaker for LLM HTTP calls | `false` |
+| `apifrontend.config.agent.llm.circuitBreaker.failureThreshold` | Failures before opening | `5` |
+| `apifrontend.config.agent.llm.circuitBreaker.timeout` | Duration in open state before half-open | `30s` |
+| `apifrontend.config.agent.llm.customHeaders` | Custom HTTP headers injected into LLM requests (name/value or name/filePath) | `[]` |
+| `apifrontend.config.agent.kaBearerTokenFile` | Path to bearer token file for AF→KA MCP client authentication (#1287). When set, the AF sends this token in the `Authorization` header of KA MCP requests. | `""` |
+
+```yaml
+apifrontend:
+  config:
+    agent:
+      llm:
+        provider: gemini
+        model: gemini-2.5-pro
+        apiKeyFile: /etc/secrets/llm/api-key
+        tlsCaFile: /etc/certs/llm-ca.pem
+        circuitBreaker:
+          enabled: true
+          failureThreshold: 3
+          timeout: 60s
+```
+
+!!! note "File-based API key"
+    The AF reads the API key from `apiKeyFile` at startup (not from an environment variable). Mount the key as a Kubernetes Secret volume. The `LLM_API_KEY` env var is no longer supported (#1251).
 
 ### Controllers (Common Parameters)
 

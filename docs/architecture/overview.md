@@ -190,11 +190,12 @@ Kubernaut uses a **three-port** split on components that serve both an API and o
 
 | Port | Purpose |
 |------|---------|
-| **8080** | Primary API. Serves **HTTPS** when TLS certificate files exist under `tls.interService.certDir`; otherwise plain HTTP. |
+| **8080** | Primary API for Gateway, DataStorage, AIAnalysis. Serves **HTTPS** when TLS certificate files exist under `tls.interService.certDir`; otherwise plain HTTP. |
+| **8443** | Primary API for **Kubernaut Agent** and **API Frontend** (v1.5+). Always **HTTPS**. |
 | **8081** | **Health probes only**, always **plain HTTP**: `GET /healthz` (liveness), `GET /readyz` (readiness). The path **`/livez` is not registered** — do not configure probes to use it. |
 | **9090** | **Prometheus metrics**, always **plain HTTP** at `GET /metrics`. |
 
-**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, the **AIAnalysis** controller, and the **API Frontend** (v1.5+). Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the 8080/8081 API/health split.
+**Three-port** behavior applies to **Gateway**, **DataStorage**, **Kubernaut Agent**, the **AIAnalysis** controller, and the **API Frontend** (v1.5+). The Kubernaut Agent and API Frontend default to port **8443** (HTTPS); Gateway, DataStorage, and AIAnalysis default to port **8080**. Other controllers (**Remediation Orchestrator**, **Signal Processing**, **Workflow Execution**, **Notification**, **Effectiveness Monitor**) expose **metrics on 9090** as their Service port; they do not use the API/health split.
 
 **Auth Webhook** is an exception: the Service uses **port 443** with **targetPort 9443** for admission traffic; health checks use **8081** (`/healthz`, `/readyz`) like the other Go components.
 

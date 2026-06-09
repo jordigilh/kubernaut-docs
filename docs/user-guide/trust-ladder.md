@@ -1,6 +1,6 @@
 # Building Confidence with Kubernaut
 
-Operators rarely hand full control of cluster remediation to an AI on day one. Kubernaut provides an incremental **Trust Ladder** — a four-level graduation path that lets teams build confidence at their own pace, starting with full human oversight and progressing toward autonomous remediation as trust grows.
+Operators rarely hand full control of cluster remediation to an AI on day one. Kubernaut provides an incremental **Trust Ladder** — a four-stage graduation path that lets teams build confidence at their own pace, starting with full human oversight and progressing toward autonomous remediation as trust grows.
 
 ## The Trust Ladder
 
@@ -32,7 +32,7 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
   <text x="226" y="216" font-size="9" fill="#64748B">workflow via RAR. Shadow agent</text>
   <text x="226" y="228" font-size="9" fill="#64748B">alignment provides an additional</text>
   <text x="226" y="240" font-size="9" fill="#64748B">safety layer independent of</text>
-  <text x="226" y="252" font-size="9" fill="#64748B">the trust level.</text>
+  <text x="226" y="252" font-size="9" fill="#64748B">the trust stage.</text>
 
   <!-- L3: Security & Autonomy (200px tall) -->
   <rect x="412" y="100" width="186" height="200" rx="6" fill="white" stroke="#E5E7EB"/>
@@ -85,11 +85,11 @@ Operators rarely hand full control of cluster remediation to an AI on day one. K
 
 At every level, operators can connect via **[Interactive MCP Sessions](interactive-sessions.md)** (v1.5) for real-time investigation and workflow selection.
 
-Operators typically start at Level 1 (observe) or Level 2 (approve) and graduate individual workflows or entire namespaces to Level 4 as they gain confidence in Kubernaut's decision-making.
+Operators typically start at Stage 1 (observe) or Stage 2 (approve) and graduate individual workflows or entire namespaces to Stage 4 as they gain confidence in Kubernaut's decision-making.
 
 ---
 
-## Level 2: Approve (Available Now) {: #level-3-approve }
+## Stage 2: Approve (Available Now) {: #stage-2-approve }
 
 At this level, the Rego approval policy determines which remediations require human review. When `require_approval` evaluates to `true`, a **RemediationApprovalRequest (RAR)** is created before execution. The operator reviews Kubernaut's recommendation — the selected workflow, confidence score, root cause analysis, and detected infrastructure labels — and either approves or rejects it.
 
@@ -115,7 +115,7 @@ A typical starter policy requires approval for:
 
 Non-production namespaces with a valid remediation target and high confidence auto-approve.
 
-To **require approval for everything** (strictest Level 3), replace the default policy with:
+To **require approval for everything** (strictest Stage 3), replace the default policy with:
 
 ```rego
 package aianalysis.approval
@@ -138,11 +138,11 @@ When approving a RAR, operators can substitute the AI-selected workflow or adjus
 
 ### Alignment gate (v1.4)
 
-When shadow-agent alignment is enabled, Kubernaut runs a secondary AI evaluation to verify the primary agent's recommendation. If alignment fails, the pipeline creates a **ManualReviewRequired** notification and stops execution — even if the Rego policy would have auto-approved. This provides an additional safety layer independent of the trust level.
+When shadow-agent alignment is enabled, Kubernaut runs a secondary AI evaluation to verify the primary agent's recommendation. If alignment fails, the pipeline creates a **ManualReviewRequired** notification and stops execution — even if the Rego policy would have auto-approved. This provides an additional safety layer independent of the trust stage.
 
 ### Graduation signals
 
-You're ready to graduate a workflow to Level 4 when:
+You're ready to graduate a workflow to Stage 4 when:
 
 - The Effectiveness Monitor consistently scores remediations as successful (`Full` assessment reason with high weighted scores)
 - You've approved the same workflow type multiple times without rejecting
@@ -157,7 +157,7 @@ You're ready to graduate a workflow to Level 4 when:
 
 ---
 
-## Level 4: Full Autonomy (Available Now) {: #level-4-automate }
+## Stage 4: Full Autonomy (Available Now) {: #stage-4-automate }
 
 At this level, matched workflows execute without human intervention. The operator monitors outcomes via notifications and Effectiveness Monitor dashboards.
 
@@ -211,7 +211,7 @@ is_production if {
 
 ### Monitoring autonomous remediations
 
-At Level 4, monitoring replaces manual review:
+At Stage 4, monitoring replaces manual review:
 
 | Signal | What to watch | Where |
 |---|---|---|
@@ -221,9 +221,9 @@ At Level 4, monitoring replaces manual review:
 | **Assessment reasons** | `Expired`, `MetricsTimedOut`, or `Unrecoverable` indicate infrastructure issues | `kubernaut_effectivenessmonitor_assessments_completed_total` |
 | **ManualReviewRequired** | Remediation needs human attention | Notification pipeline (ManualReview NRs) |
 
-### Rollback to Level 3
+### Rollback to Stage 3
 
-To move a workflow (or all workflows) back to Level 3, update the Rego policy to require approval. Changes to the policy ConfigMap take effect on the next remediation cycle — no pod restart required.
+To move a workflow (or all workflows) back to Stage 3, update the Rego policy to require approval. Changes to the policy ConfigMap take effect on the next remediation cycle — no pod restart required.
 
 ### References
 
@@ -233,7 +233,7 @@ To move a workflow (or all workflows) back to Level 3, update the Rego policy to
 
 ---
 
-## Level 1: Observe (Available — v1.4) {: #level-1-observe }
+## Stage 1: Observe (Available — v1.4) {: #stage-1-observe }
 
 At this level, Kubernaut runs the full pipeline through AI Analysis — investigating root cause and selecting a workflow — but **stops before execution**. No `WorkflowExecution`, `RemediationApprovalRequest`, or `EffectivenessAssessment` CRDs are created. The `RemediationRequest` completes with outcome **`DryRun`**.
 
@@ -263,7 +263,7 @@ remediationOrchestrator:
 
 ---
 
-## Level 3: Security & Autonomy (v1.5) {: #level-3-security-autonomy }
+## Stage 3: Security & Autonomy (v1.5) {: #stage-3-security-autonomy }
 
 At this level, organizations layer **SAR-based tool authorization** and **interactive MCP sessions** on top of the existing approval gate, establishing fine-grained control over who can do what and enabling operator-in-the-loop investigation.
 
@@ -298,7 +298,7 @@ See the [Helm values reference](../user-guide/configuration.md#api-frontend-v15)
 !!! note "Not yet available"
     The Suggestions feature depends on [kubernaut#115](https://github.com/jordigilh/kubernaut/issues/115), planned for v1.5.
 
-When no workflow matches an alert — at **any** trust level — Kubernaut will suggest step-by-step remediation actions via an LLM-generated Suggestion RAR. This is orthogonal to the trust ladder and operates as a permanent safety net for unknown scenarios.
+When no workflow matches an alert — at **any** trust stage — Kubernaut will suggest step-by-step remediation actions via an LLM-generated Suggestion RAR. This is orthogonal to the trust ladder and operates as a permanent safety net for unknown scenarios.
 
 **Planned capabilities:**
 
@@ -316,18 +316,18 @@ For teams new to Kubernaut, we recommend the following progression:
 
 | Phase | Timeline | What to do |
 |---|---|---|
-| **Week 1** | Observe | Install with `dryRun: true` (Level 1). Kubernaut investigates and selects workflows but does not execute. Review RCAs and workflow selections via audit events. |
-| **Week 2–3** | Approve | Disable dry-run, deploy a Rego approval policy (Level 3). Production remediations require human approval; non-production auto-approves based on your policy. |
+| **Week 1** | Observe | Install with `dryRun: true` (Stage 1). Kubernaut investigates and selects workflows but does not execute. Review RCAs and workflow selections via audit events. |
+| **Week 2–3** | Approve | Disable dry-run, deploy a Rego approval policy (Stage 3). Production remediations require human approval; non-production auto-approves based on your policy. |
 | **Week 3–4** | Validate | Review RAR decisions. Check Effectiveness Monitor scores. Build familiarity with Kubernaut's recommendations. |
 | **Month 2** | Graduate non-prod | Confirm non-production workflows are consistently effective. Monitor autonomous execution. |
 | **Month 2–3** | Graduate prod workflows | Customize the Rego policy to auto-approve specific, well-validated production workflows (e.g., `crashloop-rollback-v1`). |
-| **Month 3+** | Expand | Add new workflow types in Level 3 (approval). Graduate to Level 4 as confidence grows. |
+| **Month 3+** | Expand | Add new workflow types in Stage 3 (approval). Graduate to Stage 4 as confidence grows. |
 
 ---
 
 ## Agentic Enhancements {: #agentic-enhancements }
 
-v1.5 introduced agentic integration features that enhance every trust level:
+v1.5 introduced agentic integration features that enhance every trust stage:
 
 | Feature | Status | Enhancement |
 |---|---|---|
@@ -337,4 +337,4 @@ v1.5 introduced agentic integration features that enhance every trust level:
 | **Kubernaut Console** | **Planned** | Web dashboard with chat UI, live remediation streaming, and workflow management |
 | **Natural Language Investigation** | **Planned** | Trigger investigations by describing the problem in plain text |
 
-These features are **complementary** to the Trust Ladder — they enhance how operators interact at each level (e.g., MCP chat during dry-run review at Level 1, Console dashboards for monitoring at Level 4) without changing the fundamental graduation model.
+These features are **complementary** to the Trust Ladder — they enhance how operators interact at each stage (e.g., MCP chat during dry-run review at Stage 1, Console dashboards for monitoring at Stage 4) without changing the fundamental graduation model.

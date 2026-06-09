@@ -19,7 +19,7 @@ The interactive flow has four phases:
 
 ## Connecting via MCP
 
-Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 23 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via REST/DataStorage.
+Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 21 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via DataStorage.
 
 ### Prerequisites
 
@@ -29,98 +29,98 @@ Any MCP-compatible client can connect to Kubernaut's interactive sessions. The A
 
 ## MCP Tools
 
-The API Frontend exposes **23 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
+The API Frontend exposes **21 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
 
 ### Interactive session lifecycle
 
-These tools are dispatched to the Kubernaut Agent's MCP server (`kubernaut_investigate` with per-action routing):
+The AF decomposes the Kubernaut Agent's single `kubernaut_investigate` tool (which uses an `action` parameter internally) into separate MCP tools. Each tool below has its own input schema and is individually SAR-gated.
 
 | Tool | Description |
 |---|---|
-| `kubernaut_start_investigation` | Start a new investigation for a RemediationRequest (via KA REST) |
-| `kubernaut_takeover` | Take over a session owned by another user (SEC-TAKEOVER-001) |
+| `kubernaut_investigate` | Start a new investigation — by existing RR (`rr_id`) or by creating one (`namespace` + `kind` + `name`) |
+| `kubernaut_await_session` | Wait for an active investigation session to become ready |
 | `kubernaut_message` | Send a follow-up message in a multi-turn conversation |
-| `kubernaut_complete` | Mark the investigation as complete |
+| `kubernaut_complete` | Mark the investigation as complete (maps to KA `action=complete`) |
 | `kubernaut_cancel` | Cancel the investigation |
-| `kubernaut_status` | Check the current status — returns mode (autonomous/interactive/not_found) and driver |
+| `kubernaut_status` | Check the current status — returns mode (`autonomous` / `interactive` / `not_found`) and driver |
 | `kubernaut_reconnect` | Reconnect to an existing session after a disconnect |
-| `kubernaut_discover_workflows` | After RCA, run workflow discovery and return alternatives with LLM-populated parameters |
-| `kubernaut_stream_investigation` | Stream live SSE events from KA until a terminal state |
+| `kubernaut_discover_workflows` | After RCA, discover matching workflows with LLM-populated parameters |
 
-**Input schema:**
+### `kubernaut_investigate`
+
+Start an interactive investigation. Provide either an existing RR name **or** target resource coordinates to create a new RR + InvestigationSession:
+
+**Existing RR:**
 
 ```json
 {
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
-  "action": "start"
+  "rr_id": "oom-fix-abc"
 }
 ```
 
-All actions require `rr_id` — the tool operates on an existing RemediationRequest. The `message` action additionally requires a `message` field for multi-turn conversation.
-
-**Start an investigation:**
+**New RR (creates RR + IS):**
 
 ```json
 {
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
-  "action": "start"
+  "namespace": "production",
+  "kind": "Deployment",
+  "name": "checkout-service"
 }
 ```
 
-**Send a follow-up message:**
+### `kubernaut_message`
+
+Send a follow-up message in an active session:
 
 ```json
 {
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
-  "action": "message",
+  "rr_id": "oom-fix-abc",
   "message": "Can you also check the memory limits on the sidecar containers?"
 }
 ```
 
-**Discover workflows after RCA:**
+### `kubernaut_complete` / `kubernaut_cancel` / `kubernaut_status` / `kubernaut_reconnect`
+
+All four tools share the same input schema:
 
 ```json
 {
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
-  "action": "discover_workflows"
+  "rr_id": "oom-fix-abc"
+}
+```
+
+`kubernaut_complete` closes the investigation with an RCA summary. If no workflow is needed, it is the equivalent of the KA's `kubernaut_complete_no_action` tool.
+
+### `kubernaut_discover_workflows`
+
+Discover available workflows after RCA:
+
+```json
+{
+  "rr_id": "oom-fix-abc"
 }
 ```
 
 ### `kubernaut_select_workflow`
 
-Select a workflow from the discovery results. Requires a prior `discover_workflows` call.
+Select a workflow from the discovery results. Requires a prior `kubernaut_discover_workflows` call.
 
 **Input schema:**
 
 ```json
 {
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
+  "rr_id": "oom-fix-abc",
   "workflow_id": "rollback-config",
   "kind": "Deployment",
   "name": "checkout-service",
   "namespace": "production",
-  "api_version": "apps/v1",
-  "spec_hash": "a1b2c3d4",
-  "incident_id": "inc-2026-0512"
+  "parameters": {
+    "rollback_revision": "3"
+  }
 }
 ```
 
-Only `rr_id` and `workflow_id` are required. The remaining fields are optional — when `kind` is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. `api_version` disambiguates Kinds that exist in multiple API groups (e.g., `Event`). `spec_hash` and `incident_id` enable correlation with prior investigations.
-
-Parameters are validated against the workflow's declared schema. If validation fails, the LLM attempts self-correction automatically (PR #1187).
-
-### `kubernaut_complete_no_action`
-
-Close an investigation without selecting a workflow. Can be called at any point in the session — no discovery gate required.
-
-**Input schema:**
-
-```json
-{
-  "rr_id": "rr-b83e19d4a7f1-5c2d09ae",
-  "reason": "Root cause is external — vendor API outage, not actionable by us"
-}
-```
+Only `rr_id` and `workflow_id` are required. When `kind` is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. `parameters` passes workflow-specific key-value pairs validated against the workflow's declared schema.
 
 ## SSE Streaming
 
@@ -144,7 +144,7 @@ Each interactive session is backed by a Kubernetes Lease (prefix: `kubernaut-int
 2. **Active** — The session is renewed periodically; investigation proceeds
 3. **Message** — Multi-turn conversation within the active session
 4. **Reconnect** — The same user can reconnect after a disconnect
-5. **Takeover** — A different user connecting causes the original session to be abandoned (SEC-TAKEOVER-001)
+5. **Join** — A different user connecting via `kubernaut_investigate` causes the original session to transition (DD-INTERACTIVE-002)
 6. **Complete/Cancel** — The session Lease is released
 
 ### Session limits and timeouts
@@ -157,7 +157,7 @@ Each interactive session is backed by a Kubernetes Lease (prefix: `kubernaut-int
 
 ### Disconnect handling
 
-If a client disconnects unexpectedly, the Kubernaut Agent's `SessionClosedHandler` detects the MCP connection closure and triggers session release and reconstruction (DD-INTERACTIVE-002). The same user can reconnect via `action:reconnect`.
+If a client disconnects unexpectedly, the Kubernaut Agent's `SessionClosedHandler` detects the MCP connection closure and triggers session release and reconstruction (DD-INTERACTIVE-002). The same user can reconnect via `kubernaut_reconnect`.
 
 ### Pod restarts
 
@@ -175,4 +175,4 @@ Kubernaut supports both modes simultaneously:
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
 | **Pipeline** | Full 6-stage pipeline | Same pipeline, operator-driven at selection stage |
 
-Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `action:reconnect`.
+Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `kubernaut_await_session` followed by `kubernaut_investigate`.

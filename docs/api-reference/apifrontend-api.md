@@ -66,23 +66,23 @@ Returns `501` when MCP is disabled in the AF configuration.
 }
 ```
 
-The AF runs its own MCP server with **23 `kubernaut_*` MCP tools** (see [A2A tools](#a2a-json-rpc-20) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA REST (autonomous investigation), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). The Kubernaut Agent runs a separate MCP server at `/api/v1/mcp` with 3 interactive-mode tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections.
+The AF runs its own MCP server with **21 `kubernaut_*` MCP tools** exposed on the MCP bridge (see [MCP Tool Reference](mcp-tools.md) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) are used only inside the A2A agent loop and are not exposed on the MCP bridge.
 
 ### A2A JSON-RPC 2.0
 
 ```
 POST /a2a/invoke
+POST /                  # root alias — same handler
 ```
 
-Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication.
+Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication. `POST /` is an alias for `POST /a2a/invoke`, providing A2A spec conformance for clients that expect the root path.
 
-The A2A agent uses **23 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP endpoint, organized in six domains:
+The A2A agent uses **21 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP bridge, plus 5 internal tools, organized in six domains:
 
 | Domain | Tools | Backend |
 |---|---|---|
-| **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request` | K8s API (AF SA) |
-| **Autonomous investigation** | `kubernaut_start_investigation`, `kubernaut_poll_investigation`, `kubernaut_stream_investigation` | KA REST |
-| **Interactive session lifecycle** | `kubernaut_takeover`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
+| **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_await_session` | K8s API (AF SA) |
+| **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
 | **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` | KA MCP |
 | **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
 | **Presentation** | `kubernaut_present_decision` | Local |
@@ -90,19 +90,19 @@ The A2A agent uses **23 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP e
 !!! note "Upstream Helm gap ([#1239](https://github.com/jordigilh/kubernaut/issues/1239))"
     `kubernaut_list_approval_requests` and `kubernaut_get_approval_request` are not yet in the Helm `values.yaml` persona definitions. They belong in the `remediation-approver` persona per [#1235](https://github.com/jordigilh/kubernaut/issues/1235). The documentation reflects the intended design. See [per-persona ClusterRoles](../architecture/security-rbac.md#per-persona-clusterroles).
 
-The `kubernaut_*` investigation tools dispatch to the Kubernaut Agent (`kubernaut_start_investigation`/`kubernaut_poll_investigation` via KA REST; `kubernaut_select_workflow`/`kubernaut_discover_workflows` via KA MCP). The `kubernaut_*` CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)). The `kubernaut_*` data tools query DataStorage. `kubernaut_present_decision` is handled locally by the AF.
+`kubernaut_investigate` dispatches to the Kubernaut Agent's MCP server (maps to KA's `kubernaut_investigate` with `action=start`). The AF decomposes the remaining KA actions (`message`, `complete`, `cancel`, `status`, `reconnect`, `discover_workflows`) into individual MCP tools. CRD tools operate on RemediationRequest and RemediationApprovalRequest resources via the Kubernetes API using the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)). Data tools query DataStorage. `kubernaut_present_decision` is handled locally by the AF.
 
-The AF's LLM agent also uses **5 internal tools** that are not exposed via MCP — they run inside the AF's own agent loop for cluster inspection and RR creation:
+The AF's A2A agent also uses **5 internal tools** that are SAR-gated but not exposed on the MCP bridge:
 
 | Tool | Purpose |
 |---|---|
 | `kubectl_get` | Get any namespaced K8s resource by kind/name/namespace (Secret `.data` redacted) |
 | `kubectl_list` | List namespaced K8s resources with optional label selector (Secret `.data` redacted) |
 | `kubectl_list_events` | List K8s events with reason/object filters |
-| `af_check_existing_rr` | Check for duplicate RemediationRequest before creation |
-| `af_create_rr` | Create RemediationRequest CRD; triggers deferred `InvestigationSession` CRD materialization |
+| `kubernaut_check_existing_remediation` | Check for duplicate RemediationRequest before creation |
+| `kubernaut_remediate` | Create a new RemediationRequest CRD |
 
-All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via the same `newRBACGuard()` as MCP tools.
+All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via `newRBACGuard()`.
 
 ### Agent Card Discovery
 

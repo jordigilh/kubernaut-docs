@@ -170,7 +170,7 @@ Kubernaut supports both modes simultaneously:
 
 | Aspect | Autonomous | Interactive |
 |---|---|---|
-| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator connects via MCP |
+| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator starts on demand or joins an autonomous session via MCP |
 | **Workflow selection** | LLM selects automatically | Operator chooses from alternatives via `discover_workflows` |
 | **Approval** | Rego policy + RAR gate | Same Rego policy + RAR gate; operator identity is exposed via `input.identity` (user, groups), enabling policies to auto-approve trusted operators |
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |

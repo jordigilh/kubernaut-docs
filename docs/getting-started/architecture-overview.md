@@ -126,12 +126,12 @@ Kubernaut supports two pipeline modes simultaneously:
 
 | | Autonomous | Interactive |
 |---|---|---|
-| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator connects via MCP through API Frontend |
+| **Trigger** | Alert webhook (Prometheus, K8s Event) | Operator starts on demand or joins an autonomous session via MCP through API Frontend |
 | **Workflow selection** | LLM selects automatically | Operator chooses from LLM-populated alternatives |
 | **Approval** | Rego policy + RAR gate | Same Rego policy + RAR gate; identity-aware policies can auto-approve trusted operators |
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
 
-Both modes use the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously can be joined mid-flight by an operator via the API Frontend. See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
+Both modes use the same CRDs, audit events, and effectiveness assessments. Operators can start investigations on demand via the API Frontend or join an autonomous investigation mid-flight. See [Interactive Sessions](../user-guide/interactive-sessions.md) for the operator guide.
 
 ## Communication Pattern
 

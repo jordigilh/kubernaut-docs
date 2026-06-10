@@ -129,7 +129,7 @@ Click a phase card above, or select a tab:
     **Kubernaut Agent** — The AI Analysis phase is powered by the Kubernaut Agent (KA), which drives both autonomous and interactive investigations:
 
     - **Autonomous** — KA runs LLM-driven investigation with 36 native Go tools, performs server-side enrichment, and selects the best-matching workflow without operator involvement.
-    - **Interactive (v1.5)** — When an operator connects via the API Frontend, KA manages Lease-based sessions with SSE streaming of investigation events. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
+    - **Interactive (v1.5)** — Operators start investigations on demand or join autonomous ones mid-flight via the API Frontend. KA manages Lease-based sessions with SSE streaming of investigation events. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
 
 === "3 · Approval"
 
@@ -209,7 +209,7 @@ Click a phase card above, or select a tab:
 
 | Capability | Description |
 |---|---|
-| **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix: investigation, workflow selection, and execution without operator involvement. **Interactive** — operators join via MCP or A2A to guide the investigation, steer workflow selection, and review remediations in real time. Both modes enforce the same approval gates and OPA policies. Operators can jump into an autonomous session mid-flight without restarting it. |
+| **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix: investigation, workflow selection, and execution without operator involvement. **Interactive** — operators start an investigation on demand or join one already in progress via MCP or A2A to guide the agent, steer workflow selection, and review remediations in real time. Both modes enforce the same approval gates and OPA policies. |
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
 | **AI-Powered Root Cause Analysis** | Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
 | **Workflow Catalog** | Searchable declarative `RemediationWorkflow` CRDs with category and label-based matching plus confidence scoring |

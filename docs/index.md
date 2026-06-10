@@ -8,7 +8,7 @@ hide:
 
 ## AIOps Platform for Intelligent Kubernetes Remediation
 
-Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes alert to automated remediation — without a human in the middle. When something goes wrong in your cluster (an OOMKill, a CrashLoopBackOff, node pressure), Kubernaut detects the signal, enriches it with context, sends it to an LLM for live root cause investigation, matches a remediation workflow from a searchable catalog, and executes the fix — or escalates to a human with a full RCA when it can't.
+Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes alert to automated remediation. It operates in two modes: **autonomously** — detecting signals, investigating root causes, and executing fixes end-to-end without human involvement — and **interactively** — letting operators join an in-progress investigation via MCP or A2A, guide the agent, and approve remediations in real time. When something goes wrong in your cluster (an OOMKill, a CrashLoopBackOff, node pressure), Kubernaut detects the signal, enriches it with context, sends it to an LLM-powered agent for live root cause investigation, selects a remediation workflow from a searchable catalog, and executes the fix — or escalates to a human with a full RCA when it can't.
 
 **Mean time to resolution drops from 60 minutes to under 5**, while humans stay in control through approval gates, configurable confidence thresholds, and audit trails designed for SOC2 alignment.
 
@@ -76,7 +76,7 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     ---
 
-    Backstage console, declarative recipes, fleet operations, natural language signal intake.
+    Custom agent injection, ServiceNow ITSM integration, fleet operations, Kubernaut Console.
 
     [:octicons-arrow-right-24: Roadmap](whats-next/index.md)
 

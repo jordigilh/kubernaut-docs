@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -1506,6 +1503,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Kubernaut Agent (LLM integration)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ka-mcp-resilience" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Session Resilience (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
         
@@ -3930,7 +3944,7 @@
 </tr>
 </tbody>
 </table>
-<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.0-rc10</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.0-rc10</code>.</p>
+<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.0</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.0</code>.</p>
 <h3 id="gateway">Gateway<a class="headerlink" href="#gateway" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4193,6 +4207,30 @@
 </tr>
 </tbody>
 </table>
+<h4 id="ka-mcp-resilience">MCP Session Resilience (v1.5+)<a class="headerlink" href="#ka-mcp-resilience" title="Permanent link">&para;</a></h4>
+<p>These settings are part of the KA interactive config (<code>interactive:</code> block in the SDK config file):</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>interactive.mcpKeepAlive</code></td>
+<td>Server-side SSE ping interval. Keeps MCP streams alive through proxy/router idle timeouts (e.g., OpenShift HAProxy 30s default). <code>0</code> disables. (#1387)</td>
+<td><code>15s</code></td>
+</tr>
+<tr>
+<td><code>interactive.mcpSessionTimeout</code></td>
+<td>Auto-close idle MCP sessions that the AF abandoned without a proper disconnect. <code>0</code> means never. (#1387)</td>
+<td><code>10m</code></td>
+</tr>
+</tbody>
+</table>
+<p>On the AF side, the <code>PooledMCPClient</code> performs a <strong>Ping-on-Acquire</strong> health check (2s bounded) before reusing a cached MCP session. Dead sessions are evicted and transparently replaced via the factory (#1387).</p>
 <p>Kubernaut Agent uses two ConfigMaps: a <strong>service config</strong> (ports, logging, auth secret references) and an <strong>SDK config</strong> (LLM settings, toolsets, MCP servers). From <strong>v1.4</strong>, the SDK surface is supplied as <strong>two</strong> mounted ConfigMaps: one <strong>static</strong> (read at startup) and one <strong>hot-reloadable</strong> (watched for AI/tool/integration changes — no pod restart required for supported fields — see <strong><a href="../configmap-kubernaut-agent/#hot-reload">Kubernaut Agent SDK config</a></strong>). Helm values and chart templates reflect that split — follow <strong><code>values.schema.json</code></strong> and <a href="../configmap-kubernaut-agent/"><code>configmap-kubernaut-agent.md</code></a> when upgrading.</p>
 <p>The SDK config bundle is provided in one of two ways:</p>
 <ol>
@@ -4301,6 +4339,21 @@
 <td><code>720h</code></td>
 </tr>
 <tr>
+<td><code>apifrontend.config.interactive.enabled</code></td>
+<td>Enable interactive session MCP tools. When <code>false</code>, 10 session-dependent tools are hidden from MCP enumeration and the A2A agent tool list, leaving 11 stateless CRD/data tools (#1366).</td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.severityTriage.enabled</code></td>
+<td>Enable severity triage. Required for alert tools (<code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code>).</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.severityTriage.prometheusURL</code></td>
+<td>Prometheus API URL for alert queries. Required when <code>severityTriage.enabled: true</code>.</td>
+<td><code>""</code></td>
+</tr>
+<tr>
 <td><code>apifrontend.config.severityTriage.cacheTTLSeconds</code></td>
 <td>Severity triage cache TTL</td>
 <td><code>30</code></td>
@@ -4338,6 +4391,16 @@
 <tr>
 <td><code>apifrontend.config.auth.audience</code></td>
 <td>Expected OIDC audience</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.auth.jwtProviders[].claimMappings.username</code></td>
+<td>CEL expression to extract username from JWT claims (e.g., <code>claims.email</code>). Falls back to <code>preferred_username</code> / <code>sub</code> when empty (#1392).</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>apifrontend.config.auth.jwtProviders[].claimMappings.groups</code></td>
+<td>CEL expression to extract groups from JWT claims (e.g., <code>claims.roles</code>). Falls back to <code>groups</code> claim when empty (#1392).</td>
 <td><code>""</code></td>
 </tr>
 <tr>

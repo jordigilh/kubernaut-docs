@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -3984,47 +3981,78 @@
 <tr>
 <th>Label</th>
 <th>Detection Method</th>
+<th>Category</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>gitOpsManaged</code></td>
 <td>ArgoCD/Flux annotations or owner references</td>
+<td>GitOps</td>
 </tr>
 <tr>
 <td><code>gitOpsTool</code></td>
 <td>Which GitOps tool (<code>argocd</code>, <code>flux</code>)</td>
+<td>GitOps</td>
 </tr>
 <tr>
 <td><code>helmManaged</code></td>
 <td>Helm release labels</td>
+<td>Workload</td>
 </tr>
 <tr>
 <td><code>pdbProtected</code></td>
 <td>PodDisruptionBudget exists for the resource</td>
+<td>Protection</td>
 </tr>
 <tr>
 <td><code>hpaEnabled</code></td>
 <td>HorizontalPodAutoscaler targets the resource</td>
+<td>Protection</td>
 </tr>
 <tr>
 <td><code>stateful</code></td>
 <td>Resource is StatefulSet or has PersistentVolumeClaims</td>
+<td>Workload</td>
 </tr>
 <tr>
 <td><code>networkIsolated</code></td>
 <td>NetworkPolicy exists in the namespace</td>
+<td>Security</td>
 </tr>
 <tr>
 <td><code>serviceMesh</code></td>
 <td>Istio/Linkerd sidecar annotations</td>
+<td>Security</td>
 </tr>
 <tr>
 <td><code>resourceQuotaConstrained</code></td>
 <td>Namespace has an active <code>ResourceQuota</code></td>
+<td>Constraints</td>
+</tr>
+<tr>
+<td><code>virtualMachine</code></td>
+<td>VM/VMI/VMIM/DataVolume in owner chain or target kind (#1378)</td>
+<td>CNV</td>
+</tr>
+<tr>
+<td><code>liveMigratable</code></td>
+<td>VM has <code>spec.evictionStrategy=LiveMigrate</code> (only when <code>virtualMachine</code> is true)</td>
+<td>CNV</td>
+</tr>
+<tr>
+<td><code>cdiManaged</code></td>
+<td>PVC has <code>cdi.kubevirt.io/storage.import.*</code> annotations</td>
+<td>CNV</td>
+</tr>
+<tr>
+<td><code>storageBackend</code></td>
+<td>StorageClass provisioner mapping: <code>odf-ceph</code>, <code>lvms</code>, <code>local</code></td>
+<td>CNV</td>
 </tr>
 </tbody>
 </table>
+<p>CNV detection uses a RESTMapper pre-check and skips gracefully on non-CNV/KubeVirt clusters.</p>
 <p>When <code>resourceQuotaConstrained</code> is detected, the <code>LabelDetector</code> also surfaces <strong><code>quota_details</code></strong> as a structured <code>map[string]QuotaResourceUsage</code> in the resource context response, containing per-resource <code>hard</code> and <code>used</code> values from all <code>ResourceQuota</code> objects in the namespace (e.g., <code>cpu: {hard: "4", used: "2.5"}</code>). This gives the LLM visibility into capacity constraints during workflow selection — for example, preferring a scale-down workflow over scale-up when the namespace is near its quota.</p>
 <p>The detection pipeline is: <code>Investigator.Investigate</code> → <code>resolveEnrichmentCached</code> → <code>Enricher.Enrich</code> → <code>LabelDetector.DetectLabels</code> → <code>detectResourceQuota</code>. On detection failure (empty namespace, API error), <code>"resourceQuotaConstrained"</code> is appended to <code>failedDetections</code> and the enrichment continues with best-effort results.</p>
 <div class="admonition note">

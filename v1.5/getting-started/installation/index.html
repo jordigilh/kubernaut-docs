@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -3648,7 +3645,7 @@
 <p class="admonition-title">CR validation</p>
 <p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
 </div>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0-rc10</code>).</p>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0</code>).</p>
 <p><strong>Minimal Kubernaut CR:</strong></p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>

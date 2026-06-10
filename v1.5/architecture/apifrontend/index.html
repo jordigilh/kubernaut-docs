@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2092,6 +2089,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#jump-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jump-In session upgrade (#1390)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#disconnect-handling-dd-interactive-002" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2145,6 +2153,17 @@
     <span class="md-ellipsis">
       
         LLM Provider (A2A Agent)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a2a-streaming-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A2A Streaming Events
       
     </span>
   </a>
@@ -3242,7 +3261,7 @@
 <li><strong>Protocol translation</strong> — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls</li>
 <li><strong>Authentication</strong> — OIDC/OAuth2 via JWKS validation with JWT claim extraction</li>
 <li><strong>Authorization</strong> — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache</li>
-<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing</li>
+<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing. When <code>interactive.enabled: false</code> (#1366), 10 session-dependent tools are hidden, leaving 11 stateless tools for CRD and data operations only.</li>
 <li><strong>Streaming</strong> — Relays Server-Sent Events from KA's SSE endpoint to MCP clients</li>
 </ul>
 <h2 id="agentic-architecture">Agentic Architecture<a class="headerlink" href="#agentic-architecture" title="Permanent link">&para;</a></h2>
@@ -3376,6 +3395,15 @@
 <li>An audit event is emitted recording the takeover</li>
 <li>User B starts a fresh investigation in the same session context</li>
 </ol>
+<h3 id="jump-in">Jump-In session upgrade (#1390)<a class="headerlink" href="#jump-in" title="Permanent link">&para;</a></h3>
+<p>When an operator calls <code>kubernaut_investigate</code> for an RR that already has a running <strong>autonomous</strong> investigation, the KA upgrades the session to interactive <strong>in-place</strong> rather than cancelling and recreating it. This preserves the LLM context accumulated during the autonomous RCA phase.</p>
+<ol>
+<li>KA sets an <code>interactiveUpgrade</code> atomic flag on the session</li>
+<li>The running investigation goroutine sees the flag at its next <code>InteractiveHold</code> check and pauses for operator input</li>
+<li>The AA controller detects the IS CRD and sets <code>Interactive=true</code> + <code>SetActivePhase</code> (no cancel)</li>
+<li>Session ID and correlation ID are preserved throughout</li>
+</ol>
+<p>If the autonomous session has already completed (<code>ErrSessionTerminal</code>), the system falls back to <code>ForceTransitionToUserDriving</code> to start a fresh interactive session.</p>
 <h3 id="disconnect-handling-dd-interactive-002">Disconnect handling (DD-INTERACTIVE-002)<a class="headerlink" href="#disconnect-handling-dd-interactive-002" title="Permanent link">&para;</a></h3>
 <p>The <code>SessionClosedHandler</code> monitors MCP connection closures via the <code>DelegatingEventStore</code>. On disconnect, it triggers session release and reconstruction.</p>
 <h3 id="graceful-shutdown-sessiondrainer">Graceful shutdown — SessionDrainer<a class="headerlink" href="#graceful-shutdown-sessiondrainer" title="Permanent link">&para;</a></h3>
@@ -3438,7 +3466,54 @@
 <p><strong>OAuth2 client credentials</strong> — For auth-gated LLM gateways, configure <code>oauth2.enabled: true</code> with <code>tokenURL</code>, <code>scopes</code>, and a <code>credentialsDir</code> containing <code>client-id</code> and <code>client-secret</code> files. Token refresh is handled automatically.</p>
 <p><strong>InstructionProvider</strong> (#1276) — The A2A agent's system prompt is dynamically generated per-request by the <code>InstructionProvider</code>. This replaces the static <code>Instruction</code> string and injects the controller namespace, available tool names, and persona context into the LLM prompt at runtime.</p>
 <p><strong>KA bearer token</strong> — The <code>kaBearerTokenFile</code> config field provides the AF with a bearer token for authenticating to the KA MCP server (#1287). When set, the AF includes this token in the <code>Authorization</code> header of all KA MCP requests.</p>
+<p><strong>Rate limiters</strong> (#1392) — Two rate limiters protect the AF:</p>
+<ul>
+<li><strong>ProviderLimiter</strong> — Rate-limits JWKS endpoint fetches. When the limit is hit, cached keys are returned instead of fetching new ones.</li>
+<li><strong>LLMSemaphore</strong> — Bounds concurrent LLM requests. Requests exceeding capacity are rejected with <code>ErrLLMCapacity</code> (HTTP 429).</li>
+</ul>
+<p><strong>Re-invocation loop</strong> (#1392) — The <code>StreamingExecutor</code> re-invokes the LLM agent when a turn ends with text-only output (no tool calls), up to <code>MaxReinvocations</code>. This handles cases where the LLM produces reasoning text before deciding on a tool call.</p>
+<p><strong>JWT ClaimMappings</strong> (#1392) — CEL expressions for extracting username and groups from JWT claims (e.g., <code>claims.email</code>, <code>claims.roles</code>). Falls back to hardcoded paths (<code>preferred_username</code>/<code>sub</code>/<code>groups</code>) when expressions are empty, preserving backward compatibility.</p>
 <p>See <a href="../../user-guide/configuration/#af-llm-configuration-v15">AF LLM Configuration</a> for the full field reference.</p>
+<h2 id="a2a-streaming-events">A2A Streaming Events<a class="headerlink" href="#a2a-streaming-events" title="Permanent link">&para;</a></h2>
+<p>A2A streaming uses <code>TaskStatusUpdateEvent</code> messages classified by <code>metadata.type</code>:</p>
+<table>
+<thead>
+<tr>
+<th><code>metadata.type</code></th>
+<th>Purpose</th>
+<th><code>status.message</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reasoning</code></td>
+<td>LLM inner thoughts / investigation deltas</td>
+<td>Set (sanitized text)</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Orchestration progress (tool starts, phase transitions)</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td>Final LLM answer</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>investigation</code></td>
+<td>Investigation-specific events from KA</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>keepalive</code></td>
+<td>Proxy idle-timeout prevention</td>
+<td><strong>Not set</strong> (metadata-only)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keepalive events</strong> are emitted every <strong>5 seconds</strong> during long-running KA tool executions. They carry <code>{"type":"keepalive", "dot":"."}</code> in metadata but no <code>status.message</code>, preventing them from polluting the A2A task history. Clients that only render <code>status.message</code> will not see keepalive dots (by design).</p>
+<p>A2A integrators should inspect <code>metadata.type</code> to distinguish ephemeral events from history-worthy messages.</p>
 <h2 id="health-checks">Health Checks<a class="headerlink" href="#health-checks" title="Permanent link">&para;</a></h2>
 <table>
 <thead>

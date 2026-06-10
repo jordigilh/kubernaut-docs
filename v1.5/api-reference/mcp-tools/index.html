@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2576,6 +2573,34 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Internal Tools (A2A Agent Only)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#core-internal-tools-always-registered" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Core internal tools (always registered)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alert-tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alert tools (registered when severityTriage.enabled: true + Prometheus configured)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
     </ul>
@@ -3297,6 +3322,10 @@
 Each tool is SAR-gated via <a href="../../architecture/security-rbac/#per-persona-clusterroles">per-persona ClusterRoles</a>, rate-limited, and audit-logged.</p>
 <p>All tools return JSON in MCP <code>CallToolResult</code> text content. Default timeout is 30 s (configurable per tool).
 RBAC is fail-closed — SAR errors deny the call.</p>
+<div class="admonition info">
+<p class="admonition-title">Conditional tool surface (#1366)</p>
+<p>When <a href="../../user-guide/configuration/"><code>interactive.enabled</code></a> is <code>false</code>, <strong>10 session-dependent tools</strong> are hidden from MCP <code>tools/list</code> and the A2A agent, leaving <strong>11 stateless tools</strong> (CRD operations + data/history). Hidden tools: <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_await_session</code>.</p>
+</div>
 <div class="admonition tip">
 <p class="admonition-title">Building skills on Kubernaut tools</p>
 <p>When authoring MCP skills or prompts that call these tools, use the <strong>"When to use"</strong> guidance below each tool to select the right one.
@@ -3513,11 +3542,12 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p>Backend: <strong>KA MCP</strong> — dispatches to the Kubernaut Agent's MCP server.</p>
 <ul>
 <li><code>rr_id</code> (<code>string</code>) — Existing RR name (starts investigation on that RR)</li>
+<li><code>api_version</code> (<code>string</code>) — Kubernetes API group/version, e.g. <code>apps/v1</code>, <code>v1</code> (required when creating a new RR, #1372)</li>
 <li><code>namespace</code> (<code>string</code>) — Target resource namespace (for creating a new RR + IS)</li>
 <li><code>kind</code> (<code>string</code>) — Target resource kind (required with <code>namespace</code>/<code>name</code>)</li>
 <li><code>name</code> (<code>string</code>) — Target resource name (required with <code>namespace</code>/<code>name</code>)</li>
 </ul>
-<p>Provide <code>rr_id</code> for an existing RR, <strong>or</strong> <code>namespace</code>+<code>kind</code>+<code>name</code> to create a new RR and InvestigationSession for interactive use. Service accounts cannot start interactive investigations (namespace/kind/name path).</p>
+<p>Provide <code>rr_id</code> for an existing RR, <strong>or</strong> <code>api_version</code>+<code>namespace</code>+<code>kind</code>+<code>name</code> to create a new RR and InvestigationSession for interactive use. Service accounts cannot start interactive investigations (namespace/kind/name path).</p>
 <p>In A2A mode, blocks until the investigation completes and returns the full RCA summary. On the MCP bridge, returns immediately; live events are streamed in the background via SSE. If the RR already has an active investigation driven by another user, a structured <code>session_active</code> result is returned instead of an error.</p>
 <p><strong>When to use:</strong> Single entry point for all investigation workflows. Follow up with <code>kubernaut_discover_workflows</code> after the investigation completes.</p>
 <details class="example">
@@ -3843,7 +3873,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a>      → kubernaut_watch(rr_id)
 </span></code></pre></div>
 <h3 id="interactive-investigation-flow-new-rr">Interactive investigation flow (new RR)<a class="headerlink" href="#interactive-investigation-flow-new-rr" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubernaut_investigate(namespace, kind, name)     # creates RR + IS
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubernaut_investigate(api_version, namespace, kind, name)  # creates RR + IS
 </span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>  → kubernaut_message(rr_id, message)            # repeat as needed
 </span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>    → kubernaut_discover_workflows(rr_id)
 </span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>      → kubernaut_select_workflow(rr_id, workflow_id)
@@ -3893,6 +3923,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </table>
 <hr />
 <h2 id="persona-access-matrix">Persona Access Matrix<a class="headerlink" href="#persona-access-matrix" title="Permanent link">&para;</a></h2>
+<p>The personas below are <strong>predefined bootstrap roles</strong> shipped with the Helm chart. Operators are encouraged to create their own ClusterRoles and ClusterRoleBindings tailored to their operational environment — the predefined set is a starting point, not a prescription.</p>
 <p>All tool names below are prefixed with <code>kubernaut_</code>.</p>
 <table>
 <thead>
@@ -4034,6 +4065,15 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <td style="text-align: center;"></td>
 </tr>
 <tr>
+<td><code>takeover</code></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
+<td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+<td style="text-align: center;"></td>
+</tr>
+<tr>
 <td><code>discover_workflows</code></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
 <td style="text-align: center;"><span class="twemoji"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 7 9 19l-5.5-5.5 1.41-1.41L9 16.17 19.59 5.59z"/></svg></span></td>
@@ -4100,9 +4140,10 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </table>
 <hr />
 <h2 id="internal-tools-a2a-agent-only">Internal Tools (A2A Agent Only)<a class="headerlink" href="#internal-tools-a2a-agent-only" title="Permanent link">&para;</a></h2>
-<p>The AF agent uses 5 additional tools inside its A2A agent loop.
+<p>The AF agent uses additional tools inside its A2A agent loop.
 These are <strong>not</strong> exposed on the MCP bridge and cannot be called by external MCP clients.
 However, they <strong>are</strong> SAR-gated on the A2A path via <code>newRBACGuard()</code> and are included in per-persona ClusterRoles in <code>values.yaml</code>.</p>
+<h3 id="core-internal-tools-always-registered">Core internal tools (always registered)<a class="headerlink" href="#core-internal-tools-always-registered" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4129,7 +4170,31 @@ However, they <strong>are</strong> SAR-gated on the A2A path via <code>newRBACGu
 </tr>
 <tr>
 <td><code>kubernaut_remediate</code></td>
-<td>Create a new RemediationRequest CRD. Params: <code>namespace</code>, <code>kind</code>, <code>name</code>, <code>description</code>, <code>rr_id</code>.</td>
+<td>Create a new RemediationRequest CRD. Params: <code>namespace</code>, <code>kind</code>, <code>name</code>, <code>api_version</code> (required with namespace/kind/name, #1372), <code>description</code>, <code>rr_id</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="alert-tools">Alert tools (registered when <code>severityTriage.enabled: true</code> + Prometheus configured)<a class="headerlink" href="#alert-tools" title="Permanent link">&para;</a></h3>
+<p>These tools are only available when the AF has a Prometheus connection configured via <code>severityTriage.prometheusURL</code>. They enable the A2A agent to query firing alerts and create alert-driven RemediationRequests.</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>list_alerts</code></td>
+<td>Query Prometheus alerts with optional filters. Params: <code>namespace</code>, <code>severity</code> (critical/high/medium/low/info/warning), <code>state</code> (firing/pending). Returns redacted <code>AlertSummary</code> array.</td>
+</tr>
+<tr>
+<td><code>get_alert_details</code></td>
+<td>Get details of a specific alert. Params: <code>alert_name</code> (required), <code>namespace</code> (optional). Returns matching <code>AlertSummary</code> array.</td>
+</tr>
+<tr>
+<td><code>kubernaut_investigate_alert</code></td>
+<td>Alert-first RR creation with scope validation. Params: <code>alert_name</code>, <code>api_version</code>, <code>kind</code>, <code>name</code> (all required), <code>namespace</code> (optional for cluster-scoped). Validates alert exists in Prometheus and checks namespace/cluster scope via RESTMapper before creating the RR (#1372).</td>
 </tr>
 </tbody>
 </table>

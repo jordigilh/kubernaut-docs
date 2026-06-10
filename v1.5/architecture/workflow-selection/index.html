@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -3556,6 +3553,11 @@
 <td>-0.10</td>
 </tr>
 <tr>
+<td><code>virtualMachine</code></td>
+<td>+0.08</td>
+<td>--</td>
+</tr>
+<tr>
 <td><code>pdbProtected</code></td>
 <td>+0.05</td>
 <td>--</td>
@@ -3566,7 +3568,22 @@
 <td>--</td>
 </tr>
 <tr>
+<td><code>storageBackend</code></td>
+<td>+0.05</td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>liveMigratable</code></td>
+<td>+0.04</td>
+<td>--</td>
+</tr>
+<tr>
 <td><code>networkIsolated</code></td>
+<td>+0.03</td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>cdiManaged</code></td>
 <td>+0.03</td>
 <td>--</td>
 </tr>
@@ -3587,8 +3604,9 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Maximum boost</strong>: +0.39 (all labels exact match)
+<p><strong>Maximum boost</strong>: +0.59 (all labels exact match)
 <strong>Maximum penalty</strong>: -0.20 (GitOps mismatch only)</p>
+<p><code>resourceQuotaConstrained</code> is detected and available for Rego policies but does not participate in workflow scoring.</p>
 <h3 id="wildcard-weighting">Wildcard Weighting<a class="headerlink" href="#wildcard-weighting" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Exact match</strong>: Full weight (e.g., <code>gitOpsManaged=true</code> matches <code>true</code> → +0.10)</li>

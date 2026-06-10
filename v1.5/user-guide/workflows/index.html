@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -4021,6 +4018,11 @@
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="nt">stateful</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
 </span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span><span class="nt">networkIsolated</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
 </span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="nt">serviceMesh</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;istio&quot;</span><span class="w">       </span><span class="c1"># istio | linkerd | &quot;*&quot;</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="nt">resourceQuotaConstrained</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="nt">virtualMachine</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="w">  </span><span class="nt">liveMigratable</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="w">  </span><span class="nt">cdiManaged</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;true&quot;</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">  </span><span class="nt">storageBackend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;odf-ceph&quot;</span><span class="w"> </span><span class="c1"># odf-ceph | lvms | local | &quot;*&quot;</span>
 </span></code></pre></div>
 <table>
 <thead>
@@ -4028,6 +4030,7 @@
 <th>Label</th>
 <th>Type</th>
 <th>Valid Values</th>
+<th>Category</th>
 </tr>
 </thead>
 <tbody>
@@ -4035,41 +4038,79 @@
 <td><code>gitOpsManaged</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>GitOps management</td>
 </tr>
 <tr>
 <td><code>gitOpsTool</code></td>
 <td>string</td>
 <td><code>argocd</code>, <code>flux</code>, <code>"*"</code></td>
+<td>GitOps management</td>
 </tr>
 <tr>
 <td><code>pdbProtected</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>Workload protection</td>
 </tr>
 <tr>
 <td><code>hpaEnabled</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>Workload protection</td>
 </tr>
 <tr>
 <td><code>stateful</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>Workload characteristics</td>
 </tr>
 <tr>
 <td><code>helmManaged</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>Workload characteristics</td>
 </tr>
 <tr>
 <td><code>networkIsolated</code></td>
 <td>boolean</td>
 <td><code>"true"</code> only</td>
+<td>Security posture</td>
 </tr>
 <tr>
 <td><code>serviceMesh</code></td>
 <td>string</td>
 <td><code>istio</code>, <code>linkerd</code>, <code>"*"</code></td>
+<td>Security posture</td>
+</tr>
+<tr>
+<td><code>resourceQuotaConstrained</code></td>
+<td>boolean</td>
+<td><code>"true"</code> only</td>
+<td>Resource constraints</td>
+</tr>
+<tr>
+<td><code>virtualMachine</code></td>
+<td>boolean</td>
+<td><code>"true"</code> only</td>
+<td>Virtualization (CNV)</td>
+</tr>
+<tr>
+<td><code>liveMigratable</code></td>
+<td>boolean</td>
+<td><code>"true"</code> only</td>
+<td>Virtualization (CNV)</td>
+</tr>
+<tr>
+<td><code>cdiManaged</code></td>
+<td>boolean</td>
+<td><code>"true"</code> only</td>
+<td>Virtualization (CNV)</td>
+</tr>
+<tr>
+<td><code>storageBackend</code></td>
+<td>string</td>
+<td><code>odf-ceph</code>, <code>lvms</code>, <code>local</code>, <code>"*"</code></td>
+<td>Virtualization (CNV)</td>
 </tr>
 </tbody>
 </table>
@@ -4561,6 +4602,12 @@
 <td>+0.05</td>
 </tr>
 <tr>
+<td><code>virtualMachine</code></td>
+<td>+0.08</td>
+<td>--</td>
+<td>--</td>
+</tr>
+<tr>
 <td><code>pdbProtected</code></td>
 <td>+0.05</td>
 <td>--</td>
@@ -4573,7 +4620,25 @@
 <td>+0.025</td>
 </tr>
 <tr>
+<td><code>storageBackend</code></td>
+<td>+0.05</td>
+<td>+0.025</td>
+<td>+0.025</td>
+</tr>
+<tr>
+<td><code>liveMigratable</code></td>
+<td>+0.04</td>
+<td>--</td>
+<td>--</td>
+</tr>
+<tr>
 <td><code>networkIsolated</code></td>
+<td>+0.03</td>
+<td>--</td>
+<td>--</td>
+</tr>
+<tr>
+<td><code>cdiManaged</code></td>
 <td>+0.03</td>
 <td>--</td>
 <td>--</td>
@@ -4598,7 +4663,11 @@
 </tr>
 </tbody>
 </table>
-<p>Maximum possible boost: <strong>0.39</strong> (all labels match exactly).</p>
+<p>Maximum possible boost: <strong>0.59</strong> (all labels match exactly).</p>
+<div class="admonition note">
+<p class="admonition-title"><code>resourceQuotaConstrained</code> is not scored</p>
+<p>The <code>resourceQuotaConstrained</code> label is detected and stored but does not contribute to workflow scoring. It is available for Rego policy evaluation via <code>input.analysis.detectedLabels</code>.</p>
+</div>
 <p><strong>Penalty rules</strong> (high-impact only):</p>
 <table>
 <thead>

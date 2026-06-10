@@ -94,13 +94,10 @@
           <aside class="md-banner md-banner--warning">
             <div class="md-banner__inner md-grid md-typeset">
               
-  
-    <strong>Release Candidate</strong> — This is pre-release documentation for v1.5.0-rc10.
-    Content may change before GA.
-    <a href="../../..">
-      <strong>View stable documentation.</strong>
-    </a>
-  
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
 
             </div>
             <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
@@ -2419,6 +2416,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#a2a-streaming-events" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A2A Streaming Events
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#agent-card-discovery" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3374,6 +3382,46 @@
 </tbody>
 </table>
 <p>All internal tools use the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>) and are SAR-gated on the A2A path via <code>newRBACGuard()</code>.</p>
+<p>When <code>severityTriage.enabled: true</code> and a Prometheus URL is configured, 3 additional alert tools are registered: <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code>. See <a href="../mcp-tools/#alert-tools">MCP Tool Reference — Alert tools</a>.</p>
+<h3 id="a2a-streaming-events">A2A Streaming Events<a class="headerlink" href="#a2a-streaming-events" title="Permanent link">&para;</a></h3>
+<p>A2A streaming responses use <code>TaskStatusUpdateEvent</code> messages, each tagged with <code>metadata.type</code> to classify the event:</p>
+<table>
+<thead>
+<tr>
+<th><code>metadata.type</code></th>
+<th>Purpose</th>
+<th><code>status.message</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>reasoning</code></td>
+<td>LLM inner thoughts / investigation deltas</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>status</code></td>
+<td>Orchestration progress (tool starts, phase transitions)</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>output</code></td>
+<td>Final LLM answer</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>investigation</code></td>
+<td>Investigation-specific events from KA</td>
+<td>Set</td>
+</tr>
+<tr>
+<td><code>keepalive</code></td>
+<td>Proxy idle-timeout prevention</td>
+<td><strong>Not set</strong> (metadata-only)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Keepalive events</strong> — emitted every 5 s during long-running KA tool executions. Metadata: <code>{"type":"keepalive", "dot":"."}</code>. No <code>status.message</code> is set, so clients that render only <code>status.message</code> will not display keepalive noise.</p>
 <h3 id="agent-card-discovery">Agent Card Discovery<a class="headerlink" href="#agent-card-discovery" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>GET /.well-known/agent-card.json
 </span></code></pre></div>

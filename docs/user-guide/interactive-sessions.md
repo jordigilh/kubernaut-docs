@@ -176,7 +176,7 @@ Kubernaut supports both modes simultaneously:
 | **Visibility** | Post-hoc via kubectl, notifications | Real-time SSE streaming |
 | **Pipeline** | Full 6-stage pipeline | Same pipeline, operator-driven at selection stage |
 
-Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `kubernaut_await_session` followed by `kubernaut_investigate`.
+Both modes produce the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously (from an alert) can be joined mid-flight by an operator via `kubernaut_investigate` — the KA upgrades the running session to interactive **in-place** (Jump-In, #1390), preserving all LLM context from the autonomous RCA phase. See [Jump-In session upgrade](../architecture/apifrontend.md#jump-in) for details.
 
 !!! note "Interactive-Autonomous parity (#1377)"
-    As of v1.5.0-rc11, the interactive and autonomous pipelines share the same KA tool set, enrichment pipeline, and scoring logic. The KA agent uses the same `kubernaut_investigate` tool internally for both modes — the only difference is whether the AF or an alert webhook initiates the investigation, and whether a `leaseHolder` is set on the `InvestigationSession`.
+    As of v1.5.0, the interactive and autonomous pipelines share the same KA tool set, enrichment pipeline, and scoring logic. The KA agent uses the same `kubernaut_investigate` tool internally for both modes — the only difference is whether the AF or an alert webhook initiates the investigation, and whether a `leaseHolder` is set on the `InvestigationSession`.

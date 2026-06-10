@@ -3411,7 +3411,7 @@
 <tr>
 <td><strong>Trigger</strong></td>
 <td>Alert webhook (Prometheus, K8s Event)</td>
-<td>Operator connects via MCP through API Frontend</td>
+<td>Operator starts on demand or joins an autonomous session via MCP through API Frontend</td>
 </tr>
 <tr>
 <td><strong>Workflow selection</strong></td>
@@ -3430,7 +3430,7 @@
 </tr>
 </tbody>
 </table>
-<p>Both modes use the same CRDs, audit events, and effectiveness assessments. An investigation started autonomously can be joined mid-flight by an operator via the API Frontend. See <a href="../../user-guide/interactive-sessions/">Interactive Sessions</a> for the operator guide.</p>
+<p>Both modes use the same CRDs, audit events, and effectiveness assessments. Operators can start investigations on demand via the API Frontend or join an autonomous investigation mid-flight. See <a href="../../user-guide/interactive-sessions/">Interactive Sessions</a> for the operator guide.</p>
 <h2 id="communication-pattern">Communication Pattern<a class="headerlink" href="#communication-pattern" title="Permanent link">&para;</a></h2>
 <p>All inter-service communication in the remediation pipeline uses <strong>Kubernetes CRDs</strong>. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its 14 MCP tools to multiple backends (K8s API, Kubernaut Agent REST/MCP, DataStorage).</p>
 <p>This architecture provides:</p>

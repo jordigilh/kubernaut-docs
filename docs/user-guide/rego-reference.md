@@ -14,7 +14,7 @@ All policies are deployed as ConfigMaps and support hot-reload. See [Rego Polici
 
 ## Signal Processing Policy
 
-All SP classification rules live in a single `policy.rego` file under `package signalprocessing` ([ADR-060](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md)). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.
+All SP classification rules live in a single `policy.rego` file under `package signalprocessing` ([ADR-060](https://github.com/jordigilh/kubernaut/blob/v1.5.0/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md)). The evaluator sends a common typed input struct and queries four named rules. Each rule group is documented below.
 
 ### Common Input Schema
 
@@ -560,11 +560,11 @@ reason := f.reason if { some f in risk_factors; f.score == max_risk_score }
 
 | Component | Source File |
 |---|---|
-| SP unified evaluator | [`pkg/signalprocessing/evaluator/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/evaluator/evaluator.go) |
-| SP policy input types | [`pkg/signalprocessing/evaluator/types.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/evaluator/types.go) |
-| SP signal mode classifier | [`pkg/signalprocessing/classifier/signalmode.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/signalprocessing/classifier/signalmode.go) |
-| SP example policy | [`charts/kubernaut/examples/signalprocessing-policy.rego`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/charts/kubernaut/examples/signalprocessing-policy.rego) |
-| SP deploy policies | [`deploy/signalprocessing/policies/`](https://github.com/jordigilh/kubernaut/tree/v1.5.0-rc10/deploy/signalprocessing/policies) |
-| AA approval evaluator | [`pkg/aianalysis/rego/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/aianalysis/rego/evaluator.go) |
-| AA input builder | [`pkg/aianalysis/handlers/analyzing.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/pkg/aianalysis/handlers/analyzing.go) |
-| AA approval policy (test) | [`test/unit/aianalysis/testdata/policies/approval.rego`](https://github.com/jordigilh/kubernaut/blob/v1.5.0-rc10/test/unit/aianalysis/testdata/policies/approval.rego) |
+| SP unified evaluator | [`pkg/signalprocessing/evaluator/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/pkg/signalprocessing/evaluator/evaluator.go) |
+| SP policy input types | [`pkg/signalprocessing/evaluator/types.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/pkg/signalprocessing/evaluator/types.go) |
+| SP signal mode classifier | [`pkg/signalprocessing/classifier/signalmode.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/pkg/signalprocessing/classifier/signalmode.go) |
+| SP example policy | [`charts/kubernaut/examples/signalprocessing-policy.rego`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/charts/kubernaut/examples/signalprocessing-policy.rego) |
+| SP deploy policies | [`deploy/signalprocessing/policies/`](https://github.com/jordigilh/kubernaut/tree/v1.5.0/deploy/signalprocessing/policies) |
+| AA approval evaluator | [`pkg/aianalysis/rego/evaluator.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/pkg/aianalysis/rego/evaluator.go) |
+| AA input builder | [`pkg/aianalysis/handlers/analyzing.go`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/pkg/aianalysis/handlers/analyzing.go) |
+| AA approval policy (test) | [`test/unit/aianalysis/testdata/policies/approval.rego`](https://github.com/jordigilh/kubernaut/blob/v1.5.0/test/unit/aianalysis/testdata/policies/approval.rego) |

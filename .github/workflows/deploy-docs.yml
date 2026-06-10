@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  KUBERNAUT_RELEASE: v1.5.0-rc10
+  KUBERNAUT_RELEASE: v1.5.0
 
 jobs:
   deploy:
@@ -58,8 +58,9 @@ jobs:
             VERSION="v1.5"
           fi
 
-          if [ "$VERSION" = "v1.4" ]; then
+          if [ "$VERSION" = "v1.5" ]; then
             mike deploy --push --update-aliases "$VERSION" latest
+            mike set-default --push latest
           else
             mike deploy --push "$VERSION"
           fi

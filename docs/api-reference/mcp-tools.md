@@ -6,6 +6,9 @@ Each tool is SAR-gated via [per-persona ClusterRoles](../architecture/security-r
 All tools return JSON in MCP `CallToolResult` text content. Default timeout is 30 s (configurable per tool).
 RBAC is fail-closed — SAR errors deny the call.
 
+!!! info "Conditional tool surface (#1366)"
+    When [`interactive.enabled`](../user-guide/configuration.md) is `false`, **10 session-dependent tools** are hidden from MCP `tools/list` and the A2A agent, leaving **11 stateless tools** (CRD operations + data/history). Hidden tools: `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_await_session`.
+
 !!! tip "Building skills on Kubernaut tools"
     When authoring MCP skills or prompts that call these tools, use the **"When to use"** guidance below each tool to select the right one.
     Check the [Persona Access Matrix](#persona-access-matrix) to ensure the caller's ClusterRole includes the tool.
@@ -222,11 +225,12 @@ Backend: **K8s API** (AF ServiceAccount) — operates on `kubernaut.ai/v1alpha1/
     Backend: **KA MCP** — dispatches to the Kubernaut Agent's MCP server.
 
     - `rr_id` (`string`) — Existing RR name (starts investigation on that RR)
+    - `api_version` (`string`) — Kubernetes API group/version, e.g. `apps/v1`, `v1` (required when creating a new RR, #1372)
     - `namespace` (`string`) — Target resource namespace (for creating a new RR + IS)
     - `kind` (`string`) — Target resource kind (required with `namespace`/`name`)
     - `name` (`string`) — Target resource name (required with `namespace`/`name`)
 
-    Provide `rr_id` for an existing RR, **or** `namespace`+`kind`+`name` to create a new RR and InvestigationSession for interactive use. Service accounts cannot start interactive investigations (namespace/kind/name path).
+    Provide `rr_id` for an existing RR, **or** `api_version`+`namespace`+`kind`+`name` to create a new RR and InvestigationSession for interactive use. Service accounts cannot start interactive investigations (namespace/kind/name path).
 
     In A2A mode, blocks until the investigation completes and returns the full RCA summary. On the MCP bridge, returns immediately; live events are streamed in the background via SSE. If the RR already has an active investigation driven by another user, a structured `session_active` result is returned instead of an error.
 
@@ -565,7 +569,7 @@ kubernaut_investigate(rr_id)
 ### Interactive investigation flow (new RR)
 
 ```
-kubernaut_investigate(namespace, kind, name)     # creates RR + IS
+kubernaut_investigate(api_version, namespace, kind, name)  # creates RR + IS
   → kubernaut_message(rr_id, message)            # repeat as needed
     → kubernaut_discover_workflows(rr_id)
       → kubernaut_select_workflow(rr_id, workflow_id)
@@ -607,6 +611,8 @@ kubernaut_list_remediations()
 
 ## Persona Access Matrix
 
+The personas below are **predefined bootstrap roles** shipped with the Helm chart. Operators are encouraged to create their own ClusterRoles and ClusterRoleBindings tailored to their operational environment — the predefined set is a starting point, not a prescription.
+
 All tool names below are prefixed with `kubernaut_`.
 
 | Tool | SRE | AI Orch. | CI/CD | Obs. | L3 Audit | Approver |
@@ -625,6 +631,7 @@ All tool names below are prefixed with `kubernaut_`.
 | `cancel` | :material-check: | :material-check: | | | | |
 | `status` | :material-check: | :material-check: | | | | |
 | `reconnect` | :material-check: | :material-check: | | | | |
+| `takeover` | :material-check: | :material-check: | | | | |
 | `discover_workflows` | :material-check: | :material-check: | | | | |
 | `select_workflow` | :material-check: | :material-check: | | | | |
 | `present_decision` | :material-check: | :material-check: | | | | |
@@ -637,9 +644,11 @@ All tool names below are prefixed with `kubernaut_`.
 
 ## Internal Tools (A2A Agent Only)
 
-The AF agent uses 5 additional tools inside its A2A agent loop.
+The AF agent uses additional tools inside its A2A agent loop.
 These are **not** exposed on the MCP bridge and cannot be called by external MCP clients.
 However, they **are** SAR-gated on the A2A path via `newRBACGuard()` and are included in per-persona ClusterRoles in `values.yaml`.
+
+### Core internal tools (always registered)
 
 | Tool | Purpose |
 |------|---------|
@@ -647,7 +656,17 @@ However, they **are** SAR-gated on the A2A path via `newRBACGuard()` and are inc
 | `kubectl_list` | List namespaced K8s resources with optional label selector (Secret `.data` redacted). GVR resolved via RESTMapper + static table. |
 | `kubectl_list_events` | List K8s events with reason/object filters |
 | `kubernaut_check_existing_remediation` | Check for duplicate RemediationRequest before creation. Params: `namespace`, `kind`, `name`. |
-| `kubernaut_remediate` | Create a new RemediationRequest CRD. Params: `namespace`, `kind`, `name`, `description`, `rr_id`. |
+| `kubernaut_remediate` | Create a new RemediationRequest CRD. Params: `namespace`, `kind`, `name`, `api_version` (required with namespace/kind/name, #1372), `description`, `rr_id`. |
+
+### Alert tools (registered when `severityTriage.enabled: true` + Prometheus configured) {: #alert-tools }
+
+These tools are only available when the AF has a Prometheus connection configured via `severityTriage.prometheusURL`. They enable the A2A agent to query firing alerts and create alert-driven RemediationRequests.
+
+| Tool | Purpose |
+|------|---------|
+| `list_alerts` | Query Prometheus alerts with optional filters. Params: `namespace`, `severity` (critical/high/medium/low/info/warning), `state` (firing/pending). Returns redacted `AlertSummary` array. |
+| `get_alert_details` | Get details of a specific alert. Params: `alert_name` (required), `namespace` (optional). Returns matching `AlertSummary` array. |
+| `kubernaut_investigate_alert` | Alert-first RR creation with scope validation. Params: `alert_name`, `api_version`, `kind`, `name` (all required), `namespace` (optional for cluster-scoped). Validates alert exists in Prometheus and checks namespace/cluster scope via RESTMapper before creating the RR (#1372). |
 
 !!! note "KA kubectl tools have `api_group`"
     The **Kubernaut Agent's** kubectl tools (`kubectl_get`, `kubectl_list` in KA) support an `api_group` parameter for kind disambiguation (#1311). The **AF's** internal `kubectl_get`/`kubectl_list` do not — they resolve GVR via RESTMapper and a static GVK table.

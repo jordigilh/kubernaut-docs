@@ -161,6 +161,17 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). The chart derives the Kubernetes ConfigMap objects that back the Agent SDK volumes from this file (**v1.4+**: split static + reloadable bundles). | `""` |
 | `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 
+#### MCP Session Resilience (v1.5+) {: #ka-mcp-resilience }
+
+These settings are part of the KA interactive config (`interactive:` block in the SDK config file):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `interactive.mcpKeepAlive` | Server-side SSE ping interval. Keeps MCP streams alive through proxy/router idle timeouts (e.g., OpenShift HAProxy 30s default). `0` disables. (#1387) | `15s` |
+| `interactive.mcpSessionTimeout` | Auto-close idle MCP sessions that the AF abandoned without a proper disconnect. `0` means never. (#1387) | `10m` |
+
+On the AF side, the `PooledMCPClient` performs a **Ping-on-Acquire** health check (2s bounded) before reusing a cached MCP session. Dead sessions are evicted and transparently replaced via the factory (#1387).
+
 Kubernaut Agent uses two ConfigMaps: a **service config** (ports, logging, auth secret references) and an **SDK config** (LLM settings, toolsets, MCP servers). From **v1.4**, the SDK surface is supplied as **two** mounted ConfigMaps: one **static** (read at startup) and one **hot-reloadable** (watched for AI/tool/integration changes — no pod restart required for supported fields — see **[Kubernaut Agent SDK config](configmap-kubernaut-agent.md#hot-reload)**). Helm values and chart templates reflect that split — follow **`values.schema.json`** and [`configmap-kubernaut-agent.md`](configmap-kubernaut-agent.md) when upgrading.
 
 The SDK config bundle is provided in one of two ways:
@@ -216,6 +227,9 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.config.server.healthPort` | Health check port | `8081` |
 | `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
 | `apifrontend.config.session.retentionTTL` | How long completed sessions are retained | `720h` |
+| `apifrontend.config.interactive.enabled` | Enable interactive session MCP tools. When `false`, 10 session-dependent tools are hidden from MCP enumeration and the A2A agent tool list, leaving 11 stateless CRD/data tools (#1366). | `true` |
+| `apifrontend.config.severityTriage.enabled` | Enable severity triage. Required for alert tools (`list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`). | `false` |
+| `apifrontend.config.severityTriage.prometheusURL` | Prometheus API URL for alert queries. Required when `severityTriage.enabled: true`. | `""` |
 | `apifrontend.config.severityTriage.cacheTTLSeconds` | Severity triage cache TTL | `30` |
 | `apifrontend.config.severityTriage.llmConfidence` | LLM confidence threshold for severity triage | `0.7` |
 | `apifrontend.resources.requests.memory` | Memory request | `64Mi` |
@@ -224,6 +238,8 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.resources.limits.cpu` | CPU limit | `500m` |
 | `apifrontend.config.auth.issuerURL` | OIDC issuer URL for token validation | `""` |
 | `apifrontend.config.auth.audience` | Expected OIDC audience | `""` |
+| `apifrontend.config.auth.jwtProviders[].claimMappings.username` | CEL expression to extract username from JWT claims (e.g., `claims.email`). Falls back to `preferred_username` / `sub` when empty (#1392). | `""` |
+| `apifrontend.config.auth.jwtProviders[].claimMappings.groups` | CEL expression to extract groups from JWT claims (e.g., `claims.roles`). Falls back to `groups` claim when empty (#1392). | `""` |
 | `apifrontend.config.rbac.sarCacheTTL` | SAR result cache TTL | `30s` |
 
 #### AF LLM Configuration (v1.5+)

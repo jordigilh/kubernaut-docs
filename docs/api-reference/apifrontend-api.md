@@ -104,6 +104,22 @@ The AF's A2A agent also uses **5 internal tools** that are SAR-gated but not exp
 
 All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via `newRBACGuard()`.
 
+When `severityTriage.enabled: true` and a Prometheus URL is configured, 3 additional alert tools are registered: `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`. See [MCP Tool Reference — Alert tools](mcp-tools.md#alert-tools).
+
+### A2A Streaming Events {: #a2a-streaming-events }
+
+A2A streaming responses use `TaskStatusUpdateEvent` messages, each tagged with `metadata.type` to classify the event:
+
+| `metadata.type` | Purpose | `status.message` |
+|---|---|---|
+| `reasoning` | LLM inner thoughts / investigation deltas | Set |
+| `status` | Orchestration progress (tool starts, phase transitions) | Set |
+| `output` | Final LLM answer | Set |
+| `investigation` | Investigation-specific events from KA | Set |
+| `keepalive` | Proxy idle-timeout prevention | **Not set** (metadata-only) |
+
+**Keepalive events** — emitted every 5 s during long-running KA tool executions. Metadata: `{"type":"keepalive", "dot":"."}`. No `status.message` is set, so clients that render only `status.message` will not display keepalive noise.
+
 ### Agent Card Discovery
 
 ```

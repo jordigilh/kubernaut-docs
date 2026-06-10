@@ -8,7 +8,7 @@ hide:
 
 ## AIOps Platform for Intelligent Kubernetes Remediation
 
-Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes alert to automated remediation. It operates in two modes: **autonomously** — detecting signals, investigating root causes, and executing fixes end-to-end without human involvement — and **interactively** — letting operators join an in-progress investigation via MCP or A2A, guide the agent, and approve remediations in real time. When something goes wrong in your cluster (an OOMKill, a CrashLoopBackOff, node pressure), Kubernaut detects the signal, enriches it with context, sends it to an LLM-powered agent for live root cause investigation, selects a remediation workflow from a searchable catalog, and executes the fix — or escalates to a human with a full RCA when it can't.
+Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes alert to automated remediation. It operates in two modes: **autonomously** — detecting signals, investigating root causes, selecting a workflow, and executing fixes end-to-end — and **interactively** — letting operators join an in-progress investigation via MCP or A2A, guide the agent, and steer remediation decisions in real time. Both modes share the same approval gates, OPA policies, and audit trails. When something goes wrong in your cluster (an OOMKill, a CrashLoopBackOff, node pressure), Kubernaut detects the signal, enriches it with context, sends it to an LLM-powered agent for live root cause investigation, selects a remediation workflow from a searchable catalog, and executes the fix — or escalates to a human with a full RCA when it can't.
 
 **Mean time to resolution drops from 60 minutes to under 5**, while humans stay in control through approval gates, configurable confidence thresholds, and audit trails designed for SOC2 alignment.
 
@@ -209,7 +209,7 @@ Click a phase card above, or select a tab:
 
 | Capability | Description |
 |---|---|
-| **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix with zero human involvement. **Interactive** — operators join via MCP or A2A to guide the investigation, select workflows, and approve remediations in real time. Operators can jump into an autonomous session mid-flight without restarting it. |
+| **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix: investigation, workflow selection, and execution without operator involvement. **Interactive** — operators join via MCP or A2A to guide the investigation, steer workflow selection, and review remediations in real time. Both modes enforce the same approval gates and OPA policies. Operators can jump into an autonomous session mid-flight without restarting it. |
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
 | **AI-Powered Root Cause Analysis** | Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
 | **Workflow Catalog** | Searchable declarative `RemediationWorkflow` CRDs with category and label-based matching plus confidence scoring |

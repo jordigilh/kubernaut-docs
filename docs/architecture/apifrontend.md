@@ -149,6 +149,17 @@ When User B connects to a session owned by User A:
 3. An audit event is emitted recording the takeover
 4. User B starts a fresh investigation in the same session context
 
+### Jump-In session upgrade (#1390) {: #jump-in }
+
+When an operator calls `kubernaut_investigate` for an RR that already has a running **autonomous** investigation, the KA upgrades the session to interactive **in-place** rather than cancelling and recreating it. This preserves the LLM context accumulated during the autonomous RCA phase.
+
+1. KA sets an `interactiveUpgrade` atomic flag on the session
+2. The running investigation goroutine sees the flag at its next `InteractiveHold` check and pauses for operator input
+3. The AA controller detects the IS CRD and sets `Interactive=true` + `SetActivePhase` (no cancel)
+4. Session ID and correlation ID are preserved throughout
+
+If the autonomous session has already completed (`ErrSessionTerminal`), the system falls back to `ForceTransitionToUserDriving` to start a fresh interactive session.
+
 ### Disconnect handling (DD-INTERACTIVE-002)
 
 The `SessionClosedHandler` monitors MCP connection closures via the `DelegatingEventStore`. On disconnect, it triggers session release and reconstruction.
@@ -195,6 +206,15 @@ Supported providers: `vertex_ai` (Claude on Vertex AI — requires `vertexProjec
 **InstructionProvider** (#1276) — The A2A agent's system prompt is dynamically generated per-request by the `InstructionProvider`. This replaces the static `Instruction` string and injects the controller namespace, available tool names, and persona context into the LLM prompt at runtime.
 
 **KA bearer token** — The `kaBearerTokenFile` config field provides the AF with a bearer token for authenticating to the KA MCP server (#1287). When set, the AF includes this token in the `Authorization` header of all KA MCP requests.
+
+**Rate limiters** (#1392) — Two rate limiters protect the AF:
+
+- **ProviderLimiter** — Rate-limits JWKS endpoint fetches. When the limit is hit, cached keys are returned instead of fetching new ones.
+- **LLMSemaphore** — Bounds concurrent LLM requests. Requests exceeding capacity are rejected with `ErrLLMCapacity` (HTTP 429).
+
+**Re-invocation loop** (#1392) — The `StreamingExecutor` re-invokes the LLM agent when a turn ends with text-only output (no tool calls), up to `MaxReinvocations`. This handles cases where the LLM produces reasoning text before deciding on a tool call.
+
+**JWT ClaimMappings** (#1392) — CEL expressions for extracting username and groups from JWT claims (e.g., `claims.email`, `claims.roles`). Falls back to hardcoded paths (`preferred_username`/`sub`/`groups`) when expressions are empty, preserving backward compatibility.
 
 See [AF LLM Configuration](../user-guide/configuration.md#af-llm-configuration-v15) for the full field reference.
 

@@ -30,10 +30,10 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | Requirement | Version | Notes |
 |---|---|---|
 | OpenShift | 4.18+ | OLM and operator-framework support required |
-| PostgreSQL | 15+ | **BYO** — the operator does not deploy a database; provide connection details via `spec.postgresql` |
+| PostgreSQL | 15+ | **BYO** — the operator does not deploy a database; provide connection details via `spec.postgresql`. TLS is required (`sslMode`: `require`, `verify-ca`, or `verify-full`). See [PostgreSQL TLS](../operations/disconnected-install.md#postgresql-tls). |
 | Valkey / Redis | 7+ | **BYO** — provide connection details via `spec.valkey` |
-| LLM provider | — | Any [supported provider](../user-guide/configmap-kubernaut-agent.md#supported-providers) with JSON structured output |
-| LLM credentials Secret | — | Secret containing the LLM API key (e.g. `OPENAI_API_KEY`) |
+| LLM provider | — | Any [supported provider](../operations/disconnected-install.md#llm-configuration-reference) with JSON structured output (9 providers for KA, 3 for AF) |
+| LLM credentials Secret | — | Secret containing the LLM API key — see [Credential Secret Format](../operations/disconnected-install.md#llm-configuration-reference) for the expected keys per provider |
 | SP classification policy | — | ConfigMap with key `policy.rego` — see [Rego Policies](../user-guide/policies.md) |
 | AA approval policy | — | ConfigMap with key `approval.rego` — see [Approval Policy](../user-guide/configmap-approval.md) |
 
@@ -71,7 +71,32 @@ spec:
 ```
 
 !!! note "Disconnected installs"
-    For air-gapped environments, mirror all component images and set `RELATED_IMAGE_*` environment variables on the operator Deployment. See the [operator installation guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation) for the full image list.
+    For air-gapped environments, see the [Disconnected Installation Guide](../operations/disconnected-install.md) for mirroring images via `oc-mirror` and installing via OLM or direct manifest. IDMS transparently redirects image pulls — no `RELATED_IMAGE_*` patching is needed.
+
+#### Tool RBAC Role Bindings
+
+When `spec.apiFrontend.enabled: true` (default), configure `spec.apiFrontend.rbac.roleBindings` to map OIDC groups to per-persona tool roles. Without these bindings, authenticated users cannot invoke MCP tools (SAR denies every call). See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for details.
+
+```yaml
+spec:
+  apiFrontend:
+    rbac:
+      roleBindings:
+        - role: sre
+          groups: ["platform-engineering"]
+        - role: ai-orchestrator
+          groups: ["platform-engineering"]
+        - role: remediation-approver
+          groups: ["change-mgmt"]
+```
+
+#### OCP AlertManager Integration
+
+For alert-driven scenarios on OpenShift, configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the [AlertManager configuration](../operations/disconnected-install.md#alertmanager-ocp) for the full setup.
+
+#### Demo Workflows and Scenarios
+
+To seed the workflow catalog with sample ActionTypes and RemediationWorkflows, clone the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository and run the seeding scripts. See [Seed Demo Workflows](../operations/disconnected-install.md#seed-demo-workflows) for step-by-step instructions.
 
 ### What the Operator manages
 

@@ -501,8 +501,60 @@ The AF auto-detects its authentication mode from the configuration:
 
 This removes the need for an explicit `authMode` toggle — the AF infers the correct strategy from which providers are present in the configuration.
 
+## Keycloak OIDC Configuration {: #keycloak-oidc }
+
+When using Keycloak as the OIDC provider (common with kagenti deployments), additional configuration is needed to ensure the API Frontend can authorize tool calls via SAR.
+
+### Groups Client Scope {: #keycloak-groups-scope }
+
+The AF uses Kubernetes SubjectAccessReview (SAR) to authorize tool access based on OIDC group claims in the user's JWT. Keycloak must include group membership in issued tokens.
+
+1. In the Keycloak admin console, navigate to the target realm (e.g., `kagenti`)
+2. Go to **Client scopes** > **Create client scope**: name `groups`, protocol `openid-connect`
+3. Under the new scope, go to **Mappers** > **Create mapper**:
+
+| Setting | Value |
+|---|---|
+| Name | `groups` |
+| Mapper type | `Group Membership` |
+| Token claim name | `groups` |
+| Full group path | `off` |
+| Add to ID token | `on` |
+| Add to access token | `on` |
+| Add to userinfo | `on` |
+
+4. Go to **Clients** > `kagenti` > **Client scopes** > **Add client scope** > add `groups` as a **Default** scope
+
+The group names in the token must match the `groups` array in `spec.apiFrontend.rbac.roleBindings` (Operator CR) or `apifrontend.config.rbac.roleBindings` (Helm values).
+
+### Audience Mapper {: #keycloak-audience-mapper }
+
+For kagenti to successfully authenticate with the API Frontend via SPIFFE identity, add an `oidc-audience-mapper` protocol mapper to the `kagenti` client:
+
+| Setting | Value |
+|---|---|
+| `included.custom.audience` | `spiffe://<trust-domain>/ns/kubernaut-system/sa/apifrontend` |
+| `access.token.claim` | `true` |
+| `id.token.claim` | `false` |
+
+Assign this scope as a default scope to the `kagenti` client. The trust domain must match your SPIRE deployment.
+
+### Stale Token Warning {: #keycloak-stale-tokens }
+
+!!! warning "Users must re-authenticate after scope changes"
+    Users must log out and log back in after being added to a group (or after the `groups` scope is first created) to receive a fresh token with the `groups` claim. Stale tokens issued before the scope was added will have an empty or missing `groups` array. SAR checks will fail with `403 Forbidden` for all tool calls, even if the user's group has a valid `roleBinding`.
+
+    To verify a token contains the expected groups:
+
+    ```bash
+    echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '.groups'
+    ```
+
+    If `groups` is `null` or empty, the user must re-authenticate.
+
 ## Next Steps
 
 - [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager and other signal sources
 - [Configuration Reference](../user-guide/configuration.md) -- Helm values for all services
+- [Disconnected Installation](../operations/disconnected-install.md) -- Air-gapped installation with Keycloak integration
 - [Troubleshooting](../operations/troubleshooting.md) -- Diagnose RBAC-related issues

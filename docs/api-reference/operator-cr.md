@@ -201,6 +201,8 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `shutdown` | [APIFrontendShutdownSpec](#apifrontendshutdownspec) | no | — | Graceful shutdown |
 | `externalURL` | string | no | auto-derived | A2A agent card discovery URL (must be HTTPS when set) |
 | `rbac` | [APIFrontendRBACSpec](#apifrontendrbacspec) | no | — | SAR-based tool authorization and role bindings |
+| `route` | [APIFrontendRouteSpec](#apifrontendroutespec) | no | — | OCP Route creation |
+| `spire` | [APIFrontendSPIRESpec](#apifrontendspirespec) | no | — | SPIRE/kagenti integration for A2A workload identity |
 | `logging` | LoggingSpec | no | — | Log level |
 | `resources` | ResourceRequirements | no | — | CPU/memory requests and limits |
 
@@ -208,8 +210,10 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `issuerURL` | string | — | OIDC issuer URL (e.g., `https://login.kubernaut.ai/realms/kubernaut`) |
-| `audience` | string | `kubernaut-apifrontend` | Expected JWT audience claim |
+| `issuerURL` | string | — | OIDC issuer URL (e.g., `https://login.kubernaut.ai/realms/kubernaut`). Must match the `iss` claim in tokens. |
+| `audience` | string | `kubernaut-apifrontend` | Expected JWT audience claim. Must match the `aud` claim in tokens (typically the Keycloak realm URL). |
+| `jwksURL` | string | — | Cluster-internal JWKS endpoint URL for token validation (e.g., `http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs`). Bypasses OIDC discovery — use when the issuer URL is external but JWKS must be fetched internally. |
+| `allowInsecureIssuers` | bool | `false` | Allow insecure (HTTP or self-signed TLS) issuer verification. Set `true` for development or self-signed Keycloak deployments. **Must be `false` in production.** |
 | `jwtProviders` | [][JWTProviderSpec](#jwtproviderspec) | — | One or more OIDC JWT providers |
 | `allowInsecureJWKS` | bool | `false` | Permit HTTP JWKS URLs for dev/test. **Must be `false` in production.** |
 
@@ -259,7 +263,22 @@ spec:
 |---|---|---|---|
 | `ipRequestsPerSec` | *int | `50` | Per-IP requests per second |
 | `userRequestsPerSec` | *int | `20` | Per-user requests per second |
+| `toolCallsPerMinute` | *int | `60` | Maximum tool calls per user per minute |
 | `maxConcurrentSessions` | *int | `100` | Maximum concurrent MCP/A2A sessions |
+
+### APIFrontendRouteSpec {: #apifrontendroutespec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | *bool | `false` | Create an OCP Route for the API Frontend |
+| `hostname` | string | — | Custom route hostname. When empty, OCP derives the hostname from the route name and cluster ingress domain. |
+
+### APIFrontendSPIRESpec {: #apifrontendspirespec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `false` | Enable SPIRE integration via kagenti. When `true`, the operator labels the namespace with `kagenti-enabled=true` and creates an `AgentRuntime` CR. |
+| `className` | string | — | SPIRE class name provisioned by kagenti (e.g., `zero-trust-workload-identity-manager-spire`). Must match the `SPIREClusterConfig` deployed by kagenti. |
 
 ### APIFrontendShutdownSpec {: #apifrontendshutdownspec }
 

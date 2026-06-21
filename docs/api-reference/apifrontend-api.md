@@ -66,7 +66,7 @@ Returns `501` when MCP is disabled in the AF configuration.
 }
 ```
 
-The AF runs its own MCP server with **21 `kubernaut_*` MCP tools** exposed on the MCP bridge (see [MCP Tool Reference](mcp-tools.md) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) are used only inside the A2A agent loop and are not exposed on the MCP bridge.
+The AF runs its own MCP server with **23 `kubernaut_*` MCP tools** exposed on the MCP bridge (see [MCP Tool Reference](mcp-tools.md) for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) are used only inside the A2A agent loop and are not exposed on the MCP bridge.
 
 ### A2A JSON-RPC 2.0
 
@@ -77,13 +77,14 @@ POST /                  # root alias — same handler
 
 Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include `message/send`. Requires Bearer JWT authentication. `POST /` is an alias for `POST /a2a/invoke`, providing A2A spec conformance for clients that expect the root path.
 
-The A2A agent uses **21 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP bridge, plus 5 internal tools, organized in six domains:
+The A2A agent uses **23 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP bridge, plus 5 internal tools, organized in seven domains:
 
 | Domain | Tools | Backend |
 |---|---|---|
 | **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_await_session` | K8s API (AF SA) |
-| **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
+| **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
 | **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` | KA MCP |
+| **Alerts** | `kubernaut_list_alerts` (conditional on Prometheus) | Prometheus |
 | **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
 | **Presentation** | `kubernaut_present_decision` | Local |
 
@@ -105,6 +106,62 @@ The AF's A2A agent also uses **5 internal tools** that are SAR-gated but not exp
 All internal tools use the AF ServiceAccount ([unified SA model](../architecture/security-rbac.md#unified-sa-model)) and are SAR-gated on the A2A path via `newRBACGuard()`.
 
 When `severityTriage.enabled: true` and a Prometheus URL is configured, 3 additional alert tools are registered: `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`. See [MCP Tool Reference — Alert tools](mcp-tools.md#alert-tools).
+
+### Status SSE (v1.5.1) {: #status-sse-v151 }
+
+```
+POST /a2a/status
+```
+
+Real-time remediation status streaming endpoint (DD-AF-008). Clients subscribe to phase transitions for a specific RemediationRequest via a JSON-RPC 2.0 request body.
+
+**Request:**
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "status/subscribe",
+  "params": { "rr_id": "rr-abc-123" }
+}
+```
+
+**Response:** `Content-Type: text/event-stream` with `Cache-Control: no-cache`, `Connection: keep-alive`, `X-Accel-Buffering: no`.
+
+**SSE event types:**
+
+| Event | Purpose | Payload |
+|---|---|---|
+| `status/update` | Emitted on subscribe (current state) and on each RR phase transition | `rr_id`, `phase`, `timestamp`, `final` (bool), `metadata` (optional) |
+| `status/closing` | Emitted 5 seconds before token expiry | `reason` (e.g. `token_expiry`), `reconnect` (bool, always `true`) |
+
+**Wire format example:**
+
+```
+event: status/update
+data: {"jsonrpc":"2.0","method":"status/update","params":{"rr_id":"rr-abc-123","phase":"Verifying","timestamp":"2026-06-18T15:10:00Z","final":false}}
+
+: heartbeat (every 15s)
+
+event: status/closing
+data: {"jsonrpc":"2.0","method":"status/closing","params":{"reason":"token_expiry","reconnect":true}}
+```
+
+**Authentication:** Same OIDC bearer token chain as `/mcp` and `/a2a/invoke`. No per-resource SAR — all authenticated users can subscribe.
+
+**Keepalive:** `": "` comment line every 15 seconds to keep TCP alive.
+
+**Auto-reconnect:** The handler automatically reconnects the underlying `controller-runtime` watch if the watch channel closes (server-side timeout). Clients should reconnect with a fresh token when they receive `status/closing` with `reconnect: true`.
+
+**Error codes:**
+
+| Code | Meaning |
+|---|---|
+| `-32600` | Invalid request (bad JSON / unparseable body) |
+| `-32601` | Method not found (method is not `status/subscribe`) |
+| `-32602` | Invalid params (`rr_id` is empty) |
+| `-32001` | RR not found in the cluster |
+| `-32002` | Access denied (reserved) |
 
 ### A2A Streaming Events {: #a2a-streaming-events }
 

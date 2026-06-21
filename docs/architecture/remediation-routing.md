@@ -322,6 +322,7 @@ When a RR reaches a terminal phase:
 
 1. **NotificationRequest** -- Created for `Completed`, `Failed`, and `TimedOut` outcomes. For `Failed`, `transitionToFailed` creates an Escalation NR (`nr-escalation-<rr-name>`) unless a ManualReview or Escalation NR already exists (double-NR guard)
 2. **Duplicate notification** -- If `DuplicateCount > 0`, a bulk notification (`nr-bulk-<rr-name>`) is created for tracked duplicates
+3. **Cascade terminal (v1.5.1)** -- All child resources (AIAnalysis, SignalProcessing, WorkflowExecution) are patched to `PhaseFailed` with message `"Parent RR entered terminal phase: {phase}"`. This ensures children do not continue processing after the parent has terminated. The cascade is idempotent and non-fatal -- patch failures are logged but do not prevent the parent from reaching its terminal state.
 3. **Consecutive failure update** -- `ConsecutiveFailureCount` and `NextAllowedExecution` are updated for backoff calculation
 
 ## Escalation Paths

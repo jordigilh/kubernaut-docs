@@ -90,7 +90,16 @@ All four tools share the same input schema:
 }
 ```
 
-`kubernaut_complete` closes the investigation with an RCA summary. If no workflow is needed, it is the equivalent of the KA's `kubernaut_complete_no_action` tool.
+`kubernaut_complete` closes the investigation with an RCA summary. If no workflow is needed, use `kubernaut_complete_no_action` instead.
+
+### `kubernaut_complete_no_action` (v1.5.1)
+
+Closes the investigation without selecting a workflow. Two behavior paths:
+
+- **Dismiss** (no `escalation_reason`): the investigation completes with `IsActionable=false`. The RR transitions to `completed_no_action`.
+- **Escalate** (with `escalation_reason`): sets `HumanReviewNeeded=true` and `HumanReviewReason=operator_escalation`. The Remediation Orchestrator creates a `ManualReviewRequired` and sends a notification to the `ops-escalation-channel`.
+
+This tool is available on the **MCP bridge only** (DD-AF-007) -- it is not registered in the A2A agent's tool list. The Kubernaut Console uses it for its dismiss and escalation buttons.
 
 ### `kubernaut_discover_workflows`
 

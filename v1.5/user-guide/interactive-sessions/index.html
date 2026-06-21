@@ -1418,6 +1418,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#kubernaut_complete_no_action-v151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kubernaut_complete_no_action (v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kubernaut_discover_workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3406,7 +3417,14 @@
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;oom-fix-abc&quot;</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="p">}</span>
 </span></code></pre></div>
-<p><code>kubernaut_complete</code> closes the investigation with an RCA summary. If no workflow is needed, it is the equivalent of the KA's <code>kubernaut_complete_no_action</code> tool.</p>
+<p><code>kubernaut_complete</code> closes the investigation with an RCA summary. If no workflow is needed, use <code>kubernaut_complete_no_action</code> instead.</p>
+<h3 id="kubernaut_complete_no_action-v151"><code>kubernaut_complete_no_action</code> (v1.5.1)<a class="headerlink" href="#kubernaut_complete_no_action-v151" title="Permanent link">&para;</a></h3>
+<p>Closes the investigation without selecting a workflow. Two behavior paths:</p>
+<ul>
+<li><strong>Dismiss</strong> (no <code>escalation_reason</code>): the investigation completes with <code>IsActionable=false</code>. The RR transitions to <code>completed_no_action</code>.</li>
+<li><strong>Escalate</strong> (with <code>escalation_reason</code>): sets <code>HumanReviewNeeded=true</code> and <code>HumanReviewReason=operator_escalation</code>. The Remediation Orchestrator creates a <code>ManualReviewRequired</code> and sends a notification to the <code>ops-escalation-channel</code>.</li>
+</ul>
+<p>This tool is available on the <strong>MCP bridge only</strong> (DD-AF-007) -- it is not registered in the A2A agent's tool list. The Kubernaut Console uses it for its dismiss and escalation buttons.</p>
 <h3 id="kubernaut_discover_workflows"><code>kubernaut_discover_workflows</code><a class="headerlink" href="#kubernaut_discover_workflows" title="Permanent link">&para;</a></h3>
 <p>Discover available workflows after RCA:</p>
 <div class="language-json highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="p">{</span>

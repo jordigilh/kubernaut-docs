@@ -3059,6 +3059,327 @@
 Kubernaut does not support in-place upgrades — each release is a fresh install.
 Review the changes below to understand what differs from the version you are currently running.</p>
 <hr />
+<h2 id="v151">v1.5.1<a class="headerlink" href="#v151" title="Permanent link">&para;</a></h2>
+<h3 id="kubernaut-console">Kubernaut Console<a class="headerlink" href="#kubernaut-console" title="Permanent link">&para;</a></h3>
+<p>Kubernaut v1.5.1 introduces the <strong>Kubernaut Console</strong>, a web UI for interactive investigation and remediation. Operators can chat with the Kubernaut Agent in real time, view live RCA progress, approve remediation actions, and inspect audit trails from a single pane of glass.</p>
+<p>Key capabilities:</p>
+<ul>
+<li><strong>A2A chat interface</strong> — interactive investigation via <code>POST /a2a/invoke</code> with real-time SSE streaming of agent reasoning, tool calls, and investigation events</li>
+<li><strong>Thinking panel</strong> — live visualization of the agent's reasoning with collapsible sections for <code>reasoning</code>, <code>tool_call</code>, and <code>investigation</code> events</li>
+<li><strong>RCA cards</strong> — structured root cause analysis display with causal chain, confidence score, severity, and tool call count</li>
+<li><strong>Workflow selection</strong> — recommended remediation workflows with countdown confirmation and alignment verdicts</li>
+<li><strong>Approval gate</strong> — approve or decline <code>RemediationApprovalRequest</code> via <code>kubernaut_approve</code> on the MCP bridge</li>
+<li><strong>Escalation input</strong> — inline escalation with reason capture via <code>kubernaut_complete_no_action</code> with <code>escalation_reason</code></li>
+<li><strong>Verification timer</strong> — live stabilization window countdown tracking <code>stabilization_elapsed</code>, <code>spec_hash_computed</code>, <code>alert_check</code>, and <code>health_check</code> steps</li>
+<li><strong>Phase indicator</strong> — real-time lifecycle banner (Investigating, Decision, Remediation, Verifying, Complete) with elapsed timer</li>
+<li><strong>Real-time status streaming</strong> — separate SSE subscription to <code>POST /a2a/status</code> for RR phase changes with automatic reconnection</li>
+</ul>
+<p>The Console deploys as a single pod with two containers: an <strong>oauth2-proxy</strong> sidecar (OIDC authentication, port 4180) and an <strong>nginx</strong> container serving the SPA and proxying API calls to the API Frontend (port 8080). On OpenShift, a TLS-terminated Route is created automatically.</p>
+<h4 id="deployment">Deployment<a class="headerlink" href="#deployment" title="Permanent link">&para;</a></h4>
+<p><strong>Prerequisites</strong>: Kubernetes 1.28+ or OpenShift 4.14+, Kubernaut API Frontend deployed, OIDC provider (Keycloak, Dex).</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># 1. Create the OIDC secret</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>kubernaut-console-oidc<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span>--from-literal<span class="o">=</span>client-id<span class="o">=</span>kubernaut-console<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span>--from-literal<span class="o">=</span>client-secret<span class="o">=</span>&lt;YOUR_CLIENT_SECRET&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span>--from-literal<span class="o">=</span>cookie-secret<span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="c1"># 2. Install the chart</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut-console<span class="w"> </span>./chart<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>--set<span class="w"> </span>auth.issuerUrl<span class="o">=</span>https://your-keycloak/realms/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span>--set<span class="w"> </span>auth.clientId<span class="o">=</span>kubernaut-console<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>--set<span class="w"> </span>apiFrontend.url<span class="o">=</span>http://apifrontend-service.kubernaut-system.svc:8443
+</span></code></pre></div>
+<p>When deploying via the <strong>Kubernaut Operator</strong>, use <code>spec.console</code> instead (see <a href="../api-reference/operator-cr/#consolespec">ConsoleSpec</a>).</p>
+<h4 id="helm-values">Helm values<a class="headerlink" href="#helm-values" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Value</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image.repository</code></td>
+<td><code>ghcr.io/jordigilh/kubernaut-console</code></td>
+<td>Container image</td>
+</tr>
+<tr>
+<td><code>image.tag</code></td>
+<td><code>latest</code></td>
+<td>Image version (pin by digest for production)</td>
+</tr>
+<tr>
+<td><code>apiFrontend.url</code></td>
+<td><code>http://apifrontend.kubernaut-system.svc:8443</code></td>
+<td>API Frontend service URL</td>
+</tr>
+<tr>
+<td><code>auth.provider</code></td>
+<td><code>oidc</code></td>
+<td>OAuth2 Proxy provider</td>
+</tr>
+<tr>
+<td><code>auth.issuerUrl</code></td>
+<td>—</td>
+<td>OIDC issuer URL</td>
+</tr>
+<tr>
+<td><code>auth.clientId</code></td>
+<td><code>kubernaut-console</code></td>
+<td>OIDC client ID</td>
+</tr>
+<tr>
+<td><code>auth.existingSecret</code></td>
+<td><code>kubernaut-console-oidc</code></td>
+<td>Secret with keys: <code>client-id</code>, <code>client-secret</code>, <code>cookie-secret</code></td>
+</tr>
+<tr>
+<td><code>auth.skipTlsVerify</code></td>
+<td><code>true</code></td>
+<td>Skip TLS for dev (must be <code>false</code> in production)</td>
+</tr>
+<tr>
+<td><code>auth.redirectUrl</code></td>
+<td>—</td>
+<td>OAuth2 callback URL</td>
+</tr>
+<tr>
+<td><code>service.type</code></td>
+<td><code>ClusterIP</code></td>
+<td>Service type</td>
+</tr>
+<tr>
+<td><code>service.port</code></td>
+<td><code>4180</code></td>
+<td>Service port (OAuth2 Proxy)</td>
+</tr>
+<tr>
+<td><code>route.enabled</code></td>
+<td><code>true</code></td>
+<td>Create OpenShift Route</td>
+</tr>
+<tr>
+<td><code>route.host</code></td>
+<td>auto-derived</td>
+<td>Custom route hostname</td>
+</tr>
+<tr>
+<td><code>route.tls.termination</code></td>
+<td><code>edge</code></td>
+<td>TLS termination mode</td>
+</tr>
+</tbody>
+</table>
+<h4 id="nginx-proxy-routes">Nginx proxy routes<a class="headerlink" href="#nginx-proxy-routes" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Location</th>
+<th>Target</th>
+<th>Timeout</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>/a2a/</code></td>
+<td>API Frontend</td>
+<td>3600s</td>
+<td>SSE streaming, buffering disabled</td>
+</tr>
+<tr>
+<td><code>/mcp</code></td>
+<td>API Frontend</td>
+<td>30s</td>
+<td>JSON-RPC tool calls</td>
+</tr>
+<tr>
+<td><code>/.well-known/</code></td>
+<td>API Frontend</td>
+<td>default</td>
+<td>Agent card discovery</td>
+</tr>
+<tr>
+<td><code>/healthz</code></td>
+<td>local 200</td>
+<td>—</td>
+<td>Liveness/readiness probe</td>
+</tr>
+<tr>
+<td><code>/</code></td>
+<td>static files</td>
+<td>—</td>
+<td>SPA fallback to <code>index.html</code></td>
+</tr>
+</tbody>
+</table>
+<h4 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h4>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>Cause</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>502 on <code>/a2a/</code></td>
+<td>AF not reachable</td>
+<td>Check AF service DNS and port</td>
+</tr>
+<tr>
+<td>OIDC redirect loop</td>
+<td>Incorrect redirect URI</td>
+<td>Verify Keycloak/Dex client config matches <code>auth.redirectUrl</code></td>
+</tr>
+<tr>
+<td>SSE disconnects</td>
+<td>Proxy timeout too low</td>
+<td>Ensure 3600s timeouts on SSE route</td>
+</tr>
+<tr>
+<td>Stale UI after deploy</td>
+<td>Image pull policy <code>IfNotPresent</code></td>
+<td>Use <code>Always</code> or pin by digest</td>
+</tr>
+</tbody>
+</table>
+<p>See the <a href="https://github.com/jordigilh/kubernaut-console">Kubernaut Console repository</a> for full architecture, Kind demo deployment, and development setup.</p>
+<h3 id="interactive-gitops-remediation-demo">Interactive GitOps remediation demo<a class="headerlink" href="#interactive-gitops-remediation-demo" title="Permanent link">&para;</a></h3>
+<p>A video demonstrating <strong>GitOps drift remediation in interactive mode</strong> has been added to the <a href="https://github.com/jordigilh/kubernaut">Kubernaut README</a>. The demo shows the full journey: a bad commit breaks a ConfigMap in a GitOps-managed production namespace, Kubernaut traces the pod crash to the ConfigMap root cause, selects <code>git revert</code> over <code>kubectl rollback</code> because the environment is GitOps-managed, pauses for human approval (production namespace), and executes the fix via ArgoCD sync.</p>
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/b95290db-412b-4d6d-81b8-f766ef4657e2" controls width="100%"></video>
+</div>
+
+<h3 id="per-phase-llm-routing-phasemodels">Per-phase LLM routing (<code>phaseModels</code>)<a class="headerlink" href="#per-phase-llm-routing-phasemodels" title="Permanent link">&para;</a></h3>
+<p>Configure different LLM models for each phase of the investigation pipeline via the <code>phaseModels</code> map in the <code>kubernaut-agent-llm-runtime</code> ConfigMap:</p>
+<table>
+<thead>
+<tr>
+<th>Phase key</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>rca</code></td>
+<td>Root-cause analysis loop (K8s + Prometheus tools)</td>
+</tr>
+<tr>
+<td><code>workflow_discovery</code></td>
+<td>Workflow selection and discovery</td>
+</tr>
+<tr>
+<td><code>validation</code></td>
+<td>Post-selection validation</td>
+</tr>
+</tbody>
+</table>
+<p>Override fields per phase: <code>provider</code>, <code>endpoint</code>, <code>model</code>, <code>apiKey</code>, plus cloud-specific fields (<code>azureApiVersion</code>, <code>vertexProject</code>, <code>vertexLocation</code>, <code>bedrockRegion</code>). Non-empty fields override the base config; <code>temperature</code>, <code>maxRetries</code>, and <code>timeoutSeconds</code> are always inherited. Hot-reloadable via FileWatcher — no pod restart needed.</p>
+<p><strong>Configuration paths</strong>: operator CR (<code>spec.kubernautAgent.llm.phaseModels</code>) or direct ConfigMap patch. The Helm chart does not yet expose <code>phaseModels</code> as a value key.</p>
+<p>See <a href="../user-guide/configmap-kubernaut-agent/#per-phase-llm-routing-v151">Kubernaut Agent Config: phaseModels</a> for the full reference.</p>
+<h3 id="severity-triage-llm-configuration">Severity triage LLM configuration<a class="headerlink" href="#severity-triage-llm-configuration" title="Permanent link">&para;</a></h3>
+<p>The severity triage pipeline can now use a <strong>dedicated LLM</strong> instead of sharing the agent's LLM. Configure via a ConfigMap overlay under <code>severityTriage.llm</code> — supports <code>provider</code> (vertex_ai, gemini, anthropic), <code>model</code>, <code>endpoint</code>, <code>apiKeyFile</code>, <code>timeoutSeconds</code>, <code>oauth2</code>, <code>circuitBreaker</code>, and <code>customHeaders</code>.</p>
+<p>The Helm chart exposes only two severity triage values: <code>cacheTTLSeconds</code> (default 30) and <code>llmConfidence</code> (default 0.7). The full <code>LLMConfig</code> block requires a ConfigMap overlay. The operator auto-derives severity triage enablement from <code>spec.monitoring.enabled</code>.</p>
+<p>See <a href="../user-guide/configuration/#severity-triage-v151">Configuration: Severity Triage</a> for the full reference.</p>
+<h3 id="multi-provider-jwt-authentication">Multi-provider JWT authentication<a class="headerlink" href="#multi-provider-jwt-authentication" title="Permanent link">&para;</a></h3>
+<p>Both the Kubernaut Agent and API Frontend now support <strong>multiple JWT providers</strong> via a <code>jwtProviders[]</code> array, enabling dual-provider configurations (e.g., Keycloak + SPIRE). The two services use intentionally different schemas:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Kubernaut Agent</th>
+<th>API Frontend</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Issuer</td>
+<td><code>issuer</code> (string)</td>
+<td><code>issuerURL</code> (string)</td>
+</tr>
+<tr>
+<td>Audience</td>
+<td><code>audience</code> (singular string)</td>
+<td><code>audiences</code> (string array)</td>
+</tr>
+<tr>
+<td>JWKS URL</td>
+<td><code>jwksURL</code> (required)</td>
+<td><code>jwksURL</code> (optional, falls back to issuerURL)</td>
+</tr>
+<tr>
+<td>Claim mappings</td>
+<td>Simple claim names, dot-notation</td>
+<td>CEL expressions or claim paths</td>
+</tr>
+</tbody>
+</table>
+<p><code>ClaimMappingsSpec</code> supports <code>username</code> and <code>groups</code> fields. Legacy single-provider fields (<code>issuerURL</code> + <code>audience</code>) remain supported for backward compatibility.</p>
+<p>See <a href="../user-guide/configuration/#jwt-providers-v151">Configuration: JWT Providers</a> for the full reference.</p>
+<h3 id="mcp-tool-surface-21-to-23">MCP tool surface: 21 to 23<a class="headerlink" href="#mcp-tool-surface-21-to-23" title="Permanent link">&para;</a></h3>
+<p>Two tools join the public MCP bridge:</p>
+<table>
+<thead>
+<tr>
+<th>Tool</th>
+<th>Condition</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut_list_alerts</code></td>
+<td>Registered when <code>severityTriage.enabled: true</code> and Prometheus is configured</td>
+<td>Query firing alerts with <code>namespace</code>, <code>severity</code>, <code>state</code> filters</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete_no_action</code></td>
+<td>Always registered</td>
+<td>Complete an investigation with no remediation — dismiss or escalate to operator</td>
+</tr>
+</tbody>
+</table>
+<p>When <code>interactive.enabled: false</code>, <strong>11 session-dependent tools</strong> are hidden (up from 10), leaving <strong>12 stateless tools</strong> on MCP (13 with <code>list_alerts</code> if Prometheus is configured).</p>
+<p>See <a href="../api-reference/mcp-tools/">MCP Tool Reference</a> for the updated tool list.</p>
+<h3 id="breaking-kubernaut_approve-removed-from-a2a-agent-dd-af-006">Breaking: <code>kubernaut_approve</code> removed from A2A agent (DD-AF-006)<a class="headerlink" href="#breaking-kubernaut_approve-removed-from-a2a-agent-dd-af-006" title="Permanent link">&para;</a></h3>
+<p><code>kubernaut_approve</code> is <strong>structurally absent</strong> from the A2A agent's <code>buildToolList()</code>. It remains available on the MCP bridge for the Kubernaut Console's Approve/Reject buttons. This prevents an LLM from autonomously approving RemediationApprovalRequests via prompt injection, preserving the human consent gate that RARs exist to enforce.</p>
+<p>Defense-in-depth: (1) tool absent from <code>buildToolList()</code>, (2) explicit prompt instruction, (3) SAR RBAC on the MCP path, (4) audit trail attributing every approval to the human user.</p>
+<h3 id="post-a2astatus-sse-endpoint-dd-af-008"><code>POST /a2a/status</code> SSE endpoint (DD-AF-008)<a class="headerlink" href="#post-a2astatus-sse-endpoint-dd-af-008" title="Permanent link">&para;</a></h3>
+<p>New endpoint for real-time remediation status streaming. Clients subscribe to phase transitions for a specific RemediationRequest.</p>
+<ul>
+<li><strong>Request</strong>: JSON-RPC 2.0 body with method <code>status/subscribe</code> and <code>params.rr_id</code></li>
+<li><strong>Events</strong>: <code>status/update</code> (phase, timestamp, final, metadata) and <code>status/closing</code> (reason, reconnect)</li>
+<li><strong>Heartbeat</strong>: 15-second keepalive</li>
+<li><strong>Auth</strong>: same OIDC chain as <code>/mcp</code> and <code>/a2a/invoke</code></li>
+</ul>
+<p>See <a href="../api-reference/apifrontend-api/#status-sse-v151">API Frontend API: Status SSE</a> for the full reference.</p>
+<h3 id="crd-changes">CRD changes<a class="headerlink" href="#crd-changes" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong><code>HumanReviewReason</code></strong> enum: added <code>operator_escalation</code> — triggered by <code>kubernaut_complete_no_action</code> with <code>escalation_reason</code></li>
+<li><strong><code>SubReason</code></strong> enum: added <code>OperatorEscalation</code></li>
+<li><strong>AIAnalysis reasons</strong>: added <code>InteractiveCancelled</code> and <code>ParentCancelled</code></li>
+</ul>
+<p>See <a href="../api-reference/crds/">CRD Reference</a> for the updated enum tables.</p>
+<h3 id="operator-cr-updates">Operator CR updates<a class="headerlink" href="#operator-cr-updates" title="Permanent link">&para;</a></h3>
+<p>The Kubernaut Operator CRD now includes:</p>
+<ul>
+<li><strong><code>JWTProviderSpec</code></strong> at <code>spec.kubernautAgent.interactive.jwtProviders[]</code> and <code>spec.apiFrontend.auth.jwtProviders[]</code> — <code>name</code>, <code>issuerURL</code>, <code>jwksURL</code>, <code>audiences</code>, <code>claimMappings</code> (<code>username</code>, <code>groups</code>)</li>
+<li><strong><code>phaseModels</code></strong> at <code>spec.kubernautAgent.llm.phaseModels</code> — per-phase LLM override map with CEL validation for keys (<code>rca</code>, <code>workflow_discovery</code>, <code>validation</code>)</li>
+<li><strong><code>ConsoleSpec</code></strong> at <code>spec.console</code> — <code>enabled</code>, <code>auth.secretName</code>, <code>route.enabled</code>, <code>route.host</code>, <code>resources</code></li>
+</ul>
+<p>See <a href="../api-reference/operator-cr/">Operator CR Reference</a> for the full schema.</p>
+<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cascade terminal phase</strong> — When a RemediationRequest enters a terminal phase, all child resources (AIAnalysis, SignalProcessing, WorkflowExecution) are patched to <code>PhaseFailed</code>. Idempotent, non-fatal.</li>
+<li><strong><code>alignment_verdict</code> audit event</strong> — Emitted after every investigation with structured payload: <code>result</code> (aligned/suspicious), <code>circuit_breaker_activated</code>, <code>summary</code>, <code>findings[]</code>, and optional <code>grounding_review</code></li>
+</ul>
+<hr />
 <h2 id="v15">v1.5<a class="headerlink" href="#v15" title="Permanent link">&para;</a></h2>
 <h3 id="api-frontend-new-service">API Frontend — new service<a class="headerlink" href="#api-frontend-new-service" title="Permanent link">&para;</a></h3>
 <p>Kubernaut v1.5 introduces the <strong>API Frontend</strong> (AF), the 11th microservice. It acts as the unified external protocol layer for MCP, A2A, and REST clients — replacing direct access to internal services with a single authenticated entry point.</p>
@@ -3067,12 +3388,12 @@ Review the changes below to understand what differs from the version you are cur
 <li><strong>A2A support</strong> — Agent-to-Agent protocol with agent card discovery at <code>/.well-known/agent-card.json</code></li>
 <li><strong>SSE streaming</strong> — Real-time investigation output streamed token-by-token via Server-Sent Events</li>
 <li><strong>SAR authorization</strong> — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results</li>
-<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing</li>
+<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing</li>
 </ul>
 <p>See <a href="../architecture/apifrontend/">API Frontend Architecture</a> for the full design, and <a href="../user-guide/configuration/#api-frontend-v15">Configuration: API Frontend</a> for Helm values.</p>
 <h3 id="interactive-mcp-sessions">Interactive MCP sessions<a class="headerlink" href="#interactive-mcp-sessions" title="Permanent link">&para;</a></h3>
 <p>Operators and AI agents can now connect to Kubernaut via MCP for <strong>interactive investigation and remediation</strong>. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.</p>
-<p>The API Frontend exposes <strong>21 <code>kubernaut_*</code> MCP tools</strong> on its MCP endpoint (<code>POST /mcp</code>), organized by domain:</p>
+<p>The API Frontend exposes <strong>23 <code>kubernaut_*</code> MCP tools</strong> on its MCP endpoint (<code>POST /mcp</code>), organized by domain:</p>
 <table>
 <thead>
 <tr>
@@ -3187,7 +3508,7 @@ Review the changes below to understand what differs from the version you are cur
 </tbody>
 </table>
 <p><code>af_resolve_owner</code> is removed — KA independently resolves the owner chain during RCA. The new tools use <code>RESTMapper</code> for dynamic kind-to-GVR resolution. Secret <code>.data</code> fields are redacted before returning to the LLM.</p>
-<p>All internal tools (<code>kubectl_*</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) run inside the AF's A2A agent loop and are not exposed on the MCP bridge. They are still SAR-gated via <code>newRBACGuard()</code> and included in per-persona ClusterRoles. The external MCP surface consists of <strong>21 <code>kubernaut_*</code> MCP tools</strong> spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.</p>
+<p>All internal tools (<code>kubectl_*</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) run inside the AF's A2A agent loop and are not exposed on the MCP bridge. They are still SAR-gated via <code>newRBACGuard()</code> and included in per-persona ClusterRoles. The external MCP surface consists of <strong>23 <code>kubernaut_*</code> MCP tools</strong> spanning CRD operations, investigation, interactive session lifecycle, alerts, analytics, and presentation.</p>
 <h3 id="session-takeover-security-sec-takeover-001">Session takeover security (SEC-TAKEOVER-001)<a class="headerlink" href="#session-takeover-security-sec-takeover-001" title="Permanent link">&para;</a></h3>
 <p>When a second user connects to an active MCP session, the original user's investigation is <strong>abandoned, not completed</strong>. This prevents a takeover from inheriting or completing work under a different identity. The abandoned session is logged as an audit event.</p>
 <h3 id="datastorage-advanced-configuration-v15">DataStorage advanced configuration (v1.5)<a class="headerlink" href="#datastorage-advanced-configuration-v15" title="Permanent link">&para;</a></h3>
@@ -3203,7 +3524,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>The OLM flow uses <code>oc-mirror</code> v2 with an upstream digest-pinned <code>ImageSetConfiguration</code> from the operator repository, producing IDMS and CatalogSource resources automatically.</p>
 <h3 id="lease-rbac-for-session-management">Lease RBAC for session management<a class="headerlink" href="#lease-rbac-for-session-management" title="Permanent link">&para;</a></h3>
 <p>The Kubernaut Agent ServiceAccount now requires <code>list</code> permission on <code>coordination.k8s.io/leases</code> (in addition to the existing create/get/update/delete) for orphaned session reclamation at startup. The Helm chart and Operator both provision this automatically.</p>
-<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_1">Platform hardening<a class="headerlink" href="#platform-hardening_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>SessionDrainer</strong> (BR-OPS-013) — Active MCP sessions are drained before KA pod termination during rolling updates</li>
 <li><strong>Race-safe session transitions</strong> — Mutex-protected session state machine prevents concurrent state corruption</li>
@@ -3238,7 +3559,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>See <a href="../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK Config</a> for the updated reference.</p>
 <h3 id="parallel-tool-execution">Parallel tool execution<a class="headerlink" href="#parallel-tool-execution" title="Permanent link">&para;</a></h3>
 <p>The <a href="../architecture/kubernaut-agent-investigation/">investigation pipeline</a> now executes multiple LLM tool calls concurrently when the model returns batched requests. The investigation prompt also instructs the LLM to batch independent tool calls for reduced round-trips.</p>
-<h3 id="platform-hardening_1">Platform hardening<a class="headerlink" href="#platform-hardening_1" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_2">Platform hardening<a class="headerlink" href="#platform-hardening_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Inconclusive outcome exponential backoff</strong> (#1091) — <code>Inconclusive</code> outcomes trigger exponential backoff (1m → 10m cap) and 3-strikes blocking, preventing RR flood for persistent alerts</li>
 <li><strong>SA token refresh</strong> (#1055) — Custom token path constructor with 401 cache invalidation for Kubernaut Agent</li>

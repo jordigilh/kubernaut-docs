@@ -3059,30 +3059,10 @@
 
 
 <h1 id="whats-next">What's Next<a class="headerlink" href="#whats-next" title="Permanent link">&para;</a></h1>
-<p>The features below are planned for future Kubernaut releases. For features that shipped in v1.5 (Interactive MCP Sessions, API Frontend, SAR-based tool authorization, severity triage pipeline), see <a href="../whats-new/#v15">What's New: v1.5</a>.</p>
-<h2 id="v15x-custom-agent-injection-itsm-upcoming">v1.5.x — Custom Agent Injection &amp; ITSM (upcoming)<a class="headerlink" href="#v15x-custom-agent-injection-itsm-upcoming" title="Permanent link">&para;</a></h2>
-<h3 id="custom-agent-injection">Custom Agent Injection<a class="headerlink" href="#custom-agent-injection" title="Permanent link">&para;</a></h3>
-<p>Pluggable investigation and remediation agents via the <strong>AgenticWorkflow CRD</strong>, enabling operators to inject domain-specific automation into the Kubernaut pipeline (<a href="https://github.com/jordigilh/kubernaut/issues/1242">#1242</a>, <a href="https://github.com/jordigilh/kubernaut/issues/883">#883</a>, <a href="https://github.com/jordigilh/kubernaut/issues/711">#711</a>).</p>
-<p>SREs define reusable agentic workflows as declarative <a href="https://block.github.io/goose/docs/guides/recipes/">Goose recipes</a> — YAML-based configurations that package instructions, MCP extensions, and parameters into shareable, reproducible agent behaviors. Kubernaut injects them at three pipeline points via the Goose runtime, each calling external MCP tools. Each injection point accepts multiple stacked recipes.</p>
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/recipe-injection.svg" alt="Declarative Recipes — 3 pipeline injection points" style="width:100%">
-</div>
-
-<h4 id="injection-1-pre-investigation-kubernaut-agent">Injection 1: Pre-Investigation (Kubernaut Agent)<a class="headerlink" href="#injection-1-pre-investigation-kubernaut-agent" title="Permanent link">&para;</a></h4>
-<p>Context injected into the LLM prompt before analysis begins.</p>
-<p><strong>Example: <code>check-maintenance-window</code></strong> — Calls a CMDB MCP server to check if the resource is in a maintenance window or had recent deployments. The result is injected into the investigation context before the LLM starts. If under maintenance, alerting is skipped and the RCA is annotated as expected downtime.</p>
-<h4 id="injection-2-pre-workflow-selection-kubernaut-agent">Injection 2: Pre-Workflow Selection (Kubernaut Agent)<a class="headerlink" href="#injection-2-pre-workflow-selection-kubernaut-agent" title="Permanent link">&para;</a></h4>
-<p>Constraints injected to bias workflow choice.</p>
-<p><strong>Example: <code>enforce-cost-guardrails</code></strong> — Calls a Cost/Resource MCP for budget utilization and scaling limits for the namespace. Returns constraints such as "do not select scale-up workflows", nudging the LLM toward restart/rollback over resource-intensive remediations.</p>
-<h4 id="injection-3-em-direct-execution-via-goose">Injection 3: EM Direct Execution (via Goose)<a class="headerlink" href="#injection-3-em-direct-execution-via-goose" title="Permanent link">&para;</a></h4>
-<p>Recipe runs via Kubernaut Agent endpoint at effectiveness assessment time.</p>
-<p><strong>Example: <code>verify-business-slo</code></strong> — Calls an SLO/Business Metrics MCP to check p95 latency, error rate, and order throughput against SLO budget. Returns a structured pass/fail verdict with business impact data, replacing the default Kubernetes health check with SRE-defined assessment SOPs.</p>
-<h3 id="servicenow-incident-triage">ServiceNow Incident Triage<a class="headerlink" href="#servicenow-incident-triage" title="Permanent link">&para;</a></h3>
-<p>Consume ServiceNow incidents as signals through the API Frontend, enabling Kubernaut to investigate and remediate ITSM tickets alongside Kubernetes alerts (<a href="https://github.com/jordigilh/kubernaut/issues/1338">#1338</a>).</p>
-<hr />
-<h2 id="v16-fleet-management-next">v1.6 — Fleet Management (next)<a class="headerlink" href="#v16-fleet-management-next" title="Permanent link">&para;</a></h2>
+<p>The features below are planned for future Kubernaut releases. For features that shipped in v1.5, see <a href="../whats-new/#v15">What's New: v1.5</a>. For features that shipped in v1.5.1 (Kubernaut Console, per-phase LLM routing, multi-provider JWT, severity triage LLM, SSE status endpoint), see <a href="../whats-new/#v151">What's New: v1.5.1</a>.</p>
+<h2 id="v16-fleet-remediation-itsm-next">v1.6 — Fleet Remediation &amp; ITSM (next)<a class="headerlink" href="#v16-fleet-remediation-itsm-next" title="Permanent link">&para;</a></h2>
 <h3 id="fleet-operations">Fleet Operations<a class="headerlink" href="#fleet-operations" title="Permanent link">&para;</a></h3>
-<p>Hub-and-spoke deployment using <a href="https://open-cluster-management.io/">ACM/OCM</a> (Open Cluster Management) — policy-driven remediation across fleet-scale Kubernetes environments, 7 steps from alert to remediation, zero remote footprint.</p>
+<p>Hub-and-spoke deployment using <a href="https://open-cluster-management.io/">ACM/OCM</a> (Open Cluster Management) — policy-driven remediation across fleet-scale Kubernetes environments, 7 steps from alert to remediation, zero remote footprint (<a href="https://github.com/jordigilh/kubernaut/issues/54">#54</a>).</p>
 <div style="max-width:100%;overflow-x:auto;margin:1rem 0">
 <img src="../assets/images/fleet-operations.svg" alt="Fleet Operations — Hub-and-spoke remediation flow" style="width:100%">
 </div>
@@ -3101,31 +3081,31 @@
 <p class="admonition-title">Zero persistent credentials</p>
 <p>Remediation uses ephemeral ServiceAccounts with OCM-managed lifecycle — no long-lived secrets stored on remote clusters.</p>
 </div>
-<h3 id="kubernaut-console">Kubernaut Console<a class="headerlink" href="#kubernaut-console" title="Permanent link">&para;</a></h3>
-<p>Web UI for interactive investigation, remediation monitoring, and workflow management.</p>
-<div class="admonition example">
-<p class="admonition-title">Conceptual mockups</p>
-<p>The following mockups show the planned Kubernaut Console experience. Designs are subject to change.</p>
-</div>
-<h4 id="fleet-overview">Fleet Overview<a class="headerlink" href="#fleet-overview" title="Permanent link">&para;</a></h4>
-<p>Natural language query bar for intent-driven navigation. KPI cards (active investigations, resolved, critical alerts, avg resolution time), cluster health grid, and a filtered alerts table — all driven by the operator's query.</p>
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/backstage-console-fleet.svg" alt="Kubernaut Console — Fleet Overview" style="width:100%">
-</div>
-
-<h4 id="investigation-view">Investigation View<a class="headerlink" href="#investigation-view" title="Permanent link">&para;</a></h4>
-<p>Chat-style investigation transcript showing the Kubernaut Agent's live reasoning, tool calls, and root cause analysis. Operators can follow the AI's investigation in real time and intervene when needed.</p>
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/backstage-investigation.svg" alt="Kubernaut Console — Investigation View" style="width:100%">
-</div>
-
-<h4 id="workflow-catalog">Workflow Catalog<a class="headerlink" href="#workflow-catalog" title="Permanent link">&para;</a></h4>
-<p>Searchable workflow catalog with natural language filtering, KPI metrics, and a table showing workflow status, action types, match count, and effectiveness scores.</p>
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/backstage-workflows.svg" alt="Kubernaut Console — Workflow Catalog" style="width:100%">
-</div>
-
+<h3 id="servicenow-incident-triage">ServiceNow Incident Triage<a class="headerlink" href="#servicenow-incident-triage" title="Permanent link">&para;</a></h3>
+<p>Consume ServiceNow incidents as signals through the API Frontend, enabling Kubernaut to investigate and remediate ITSM tickets alongside Kubernetes alerts (<a href="https://github.com/jordigilh/kubernaut/issues/1338">#1338</a>).</p>
 <hr />
+<h2 id="future">Future<a class="headerlink" href="#future" title="Permanent link">&para;</a></h2>
+<h3 id="custom-agent-injection">Custom Agent Injection<a class="headerlink" href="#custom-agent-injection" title="Permanent link">&para;</a></h3>
+<p>Pluggable investigation and remediation agents via the <strong>AgenticWorkflow CRD</strong>, enabling operators to inject domain-specific automation into the Kubernaut pipeline (<a href="https://github.com/jordigilh/kubernaut/issues/1242">#1242</a>, <a href="https://github.com/jordigilh/kubernaut/issues/883">#883</a>, <a href="https://github.com/jordigilh/kubernaut/issues/711">#711</a>).</p>
+<p>SREs define reusable agentic workflows as declarative <a href="https://block.github.io/goose/docs/guides/recipes/">Goose recipes</a> — YAML-based configurations that package instructions, MCP extensions, and parameters into shareable, reproducible agent behaviors. Kubernaut injects them at three pipeline points via the Goose runtime, each calling external MCP tools. Each injection point accepts multiple stacked recipes.</p>
+<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
+<img src="../assets/images/recipe-injection.svg" alt="Declarative Recipes — 3 pipeline injection points" style="width:100%">
+</div>
+
+<h4 id="injection-1-pre-investigation-kubernaut-agent">Injection 1: Pre-Investigation (Kubernaut Agent)<a class="headerlink" href="#injection-1-pre-investigation-kubernaut-agent" title="Permanent link">&para;</a></h4>
+<p>Context injected into the LLM prompt before analysis begins.</p>
+<p><strong>Example: <code>check-maintenance-window</code></strong> — Calls a CMDB MCP server to check if the resource is in a maintenance window or had recent deployments. The result is injected into the investigation context before the LLM starts. If under maintenance, alerting is skipped and the RCA is annotated as expected downtime.</p>
+<h4 id="injection-2-pre-workflow-selection-kubernaut-agent">Injection 2: Pre-Workflow Selection (Kubernaut Agent)<a class="headerlink" href="#injection-2-pre-workflow-selection-kubernaut-agent" title="Permanent link">&para;</a></h4>
+<p>Constraints injected to bias workflow choice.</p>
+<p><strong>Example: <code>enforce-cost-guardrails</code></strong> — Calls a Cost/Resource MCP for budget utilization and scaling limits for the namespace. Returns constraints such as "do not select scale-up workflows", nudging the LLM toward restart/rollback over resource-intensive remediations.</p>
+<h4 id="injection-3-em-direct-execution-via-goose">Injection 3: EM Direct Execution (via Goose)<a class="headerlink" href="#injection-3-em-direct-execution-via-goose" title="Permanent link">&para;</a></h4>
+<p>Recipe runs via Kubernaut Agent endpoint at effectiveness assessment time.</p>
+<p><strong>Example: <code>verify-business-slo</code></strong> — Calls an SLO/Business Metrics MCP to check p95 latency, error rate, and order throughput against SLO budget. Returns a structured pass/fail verdict with business impact data, replacing the default Kubernetes health check with SRE-defined assessment SOPs.</p>
+<hr />
+<div class="admonition success">
+<p class="admonition-title">Shipped in v1.5.1</p>
+<p><strong>Kubernaut Console</strong> — Web UI for interactive investigation and remediation. See <a href="../whats-new/#v151">What's New: v1.5.1</a>.</p>
+</div>
 <div class="admonition info">
 <p class="admonition-title">Subject to change</p>
 <p>Features listed here are planned but may change. See the <a href="https://github.com/jordigilh/kubernaut/milestones">Kubernaut milestones</a> for the latest status. For the full roadmap including Collective Intelligence and Operational Expansion (cost, security, non-K8s), see <a href="https://github.com/jordigilh/kubernaut/blob/main/docs/roadmap/ROADMAP.md">ROADMAP.md</a>.</p>

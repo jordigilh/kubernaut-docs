@@ -3261,7 +3261,7 @@
 <li><strong>Protocol translation</strong> — MCP tool calls and A2A tasks are translated into internal Kubernaut API calls</li>
 <li><strong>Authentication</strong> — OIDC/OAuth2 via JWKS validation with JWT claim extraction</li>
 <li><strong>Authorization</strong> — Kubernetes-native SAR-based tool authorization (PR #1222); fail-closed with TTL cache</li>
-<li><strong>MCP bridge</strong> — Dispatches 21 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool routing. When <code>interactive.enabled: false</code> (#1366), 10 session-dependent tools are hidden, leaving 11 stateless tools for CRD and data operations only.</li>
+<li><strong>MCP bridge</strong> — Dispatches 23 <code>kubernaut_*</code> MCP tools to their backends (K8s API, KA MCP, DataStorage, Prometheus) with per-tool routing. When <code>interactive.enabled: false</code> (#1366), 11 session-dependent tools are hidden, leaving 12 stateless tools for CRD and data operations only (13 with <code>kubernaut_list_alerts</code> if Prometheus is configured).</li>
 <li><strong>Streaming</strong> — Relays Server-Sent Events from KA's SSE endpoint to MCP clients</li>
 </ul>
 <h2 id="agentic-architecture">Agentic Architecture<a class="headerlink" href="#agentic-architecture" title="Permanent link">&para;</a></h2>

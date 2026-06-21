@@ -2416,6 +2416,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#status-sse-v151" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Status SSE (v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#a2a-streaming-events" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3302,13 +3313,13 @@
 </span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="p">}</span>
 </span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="p">}</span>
 </span></code></pre></div>
-<p>The AF runs its own MCP server with <strong>21 <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge (see <a href="../mcp-tools/">MCP Tool Reference</a> for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) are used only inside the A2A agent loop and are not exposed on the MCP bridge.</p>
+<p>The AF runs its own MCP server with <strong>23 <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge (see <a href="../mcp-tools/">MCP Tool Reference</a> for the full list). Each tool dispatches to its backend: K8s API (CRD operations), KA MCP (workflow selection/discovery and interactive session lifecycle), DataStorage (analytics), or local (presentation). Five additional internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) are used only inside the A2A agent loop and are not exposed on the MCP bridge.</p>
 <h3 id="a2a-json-rpc-20">A2A JSON-RPC 2.0<a class="headerlink" href="#a2a-json-rpc-20" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>POST /a2a/invoke
 </span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>POST /                  # root alias — same handler
 </span></code></pre></div>
 <p>Agent-to-Agent protocol endpoint accepting JSON-RPC 2.0 messages. Supported methods include <code>message/send</code>. Requires Bearer JWT authentication. <code>POST /</code> is an alias for <code>POST /a2a/invoke</code>, providing A2A spec conformance for clients that expect the root path.</p>
-<p>The A2A agent uses <strong>21 SAR-gated <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge, plus 5 internal tools, organized in six domains:</p>
+<p>The A2A agent uses <strong>23 SAR-gated <code>kubernaut_*</code> MCP tools</strong> exposed on the MCP bridge, plus 5 internal tools, organized in seven domains:</p>
 <table>
 <thead>
 <tr>
@@ -3325,13 +3336,18 @@
 </tr>
 <tr>
 <td><strong>Investigation &amp; session lifecycle</strong></td>
-<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 <td>KA MCP</td>
 </tr>
 <tr>
 <td><strong>Workflow</strong></td>
 <td><code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code></td>
 <td>KA MCP</td>
+</tr>
+<tr>
+<td><strong>Alerts</strong></td>
+<td><code>kubernaut_list_alerts</code> (conditional on Prometheus)</td>
+<td>Prometheus</td>
 </tr>
 <tr>
 <td><strong>Data &amp; history</strong></td>
@@ -3383,6 +3399,84 @@
 </table>
 <p>All internal tools use the AF ServiceAccount (<a href="../../architecture/security-rbac/#unified-sa-model">unified SA model</a>) and are SAR-gated on the A2A path via <code>newRBACGuard()</code>.</p>
 <p>When <code>severityTriage.enabled: true</code> and a Prometheus URL is configured, 3 additional alert tools are registered: <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code>. See <a href="../mcp-tools/#alert-tools">MCP Tool Reference — Alert tools</a>.</p>
+<h3 id="status-sse-v151">Status SSE (v1.5.1)<a class="headerlink" href="#status-sse-v151" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>POST /a2a/status
+</span></code></pre></div>
+<p>Real-time remediation status streaming endpoint (DD-AF-008). Clients subscribe to phase transitions for a specific RemediationRequest via a JSON-RPC 2.0 request body.</p>
+<p><strong>Request:</strong></p>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;jsonrpc&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2.0&quot;</span><span class="p">,</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;status/subscribe&quot;</span><span class="p">,</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;params&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nt">&quot;rr_id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;rr-abc-123&quot;</span><span class="w"> </span><span class="p">}</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+</span></code></pre></div>
+<p><strong>Response:</strong> <code>Content-Type: text/event-stream</code> with <code>Cache-Control: no-cache</code>, <code>Connection: keep-alive</code>, <code>X-Accel-Buffering: no</code>.</p>
+<p><strong>SSE event types:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Purpose</th>
+<th>Payload</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>status/update</code></td>
+<td>Emitted on subscribe (current state) and on each RR phase transition</td>
+<td><code>rr_id</code>, <code>phase</code>, <code>timestamp</code>, <code>final</code> (bool), <code>metadata</code> (optional)</td>
+</tr>
+<tr>
+<td><code>status/closing</code></td>
+<td>Emitted 5 seconds before token expiry</td>
+<td><code>reason</code> (e.g. <code>token_expiry</code>), <code>reconnect</code> (bool, always <code>true</code>)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Wire format example:</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>event: status/update
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>data: {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;status/update&quot;,&quot;params&quot;:{&quot;rr_id&quot;:&quot;rr-abc-123&quot;,&quot;phase&quot;:&quot;Verifying&quot;,&quot;timestamp&quot;:&quot;2026-06-18T15:10:00Z&quot;,&quot;final&quot;:false}}
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a>: heartbeat (every 15s)
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>event: status/closing
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a>data: {&quot;jsonrpc&quot;:&quot;2.0&quot;,&quot;method&quot;:&quot;status/closing&quot;,&quot;params&quot;:{&quot;reason&quot;:&quot;token_expiry&quot;,&quot;reconnect&quot;:true}}
+</span></code></pre></div>
+<p><strong>Authentication:</strong> Same OIDC bearer token chain as <code>/mcp</code> and <code>/a2a/invoke</code>. No per-resource SAR — all authenticated users can subscribe.</p>
+<p><strong>Keepalive:</strong> <code>": "</code> comment line every 15 seconds to keep TCP alive.</p>
+<p><strong>Auto-reconnect:</strong> The handler automatically reconnects the underlying <code>controller-runtime</code> watch if the watch channel closes (server-side timeout). Clients should reconnect with a fresh token when they receive <code>status/closing</code> with <code>reconnect: true</code>.</p>
+<p><strong>Error codes:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Code</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-32600</code></td>
+<td>Invalid request (bad JSON / unparseable body)</td>
+</tr>
+<tr>
+<td><code>-32601</code></td>
+<td>Method not found (method is not <code>status/subscribe</code>)</td>
+</tr>
+<tr>
+<td><code>-32602</code></td>
+<td>Invalid params (<code>rr_id</code> is empty)</td>
+</tr>
+<tr>
+<td><code>-32001</code></td>
+<td>RR not found in the cluster</td>
+</tr>
+<tr>
+<td><code>-32002</code></td>
+<td>Access denied (reserved)</td>
+</tr>
+</tbody>
+</table>
 <h3 id="a2a-streaming-events">A2A Streaming Events<a class="headerlink" href="#a2a-streaming-events" title="Permanent link">&para;</a></h3>
 <p>A2A streaming responses use <code>TaskStatusUpdateEvent</code> messages, each tagged with <code>metadata.type</code> to classify the event:</p>
 <table>
@@ -3423,7 +3517,7 @@
 </table>
 <p><strong>Keepalive events</strong> — emitted every 5 s during long-running KA tool executions. Metadata: <code>{"type":"keepalive", "dot":"."}</code>. No <code>status.message</code> is set, so clients that render only <code>status.message</code> will not display keepalive noise.</p>
 <h3 id="agent-card-discovery">Agent Card Discovery<a class="headerlink" href="#agent-card-discovery" title="Permanent link">&para;</a></h3>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>GET /.well-known/agent-card.json
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>GET /.well-known/agent-card.json
 </span></code></pre></div>
 <p>Returns the A2A agent card for protocol discovery. Unauthenticated callers receive a shell card (metadata only, empty skills array). Authenticated callers receive the full card including available skills scoped to their RBAC role.</p>
 <h2 id="operational-endpoints">Operational Endpoints<a class="headerlink" href="#operational-endpoints" title="Permanent link">&para;</a></h2>
@@ -3512,12 +3606,12 @@
 <h2 id="error-responses">Error Responses<a class="headerlink" href="#error-responses" title="Permanent link">&para;</a></h2>
 <p>All error responses use <a href="../#error-responses-rfc-7807">RFC 7807 Problem Details</a> format with <code>Content-Type: application/problem+json</code>.</p>
 <p><strong>Example</strong> (service not ready):</p>
-<div class="language-json highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="p">{</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://kubernaut.ai/problems/service-unavailable&quot;</span><span class="p">,</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Service Unavailable&quot;</span><span class="p">,</span>
-</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Service is draining — not accepting new requests&quot;</span><span class="p">,</span>
-</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">503</span>
-</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="p">}</span>
+<div class="language-json highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="p">{</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://kubernaut.ai/problems/service-unavailable&quot;</span><span class="p">,</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Service Unavailable&quot;</span><span class="p">,</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span><span class="nt">&quot;detail&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Service is draining — not accepting new requests&quot;</span><span class="p">,</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">  </span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">503</span>
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="p">}</span>
 </span></code></pre></div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>

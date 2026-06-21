@@ -2440,6 +2440,34 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#custom-clusterroles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom ClusterRoles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom ClusterRoles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-tool-resourcenames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available tool resourceNames
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#binding-example" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2484,6 +2512,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#approval-consent-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approval Consent Guard (DD-AF-006, v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#trusted-intermediary" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2521,6 +2560,56 @@
     <span class="md-ellipsis">
       
         Auth Mode Auto-Detection (#1309)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keycloak-oidc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keycloak OIDC Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keycloak OIDC Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-groups-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups Client Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-audience-mapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audience Mapper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-stale-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale Token Warning
       
     </span>
   </a>
@@ -4274,6 +4363,7 @@
 <p>Shadow agent results are propagated through the system:</p>
 <ul>
 <li><strong><code>alignment_verdict</code></strong> field on the Kubernaut Agent <code>IncidentResponse</code> (OpenAPI) and <code>AIAnalysisStatus</code> (CRD) carrying the verdict (<code>result</code>, <code>circuit_breaker_activated</code>, <code>summary</code>, <code>findings</code>)</li>
+<li><strong><code>aiagent.alignment.verdict</code> audit event</strong> — emitted by <code>InvestigatorWrapper.emitVerdictEvent()</code> after every investigation. Payload includes <code>result</code> (<code>aligned</code>/<code>suspicious</code>), <code>circuit_breaker_activated</code>, <code>summary</code>, <code>flagged</code>/<code>total</code> counts, <code>findings[]</code>, and optional <code>grounding_review</code> (v1.5.1)</li>
 <li><strong>NotificationRequest <code>ReviewContext</code></strong> includes <code>alignmentVerdict</code> and <code>circuitBreakerActivated</code> fields for routing rule support</li>
 <li><strong>Manual review notifications</strong> render shadow agent findings prominently when <code>alignment_check_failed</code> SubReason escalates to <code>NotificationPriorityCritical</code></li>
 </ul>
@@ -4398,14 +4488,14 @@
 <tr>
 <td><code>kubernaut-tool-sre</code></td>
 <td>Full investigation + remediation</td>
-<td>19</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td>21</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_list_alerts</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-ai-orchestrator</code></td>
 <td>Automated agent orchestration (no approval)</td>
-<td>13</td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td>15</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
 <td><code>kubernaut-tool-cicd</code></td>
@@ -4437,26 +4527,225 @@
 <p class="admonition-title">Internal tools</p>
 <p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
 </div>
-<h3 id="binding-example">Binding example<a class="headerlink" href="#binding-example" title="Permanent link">&para;</a></h3>
+<h3 id="custom-clusterroles">Custom ClusterRoles<a class="headerlink" href="#custom-clusterroles" title="Permanent link">&para;</a></h3>
+<p>For organizations that need tool subsets not covered by the 6 built-in personas — for example, separation of duties where SREs can investigate but not approve — the operator supports <strong>user-managed ClusterRoles</strong> via the <code>clusterRoleName</code> field on <code>ToolRoleBinding</code>.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>You create a ClusterRole with <code>verb: use</code> on <code>resource: tools</code> in <code>apiGroup: kubernaut.ai</code>, listing the desired tool names as <code>resourceNames</code></li>
+<li>In the Kubernaut CR, add a <code>roleBindings</code> entry with <code>clusterRoleName</code> (instead of <code>role</code>) pointing to your ClusterRole</li>
+<li>The operator creates only the ClusterRoleBinding — it does <strong>not</strong> create or modify your ClusterRole</li>
+</ol>
+<p><strong>Validation:</strong> <code>role</code> and <code>clusterRoleName</code> are mutually exclusive. Entries with both or neither set are rejected by CR validation.</p>
+<details class="example">
+<summary>Custom ClusterRole: restricted investigator (investigate + read, no approval)</summary>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRoleBinding</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nt">metadata</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team-kubernaut-tools</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">subjects</span><span class="p">:</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team</span>
-</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
-</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="nt">roleRef</span><span class="p">:</span>
-</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">  </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
-</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-tool-sre</span>
-</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">  </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_list_remediations</span>
+</span><span id="__span-4-11"><a id="__codelineno-4-11" name="__codelineno-4-11" href="#__codelineno-4-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation</span>
+</span><span id="__span-4-12"><a id="__codelineno-4-12" name="__codelineno-4-12" href="#__codelineno-4-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_watch</span>
+</span><span id="__span-4-13"><a id="__codelineno-4-13" name="__codelineno-4-13" href="#__codelineno-4-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_investigate</span>
+</span><span id="__span-4-14"><a id="__codelineno-4-14" name="__codelineno-4-14" href="#__codelineno-4-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_message</span>
+</span><span id="__span-4-15"><a id="__codelineno-4-15" name="__codelineno-4-15" href="#__codelineno-4-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_complete</span>
+</span><span id="__span-4-16"><a id="__codelineno-4-16" name="__codelineno-4-16" href="#__codelineno-4-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_cancel</span>
+</span><span id="__span-4-17"><a id="__codelineno-4-17" name="__codelineno-4-17" href="#__codelineno-4-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_status</span>
+</span><span id="__span-4-18"><a id="__codelineno-4-18" name="__codelineno-4-18" href="#__codelineno-4-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_reconnect</span>
+</span></code></pre></div>
+</details>
+<details class="example">
+<summary>Custom ClusterRole: readonly audit (history + effectiveness only)</summary>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_list_remediations</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation_history</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_effectiveness</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_audit_trail</span>
+</span></code></pre></div>
+</details>
+<details class="example">
+<summary>Mixed CR configuration (built-in + custom)</summary>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;compliance-team&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+</details>
+<h4 id="available-tool-resourcenames">Available tool <code>resourceNames</code><a class="headerlink" href="#available-tool-resourcenames" title="Permanent link">&para;</a></h4>
+<p>The following tool names can be used in <code>resourceNames</code> when authoring custom ClusterRoles. The SAR check matches against these exact strings.</p>
+<p><strong>MCP bridge tools (23)</strong> — available to external MCP clients and the Kubernaut Console:</p>
+<table>
+<thead>
+<tr>
+<th><code>resourceName</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut_list_remediations</code></td>
+<td>List active and recent remediations</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_remediation</code></td>
+<td>Get details of a specific remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_cancel_remediation</code></td>
+<td>Cancel an active remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_watch</code></td>
+<td>Stream live status updates for a remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_approval_requests</code></td>
+<td>List approval requests</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_approval_request</code></td>
+<td>Get full details of an approval request</td>
+</tr>
+<tr>
+<td><code>kubernaut_approve</code></td>
+<td>Approve or reject a pending approval request</td>
+</tr>
+<tr>
+<td><code>kubernaut_await_session</code></td>
+<td>Wait for an investigation session to become ready</td>
+</tr>
+<tr>
+<td><code>kubernaut_investigate</code></td>
+<td>Start or join an investigation</td>
+</tr>
+<tr>
+<td><code>kubernaut_message</code></td>
+<td>Send a message to an active investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete</code></td>
+<td>Complete an investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete_no_action</code></td>
+<td>Complete with no remediation (dismiss or escalate)</td>
+</tr>
+<tr>
+<td><code>kubernaut_cancel</code></td>
+<td>Cancel an active investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_status</code></td>
+<td>Get the current status of an investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_reconnect</code></td>
+<td>Reconnect to a disconnected session</td>
+</tr>
+<tr>
+<td><code>kubernaut_discover_workflows</code></td>
+<td>Discover available workflows for a remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_select_workflow</code></td>
+<td>Select a workflow for execution</td>
+</tr>
+<tr>
+<td><code>kubernaut_present_decision</code></td>
+<td>Present investigation results for a decision</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_workflows</code></td>
+<td>List available workflows from the catalog</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_alerts</code></td>
+<td>Query firing Prometheus alerts (conditional)</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_remediation_history</code></td>
+<td>Query historical remediations</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_effectiveness</code></td>
+<td>Get effectiveness scores for workflows</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_audit_trail</code></td>
+<td>Retrieve the audit trail for a remediation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A2A agent internal tools (5)</strong> — used inside the A2A agent loop, SAR-gated on the A2A path:</p>
+<table>
+<thead>
+<tr>
+<th><code>resourceName</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubectl_get</code></td>
+<td>Get any namespaced K8s resource (Secret <code>.data</code> redacted)</td>
+</tr>
+<tr>
+<td><code>kubectl_list</code></td>
+<td>List namespaced K8s resources (Secret <code>.data</code> redacted)</td>
+</tr>
+<tr>
+<td><code>kubectl_list_events</code></td>
+<td>List K8s events with reason/object filters</td>
+</tr>
+<tr>
+<td><code>kubernaut_check_existing_remediation</code></td>
+<td>Check for duplicate RemediationRequest</td>
+</tr>
+<tr>
+<td><code>kubernaut_remediate</code></td>
+<td>Create a new RemediationRequest CRD</td>
+</tr>
+</tbody>
+</table>
+<h3 id="binding-example">Binding example<a class="headerlink" href="#binding-example" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRoleBinding</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team-kubernaut-tools</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="nt">subjects</span><span class="p">:</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="nt">roleRef</span><span class="p">:</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">  </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-tool-sre</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">  </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
 </span></code></pre></div>
 <h3 id="sar-caching">SAR caching<a class="headerlink" href="#sar-caching" title="Permanent link">&para;</a></h3>
 <p>Authorization results are cached with a SHA256-keyed TTL cache (default 30s) to avoid per-call SAR overhead:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
 </span></code></pre></div>
 <h3 id="migration-from-rbac_rolesyaml">Migration from rbac_roles.yaml<a class="headerlink" href="#migration-from-rbac_rolesyaml" title="Permanent link">&para;</a></h3>
 <div class="admonition warning">
@@ -4504,6 +4793,17 @@
 </tr>
 </tbody>
 </table>
+<h3 id="approval-consent-guard">Approval Consent Guard (DD-AF-006, v1.5.1)<a class="headerlink" href="#approval-consent-guard" title="Permanent link">&para;</a></h3>
+<p><code>kubernaut_approve</code> is <strong>structurally absent</strong> from the A2A agent's <code>buildToolList()</code> as of v1.5.1. It remains registered on the MCP bridge for the Kubernaut Console's Approve/Reject buttons and direct MCP client access.</p>
+<p><strong>Rationale</strong>: An LLM with access to <code>kubernaut_approve</code> could autonomously approve RARs via prompt injection, bypassing the human consent gate that RARs exist to enforce.</p>
+<p><strong>Defense-in-depth layers</strong>:</p>
+<ol>
+<li>Tool absent from <code>buildToolList()</code> -- structurally impossible for the A2A agent to call</li>
+<li>Explicit prompt instruction telling the agent the tool is unavailable</li>
+<li>SAR RBAC on the MCP bridge path</li>
+<li>Audit trail attributing every approval to the human user</li>
+</ol>
+<p>Similarly, <code>kubernaut_complete_no_action</code> is MCP-only (DD-AF-007) -- it is not available to the A2A agent.</p>
 <h3 id="trusted-intermediary">Trusted Intermediary Delegation (#1287)<a class="headerlink" href="#trusted-intermediary" title="Permanent link">&para;</a></h3>
 <p>When a human operator approves or rejects a <code>RemediationApprovalRequest</code> (RAR) via the MCP bridge, the API Frontend acts as a <strong>trusted intermediary</strong>:</p>
 <ol>
@@ -4521,11 +4821,11 @@
 </ul>
 <h3 id="oidc-ca-trust">OIDC CA Trust (#1245)<a class="headerlink" href="#oidc-ca-trust" title="Permanent link">&para;</a></h3>
 <p>For environments using a private OIDC provider (non-public CA), the AF supports a custom CA certificate via the <code>oidcCaFile</code> configuration field:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://idp.internal.corp.com</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">      </span><span class="nt">oidcCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/certs/oidc-ca.pem</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://idp.internal.corp.com</span>
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a><span class="w">      </span><span class="nt">oidcCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/certs/oidc-ca.pem</span>
 </span></code></pre></div>
 <p>Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.</p>
 <h3 id="auth-auto-detect">Auth Mode Auto-Detection (#1309)<a class="headerlink" href="#auth-auto-detect" title="Permanent link">&para;</a></h3>
@@ -4552,10 +4852,96 @@
 </tbody>
 </table>
 <p>This removes the need for an explicit <code>authMode</code> toggle — the AF infers the correct strategy from which providers are present in the configuration.</p>
+<h2 id="keycloak-oidc">Keycloak OIDC Configuration<a class="headerlink" href="#keycloak-oidc" title="Permanent link">&para;</a></h2>
+<p>When using Keycloak as the OIDC provider (common with kagenti deployments), additional configuration is needed to ensure the API Frontend can authorize tool calls via SAR.</p>
+<h3 id="keycloak-groups-scope">Groups Client Scope<a class="headerlink" href="#keycloak-groups-scope" title="Permanent link">&para;</a></h3>
+<p>The AF uses Kubernetes SubjectAccessReview (SAR) to authorize tool access based on OIDC group claims in the user's JWT. Keycloak must include group membership in issued tokens.</p>
+<ol>
+<li>In the Keycloak admin console, navigate to the target realm (e.g., <code>kagenti</code>)</li>
+<li>Go to <strong>Client scopes</strong> &gt; <strong>Create client scope</strong>: name <code>groups</code>, protocol <code>openid-connect</code></li>
+<li>Under the new scope, go to <strong>Mappers</strong> &gt; <strong>Create mapper</strong>:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td><code>groups</code></td>
+</tr>
+<tr>
+<td>Mapper type</td>
+<td><code>Group Membership</code></td>
+</tr>
+<tr>
+<td>Token claim name</td>
+<td><code>groups</code></td>
+</tr>
+<tr>
+<td>Full group path</td>
+<td><code>off</code></td>
+</tr>
+<tr>
+<td>Add to ID token</td>
+<td><code>on</code></td>
+</tr>
+<tr>
+<td>Add to access token</td>
+<td><code>on</code></td>
+</tr>
+<tr>
+<td>Add to userinfo</td>
+<td><code>on</code></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Go to <strong>Clients</strong> &gt; <code>kagenti</code> &gt; <strong>Client scopes</strong> &gt; <strong>Add client scope</strong> &gt; add <code>groups</code> as a <strong>Default</strong> scope</li>
+</ol>
+<p>The group names in the token must match the <code>groups</code> array in <code>spec.apiFrontend.rbac.roleBindings</code> (Operator CR) or <code>apifrontend.config.rbac.roleBindings</code> (Helm values).</p>
+<h3 id="keycloak-audience-mapper">Audience Mapper<a class="headerlink" href="#keycloak-audience-mapper" title="Permanent link">&para;</a></h3>
+<p>For kagenti to successfully authenticate with the API Frontend via SPIFFE identity, add an <code>oidc-audience-mapper</code> protocol mapper to the <code>kagenti</code> client:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>included.custom.audience</code></td>
+<td><code>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend</code></td>
+</tr>
+<tr>
+<td><code>access.token.claim</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>id.token.claim</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Assign this scope as a default scope to the <code>kagenti</code> client. The trust domain must match your SPIRE deployment.</p>
+<h3 id="keycloak-stale-tokens">Stale Token Warning<a class="headerlink" href="#keycloak-stale-tokens" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Users must re-authenticate after scope changes</p>
+<p>Users must log out and log back in after being added to a group (or after the <code>groups</code> scope is first created) to receive a fresh token with the <code>groups</code> claim. Stale tokens issued before the scope was added will have an empty or missing <code>groups</code> array. SAR checks will fail with <code>403 Forbidden</code> for all tool calls, even if the user's group has a valid <code>roleBinding</code>.</p>
+<p>To verify a token contains the expected groups:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.groups&#39;</span>
+</span></code></pre></div>
+<p>If <code>groups</code> is <code>null</code> or empty, the user must re-authenticate.</p>
+</div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and other signal sources</li>
 <li><a href="../../user-guide/configuration/">Configuration Reference</a> -- Helm values for all services</li>
+<li><a href="../../operations/disconnected-install/">Disconnected Installation</a> -- Air-gapped installation with Keycloak integration</li>
 <li><a href="../../operations/troubleshooting/">Troubleshooting</a> -- Diagnose RBAC-related issues</li>
 </ul>
 

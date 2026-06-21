@@ -4127,6 +4127,7 @@
 <ol>
 <li><strong>NotificationRequest</strong> -- Created for <code>Completed</code>, <code>Failed</code>, and <code>TimedOut</code> outcomes. For <code>Failed</code>, <code>transitionToFailed</code> creates an Escalation NR (<code>nr-escalation-&lt;rr-name&gt;</code>) unless a ManualReview or Escalation NR already exists (double-NR guard)</li>
 <li><strong>Duplicate notification</strong> -- If <code>DuplicateCount &gt; 0</code>, a bulk notification (<code>nr-bulk-&lt;rr-name&gt;</code>) is created for tracked duplicates</li>
+<li><strong>Cascade terminal (v1.5.1)</strong> -- All child resources (AIAnalysis, SignalProcessing, WorkflowExecution) are patched to <code>PhaseFailed</code> with message <code>"Parent RR entered terminal phase: {phase}"</code>. This ensures children do not continue processing after the parent has terminated. The cascade is idempotent and non-fatal -- patch failures are logged but do not prevent the parent from reaching its terminal state.</li>
 <li><strong>Consecutive failure update</strong> -- <code>ConsecutiveFailureCount</code> and <code>NextAllowedExecution</code> are updated for backoff calculation</li>
 </ol>
 <h2 id="escalation-paths">Escalation Paths<a class="headerlink" href="#escalation-paths" title="Permanent link">&para;</a></h2>

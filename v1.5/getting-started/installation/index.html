@@ -842,6 +842,117 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#provision-prerequisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Provision Prerequisites
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Provision Prerequisites">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-create-the-namespace" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Create the Namespace
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-create-secrets" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Create Secrets
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-rego-policy-configmaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Rego Policy ConfigMaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-postgresql-and-valkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. PostgreSQL and Valkey
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut-cr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernaut CR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Kubernaut CR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kagenti-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        kagenti Integration (A2A)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ocp-alertmanager-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP AlertManager Integration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#operator-verification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verify the Installation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#what-the-operator-manages" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -965,7 +1076,7 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#1-create-the-namespace" class="md-nav__link">
+  <a href="#1-create-the-namespace_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         1. Create the Namespace
@@ -1137,10 +1248,10 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#action-types-and-workflows" class="md-nav__link">
+  <a href="#seed-workflows" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Action Types and Workflows
+        Seed Workflows
       
     </span>
   </a>
@@ -1171,23 +1282,6 @@
       
     </span>
   </a>
-  
-    <nav class="md-nav" aria-label="Reinstalling">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#v14-v15-migration-notes" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        v1.4 → v1.5 migration notes
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
   
 </li>
       
@@ -3586,7 +3680,7 @@
 <p>The <strong>Kubernaut Operator</strong> is the only supported production deployment method. The Helm chart does not provide lifecycle management, status reporting, or OLM integration required for production operations. Use the Helm chart for development, testing, and CI environments only.</p>
 </div>
 <h2 id="kubernaut-operator-production">Kubernaut Operator (Production)<a class="headerlink" href="#kubernaut-operator-production" title="Permanent link">&para;</a></h2>
-<p>The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices (v1.5+; 10 in v1.4), RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one <code>Kubernaut</code> CR named <code>kubernaut</code> per cluster.</p>
+<p>The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one <code>Kubernaut</code> CR named <code>kubernaut</code> per cluster.</p>
 <h3 id="installation_1">Installation<a class="headerlink" href="#installation_1" title="Permanent link">&para;</a></h3>
 <p>The operator is available through OLM (Operator Lifecycle Manager) or direct deployment:</p>
 <ol>
@@ -3612,7 +3706,7 @@
 <tr>
 <td>PostgreSQL</td>
 <td>15+</td>
-<td><strong>BYO</strong> — the operator does not deploy a database; provide connection details via <code>spec.postgresql</code></td>
+<td><strong>BYO</strong> — the operator does not deploy a database; provide connection details via <code>spec.postgresql</code>. TLS is required (<code>sslMode</code>: <code>require</code>, <code>verify-ca</code>, or <code>verify-full</code>). See <a href="../../operations/disconnected-install/#postgresql-tls">PostgreSQL TLS</a>.</td>
 </tr>
 <tr>
 <td>Valkey / Redis</td>
@@ -3622,12 +3716,12 @@
 <tr>
 <td>LLM provider</td>
 <td>—</td>
-<td>Any <a href="../../user-guide/configmap-kubernaut-agent/#supported-providers">supported provider</a> with JSON structured output</td>
+<td>Any <a href="../../operations/disconnected-install/#llm-configuration-reference">supported provider</a> with JSON structured output (9 providers for KA, 3 for AF)</td>
 </tr>
 <tr>
 <td>LLM credentials Secret</td>
 <td>—</td>
-<td>Secret containing the LLM API key (e.g. <code>OPENAI_API_KEY</code>)</td>
+<td>Secret containing the LLM API key — see <a href="../../operations/disconnected-install/#llm-configuration-reference">Credential Secret Format</a> for the expected keys per provider</td>
 </tr>
 <tr>
 <td>SP classification policy</td>
@@ -3639,48 +3733,330 @@
 <td>—</td>
 <td>ConfigMap with key <code>approval.rego</code> — see <a href="../../user-guide/configmap-approval/">Approval Policy</a></td>
 </tr>
+<tr>
+<td>kagenti</td>
+<td>0.2.0+</td>
+<td><strong>AF/Console only</strong> — required when <code>spec.apiFrontend.enabled: true</code>. Provides A2A agent integration with SPIRE/authbridge sidecar injection. Must be installed before Kubernaut.</td>
+</tr>
+<tr>
+<td>Keycloak</td>
+<td>—</td>
+<td><strong>AF/Console only</strong> — OIDC identity provider in the <code>kagenti</code> realm. Required for API Frontend authentication and tool authorization.</td>
+</tr>
 </tbody>
 </table>
 <div class="admonition warning">
 <p class="admonition-title">CR validation</p>
 <p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
 </div>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.0-rc2</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.0</code>).</p>
-<p><strong>Minimal Kubernaut CR:</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">metadata</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-system</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">postgresql</span><span class="p">:</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgres.database.svc.cluster.local</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-postgresql</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">  </span><span class="nt">valkey</span><span class="p">:</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey.cache.svc.cluster.local</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-valkey</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">    </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-llm</span>
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span><span class="w">   </span><span class="c1"># must contain key: policy.rego</span>
-</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
-</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span><span class="w">        </span><span class="c1"># must contain key: approval.rego</span>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.1</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.1</code>).</p>
+<h3 id="provision-prerequisites">Provision Prerequisites<a class="headerlink" href="#provision-prerequisites" title="Permanent link">&para;</a></h3>
+<h4 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>oc<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
+<h4 id="2-create-secrets">2. Create Secrets<a class="headerlink" href="#2-create-secrets" title="Permanent link">&para;</a></h4>
+<p><strong>PostgreSQL:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>oc<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>&lt;pg-user&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span>&lt;pg-password&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p><strong>Valkey:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>oc<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>valkey-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;password: %s&#39;</span><span class="w"> </span><span class="s1">&#39;&lt;valkey-password&gt;&#39;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p><strong>LLM credentials:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># OpenAI / Azure / OpenAI-compatible</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>oc<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>&lt;your-key&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p>See the <a href="../../operations/disconnected-install/#llm-configuration-reference">LLM Configuration Reference</a> for all 10 supported providers and credential formats (Anthropic, Vertex AI, Bedrock, etc.).</p>
+<p><strong>Console OIDC (AF/Console path only):</strong></p>
+<p>Required when <code>spec.console.enabled: true</code>. The console uses <code>oauth2-proxy</code> for authentication with a Keycloak client:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>oc<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>kubernaut-console-oidc<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>client-id<span class="o">=</span>kubernaut-console<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span>--from-literal<span class="o">=</span>client-secret<span class="o">=</span>&lt;oidc-client-secret&gt;<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">  </span>--from-literal<span class="o">=</span>cookie-secret<span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">32</span><span class="k">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p>Register the <code>kubernaut-console</code> client in your Keycloak realm before creating this secret.</p>
+<p><strong>Slack webhook (optional):</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>oc<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span>https://hooks.slack.com/services/T.../B.../...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<h4 id="3-rego-policy-configmaps">3. Rego Policy ConfigMaps<a class="headerlink" href="#3-rego-policy-configmaps" title="Permanent link">&para;</a></h4>
+<p>Create the signal processing and approval policy ConfigMaps before applying the CR. See <a href="../../user-guide/policies/">Rego Policies</a> and <a href="../../user-guide/configmap-approval/">Approval Policy</a> for full policy examples.</p>
+<h4 id="4-postgresql-and-valkey">4. PostgreSQL and Valkey<a class="headerlink" href="#4-postgresql-and-valkey" title="Permanent link">&para;</a></h4>
+<p>PostgreSQL and Valkey are BYO preconditions — the operator does not deploy them. If you need to deploy them in the <code>kubernaut-system</code> namespace, see the <a href="../../operations/disconnected-install/#step-35-deploy-postgresql-and-valkey">deployment manifests</a> and <a href="../../operations/disconnected-install/#postgresql-tls">PostgreSQL TLS configuration</a>.</p>
 <div class="admonition note">
 <p class="admonition-title">Disconnected installs</p>
-<p>For air-gapped environments, mirror all component images and set <code>RELATED_IMAGE_*</code> environment variables on the operator Deployment. See the <a href="https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation">operator installation guide</a> for the full image list.</p>
+<p>For air-gapped environments, see the <a href="../../operations/disconnected-install/">Disconnected Installation Guide</a> for mirroring images via <code>oc-mirror</code> and installing via OLM or direct manifest. IDMS transparently redirects image pulls — no <code>RELATED_IMAGE_*</code> patching is needed.</p>
 </div>
+<h3 id="kubernaut-cr">Kubernaut CR<a class="headerlink" href="#kubernaut-cr" title="Permanent link">&para;</a></h3>
+<p>Kubernaut supports two ingress paths. Choose the one that matches your use case:</p>
+<ul>
+<li><strong>Gateway (alert-driven)</strong> — Prometheus alerts trigger automated remediation. No kagenti or Keycloak required.</li>
+<li><strong>API Frontend + Console (A2A/MCP)</strong> — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires kagenti and Keycloak.</li>
+</ul>
+<p>Both paths can be enabled simultaneously.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gateway (alert-driven)</label><label for="__tabbed_1_2">API Frontend + Console (A2A/MCP)</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-system</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql.kubernaut-system.svc.cluster.local</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql-secret</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">    </span><span class="nt">sslMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">require</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">  </span><span class="nt">valkey</span><span class="p">:</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey.kubernaut-system.svc.cluster.local</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey-secret</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
+</span><span id="__span-6-17"><a id="__codelineno-6-17" name="__codelineno-6-17" href="#__codelineno-6-17"></a><span class="w">    </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-6-18"><a id="__codelineno-6-18" name="__codelineno-6-18" href="#__codelineno-6-18"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-6-19"><a id="__codelineno-6-19" name="__codelineno-6-19" href="#__codelineno-6-19"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-6-20"><a id="__codelineno-6-20" name="__codelineno-6-20" href="#__codelineno-6-20"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-credentials</span>
+</span><span id="__span-6-21"><a id="__codelineno-6-21" name="__codelineno-6-21" href="#__codelineno-6-21"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-6-22"><a id="__codelineno-6-22" name="__codelineno-6-22" href="#__codelineno-6-22"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-6-23"><a id="__codelineno-6-23" name="__codelineno-6-23" href="#__codelineno-6-23"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
+</span><span id="__span-6-24"><a id="__codelineno-6-24" name="__codelineno-6-24" href="#__codelineno-6-24"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
+</span><span id="__span-6-25"><a id="__codelineno-6-25" name="__codelineno-6-25" href="#__codelineno-6-25"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-6-26"><a id="__codelineno-6-26" name="__codelineno-6-26" href="#__codelineno-6-26"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span>
+</span><span id="__span-6-27"><a id="__codelineno-6-27" name="__codelineno-6-27" href="#__codelineno-6-27"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-6-28"><a id="__codelineno-6-28" name="__codelineno-6-28" href="#__codelineno-6-28"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-6-29"><a id="__codelineno-6-29" name="__codelineno-6-29" href="#__codelineno-6-29"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-6-30"><a id="__codelineno-6-30" name="__codelineno-6-30" href="#__codelineno-6-30"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span></code></pre></div>
+<p>After applying, configure <a href="#ocp-alertmanager-integration">AlertManager</a> to route alerts to the Gateway.</p>
+</div>
+<div class="tabbed-block">
+<p>Requires kagenti and Keycloak — see <a href="#kagenti-integration">kagenti Integration</a> below for the full setup.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">  </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-system</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">  </span><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql.kubernaut-system.svc.cluster.local</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5432</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">postgresql-secret</span>
+</span><span id="__span-7-11"><a id="__codelineno-7-11" name="__codelineno-7-11" href="#__codelineno-7-11"></a><span class="w">    </span><span class="nt">sslMode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">require</span>
+</span><span id="__span-7-12"><a id="__codelineno-7-12" name="__codelineno-7-12" href="#__codelineno-7-12"></a><span class="w">  </span><span class="nt">valkey</span><span class="p">:</span>
+</span><span id="__span-7-13"><a id="__codelineno-7-13" name="__codelineno-7-13" href="#__codelineno-7-13"></a><span class="w">    </span><span class="nt">host</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey.kubernaut-system.svc.cluster.local</span>
+</span><span id="__span-7-14"><a id="__codelineno-7-14" name="__codelineno-7-14" href="#__codelineno-7-14"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
+</span><span id="__span-7-15"><a id="__codelineno-7-15" name="__codelineno-7-15" href="#__codelineno-7-15"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey-secret</span>
+</span><span id="__span-7-16"><a id="__codelineno-7-16" name="__codelineno-7-16" href="#__codelineno-7-16"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
+</span><span id="__span-7-17"><a id="__codelineno-7-17" name="__codelineno-7-17" href="#__codelineno-7-17"></a><span class="w">    </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-7-18"><a id="__codelineno-7-18" name="__codelineno-7-18" href="#__codelineno-7-18"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-7-19"><a id="__codelineno-7-19" name="__codelineno-7-19" href="#__codelineno-7-19"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-7-20"><a id="__codelineno-7-20" name="__codelineno-7-20" href="#__codelineno-7-20"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-credentials</span>
+</span><span id="__span-7-21"><a id="__codelineno-7-21" name="__codelineno-7-21" href="#__codelineno-7-21"></a><span class="w">    </span><span class="nt">interactive</span><span class="p">:</span>
+</span><span id="__span-7-22"><a id="__codelineno-7-22" name="__codelineno-7-22" href="#__codelineno-7-22"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-7-23"><a id="__codelineno-7-23" name="__codelineno-7-23" href="#__codelineno-7-23"></a><span class="w">      </span><span class="nt">inactivityTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+</span><span id="__span-7-24"><a id="__codelineno-7-24" name="__codelineno-7-24" href="#__codelineno-7-24"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-7-25"><a id="__codelineno-7-25" name="__codelineno-7-25" href="#__codelineno-7-25"></a><span class="w">      </span><span class="nt">sessionTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-7-26"><a id="__codelineno-7-26" name="__codelineno-7-26" href="#__codelineno-7-26"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-7-27"><a id="__codelineno-7-27" name="__codelineno-7-27" href="#__codelineno-7-27"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-7-28"><a id="__codelineno-7-28" name="__codelineno-7-28" href="#__codelineno-7-28"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
+</span><span id="__span-7-29"><a id="__codelineno-7-29" name="__codelineno-7-29" href="#__codelineno-7-29"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
+</span><span id="__span-7-30"><a id="__codelineno-7-30" name="__codelineno-7-30" href="#__codelineno-7-30"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-7-31"><a id="__codelineno-7-31" name="__codelineno-7-31" href="#__codelineno-7-31"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span>
+</span><span id="__span-7-32"><a id="__codelineno-7-32" name="__codelineno-7-32" href="#__codelineno-7-32"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-7-33"><a id="__codelineno-7-33" name="__codelineno-7-33" href="#__codelineno-7-33"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-7-34"><a id="__codelineno-7-34" name="__codelineno-7-34" href="#__codelineno-7-34"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-7-35"><a id="__codelineno-7-35" name="__codelineno-7-35" href="#__codelineno-7-35"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-7-36"><a id="__codelineno-7-36" name="__codelineno-7-36" href="#__codelineno-7-36"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-7-37"><a id="__codelineno-7-37" name="__codelineno-7-37" href="#__codelineno-7-37"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
+</span><span id="__span-7-38"><a id="__codelineno-7-38" name="__codelineno-7-38" href="#__codelineno-7-38"></a><span class="w">      </span><span class="nt">audience</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
+</span><span id="__span-7-39"><a id="__codelineno-7-39" name="__codelineno-7-39" href="#__codelineno-7-39"></a><span class="w">      </span><span class="nt">jwksURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs&quot;</span>
+</span><span id="__span-7-40"><a id="__codelineno-7-40" name="__codelineno-7-40" href="#__codelineno-7-40"></a><span class="w">      </span><span class="nt">allowInsecureIssuers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">    </span><span class="c1"># set false with proper CA certs</span>
+</span><span id="__span-7-41"><a id="__codelineno-7-41" name="__codelineno-7-41" href="#__codelineno-7-41"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
+</span><span id="__span-7-42"><a id="__codelineno-7-42" name="__codelineno-7-42" href="#__codelineno-7-42"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-7-43"><a id="__codelineno-7-43" name="__codelineno-7-43" href="#__codelineno-7-43"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
+</span><span id="__span-7-44"><a id="__codelineno-7-44" name="__codelineno-7-44" href="#__codelineno-7-44"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-7-45"><a id="__codelineno-7-45" name="__codelineno-7-45" href="#__codelineno-7-45"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
+</span><span id="__span-7-46"><a id="__codelineno-7-46" name="__codelineno-7-46" href="#__codelineno-7-46"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-7-47"><a id="__codelineno-7-47" name="__codelineno-7-47" href="#__codelineno-7-47"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-7-48"><a id="__codelineno-7-48" name="__codelineno-7-48" href="#__codelineno-7-48"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-7-49"><a id="__codelineno-7-49" name="__codelineno-7-49" href="#__codelineno-7-49"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
+</span><span id="__span-7-50"><a id="__codelineno-7-50" name="__codelineno-7-50" href="#__codelineno-7-50"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-7-51"><a id="__codelineno-7-51" name="__codelineno-7-51" href="#__codelineno-7-51"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-7-52"><a id="__codelineno-7-52" name="__codelineno-7-52" href="#__codelineno-7-52"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-7-53"><a id="__codelineno-7-53" name="__codelineno-7-53" href="#__codelineno-7-53"></a><span class="w">  </span><span class="nt">console</span><span class="p">:</span>
+</span><span id="__span-7-54"><a id="__codelineno-7-54" name="__codelineno-7-54" href="#__codelineno-7-54"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-7-55"><a id="__codelineno-7-55" name="__codelineno-7-55" href="#__codelineno-7-55"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-7-56"><a id="__codelineno-7-56" name="__codelineno-7-56" href="#__codelineno-7-56"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-console-oidc</span>
+</span><span id="__span-7-57"><a id="__codelineno-7-57" name="__codelineno-7-57" href="#__codelineno-7-57"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-7-58"><a id="__codelineno-7-58" name="__codelineno-7-58" href="#__codelineno-7-58"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span></code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Environment-specific values</p>
+<p>The <code>auth.audience</code>, <code>auth.issuerURL</code>, and <code>auth.jwksURL</code> fields <strong>must match your Keycloak realm</strong>. Mismatched values cause silent 401 Unauthorized failures. Verify by decoding a JWT:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, azp, groups}&#39;</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+</div>
+<p>Apply the CR:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>kubernaut-cr.yaml
+</span></code></pre></div>
+<h4 id="kagenti-integration">kagenti Integration (A2A)<a class="headerlink" href="#kagenti-integration" title="Permanent link">&para;</a></h4>
+<div class="admonition info">
+<p class="admonition-title">AF/Console path only</p>
+<p>The following steps apply only when using the API Frontend and/or Console (<code>spec.apiFrontend.enabled: true</code>). If you are using the Gateway path only, skip this section.</p>
+</div>
+<p>The API Frontend integrates with <a href="https://github.com/kagenti/kagenti">kagenti</a> for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy <strong>before</strong> deploying Kubernaut.</p>
+<div class="admonition warning">
+<p class="admonition-title">Prerequisite</p>
+<p>Verify kagenti is running before applying the Kubernaut CR:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kagenti-system
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="c1"># For kagenti 0.3.x+ with SPIRE CRDs:</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>oc<span class="w"> </span>get<span class="w"> </span>spireclusterconfig
+</span></code></pre></div>
+<p>The SPIRE class name must match <code>spec.apiFrontend.spire.className</code> in the Kubernaut CR. The default is <code>zero-trust-workload-identity-manager-spire</code>.</p>
+</div>
+<p><strong>Auto-managed resources</strong> — When <code>spec.apiFrontend.spire.enabled: true</code>, the kubernaut-operator automatically:</p>
+<ol>
+<li><strong>Labels the namespace</strong> — adds <code>kagenti-enabled=true</code> to <code>kubernaut-system</code>, triggering kagenti's mutating webhook to inject the authbridge sidecar into API Frontend pods</li>
+<li><strong>Creates an <code>AgentRuntime</code> CR</strong> — provisions an <code>AgentRuntime</code> named <code>apifrontend</code> in <code>kubernaut-system</code>, telling kagenti to provision ConfigMaps, SCCs, and Keycloak client registrations</li>
+</ol>
+<p>Verify the <code>AgentRuntime</code> CR is created and active:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>oc<span class="w"> </span>get<span class="w"> </span>agentruntime<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="c1"># Expected: NAME=apifrontend, PHASE=Active</span>
+</span></code></pre></div>
+<p><strong>SecurityContextConstraints</strong> — The kagenti sidecar requires the <code>kagenti-authbridge</code> SCC. Check if your namespace is already permitted:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>oc<span class="w"> </span>get<span class="w"> </span>scc<span class="w"> </span>kagenti-authbridge<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.groups}&#39;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p>If the output is empty, add it:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>scc<span class="w"> </span>kagenti-authbridge<span class="w"> </span>--type<span class="o">=</span>json<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;[</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="s1">  {&quot;op&quot;: &quot;add&quot;, &quot;path&quot;: &quot;/groups/-&quot;, &quot;value&quot;: &quot;system:serviceaccounts:kubernaut-system&quot;}</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="s1">]&#39;</span>
+</span></code></pre></div>
+<p><strong>kagenti ConfigMaps</strong> — The authbridge sidecar requires ConfigMaps provisioned by the kagenti operator. Verify they exist after the <code>AgentRuntime</code> CR becomes active:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span>envoy-config<span class="w"> </span>spiffe-helper-config<span class="w"> </span>authbridge-config
+</span></code></pre></div>
+<p>If any are missing, check the kagenti-operator logs for errors.</p>
+<p><strong>Keycloak Group Mapper</strong> — The API Frontend authorizes tool access via SAR based on OIDC group claims. Keycloak must include group membership in tokens:</p>
+<ol>
+<li>In the Keycloak admin console (<code>kagenti</code> realm), go to <strong>Client scopes</strong> → <strong>Create client scope</strong></li>
+<li>Create a scope named <code>groups</code> (protocol: <code>openid-connect</code>)</li>
+<li>
+<p>Add a <strong>Group Membership</strong> mapper:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Token claim name</td>
+<td><code>groups</code></td>
+</tr>
+<tr>
+<td>Full group path</td>
+<td><code>off</code></td>
+</tr>
+<tr>
+<td>Add to ID token</td>
+<td><code>on</code></td>
+</tr>
+<tr>
+<td>Add to access token</td>
+<td><code>on</code></td>
+</tr>
+</tbody>
+</table>
+</li>
+<li>
+<p>Assign the <code>groups</code> scope as a <strong>Default</strong> scope on the <code>kagenti</code> client</p>
+</li>
+<li>Create a group (e.g. <code>platform-engineering</code>) and assign users who need tool access</li>
+</ol>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Users must log out and log back in after being added to a group or after the <code>groups</code> scope is created. Stale tokens will have an empty groups array and SAR checks will fail.</p>
+</div>
+<p><strong>Keycloak Audience Mapper</strong> — For kagenti to authenticate with the API Frontend, the token's <code>aud</code> claim must include the AF's SPIFFE ID:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend
+</span></code></pre></div>
+<p>Add a client scope <code>agent-kubernaut-system-apifrontend-aud</code> with an <code>oidc-audience-mapper</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>included.custom.audience</code></td>
+<td><code>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend</code></td>
+</tr>
+<tr>
+<td><code>access.token.claim</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>id.token.claim</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Assign as a default scope to the <code>kagenti</code> client.</p>
+<p><strong>Port configuration</strong> — The operator auto-detects the kagenti version and adjusts ports:</p>
+<ul>
+<li><strong>kagenti 0.2.x</strong> (envoy sidecar): AF listens on <code>8443</code>; metrics shifts to <code>9092</code>, health to <code>8082</code></li>
+<li><strong>kagenti 0.3.x+</strong> (authbridge-proxy): AF shifts to <code>8444</code>; authbridge-proxy takes <code>8443</code></li>
+</ul>
+<p>No manual configuration is needed.</p>
+<p>For the complete kagenti setup including troubleshooting 401 errors, see the <a href="../../operations/disconnected-install/#kagenti-integration">Disconnected Installation Guide</a>.</p>
+<h4 id="ocp-alertmanager-integration">OCP AlertManager Integration<a class="headerlink" href="#ocp-alertmanager-integration" title="Permanent link">&para;</a></h4>
+<div class="admonition info">
+<p class="admonition-title">Gateway path only</p>
+<p>This step applies only when using the Gateway for alert-driven remediation (<code>spec.gateway.enabled: true</code>).</p>
+</div>
+<p>Configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the <a href="../../operations/disconnected-install/#alertmanager-ocp">AlertManager configuration</a> for the full setup.</p>
+<h3 id="operator-verification">Verify the Installation<a class="headerlink" href="#operator-verification" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="c1"># Operator pod</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-operator-system
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="c1"># Kubernaut CR status</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="c1"># All pods should be Running (db-migrate shows Completed)</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="c1"># CR phase should be Running</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.phase}&#39;</span>
+</span></code></pre></div>
+<p>If using the <strong>AF/Console path</strong>, also verify:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="c1"># AF pod should show 3/3 containers (with kagenti sidecar)</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="c1"># kagenti agent card should be synced</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>oc<span class="w"> </span>get<span class="w"> </span>agentcard<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="c1"># Expected: SYNCED=True for apifrontend-deployment-card</span>
+</span></code></pre></div>
 <h3 id="what-the-operator-manages">What the Operator manages<a class="headerlink" href="#what-the-operator-manages" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Validates BYO PostgreSQL and Valkey secrets before deployment</li>
 <li>Runs embedded database schema migrations</li>
 <li>Installs and upgrades the 9 Kubernaut workload CRDs</li>
-<li>Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies</li>
+<li>Deploys all 11 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies</li>
 <li>Applies preferred pod anti-affinity to all deployments (spread across nodes by <code>kubernetes.io/hostname</code>)</li>
 <li>Configures OCP Routes and service-serving CA TLS</li>
 <li>Reports per-service readiness status on the <code>Kubernaut</code> CR</li>
@@ -3774,13 +4150,13 @@
 </table>
 <p>Both PVCs are annotated with <code>helm.sh/resource-policy: keep</code> so data survives <code>helm uninstall</code>.</p>
 <p>If the cluster has no default StorageClass, set <code>storageClassName</code> explicitly:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">postgresql</span><span class="p">:</span>
-</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50Gi</span>
-</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3-encrypted</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="nt">valkey</span><span class="p">:</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3-encrypted</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">postgresql</span><span class="p">:</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">size</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50Gi</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3-encrypted</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="nt">valkey</span><span class="p">:</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">  </span><span class="nt">storage</span><span class="p">:</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span><span class="nt">storageClassName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gp3-encrypted</span>
 </span></code></pre></div>
 <p>To skip in-chart databases entirely and use external instances, set <code>postgresql.enabled=false</code> and/or <code>valkey.enabled=false</code> and configure <code>postgresql.host</code>/<code>valkey.host</code> values in the <a href="../../user-guide/configuration/">Configuration Reference</a>.</p>
 <h3 id="prometheus-and-alertmanager">Prometheus and AlertManager<a class="headerlink" href="#prometheus-and-alertmanager" title="Permanent link">&para;</a></h3>
@@ -3814,48 +4190,48 @@
 <p>See <a href="../../architecture/security-rbac/#signal-ingestion">Security &amp; RBAC</a> for the full TokenReview + SAR flow, Gateway RBAC details, and the <code>gateway-signal-source</code> ClusterRole definition.</p>
 <h4 id="configuring-alertmanager">Configuring AlertManager<a class="headerlink" href="#configuring-alertmanager" title="Permanent link">&para;</a></h4>
 <p>AlertManager must include <code>http_config.bearer_token_file</code> in its webhook receiver so the Gateway can authenticate the request. The Gateway service is <code>gateway-service</code> on port <code>8080</code>, and the AlertManager adapter path is <code>/api/v1/signals/prometheus</code>.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="c1"># alertmanager.yml (standalone)</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">    </span><span class="nt">webhook_configs</span><span class="p">:</span>
-</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus&quot;</span>
-</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="nt">send_resolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">        </span><span class="nt">http_config</span><span class="p">:</span>
-</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">          </span><span class="nt">bearer_token_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/secrets/kubernetes.io/serviceaccount/token</span>
-</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a>
-</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="nt">routes</span><span class="p">:</span>
-</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">      </span><span class="nt">matchers</span><span class="p">:</span>
-</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertname!=&quot;&quot;</span>
-</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">      </span><span class="nt">continue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># alertmanager.yml (standalone)</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nt">receivers</span><span class="p">:</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span><span class="nt">webhook_configs</span><span class="p">:</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus&quot;</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">        </span><span class="nt">send_resolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">        </span><span class="nt">http_config</span><span class="p">:</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">          </span><span class="nt">bearer_token_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/secrets/kubernetes.io/serviceaccount/token</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">  </span><span class="nt">routes</span><span class="p">:</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">      </span><span class="nt">matchers</span><span class="p">:</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertname!=&quot;&quot;</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="w">      </span><span class="nt">continue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span></code></pre></div>
 <p>For <strong>kube-prometheus-stack</strong>, configure via Helm values:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># kube-prometheus-stack values.yaml</span>
-</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">alertmanager</span><span class="p">:</span>
-</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">    </span><span class="nt">receivers</span><span class="p">:</span>
-</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
-</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">        </span><span class="nt">webhook_configs</span><span class="p">:</span>
-</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus&quot;</span>
-</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">            </span><span class="nt">send_resolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">            </span><span class="nt">http_config</span><span class="p">:</span>
-</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="w">              </span><span class="nt">bearer_token_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/secrets/kubernetes.io/serviceaccount/token</span>
-</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="w">      </span><span class="nt">routes</span><span class="p">:</span>
-</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
-</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="w">          </span><span class="nt">matchers</span><span class="p">:</span>
-</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertname!=&quot;&quot;</span>
-</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="w">          </span><span class="nt">continue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># kube-prometheus-stack values.yaml</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="nt">alertmanager</span><span class="p">:</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span><span class="nt">receivers</span><span class="p">:</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">        </span><span class="nt">webhook_configs</span><span class="p">:</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">          </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">url</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://gateway-service.kubernaut-system.svc.cluster.local:8080/api/v1/signals/prometheus&quot;</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="w">            </span><span class="nt">send_resolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-20-9"><a id="__codelineno-20-9" name="__codelineno-20-9" href="#__codelineno-20-9"></a><span class="w">            </span><span class="nt">http_config</span><span class="p">:</span>
+</span><span id="__span-20-10"><a id="__codelineno-20-10" name="__codelineno-20-10" href="#__codelineno-20-10"></a><span class="w">              </span><span class="nt">bearer_token_file</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/run/secrets/kubernetes.io/serviceaccount/token</span>
+</span><span id="__span-20-11"><a id="__codelineno-20-11" name="__codelineno-20-11" href="#__codelineno-20-11"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-20-12"><a id="__codelineno-20-12" name="__codelineno-20-12" href="#__codelineno-20-12"></a><span class="w">      </span><span class="nt">routes</span><span class="p">:</span>
+</span><span id="__span-20-13"><a id="__codelineno-20-13" name="__codelineno-20-13" href="#__codelineno-20-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">receiver</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
+</span><span id="__span-20-14"><a id="__codelineno-20-14" name="__codelineno-20-14" href="#__codelineno-20-14"></a><span class="w">          </span><span class="nt">matchers</span><span class="p">:</span>
+</span><span id="__span-20-15"><a id="__codelineno-20-15" name="__codelineno-20-15" href="#__codelineno-20-15"></a><span class="w">            </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertname!=&quot;&quot;</span>
+</span><span id="__span-20-16"><a id="__codelineno-20-16" name="__codelineno-20-16" href="#__codelineno-20-16"></a><span class="w">          </span><span class="nt">continue</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span></code></pre></div>
 <p>Then register AlertManager's ServiceAccount as an authorized signal source in your <strong>Kubernaut</strong> values:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="c1"># kubernaut values.yaml</span>
-</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="nt">gateway</span><span class="p">:</span>
-</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">    </span><span class="nt">signalSources</span><span class="p">:</span>
-</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager</span>
-</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
-</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># kubernaut values.yaml</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span><span class="nt">signalSources</span><span class="p">:</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
@@ -3863,25 +4239,25 @@
 </div>
 <h2 id="pre-installation">Pre-Installation<a class="headerlink" href="#pre-installation" title="Permanent link">&para;</a></h2>
 <p>Kubernaut uses 9 Custom Resource Definitions. Helm installs them automatically from the chart's <code>crds/</code> directory on first install -- no manual step is needed. For reinstalls, see <a href="#reinstalling">Reinstalling</a>.</p>
-<h3 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
+<h3 id="1-create-the-namespace_1">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace_1" title="Permanent link">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h3 id="2-provision-secrets">2. Provision Secrets<a class="headerlink" href="#2-provision-secrets" title="Permanent link">&para;</a></h3>
 <p>All required secrets <strong>must</strong> be pre-created before running <code>helm install</code>. The chart validates the presence of database and cache secrets at template time and fails with a descriptive error if any are missing.</p>
 <h4 id="postgresql-datastorage-consolidated-secret">PostgreSQL + DataStorage (consolidated secret)<a class="headerlink" href="#postgresql-datastorage-consolidated-secret" title="Permanent link">&para;</a></h4>
 <p>PostgreSQL and DataStorage share a single secret. The <code>db-secrets.yaml</code> key must use the <strong>same password</strong> as <code>POSTGRES_PASSWORD</code> to avoid authentication mismatches.</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
-</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nv">PG_PASSWORD</span><span class="o">=</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>postgresql-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_USER</span><span class="o">=</span>slm_user<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_PASSWORD</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">POSTGRES_DB</span><span class="o">=</span>action_history<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">  </span>--from-literal<span class="o">=</span>db-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;username: slm_user\npassword: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$PG_PASSWORD</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h4 id="valkey">Valkey<a class="headerlink" href="#valkey" title="Permanent link">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>valkey-secret<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;password: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>valkey-secret<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>valkey-secrets.yaml<span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">printf</span><span class="w"> </span><span class="s1">&#39;password: %s&#39;</span><span class="w"> </span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-base64<span class="w"> </span><span class="m">24</span><span class="k">)</span><span class="s2">&quot;</span><span class="k">)</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h4 id="required-secrets-summary">Required secrets summary<a class="headerlink" href="#required-secrets-summary" title="Permanent link">&para;</a></h4>
 <table>
@@ -3912,18 +4288,18 @@
 </table>
 <p>To use custom secret names for database/cache secrets, pass <code>--set postgresql.auth.existingSecret=&lt;name&gt;</code> and <code>--set valkey.existingSecret=&lt;name&gt;</code> at install time. For LLM credentials, use <code>--set kubernautAgent.llm.credentialsSecretName=&lt;name&gt;</code>.</p>
 <h4 id="llm-credentials-required-for-ai-analysis">LLM credentials (required for AI analysis)<a class="headerlink" href="#llm-credentials-required-for-ai-analysis" title="Permanent link">&para;</a></h4>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">OpenAI / Azure</label><label for="__tabbed_1_2">Google Vertex AI</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">OpenAI / Azure</label><label for="__tabbed_2_2">Google Vertex AI</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span>--from-file<span class="o">=</span>application_default_credentials.json<span class="o">=</span>path/to/service-account-key.json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">  </span>--from-file<span class="o">=</span>application_default_credentials.json<span class="o">=</span>path/to/service-account-key.json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>Kubernaut Agent auto-detects <code>application_default_credentials.json</code> in the mounted secret and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> to the mount path at runtime.
 With GCP Workload Identity the secret can be omitted.</p>
@@ -3951,9 +4327,9 @@ With GCP Workload Identity the secret can be omitted.</p>
 </tbody>
 </table>
 <h4 id="notification-credentials-optional-slack-only">Notification credentials (optional, Slack only)<a class="headerlink" href="#notification-credentials-optional-slack-only" title="Permanent link">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span>https://hooks.slack.com/services/T.../B.../...<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>slack-webhook<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">  </span>--from-literal<span class="o">=</span>webhook-url<span class="o">=</span>https://hooks.slack.com/services/T.../B.../...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <table>
 <thead>
@@ -3974,27 +4350,27 @@ With GCP Workload Identity the secret can be omitted.</p>
 <p>Only required when Slack delivery is configured. When using console-only routing (default), no notification secret is needed. For advanced multi-receiver routing, use <code>notification.credentials[]</code> and <code>notification.routing.content</code> instead of the Slack shortcut.</p>
 <h2 id="install">Install<a class="headerlink" href="#install" title="Permanent link">&para;</a></h2>
 <div class="admonition warning">
-<p class="admonition-title">OCP Helm chart deprecated — use the Kubernaut Operator (v1.4)</p>
-<p>The <strong>OpenShift-specific</strong> Helm chart path is <strong>deprecated</strong> as of v1.4 (#848). For OpenShift production deployments, use the <a href="#kubernaut-operator-production">Kubernaut Operator</a> instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.</p>
+<p class="admonition-title">OCP Helm chart deprecated — use the Kubernaut Operator</p>
+<p>The <strong>OpenShift-specific</strong> Helm chart path is <strong>deprecated</strong>. For OpenShift production deployments, use the <a href="#kubernaut-operator-production">Kubernaut Operator</a> instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.</p>
 </div>
 <div class="admonition info">
-<p class="admonition-title">NetworkPolicies (v1.4)</p>
-<p>Kubernaut v1.4 deploys <strong>NetworkPolicies</strong> for all services with a <strong>default-deny</strong> ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with <code>networkPolicies.&lt;service&gt;.enabled: false</code>. See <a href="../../architecture/security-rbac/#networkpolicies-v14">Security &amp; RBAC: NetworkPolicies</a> for details.</p>
+<p class="admonition-title">NetworkPolicies</p>
+<p>Kubernaut deploys <strong>NetworkPolicies</strong> for all services with a <strong>default-deny</strong> ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with <code>networkPolicies.&lt;service&gt;.enabled: false</code>. See <a href="../../architecture/security-rbac/#networkpolicies-v14">Security &amp; RBAC: NetworkPolicies</a> for details.</p>
 </div>
 <p>The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in <a href="#pre-installation">Pre-Installation</a>, install using <code>helm install</code>:</p>
 <h3 id="kind-vanilla-kubernetes">Kind / Vanilla Kubernetes<a class="headerlink" href="#kind-vanilla-kubernetes" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o
 </span></code></pre></div>
 <h3 id="openshift-ocp">OpenShift (OCP)<a class="headerlink" href="#openshift-ocp" title="Permanent link">&para;</a></h3>
 <p>OpenShift requires additional configuration: cert-manager TLS mode, OCP monitoring endpoints (TLS + service-serving CA), and the Red Hat PostgreSQL image. Download the OCP values overlay from the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository and layer it on top:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span>--values<span class="w"> </span>kubernaut-ocp-values.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">  </span>--values<span class="w"> </span>kubernaut-ocp-values.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o
 </span></code></pre></div>
 <p>The OCP values overlay configures:</p>
 <table>
@@ -4034,11 +4410,11 @@ With GCP Workload Identity the secret can be omitted.</p>
 </div>
 <h3 id="advanced-configuration">Advanced Configuration<a class="headerlink" href="#advanced-configuration" title="Permanent link">&para;</a></h3>
 <p>For advanced LLM configurations (Vertex AI, local models) or custom Rego policies, use <code>--set-file</code> to inject configuration files:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policies.content<span class="o">=</span>my-policy.rego
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">  </span>--set-file<span class="w"> </span>kubernautAgent.sdkConfigContent<span class="o">=</span>my-sdk-config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">  </span>--set-file<span class="w"> </span>aianalysis.policies.content<span class="o">=</span>my-approval.rego<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">  </span>--set-file<span class="w"> </span>signalprocessing.policies.content<span class="o">=</span>my-policy.rego
 </span></code></pre></div>
 <p>See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios/blob/main/helm/sdk-config.yaml.example">sdk-config.yaml.example</a> for a reference SDK config covering Vertex AI, Anthropic, OpenAI, and local models.</p>
 <p>To pin a specific chart version, add <code>--version &lt;version&gt;</code>. Omitting <code>--version</code> pulls the latest release.</p>
@@ -4048,46 +4424,53 @@ With GCP Workload Identity the secret can be omitted.</p>
 </div>
 <h3 id="quickstart">Quickstart<a class="headerlink" href="#quickstart" title="Permanent link">&para;</a></h3>
 <p>For a complete end-to-end demo environment (Kind cluster, monitoring stack, Kubernaut, infrastructure dependencies, workflow catalog), use the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
-</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
-</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="c1"># Configure your LLM provider</span>
-</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBERNAUT_LLM_PROVIDER</span><span class="o">=</span>openai
-</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBERNAUT_LLM_MODEL</span><span class="o">=</span>gpt-4o
-</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a>
-</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="c1"># Create the full demo environment (~10 minutes)</span>
-</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a>./scripts/setup-demo-cluster.sh
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="c1"># Configure your LLM provider</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBERNAUT_LLM_PROVIDER</span><span class="o">=</span>openai
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="nb">export</span><span class="w"> </span><span class="nv">KUBERNAUT_LLM_MODEL</span><span class="o">=</span>gpt-4o
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="c1"># Create the full demo environment (~10 minutes)</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a>./scripts/setup-demo-cluster.sh
 </span></code></pre></div>
 <p>The setup script creates a Kind cluster, installs Prometheus/Grafana, deploys Kubernaut, and installs infrastructure dependencies (cert-manager, metrics-server, Istio, blackbox-exporter). Gitea and ArgoCD are installed automatically when running GitOps scenarios. See the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios#readme">demo scenarios README</a> for all options including OCP support and advanced LLM configuration.</p>
 <h3 id="post-install-verification">Post-Install Verification<a class="headerlink" href="#post-install-verification" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="c1"># All pods should be 1/1 Running (readiness probes confirm service health)</span>
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="c1"># Verify workflow catalog</span>
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-A
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="c1"># All pods should be 1/1 Running (readiness probes confirm service health)</span>
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>kubectl<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="c1"># Verify workflow catalog</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-A
 </span></code></pre></div>
 <h2 id="post-installation">Post-Installation<a class="headerlink" href="#post-installation" title="Permanent link">&para;</a></h2>
-<h3 id="action-types-and-workflows">Action Types and Workflows<a class="headerlink" href="#action-types-and-workflows" title="Permanent link">&para;</a></h3>
-<p>Kubernaut uses an <strong>ActionType taxonomy</strong> to organize remediation capabilities. Operators register <code>ActionType</code> CRDs that describe what each remediation does, when to use it, and under what preconditions. <code>RemediationWorkflow</code> CRDs reference ActionTypes by name.</p>
-<p>Register your own ActionType CRs and RemediationWorkflows to build a catalog tailored to your environment. See <a href="../../user-guide/workflow-authoring/">Authoring Workflows</a> for guidelines and the <a href="../../user-guide/workflows/#action-type-taxonomy">Action Type reference</a> for registration details.</p>
+<h3 id="seed-workflows">Seed Workflows<a class="headerlink" href="#seed-workflows" title="Permanent link">&para;</a></h3>
+<p>Kubernaut requires <strong>ActionType</strong> and <strong>RemediationWorkflow</strong> CRDs to define what remediations are available. These are user-provided — you bring workflows tailored to your environment.</p>
+<p>To get started quickly, the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository provides a reference catalog with 34 ActionTypes and ~28 RemediationWorkflows covering common scenarios (CrashLoopBackOff, memory leaks, stuck rollouts, etc.):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>
+</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="c1"># Apply ActionType CRDs</span>
+</span><span id="__span-33-5"><a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/action-types/<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-33-6"><a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a>
+</span><span id="__span-33-7"><a id="__codelineno-33-7" name="__codelineno-33-7" href="#__codelineno-33-7"></a><span class="c1"># Seed RemediationWorkflows (skips unavailable infrastructure automatically)</span>
+</span><span id="__span-33-8"><a id="__codelineno-33-8" name="__codelineno-33-8" href="#__codelineno-33-8"></a>./scripts/seed-workflows.sh
+</span><span id="__span-33-9"><a id="__codelineno-33-9" name="__codelineno-33-9" href="#__codelineno-33-9"></a>
+</span><span id="__span-33-10"><a id="__codelineno-33-10" name="__codelineno-33-10" href="#__codelineno-33-10"></a><span class="c1"># Verify</span>
+</span><span id="__span-33-11"><a id="__codelineno-33-11" name="__codelineno-33-11" href="#__codelineno-33-11"></a>oc<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span></code></pre></div>
+<p>See <a href="../../operations/disconnected-install/#seed-demo-workflows">Seed Demo Workflows</a> for detailed step-by-step instructions.</p>
+<p>For authoring your own workflows, see <a href="../../user-guide/workflow-authoring/">Authoring Workflows</a> and the <a href="../../user-guide/workflows/#action-type-taxonomy">Action Type reference</a>.</p>
 <h2 id="resource-scope">Resource Scope<a class="headerlink" href="#resource-scope" title="Permanent link">&para;</a></h2>
 <p>After installation, Kubernaut only manages namespaces and resources that opt in via labels:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
 </span></code></pre></div>
 <p>See <a href="../../user-guide/signals/">Signals &amp; Alert Routing</a> for details on scope management.</p>
 <h2 id="reinstalling">Reinstalling<a class="headerlink" href="#reinstalling" title="Permanent link">&para;</a></h2>
 <p>Kubernaut does not support in-place upgrades. To move to a new version,
 perform a fresh install. See <a href="../../whats-new/">What's New</a> for
 changes between releases.</p>
-<h3 id="v14-v15-migration-notes">v1.4 → v1.5 migration notes<a class="headerlink" href="#v14-v15-migration-notes" title="Permanent link">&para;</a></h3>
-<p>v1.5 introduces breaking changes that require manual steps during reinstall:</p>
-<ol>
-<li><strong>SAR-based tool authorization</strong> — The API Frontend's <code>rbac_roles.yaml</code> ConfigMap is removed. Create <code>ClusterRoleBindings</code> mapping OIDC groups to the <a href="../../architecture/security-rbac/#tool-authorization-v15">per-persona ClusterRoles</a> shipped in the Helm chart.</li>
-<li><strong>11th service — API Frontend</strong> — Resource planning must account for the new service. See <a href="../../user-guide/configuration/#api-frontend-v15">Configuration: API Frontend</a> for resource defaults.</li>
-<li><strong>Lease RBAC</strong> — The Kubernaut Agent ServiceAccount now requires <code>list</code> on <code>coordination.k8s.io/leases</code>. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.</li>
-</ol>
 <h2 id="uninstalling">Uninstalling<a class="headerlink" href="#uninstalling" title="Permanent link">&para;</a></h2>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h3 id="what-is-retained-after-uninstall">What is retained after uninstall<a class="headerlink" href="#what-is-retained-after-uninstall" title="Permanent link">&para;</a></h3>
 <table>
@@ -4142,28 +4525,28 @@ changes between releases.</p>
 </tbody>
 </table>
 <p>If the <code>kubernaut-workflows</code> namespace gets stuck in <code>Terminating</code> state:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>kubectl<span class="w"> </span>delete<span class="w"> </span><span class="nb">jobs</span><span class="w"> </span>--all<span class="w"> </span>-n<span class="w"> </span>kubernaut-workflows
 </span></code></pre></div>
 <h3 id="full-cleanup">Full cleanup<a class="headerlink" href="#full-cleanup" title="Permanent link">&para;</a></h3>
 <p>To remove everything including persistent data:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="c1"># Remove PVCs retained by resource policy</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>valkey-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="c1"># Remove hook-created cluster resources (not tracked by Helm)</span>
-</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-hook-role<span class="w"> </span>--ignore-not-found
-</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-hook-rolebinding<span class="w"> </span>--ignore-not-found
-</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a>
-</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="c1"># Remove CRDs and all CR instances</span>
-</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>crd<span class="w"> </span>actiontypes.kubernaut.ai<span class="w"> </span>aianalyses.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">  </span>effectivenessassessments.kubernaut.ai<span class="w"> </span>notificationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">  </span>remediationapprovalrequests.kubernaut.ai<span class="w"> </span>remediationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">  </span>remediationworkflows.kubernaut.ai<span class="w"> </span>signalprocessings.kubernaut.ai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="w">  </span>workflowexecutions.kubernaut.ai
-</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a>
-</span><span id="__span-19-17"><a id="__codelineno-19-17" name="__codelineno-19-17" href="#__codelineno-19-17"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>helm<span class="w"> </span>uninstall<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="c1"># Remove PVCs retained by resource policy</span>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>pvc<span class="w"> </span>postgresql-data<span class="w"> </span>valkey-data<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="c1"># Remove hook-created cluster resources (not tracked by Helm)</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-hook-role<span class="w"> </span>--ignore-not-found
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-hook-rolebinding<span class="w"> </span>--ignore-not-found
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a>
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a><span class="c1"># Remove CRDs and all CR instances</span>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>crd<span class="w"> </span>actiontypes.kubernaut.ai<span class="w"> </span>aianalyses.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-37-12"><a id="__codelineno-37-12" name="__codelineno-37-12" href="#__codelineno-37-12"></a><span class="w">  </span>effectivenessassessments.kubernaut.ai<span class="w"> </span>notificationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-37-13"><a id="__codelineno-37-13" name="__codelineno-37-13" href="#__codelineno-37-13"></a><span class="w">  </span>remediationapprovalrequests.kubernaut.ai<span class="w"> </span>remediationrequests.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-37-14"><a id="__codelineno-37-14" name="__codelineno-37-14" href="#__codelineno-37-14"></a><span class="w">  </span>remediationworkflows.kubernaut.ai<span class="w"> </span>signalprocessings.kubernaut.ai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-37-15"><a id="__codelineno-37-15" name="__codelineno-37-15" href="#__codelineno-37-15"></a><span class="w">  </span>workflowexecutions.kubernaut.ai
+</span><span id="__span-37-16"><a id="__codelineno-37-16" name="__codelineno-37-16" href="#__codelineno-37-16"></a>
+</span><span id="__span-37-17"><a id="__codelineno-37-17" name="__codelineno-37-17" href="#__codelineno-37-17"></a>kubectl<span class="w"> </span>delete<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <h2 id="known-limitations">Known Limitations<a class="headerlink" href="#known-limitations" title="Permanent link">&para;</a></h2>
 <ul>

@@ -2382,6 +2382,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#llmphaseoverridespec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LLMPhaseOverrideSpec (v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#interactivespec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        InteractiveSpec (v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#alignmentcheckspec" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2506,7 +2528,18 @@
   <a href="#jwtproviderspec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        JWTProviderSpec
+        JWTProviderSpec (v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#claimmappingsspec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClaimMappingsSpec
       
     </span>
   </a>
@@ -2547,6 +2580,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#apifrontendroutespec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        APIFrontendRouteSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#apifrontendspirespec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        APIFrontendSPIRESpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#apifrontendshutdownspec" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2562,6 +2617,17 @@
     <span class="md-ellipsis">
       
         DataStorageSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consolespec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ConsoleSpec (v1.5.1)
       
     </span>
   </a>
@@ -3567,6 +3633,12 @@
 <td>Endpoint propagation delay, retention, logging, resources</td>
 </tr>
 <tr>
+<td><code>console</code></td>
+<td><a href="#consolespec">ConsoleSpec</a></td>
+<td>disabled</td>
+<td>Kubernaut Console deployment (v1.5.1)</td>
+</tr>
+<tr>
 <td><code>networkPolicies</code></td>
 <td><a href="#networkpoliciesspec">NetworkPoliciesSpec</a></td>
 <td>disabled</td>
@@ -3698,6 +3770,13 @@
 <td><strong>yes</strong></td>
 <td>—</td>
 <td>Primary LLM configuration</td>
+</tr>
+<tr>
+<td><code>interactive</code></td>
+<td><a href="#interactivespec">InteractiveSpec</a></td>
+<td>no</td>
+<td>—</td>
+<td>Interactive session configuration including JWT providers (v1.5.1)</td>
 </tr>
 <tr>
 <td><code>maxTurns</code></td>
@@ -3873,6 +3952,71 @@
 <td>no</td>
 <td>—</td>
 <td>BYO hot-reloadable ConfigMap name (key: <code>llm-runtime.yaml</code>)</td>
+</tr>
+<tr>
+<td><code>phaseModels</code></td>
+<td>map[string]<a href="#llmphaseoverridespec">LLMPhaseOverrideSpec</a></td>
+<td>no</td>
+<td>—</td>
+<td>Per-phase LLM overrides (v1.5.1). Keys must be <code>rca</code>, <code>workflow_discovery</code>, or <code>validation</code> (CEL-validated).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="llmphaseoverridespec">LLMPhaseOverrideSpec (v1.5.1)<a class="headerlink" href="#llmphaseoverridespec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>provider</code></td>
+<td>string</td>
+<td>Override LLM provider for this phase</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>string</td>
+<td>Override model name</td>
+</tr>
+<tr>
+<td><code>endpoint</code></td>
+<td>string</td>
+<td>Override endpoint URL</td>
+</tr>
+<tr>
+<td><code>apiKey</code></td>
+<td>string</td>
+<td>Override API key</td>
+</tr>
+</tbody>
+</table>
+<p>See <a href="../../user-guide/configmap-kubernaut-agent/#per-phase-llm-routing-v151">Per-phase LLM routing</a> for usage details and YAML examples.</p>
+<h3 id="interactivespec">InteractiveSpec (v1.5.1)<a class="headerlink" href="#interactivespec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Enable interactive MCP sessions</td>
+</tr>
+<tr>
+<td><code>jwtProviders</code></td>
+<td>[]<a href="#jwtproviderspec">JWTProviderSpec</a></td>
+<td>—</td>
+<td>Trusted JWT issuers for interactive session authentication</td>
 </tr>
 </tbody>
 </table>
@@ -4242,6 +4386,20 @@
 <td>SAR-based tool authorization and role bindings</td>
 </tr>
 <tr>
+<td><code>route</code></td>
+<td><a href="#apifrontendroutespec">APIFrontendRouteSpec</a></td>
+<td>no</td>
+<td>—</td>
+<td>OCP Route creation</td>
+</tr>
+<tr>
+<td><code>spire</code></td>
+<td><a href="#apifrontendspirespec">APIFrontendSPIRESpec</a></td>
+<td>no</td>
+<td>—</td>
+<td>SPIRE/kagenti integration for A2A workload identity</td>
+</tr>
+<tr>
 <td><code>logging</code></td>
 <td>LoggingSpec</td>
 <td>no</td>
@@ -4272,13 +4430,25 @@
 <td><code>issuerURL</code></td>
 <td>string</td>
 <td>—</td>
-<td>OIDC issuer URL (e.g., <code>https://login.kubernaut.ai/realms/kubernaut</code>)</td>
+<td>OIDC issuer URL (e.g., <code>https://login.kubernaut.ai/realms/kubernaut</code>). Must match the <code>iss</code> claim in tokens.</td>
 </tr>
 <tr>
 <td><code>audience</code></td>
 <td>string</td>
 <td><code>kubernaut-apifrontend</code></td>
-<td>Expected JWT audience claim</td>
+<td>Expected JWT audience claim. Must match the <code>aud</code> claim in tokens (typically the Keycloak realm URL).</td>
+</tr>
+<tr>
+<td><code>jwksURL</code></td>
+<td>string</td>
+<td>—</td>
+<td>Cluster-internal JWKS endpoint URL for token validation (e.g., <code>http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs</code>). Bypasses OIDC discovery — use when the issuer URL is external but JWKS must be fetched internally.</td>
+</tr>
+<tr>
+<td><code>allowInsecureIssuers</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Allow insecure (HTTP or self-signed TLS) issuer verification. Set <code>true</code> for development or self-signed Keycloak deployments. <strong>Must be <code>false</code> in production.</strong></td>
 </tr>
 <tr>
 <td><code>jwtProviders</code></td>
@@ -4294,7 +4464,51 @@
 </tr>
 </tbody>
 </table>
-<h3 id="jwtproviderspec">JWTProviderSpec<a class="headerlink" href="#jwtproviderspec" title="Permanent link">&para;</a></h3>
+<h3 id="jwtproviderspec">JWTProviderSpec (v1.5.1)<a class="headerlink" href="#jwtproviderspec" title="Permanent link">&para;</a></h3>
+<p>Used at <code>spec.kubernautAgent.interactive.jwtProviders[]</code> and <code>spec.apiFrontend.auth.jwtProviders[]</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>name</code></td>
+<td>string</td>
+<td><strong>yes</strong></td>
+<td>Human-readable provider name (1--63 chars, must be unique)</td>
+</tr>
+<tr>
+<td><code>issuerURL</code></td>
+<td>string</td>
+<td><strong>yes</strong></td>
+<td>OIDC issuer URL -- must match the <code>iss</code> claim in tokens</td>
+</tr>
+<tr>
+<td><code>jwksURL</code></td>
+<td>string</td>
+<td>no</td>
+<td>JWKS endpoint URL (max 2048 chars). Falls back to <code>issuerURL</code> for OIDC discovery if omitted. Must use HTTPS unless <code>allowInsecureJWKS</code> is true.</td>
+</tr>
+<tr>
+<td><code>audiences</code></td>
+<td>[]string</td>
+<td><strong>yes</strong></td>
+<td>Expected JWT audience claims (min 1 entry). Tokens without a matching <code>aud</code> are rejected.</td>
+</tr>
+<tr>
+<td><code>claimMappings</code></td>
+<td><a href="#claimmappingsspec">ClaimMappingsSpec</a></td>
+<td>no</td>
+<td>Custom claim-to-identity field mappings</td>
+</tr>
+</tbody>
+</table>
+<h3 id="claimmappingsspec">ClaimMappingsSpec<a class="headerlink" href="#claimmappingsspec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -4305,17 +4519,21 @@
 </thead>
 <tbody>
 <tr>
-<td><code>name</code></td>
+<td><code>username</code></td>
 <td>string</td>
-<td>Human-readable provider name (1–63 chars)</td>
+<td>JWT claim name to extract as username (e.g., <code>preferred_username</code>, <code>email</code>)</td>
 </tr>
 <tr>
-<td><code>jwksURL</code></td>
+<td><code>groups</code></td>
 <td>string</td>
-<td>JWKS endpoint URL. Must use HTTPS unless <code>allowInsecureJWKS</code> is true</td>
+<td>JWT claim name to extract group membership (e.g., <code>groups</code>, <code>realm_access.roles</code>). Supports dot-notation for nested claims.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">No <code>uid</code> field</p>
+<p><code>ClaimMappingsSpec</code> supports <code>username</code> and <code>groups</code> only. There is no <code>uid</code> field in the operator CRD.</p>
+</div>
 <h3 id="apifrontendrbacspec">APIFrontendRBACSpec<a class="headerlink" href="#apifrontendrbacspec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4342,6 +4560,7 @@
 </tbody>
 </table>
 <h3 id="toolrolebinding">ToolRoleBinding<a class="headerlink" href="#toolrolebinding" title="Permanent link">&para;</a></h3>
+<p>Exactly one of <code>role</code> or <code>clusterRoleName</code> must be set. Entries with both or neither are rejected by CR validation.</p>
 <table>
 <thead>
 <tr>
@@ -4354,7 +4573,12 @@
 <tr>
 <td><code>role</code></td>
 <td>string</td>
-<td>Persona name. One of: <code>sre</code>, <code>ai-orchestrator</code>, <code>cicd</code>, <code>observability</code>, <code>l3-audit</code>, <code>remediation-approver</code></td>
+<td>Built-in persona name. One of: <code>sre</code>, <code>ai-orchestrator</code>, <code>cicd</code>, <code>observability</code>, <code>l3-audit</code>, <code>remediation-approver</code>. Mutually exclusive with <code>clusterRoleName</code>.</td>
+</tr>
+<tr>
+<td><code>clusterRoleName</code></td>
+<td>string</td>
+<td>Reference to a <strong>user-managed</strong> ClusterRole for custom tool authorization. The operator creates only the ClusterRoleBinding; the ClusterRole must be pre-created by the user with rules granting verb <code>use</code> on resource <code>tools</code> in apiGroup <code>kubernaut.ai</code>. Mutually exclusive with <code>role</code>.</td>
 </tr>
 <tr>
 <td><code>groups</code></td>
@@ -4363,22 +4587,33 @@
 </tr>
 </tbody>
 </table>
-<p><strong>Example:</strong></p>
+<p><strong>Example (built-in personas only):</strong></p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">spec</span><span class="p">:</span>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://dex.kubernaut.svc.cluster.local:5556/dex</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">audience</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-apifrontend</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;sre-team&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;platform-eng&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
-</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;monitoring-team&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-mgmt&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;sre-team&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;platform-eng&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;monitoring-team&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-mgmt&quot;</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
+<p><strong>Example (mixed — built-in + custom ClusterRoles):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="c1"># Built-in persona: operator manages the ClusterRole</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="c1"># User-managed ClusterRole: operator creates only the CRB</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;compliance-team&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p>See <a href="../../architecture/security-rbac/#custom-clusterroles">Custom ClusterRoles</a> for how to create user-managed ClusterRoles with fine-grained tool subsets.</p>
 <h3 id="apifrontendratelimitspec">APIFrontendRateLimitSpec<a class="headerlink" href="#apifrontendratelimitspec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4403,10 +4638,66 @@
 <td>Per-user requests per second</td>
 </tr>
 <tr>
+<td><code>toolCallsPerMinute</code></td>
+<td>*int</td>
+<td><code>60</code></td>
+<td>Maximum tool calls per user per minute</td>
+</tr>
+<tr>
 <td><code>maxConcurrentSessions</code></td>
 <td>*int</td>
 <td><code>100</code></td>
 <td>Maximum concurrent MCP/A2A sessions</td>
+</tr>
+</tbody>
+</table>
+<h3 id="apifrontendroutespec">APIFrontendRouteSpec<a class="headerlink" href="#apifrontendroutespec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>*bool</td>
+<td><code>false</code></td>
+<td>Create an OCP Route for the API Frontend</td>
+</tr>
+<tr>
+<td><code>hostname</code></td>
+<td>string</td>
+<td>—</td>
+<td>Custom route hostname. When empty, OCP derives the hostname from the route name and cluster ingress domain.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="apifrontendspirespec">APIFrontendSPIRESpec<a class="headerlink" href="#apifrontendspirespec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>bool</td>
+<td><code>false</code></td>
+<td>Enable SPIRE integration via kagenti. When <code>true</code>, the operator labels the namespace with <code>kagenti-enabled=true</code> and creates an <code>AgentRuntime</code> CR.</td>
+</tr>
+<tr>
+<td><code>className</code></td>
+<td>string</td>
+<td>—</td>
+<td>SPIRE class name provisioned by kagenti (e.g., <code>zero-trust-workload-identity-manager-spire</code>). Must match the <code>SPIREClusterConfig</code> deployed by kagenti.</td>
 </tr>
 </tbody>
 </table>
@@ -4466,6 +4757,56 @@
 </tr>
 </tbody>
 </table>
+<h3 id="consolespec">ConsoleSpec (v1.5.1)<a class="headerlink" href="#consolespec" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Required</th>
+<th>Default</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>*bool</td>
+<td>no</td>
+<td><code>false</code></td>
+<td>Opt-in Kubernaut Console deployment</td>
+</tr>
+<tr>
+<td><code>auth.secretName</code></td>
+<td>string</td>
+<td>when enabled</td>
+<td>—</td>
+<td>Pre-existing Secret with keys: <code>client-id</code>, <code>client-secret</code>, <code>cookie-secret</code> for OAuth2 Proxy</td>
+</tr>
+<tr>
+<td><code>route.enabled</code></td>
+<td>*bool</td>
+<td>no</td>
+<td><code>true</code></td>
+<td>Create an OCP Route for the Console</td>
+</tr>
+<tr>
+<td><code>route.host</code></td>
+<td>string</td>
+<td>no</td>
+<td>auto-derived</td>
+<td>Custom route hostname. When empty, derived from namespace.</td>
+</tr>
+<tr>
+<td><code>resources</code></td>
+<td>ResourceRequirements</td>
+<td>no</td>
+<td>—</td>
+<td>CPU/memory requests and limits for the Console container</td>
+</tr>
+</tbody>
+</table>
+<p>The Console OIDC issuer URL is derived from <code>spec.apiFrontend.auth.jwtProviders[0].issuerURL</code>, falling back to <code>spec.apiFrontend.auth.issuerURL</code>.</p>
 <h3 id="networkpoliciesspec">NetworkPoliciesSpec<a class="headerlink" href="#networkpoliciesspec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

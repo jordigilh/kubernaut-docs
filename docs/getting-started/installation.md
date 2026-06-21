@@ -14,7 +14,7 @@ Kubernaut offers two deployment methods:
 
 ## Kubernaut Operator (Production)
 
-The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices (v1.5+; 10 in v1.4), RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
+The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
 
 ### Installation
 
@@ -103,7 +103,7 @@ To seed the workflow catalog with sample ActionTypes and RemediationWorkflows, c
 - Validates BYO PostgreSQL and Valkey secrets before deployment
 - Runs embedded database schema migrations
 - Installs and upgrades the 9 Kubernaut workload CRDs
-- Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Deploys all 11 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
 - Applies preferred pod anti-affinity to all deployments (spread across nodes by `kubernetes.io/hostname`)
 - Configures OCP Routes and service-serving CA TLS
 - Reports per-service readiness status on the `Kubernaut` CR
@@ -345,11 +345,11 @@ Only required when Slack delivery is configured. When using console-only routing
 
 ## Install
 
-!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator (v1.4)"
-    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
+!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator"
+    The **OpenShift-specific** Helm chart path is **deprecated**. For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
 
-!!! info "NetworkPolicies (v1.4)"
-    Kubernaut v1.4 deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
+!!! info "NetworkPolicies"
+    Kubernaut deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
 
 The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 

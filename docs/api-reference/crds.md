@@ -30,7 +30,7 @@ _Appears in:_
 - [AIAnalysisStatus](#aianalysisstatus)
 
 _Validation:_
-- Enum: [AnalysisCompleted WorkflowResolutionFailed WorkflowNotNeeded NoWorkflowSelected RegoEvaluationError TransientError APIError]
+- Enum: [AnalysisCompleted WorkflowResolutionFailed WorkflowNotNeeded NoWorkflowSelected RegoEvaluationError TransientError APIError InteractiveCancelled ParentCancelled]
 
 | Value| Description|
 | ---| ---|
@@ -41,6 +41,8 @@ _Validation:_
 | `RegoEvaluationError`||
 | `TransientError`||
 | `APIError`||
+| `InteractiveCancelled`| Interactive session was cancelled by the operator (v1.5.1)|
+| `ParentCancelled`| Parent RemediationRequest entered a terminal phase, cascading cancellation to this AIAnalysis (v1.5.1)|
 
 
 ### AIAnalysisSpec
@@ -82,7 +84,7 @@ _Appears in:_
 | `phase`| _string_| Phase tracking (no "Approving" or "Recommending" phase - simplified 4-phase flow)|
 | `message`| _string_||
 | `reason`| _[AIAnalysisReason](#aianalysisreason)_| Reason provides the umbrella failure or completion category.|
-| `subReason`| _string_| SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from KA<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes|
+| `subReason`| _string_| SubReason provides specific failure cause within the Reason category<br /> Maps to needs_human_review triggers from KA<br /> Added InvestigationInconclusive, ProblemResolved for new investigation outcomes<br /> v1.5.1: `OperatorEscalation` added for escalation via `kubernaut_complete_no_action`|
 | `startedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Timestamps|
 | `completedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_||
 | `rootCause`| _string_| Identified root cause|
@@ -93,7 +95,7 @@ _Appears in:_
 | `approvalReason`| _string_| Reason why approval is required (when ApprovalRequired=true)|
 | `approvalContext`| _[ApprovalContext](#approvalcontext)_| Rich context for approval notification|
 | `needsHumanReview`| _boolean_| Set by Kubernaut Agent when AI cannot produce reliable result<br />True if human review required (KA decision: RCA incomplete/unreliable)<br /> Triggers NotificationRequest creation in RO<br />BR-496 v2: Set when root_owner missing (rca_incomplete) or validation/confidence issues.|
-| `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to KA's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts|
+| `humanReviewReason`| _string_| Reason why human review needed (when NeedsHumanReview=true)<br /> Maps to KA's human_review_reason enum values<br /> alignment_check_failed added for shadow agent alignment verdicts<br /> v1.5.1: `operator_escalation` added for escalation via `kubernaut_complete_no_action`|
 | `alignmentVerdict`| _[AlignmentVerdictStatus](#alignmentverdictstatus)_| Shadow agent alignment verdict from KA (#1076).<br />When CircuitBreakerActivated=true, the investigation was terminated early<br />and LLM results (RootCauseAnalysis, SelectedWorkflow) may be incomplete<br />or compromised. Users should treat shadow findings as the primary content.|
 | `actionability`| _string_| #388: LLM's assessment of whether the alert warrants action.<br />Empty when not yet assessed (pre-investigation or error paths).<br />"Actionable" when the LLM determines the alert warrants action (default for all processed alerts).<br />"NotActionable" when the LLM determines the alert is benign (e.g., orphaned PVCs).|
 | `investigationId`| _string_| KA investigation ID for correlation|

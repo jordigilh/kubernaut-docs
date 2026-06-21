@@ -300,6 +300,7 @@ In enforce mode, a positive detection triggers `context.WithCancelCause(ErrCircu
 Shadow agent results are propagated through the system:
 
 - **`alignment_verdict`** field on the Kubernaut Agent `IncidentResponse` (OpenAPI) and `AIAnalysisStatus` (CRD) carrying the verdict (`result`, `circuit_breaker_activated`, `summary`, `findings`)
+- **`aiagent.alignment.verdict` audit event** — emitted by `InvestigatorWrapper.emitVerdictEvent()` after every investigation. Payload includes `result` (`aligned`/`suspicious`), `circuit_breaker_activated`, `summary`, `flagged`/`total` counts, `findings[]`, and optional `grounding_review` (v1.5.1)
 - **NotificationRequest `ReviewContext`** includes `alignmentVerdict` and `circuitBreakerActivated` fields for routing rule support
 - **Manual review notifications** render shadow agent findings prominently when `alignment_check_failed` SubReason escalates to `NotificationPriorityCritical`
 
@@ -394,8 +395,8 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 | ClusterRole | Persona | MCP Tools | Tool List |
 |---|---|---|---|
-| `kubernaut-tool-sre` | Full investigation + remediation | 19 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
-| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration (no approval) | 13 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| `kubernaut-tool-sre` | Full investigation + remediation | 21 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_workflows`, `kubernaut_list_alerts`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| `kubernaut-tool-ai-orchestrator` | Automated agent orchestration (no approval) | 15 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
 | `kubernaut-tool-cicd` | CI/CD pipeline integration | 4 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
 | `kubernaut-tool-observability` | Read-only observability | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
 | `kubernaut-tool-l3-audit` | Compliance and auditing | 6 | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
@@ -403,6 +404,114 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 !!! info "Internal tools"
     The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
+
+### Custom ClusterRoles {: #custom-clusterroles }
+
+For organizations that need tool subsets not covered by the 6 built-in personas — for example, separation of duties where SREs can investigate but not approve — the operator supports **user-managed ClusterRoles** via the `clusterRoleName` field on `ToolRoleBinding`.
+
+**How it works:**
+
+1. You create a ClusterRole with `verb: use` on `resource: tools` in `apiGroup: kubernaut.ai`, listing the desired tool names as `resourceNames`
+2. In the Kubernaut CR, add a `roleBindings` entry with `clusterRoleName` (instead of `role`) pointing to your ClusterRole
+3. The operator creates only the ClusterRoleBinding — it does **not** create or modify your ClusterRole
+
+**Validation:** `role` and `clusterRoleName` are mutually exclusive. Entries with both or neither set are rejected by CR validation.
+
+??? example "Custom ClusterRole: restricted investigator (investigate + read, no approval)"
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: kubernaut-restricted-investigator
+    rules:
+      - apiGroups: ["kubernaut.ai"]
+        resources: ["tools"]
+        verbs: ["use"]
+        resourceNames:
+          - kubernaut_list_remediations
+          - kubernaut_get_remediation
+          - kubernaut_watch
+          - kubernaut_investigate
+          - kubernaut_message
+          - kubernaut_complete
+          - kubernaut_cancel
+          - kubernaut_status
+          - kubernaut_reconnect
+    ```
+
+??? example "Custom ClusterRole: readonly audit (history + effectiveness only)"
+    ```yaml
+    apiVersion: rbac.authorization.k8s.io/v1
+    kind: ClusterRole
+    metadata:
+      name: kubernaut-readonly-audit
+    rules:
+      - apiGroups: ["kubernaut.ai"]
+        resources: ["tools"]
+        verbs: ["use"]
+        resourceNames:
+          - kubernaut_list_remediations
+          - kubernaut_get_remediation
+          - kubernaut_get_remediation_history
+          - kubernaut_get_effectiveness
+          - kubernaut_get_audit_trail
+    ```
+
+??? example "Mixed CR configuration (built-in + custom)"
+    ```yaml
+    spec:
+      apiFrontend:
+        rbac:
+          roleBindings:
+            - role: sre
+              groups: ["senior-sres"]
+            - clusterRoleName: kubernaut-restricted-investigator
+              groups: ["junior-sres"]
+            - clusterRoleName: kubernaut-readonly-audit
+              groups: ["compliance-team"]
+    ```
+
+#### Available tool `resourceNames`
+
+The following tool names can be used in `resourceNames` when authoring custom ClusterRoles. The SAR check matches against these exact strings.
+
+**MCP bridge tools (23)** — available to external MCP clients and the Kubernaut Console:
+
+| `resourceName` | Description |
+|---|---|
+| `kubernaut_list_remediations` | List active and recent remediations |
+| `kubernaut_get_remediation` | Get details of a specific remediation |
+| `kubernaut_cancel_remediation` | Cancel an active remediation |
+| `kubernaut_watch` | Stream live status updates for a remediation |
+| `kubernaut_list_approval_requests` | List approval requests |
+| `kubernaut_get_approval_request` | Get full details of an approval request |
+| `kubernaut_approve` | Approve or reject a pending approval request |
+| `kubernaut_await_session` | Wait for an investigation session to become ready |
+| `kubernaut_investigate` | Start or join an investigation |
+| `kubernaut_message` | Send a message to an active investigation session |
+| `kubernaut_complete` | Complete an investigation session |
+| `kubernaut_complete_no_action` | Complete with no remediation (dismiss or escalate) |
+| `kubernaut_cancel` | Cancel an active investigation session |
+| `kubernaut_status` | Get the current status of an investigation session |
+| `kubernaut_reconnect` | Reconnect to a disconnected session |
+| `kubernaut_discover_workflows` | Discover available workflows for a remediation |
+| `kubernaut_select_workflow` | Select a workflow for execution |
+| `kubernaut_present_decision` | Present investigation results for a decision |
+| `kubernaut_list_workflows` | List available workflows from the catalog |
+| `kubernaut_list_alerts` | Query firing Prometheus alerts (conditional) |
+| `kubernaut_get_remediation_history` | Query historical remediations |
+| `kubernaut_get_effectiveness` | Get effectiveness scores for workflows |
+| `kubernaut_get_audit_trail` | Retrieve the audit trail for a remediation |
+
+**A2A agent internal tools (5)** — used inside the A2A agent loop, SAR-gated on the A2A path:
+
+| `resourceName` | Description |
+|---|---|
+| `kubectl_get` | Get any namespaced K8s resource (Secret `.data` redacted) |
+| `kubectl_list` | List namespaced K8s resources (Secret `.data` redacted) |
+| `kubectl_list_events` | List K8s events with reason/object filters |
+| `kubernaut_check_existing_remediation` | Check for duplicate RemediationRequest |
+| `kubernaut_remediate` | Create a new RemediationRequest CRD |
 
 ### Binding example
 
@@ -457,6 +566,21 @@ All AF Kubernetes API calls use the **AF pod's own ServiceAccount** — there is
 | SEC-02 | K8s audit logs attribute actions to AF SA, not the end user | Application audit trail carries user identity; correlate via `actor_ip` |
 | SEC-04 | AF SA privilege aggregation | ClusterRole is explicit and minimal; reviewed per release |
 | SEC-09 | Persona misconfiguration could over-grant | Helm values are the source of truth; `kubernaut-tool-*` roles are data-driven |
+
+### Approval Consent Guard (DD-AF-006, v1.5.1) {: #approval-consent-guard }
+
+`kubernaut_approve` is **structurally absent** from the A2A agent's `buildToolList()` as of v1.5.1. It remains registered on the MCP bridge for the Kubernaut Console's Approve/Reject buttons and direct MCP client access.
+
+**Rationale**: An LLM with access to `kubernaut_approve` could autonomously approve RARs via prompt injection, bypassing the human consent gate that RARs exist to enforce.
+
+**Defense-in-depth layers**:
+
+1. Tool absent from `buildToolList()` -- structurally impossible for the A2A agent to call
+2. Explicit prompt instruction telling the agent the tool is unavailable
+3. SAR RBAC on the MCP bridge path
+4. Audit trail attributing every approval to the human user
+
+Similarly, `kubernaut_complete_no_action` is MCP-only (DD-AF-007) -- it is not available to the A2A agent.
 
 ### Trusted Intermediary Delegation (#1287) {: #trusted-intermediary }
 

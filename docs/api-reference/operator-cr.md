@@ -45,6 +45,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `apiFrontend` | [APIFrontendSpec](#apifrontendspec) | enabled | MCP/A2A gateway, OIDC auth, SAR-based tool authorization (v1.5+) |
 | `authWebhook` | AuthWebhookSpec | — | Logging, resources |
 | `dataStorage` | [DataStorageSpec](#datastoragespec) | — | Endpoint propagation delay, retention, logging, resources |
+| `console` | [ConsoleSpec](#consolespec) | disabled | Kubernaut Console deployment (v1.5.1) |
 | `networkPolicies` | [NetworkPoliciesSpec](#networkpoliciesspec) | disabled | Kubernetes NetworkPolicy creation |
 
 ---
@@ -81,6 +82,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `llm` | [LLMSpec](#llmspec) | **yes** | — | Primary LLM configuration |
+| `interactive` | [InteractiveSpec](#interactivespec) | no | — | Interactive session configuration including JWT providers (v1.5.1) |
 | `maxTurns` | int | no | `40` | Max tool-call turns per investigation (min: 1) |
 | `session` | SessionSpec | no | — | Session TTL configuration |
 | `audit` | AuditSpec | no | enabled | Audit event logging |
@@ -109,6 +111,25 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `tlsCaFile` | string | no | — | Custom CA certificate file path |
 | `oauth2` | OAuth2Spec | no | — | OAuth2 client credentials flow |
 | `runtimeConfigMapName` | string | no | — | BYO hot-reloadable ConfigMap name (key: `llm-runtime.yaml`) |
+| `phaseModels` | map[string][LLMPhaseOverrideSpec](#llmphaseoverridespec) | no | — | Per-phase LLM overrides (v1.5.1). Keys must be `rca`, `workflow_discovery`, or `validation` (CEL-validated). |
+
+### LLMPhaseOverrideSpec (v1.5.1) {: #llmphaseoverridespec }
+
+| Field | Type | Description |
+|---|---|---|
+| `provider` | string | Override LLM provider for this phase |
+| `model` | string | Override model name |
+| `endpoint` | string | Override endpoint URL |
+| `apiKey` | string | Override API key |
+
+See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151) for usage details and YAML examples.
+
+### InteractiveSpec (v1.5.1) {: #interactivespec }
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `enabled` | bool | `false` | Enable interactive MCP sessions |
+| `jwtProviders` | [][JWTProviderSpec](#jwtproviderspec) | — | Trusted JWT issuers for interactive session authentication |
 
 ### AlignmentCheckSpec
 
@@ -217,12 +238,27 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `jwtProviders` | [][JWTProviderSpec](#jwtproviderspec) | — | One or more OIDC JWT providers |
 | `allowInsecureJWKS` | bool | `false` | Permit HTTP JWKS URLs for dev/test. **Must be `false` in production.** |
 
-### JWTProviderSpec {: #jwtproviderspec }
+### JWTProviderSpec (v1.5.1) {: #jwtproviderspec }
+
+Used at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.auth.jwtProviders[]`.
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| `name` | string | **yes** | Human-readable provider name (1--63 chars, must be unique) |
+| `issuerURL` | string | **yes** | OIDC issuer URL -- must match the `iss` claim in tokens |
+| `jwksURL` | string | no | JWKS endpoint URL (max 2048 chars). Falls back to `issuerURL` for OIDC discovery if omitted. Must use HTTPS unless `allowInsecureJWKS` is true. |
+| `audiences` | []string | **yes** | Expected JWT audience claims (min 1 entry). Tokens without a matching `aud` are rejected. |
+| `claimMappings` | [ClaimMappingsSpec](#claimmappingsspec) | no | Custom claim-to-identity field mappings |
+
+### ClaimMappingsSpec {: #claimmappingsspec }
 
 | Field | Type | Description |
 |---|---|---|
-| `name` | string | Human-readable provider name (1–63 chars) |
-| `jwksURL` | string | JWKS endpoint URL. Must use HTTPS unless `allowInsecureJWKS` is true |
+| `username` | string | JWT claim name to extract as username (e.g., `preferred_username`, `email`) |
+| `groups` | string | JWT claim name to extract group membership (e.g., `groups`, `realm_access.roles`). Supports dot-notation for nested claims. |
+
+!!! note "No `uid` field"
+    `ClaimMappingsSpec` supports `username` and `groups` only. There is no `uid` field in the operator CRD.
 
 ### APIFrontendRBACSpec {: #apifrontendrbacspec }
 
@@ -233,21 +269,20 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 
 ### ToolRoleBinding {: #toolrolebinding }
 
+Exactly one of `role` or `clusterRoleName` must be set. Entries with both or neither are rejected by CR validation.
+
 | Field | Type | Description |
 |---|---|---|
-| `role` | string | Persona name. One of: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver` |
+| `role` | string | Built-in persona name. One of: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver`. Mutually exclusive with `clusterRoleName`. |
+| `clusterRoleName` | string | Reference to a **user-managed** ClusterRole for custom tool authorization. The operator creates only the ClusterRoleBinding; the ClusterRole must be pre-created by the user with rules granting verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Mutually exclusive with `role`. |
 | `groups` | []string | OIDC group names to bind to this role (min 1) |
 
-**Example:**
+**Example (built-in personas only):**
 
 ```yaml
 spec:
   apiFrontend:
-    auth:
-      issuerURL: https://dex.kubernaut.svc.cluster.local:5556/dex
-      audience: kubernaut-apifrontend
     rbac:
-      sarCacheTTL: 30s
       roleBindings:
         - role: sre
           groups: ["sre-team", "platform-eng"]
@@ -256,6 +291,25 @@ spec:
         - role: remediation-approver
           groups: ["change-mgmt"]
 ```
+
+**Example (mixed — built-in + custom ClusterRoles):**
+
+```yaml
+spec:
+  apiFrontend:
+    rbac:
+      roleBindings:
+        # Built-in persona: operator manages the ClusterRole
+        - role: sre
+          groups: ["senior-sres"]
+        # User-managed ClusterRole: operator creates only the CRB
+        - clusterRoleName: kubernaut-restricted-investigator
+          groups: ["junior-sres"]
+        - clusterRoleName: kubernaut-readonly-audit
+          groups: ["compliance-team"]
+```
+
+See [Custom ClusterRoles](../architecture/security-rbac.md#custom-clusterroles) for how to create user-managed ClusterRoles with fine-grained tool subsets.
 
 ### APIFrontendRateLimitSpec {: #apifrontendratelimitspec }
 
@@ -294,6 +348,18 @@ spec:
 | `retention` | RetentionSpec | — | Periodic purge of expired audit events (FedRAMP AU-11) |
 | `logging` | LoggingSpec | — | Log level |
 | `resources` | ResourceRequirements | — | CPU/memory requests and limits |
+
+### ConsoleSpec (v1.5.1) {: #consolespec }
+
+| Field | Type | Required | Default | Description |
+|---|---|---|---|---|
+| `enabled` | *bool | no | `false` | Opt-in Kubernaut Console deployment |
+| `auth.secretName` | string | when enabled | — | Pre-existing Secret with keys: `client-id`, `client-secret`, `cookie-secret` for OAuth2 Proxy |
+| `route.enabled` | *bool | no | `true` | Create an OCP Route for the Console |
+| `route.host` | string | no | auto-derived | Custom route hostname. When empty, derived from namespace. |
+| `resources` | ResourceRequirements | no | — | CPU/memory requests and limits for the Console container |
+
+The Console OIDC issuer URL is derived from `spec.apiFrontend.auth.jwtProviders[0].issuerURL`, falling back to `spec.apiFrontend.auth.issuerURL`.
 
 ### NetworkPoliciesSpec
 

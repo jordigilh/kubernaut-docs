@@ -6,6 +6,190 @@ Review the changes below to understand what differs from the version you are cur
 
 ---
 
+## v1.5.1
+
+### Kubernaut Console
+
+Kubernaut v1.5.1 introduces the **Kubernaut Console**, a web UI for interactive investigation and remediation. Operators can chat with the Kubernaut Agent in real time, view live RCA progress, approve remediation actions, and inspect audit trails from a single pane of glass.
+
+Key capabilities:
+
+- **A2A chat interface** — interactive investigation via `POST /a2a/invoke` with real-time SSE streaming of agent reasoning, tool calls, and investigation events
+- **Thinking panel** — live visualization of the agent's reasoning with collapsible sections for `reasoning`, `tool_call`, and `investigation` events
+- **RCA cards** — structured root cause analysis display with causal chain, confidence score, severity, and tool call count
+- **Workflow selection** — recommended remediation workflows with countdown confirmation and alignment verdicts
+- **Approval gate** — approve or decline `RemediationApprovalRequest` via `kubernaut_approve` on the MCP bridge
+- **Escalation input** — inline escalation with reason capture via `kubernaut_complete_no_action` with `escalation_reason`
+- **Verification timer** — live stabilization window countdown tracking `stabilization_elapsed`, `spec_hash_computed`, `alert_check`, and `health_check` steps
+- **Phase indicator** — real-time lifecycle banner (Investigating, Decision, Remediation, Verifying, Complete) with elapsed timer
+- **Real-time status streaming** — separate SSE subscription to `POST /a2a/status` for RR phase changes with automatic reconnection
+
+The Console deploys as a single pod with two containers: an **oauth2-proxy** sidecar (OIDC authentication, port 4180) and an **nginx** container serving the SPA and proxying API calls to the API Frontend (port 8080). On OpenShift, a TLS-terminated Route is created automatically.
+
+#### Deployment
+
+**Prerequisites**: Kubernetes 1.28+ or OpenShift 4.14+, Kubernaut API Frontend deployed, OIDC provider (Keycloak, Dex).
+
+```bash
+# 1. Create the OIDC secret
+kubectl create secret generic kubernaut-console-oidc \
+  --namespace kubernaut-system \
+  --from-literal=client-id=kubernaut-console \
+  --from-literal=client-secret=<YOUR_CLIENT_SECRET> \
+  --from-literal=cookie-secret=$(openssl rand -base64 32)
+
+# 2. Install the chart
+helm install kubernaut-console ./chart \
+  --namespace kubernaut-system \
+  --set auth.issuerUrl=https://your-keycloak/realms/kubernaut \
+  --set auth.clientId=kubernaut-console \
+  --set apiFrontend.url=http://apifrontend-service.kubernaut-system.svc:8443
+```
+
+When deploying via the **Kubernaut Operator**, use `spec.console` instead (see [ConsoleSpec](../api-reference/operator-cr.md#consolespec)).
+
+#### Helm values
+
+| Value | Default | Description |
+|---|---|---|
+| `image.repository` | `ghcr.io/jordigilh/kubernaut-console` | Container image |
+| `image.tag` | `latest` | Image version (pin by digest for production) |
+| `apiFrontend.url` | `http://apifrontend.kubernaut-system.svc:8443` | API Frontend service URL |
+| `auth.provider` | `oidc` | OAuth2 Proxy provider |
+| `auth.issuerUrl` | — | OIDC issuer URL |
+| `auth.clientId` | `kubernaut-console` | OIDC client ID |
+| `auth.existingSecret` | `kubernaut-console-oidc` | Secret with keys: `client-id`, `client-secret`, `cookie-secret` |
+| `auth.skipTlsVerify` | `true` | Skip TLS for dev (must be `false` in production) |
+| `auth.redirectUrl` | — | OAuth2 callback URL |
+| `service.type` | `ClusterIP` | Service type |
+| `service.port` | `4180` | Service port (OAuth2 Proxy) |
+| `route.enabled` | `true` | Create OpenShift Route |
+| `route.host` | auto-derived | Custom route hostname |
+| `route.tls.termination` | `edge` | TLS termination mode |
+
+#### Nginx proxy routes
+
+| Location | Target | Timeout | Notes |
+|---|---|---|---|
+| `/a2a/` | API Frontend | 3600s | SSE streaming, buffering disabled |
+| `/mcp` | API Frontend | 30s | JSON-RPC tool calls |
+| `/.well-known/` | API Frontend | default | Agent card discovery |
+| `/healthz` | local 200 | — | Liveness/readiness probe |
+| `/` | static files | — | SPA fallback to `index.html` |
+
+#### Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| 502 on `/a2a/` | AF not reachable | Check AF service DNS and port |
+| OIDC redirect loop | Incorrect redirect URI | Verify Keycloak/Dex client config matches `auth.redirectUrl` |
+| SSE disconnects | Proxy timeout too low | Ensure 3600s timeouts on SSE route |
+| Stale UI after deploy | Image pull policy `IfNotPresent` | Use `Always` or pin by digest |
+
+See the [Kubernaut Console repository](https://github.com/jordigilh/kubernaut-console) for full architecture, Kind demo deployment, and development setup.
+
+### Interactive GitOps remediation demo
+
+A video demonstrating **GitOps drift remediation in interactive mode** has been added to the [Kubernaut README](https://github.com/jordigilh/kubernaut). The demo shows the full journey: a bad commit breaks a ConfigMap in a GitOps-managed production namespace, Kubernaut traces the pod crash to the ConfigMap root cause, selects `git revert` over `kubectl rollback` because the environment is GitOps-managed, pauses for human approval (production namespace), and executes the fix via ArgoCD sync.
+
+<div align="center">
+  <video src="https://github.com/user-attachments/assets/b95290db-412b-4d6d-81b8-f766ef4657e2" controls width="100%"></video>
+</div>
+
+### Per-phase LLM routing (`phaseModels`)
+
+Configure different LLM models for each phase of the investigation pipeline via the `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap:
+
+| Phase key | Description |
+|---|---|
+| `rca` | Root-cause analysis loop (K8s + Prometheus tools) |
+| `workflow_discovery` | Workflow selection and discovery |
+| `validation` | Post-selection validation |
+
+Override fields per phase: `provider`, `endpoint`, `model`, `apiKey`, plus cloud-specific fields (`azureApiVersion`, `vertexProject`, `vertexLocation`, `bedrockRegion`). Non-empty fields override the base config; `temperature`, `maxRetries`, and `timeoutSeconds` are always inherited. Hot-reloadable via FileWatcher — no pod restart needed.
+
+**Configuration paths**: operator CR (`spec.kubernautAgent.llm.phaseModels`) or direct ConfigMap patch. The Helm chart does not yet expose `phaseModels` as a value key.
+
+See [Kubernaut Agent Config: phaseModels](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151) for the full reference.
+
+### Severity triage LLM configuration
+
+The severity triage pipeline can now use a **dedicated LLM** instead of sharing the agent's LLM. Configure via a ConfigMap overlay under `severityTriage.llm` — supports `provider` (vertex_ai, gemini, anthropic), `model`, `endpoint`, `apiKeyFile`, `timeoutSeconds`, `oauth2`, `circuitBreaker`, and `customHeaders`.
+
+The Helm chart exposes only two severity triage values: `cacheTTLSeconds` (default 30) and `llmConfidence` (default 0.7). The full `LLMConfig` block requires a ConfigMap overlay. The operator auto-derives severity triage enablement from `spec.monitoring.enabled`.
+
+See [Configuration: Severity Triage](../user-guide/configuration.md#severity-triage-v151) for the full reference.
+
+### Multi-provider JWT authentication
+
+Both the Kubernaut Agent and API Frontend now support **multiple JWT providers** via a `jwtProviders[]` array, enabling dual-provider configurations (e.g., Keycloak + SPIRE). The two services use intentionally different schemas:
+
+| Field | Kubernaut Agent | API Frontend |
+|---|---|---|
+| Issuer | `issuer` (string) | `issuerURL` (string) |
+| Audience | `audience` (singular string) | `audiences` (string array) |
+| JWKS URL | `jwksURL` (required) | `jwksURL` (optional, falls back to issuerURL) |
+| Claim mappings | Simple claim names, dot-notation | CEL expressions or claim paths |
+
+`ClaimMappingsSpec` supports `username` and `groups` fields. Legacy single-provider fields (`issuerURL` + `audience`) remain supported for backward compatibility.
+
+See [Configuration: JWT Providers](../user-guide/configuration.md#jwt-providers-v151) for the full reference.
+
+### MCP tool surface: 21 to 23
+
+Two tools join the public MCP bridge:
+
+| Tool | Condition | Purpose |
+|---|---|---|
+| `kubernaut_list_alerts` | Registered when `severityTriage.enabled: true` and Prometheus is configured | Query firing alerts with `namespace`, `severity`, `state` filters |
+| `kubernaut_complete_no_action` | Always registered | Complete an investigation with no remediation — dismiss or escalate to operator |
+
+When `interactive.enabled: false`, **11 session-dependent tools** are hidden (up from 10), leaving **12 stateless tools** on MCP (13 with `list_alerts` if Prometheus is configured).
+
+See [MCP Tool Reference](../api-reference/mcp-tools.md) for the updated tool list.
+
+### Breaking: `kubernaut_approve` removed from A2A agent (DD-AF-006)
+
+`kubernaut_approve` is **structurally absent** from the A2A agent's `buildToolList()`. It remains available on the MCP bridge for the Kubernaut Console's Approve/Reject buttons. This prevents an LLM from autonomously approving RemediationApprovalRequests via prompt injection, preserving the human consent gate that RARs exist to enforce.
+
+Defense-in-depth: (1) tool absent from `buildToolList()`, (2) explicit prompt instruction, (3) SAR RBAC on the MCP path, (4) audit trail attributing every approval to the human user.
+
+### `POST /a2a/status` SSE endpoint (DD-AF-008)
+
+New endpoint for real-time remediation status streaming. Clients subscribe to phase transitions for a specific RemediationRequest.
+
+- **Request**: JSON-RPC 2.0 body with method `status/subscribe` and `params.rr_id`
+- **Events**: `status/update` (phase, timestamp, final, metadata) and `status/closing` (reason, reconnect)
+- **Heartbeat**: 15-second keepalive
+- **Auth**: same OIDC chain as `/mcp` and `/a2a/invoke`
+
+See [API Frontend API: Status SSE](../api-reference/apifrontend-api.md#status-sse-v151) for the full reference.
+
+### CRD changes
+
+- **`HumanReviewReason`** enum: added `operator_escalation` — triggered by `kubernaut_complete_no_action` with `escalation_reason`
+- **`SubReason`** enum: added `OperatorEscalation`
+- **AIAnalysis reasons**: added `InteractiveCancelled` and `ParentCancelled`
+
+See [CRD Reference](../api-reference/crds.md) for the updated enum tables.
+
+### Operator CR updates
+
+The Kubernaut Operator CRD now includes:
+
+- **`JWTProviderSpec`** at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.auth.jwtProviders[]` — `name`, `issuerURL`, `jwksURL`, `audiences`, `claimMappings` (`username`, `groups`)
+- **`phaseModels`** at `spec.kubernautAgent.llm.phaseModels` — per-phase LLM override map with CEL validation for keys (`rca`, `workflow_discovery`, `validation`)
+- **`ConsoleSpec`** at `spec.console` — `enabled`, `auth.secretName`, `route.enabled`, `route.host`, `resources`
+
+See [Operator CR Reference](../api-reference/operator-cr.md) for the full schema.
+
+### Platform hardening
+
+- **Cascade terminal phase** — When a RemediationRequest enters a terminal phase, all child resources (AIAnalysis, SignalProcessing, WorkflowExecution) are patched to `PhaseFailed`. Idempotent, non-fatal.
+- **`alignment_verdict` audit event** — Emitted after every investigation with structured payload: `result` (aligned/suspicious), `circuit_breaker_activated`, `summary`, `findings[]`, and optional `grounding_review`
+
+---
+
 ## v1.5
 
 ### API Frontend — new service
@@ -16,7 +200,7 @@ Kubernaut v1.5 introduces the **API Frontend** (AF), the 11th microservice. It a
 - **A2A support** — Agent-to-Agent protocol with agent card discovery at `/.well-known/agent-card.json`
 - **SSE streaming** — Real-time investigation output streamed token-by-token via Server-Sent Events
 - **SAR authorization** — Kubernetes-native SubjectAccessReview tool authorization with 6 per-persona ClusterRoles, fail-closed, and TTL-cached results
-- **MCP bridge** — Dispatches 21 `kubernaut_*` MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
+- **MCP bridge** — Dispatches 23 `kubernaut_*` MCP tools to their backends (K8s API, KA MCP, DataStorage) with per-tool RBAC, rate limiting, and audit. Not a transparent proxy — each tool has its own handler and routing
 
 See [API Frontend Architecture](../architecture/apifrontend.md) for the full design, and [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for Helm values.
 
@@ -24,7 +208,7 @@ See [API Frontend Architecture](../architecture/apifrontend.md) for the full des
 
 Operators and AI agents can now connect to Kubernaut via MCP for **interactive investigation and remediation**. This is the flagship v1.5 feature, replacing the autonomous-only pipeline with an operator-in-the-loop model when desired.
 
-The API Frontend exposes **21 `kubernaut_*` MCP tools** on its MCP endpoint (`POST /mcp`), organized by domain:
+The API Frontend exposes **23 `kubernaut_*` MCP tools** on its MCP endpoint (`POST /mcp`), organized by domain:
 
 | Domain | Tools |
 |---|---|
@@ -83,7 +267,7 @@ The 4 narrow AF triage tools (`af_get_pods`, `af_get_workloads`, `af_list_events
 
 `af_resolve_owner` is removed — KA independently resolves the owner chain during RCA. The new tools use `RESTMapper` for dynamic kind-to-GVR resolution. Secret `.data` fields are redacted before returning to the LLM.
 
-All internal tools (`kubectl_*`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) run inside the AF's A2A agent loop and are not exposed on the MCP bridge. They are still SAR-gated via `newRBACGuard()` and included in per-persona ClusterRoles. The external MCP surface consists of **21 `kubernaut_*` MCP tools** spanning CRD operations, investigation, interactive session lifecycle, analytics, and presentation.
+All internal tools (`kubectl_*`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) run inside the AF's A2A agent loop and are not exposed on the MCP bridge. They are still SAR-gated via `newRBACGuard()` and included in per-persona ClusterRoles. The external MCP surface consists of **23 `kubernaut_*` MCP tools** spanning CRD operations, investigation, interactive session lifecycle, alerts, analytics, and presentation.
 
 ### Session takeover security (SEC-TAKEOVER-001)
 

@@ -1,13 +1,13 @@
 # MCP Tool Reference
 
-The API Frontend exposes **21 `kubernaut_*` MCP tools** on its Streamable HTTP endpoint (`POST /mcp`).
+The API Frontend exposes **23 `kubernaut_*` MCP tools** on its Streamable HTTP endpoint (`POST /mcp`).
 Each tool is SAR-gated via [per-persona ClusterRoles](../architecture/security-rbac.md#per-persona-clusterroles), rate-limited, and audit-logged.
 
 All tools return JSON in MCP `CallToolResult` text content. Default timeout is 30 s (configurable per tool).
 RBAC is fail-closed — SAR errors deny the call.
 
 !!! info "Conditional tool surface (#1366)"
-    When [`interactive.enabled`](../user-guide/configuration.md) is `false`, **10 session-dependent tools** are hidden from MCP `tools/list` and the A2A agent, leaving **11 stateless tools** (CRD operations + data/history). Hidden tools: `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_await_session`.
+    When [`interactive.enabled`](../user-guide/configuration.md) is `false`, **11 session-dependent tools** are hidden from MCP `tools/list` and the A2A agent, leaving **12 stateless tools** (CRD operations + data/history); 13 with `kubernaut_list_alerts` if Prometheus is configured. Hidden tools: `kubernaut_investigate`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_await_session`.
 
 !!! tip "Building skills on Kubernaut tools"
     When authoring MCP skills or prompts that call these tools, use the **"When to use"** guidance below each tool to select the right one.
@@ -204,7 +204,10 @@ Backend: **K8s API** (AF ServiceAccount) — operates on `kubernaut.ai/v1alpha1/
     - `reason` (`string`) — Decision rationale (stored as `status.decisionMessage`)
     - `workflow_override` (`string`) — Override workflow (stored as `status.workflowOverride.workflowName`)
 
-    **When to use:** Final step in the approval flow after reviewing the RAR with `kubernaut_get_approval_request`. Always provide a `reason` for audit trail traceability.
+    !!! warning "MCP bridge only (DD-AF-006, v1.5.1)"
+        `kubernaut_approve` is **structurally absent** from the A2A agent's `buildToolList()` as of v1.5.1. It remains on the MCP bridge for the Kubernaut Console's Approve/Reject buttons. This prevents an LLM from autonomously approving RARs via prompt injection, preserving the human consent gate. Defense-in-depth: (1) tool absent from agent, (2) explicit prompt instruction, (3) SAR RBAC on MCP, (4) audit trail.
+
+    **When to use:** Final step in the approval flow after reviewing the RAR with `kubernaut_get_approval_request`. Always provide a `reason` for audit trail traceability. Must be called via the MCP bridge (Console or direct MCP client) — not available to the A2A agent.
 
     ??? example "Response"
         ```json
@@ -335,6 +338,27 @@ All interactive tools share a common response shape:
     - `message` (`string`) — Optional message
 
     **When to use:** Resume a session after a network disconnect or client restart. Check status with `kubernaut_status` first.
+
+    **Personas:** SRE, AI Orchestrator
+
+---
+
+- **`kubernaut_complete_no_action`** — Complete an investigation with no remediation action {: #complete-no-action }
+
+    Backend: **KA MCP**
+
+    - `rr_id` (`string`) **(required)** — Remediation request ID
+    - `escalation_reason` (`string`) — If provided, the investigation is escalated to operator review instead of dismissed
+
+    Two behavior paths based on `escalation_reason`:
+
+    - **Absent** — dismiss: `IsActionable=false`, `HumanReviewNeeded=false`, status set to `completed_no_action`
+    - **Present** — escalate: `HumanReviewNeeded=true`, `HumanReviewReason=operator_escalation`, status set to `escalated`. The Remediation Orchestrator creates a `ManualReviewRequired` and sends a `NotificationRequest` to the `ops-escalation-channel`.
+
+    !!! note "MCP bridge only"
+        This tool is available on the MCP bridge but is **not** registered in the A2A agent's `buildToolList()` (DD-AF-007). The Console uses it for its dismiss and escalation buttons.
+
+    **When to use:** End an investigation when no automated remediation is appropriate — either dismiss (alert self-resolved or false positive) or escalate (requires human expertise beyond Kubernaut's scope).
 
     **Personas:** SRE, AI Orchestrator
 
@@ -547,6 +571,73 @@ Backend: **DataStorage** — queries the Kubernaut DataStorage service.
 
 ---
 
+## Alerts {: #alerts }
+
+Backend: **Prometheus** (AF ServiceAccount) — queries the configured Prometheus endpoint.
+
+!!! info "Conditional registration"
+    Alert tools are only registered when `severityTriage.enabled: true` and a Prometheus URL is configured via `severityTriage.prometheusURL`. When Prometheus is not configured, these tools do not appear in `tools/list`.
+
+- **`kubernaut_list_alerts`** — Query firing Prometheus alerts with optional filters
+
+    - `namespace` (`string`) — Filter by namespace
+    - `severity` (`string`) — Filter by severity (`critical`, `high`, `medium`, `low`, `info`, `warning`)
+    - `state` (`string`) — Filter by alert state (`firing`, `pending`)
+
+    Returns a `ListAlertsResult` with `alerts[]` (sorted by severity descending, then `active_at` ascending FIFO), `count`, `total_count`, `truncated`, and `prioritized` (index-based priority metadata). Sensitive label keys (`password`, `token`, `secret`, `key`, `credential`, `bearer`) are stripped. URLs and IPs in label/annotation values are redacted (FedRAMP SI-10). If the serialized response exceeds the max tool output size, alerts are trimmed from the tail (lowest priority) and `truncated` is set to `true`.
+
+    **When to use:** Discover active alerts before starting an investigation. Use severity and namespace filters to narrow results.
+
+    ??? example "Response"
+        ```json
+        {
+          "alerts": [
+            {
+              "labels": {
+                "alertname": "KubePodCrashLooping",
+                "namespace": "production",
+                "severity": "critical",
+                "pod": "api-server-xyz",
+                "container": "api"
+              },
+              "annotations": {
+                "summary": "Pod production/api-server-xyz is crash looping",
+                "runbook_url": "[URL_REDACTED]"
+              },
+              "state": "firing",
+              "active_at": "2026-06-18T14:30:00Z"
+            },
+            {
+              "labels": {
+                "alertname": "KubeDeploymentReplicasMismatch",
+                "namespace": "production",
+                "severity": "warning",
+                "deployment": "api-server"
+              },
+              "annotations": {
+                "summary": "Deployment production/api-server has 0/2 replicas ready"
+              },
+              "state": "firing",
+              "active_at": "2026-06-18T14:31:00Z"
+            }
+          ],
+          "count": 2,
+          "total_count": 2,
+          "truncated": false,
+          "prioritized": {
+            "selected_index": 0,
+            "tied_indices": [],
+            "also_active_start": 1
+          }
+        }
+        ```
+
+        **`prioritized` fields**: `selected_index` is the highest-severity, longest-firing alert. `tied_indices` lists other alerts at the same severity. `also_active_start` is the array index where lower-severity alerts begin.
+
+    **Personas:** SRE
+
+---
+
 ## Common UX Flows
 
 ### Approval flow
@@ -603,8 +694,9 @@ kubernaut_list_remediations()
 | Backend | Tools |
 |---------|-------|
 | **K8s API** (AF SA) | `list_remediations`, `get_remediation`, `cancel_remediation`, `watch`, `approve`, `list_approval_requests`, `get_approval_request`, `await_session` |
-| **KA MCP** | `investigate`, `message`, `complete`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow` |
+| **KA MCP** | `investigate`, `message`, `complete`, `complete_no_action`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow` |
 | **DataStorage** | `list_workflows`, `get_remediation_history`, `get_effectiveness`, `get_audit_trail` |
+| **Prometheus** | `list_alerts` (conditional on `severityTriage.enabled`) |
 | **Local** | `present_decision` |
 
 ---
@@ -631,11 +723,12 @@ All tool names below are prefixed with `kubernaut_`.
 | `cancel` | :material-check: | :material-check: | | | | |
 | `status` | :material-check: | :material-check: | | | | |
 | `reconnect` | :material-check: | :material-check: | | | | |
-| `takeover` | :material-check: | :material-check: | | | | |
+| `complete_no_action` | :material-check: | :material-check: | | | | |
 | `discover_workflows` | :material-check: | :material-check: | | | | |
 | `select_workflow` | :material-check: | :material-check: | | | | |
 | `present_decision` | :material-check: | :material-check: | | | | |
 | `list_workflows` | :material-check: | | | :material-check: | :material-check: | |
+| `list_alerts` | :material-check: | | | | | |
 | `get_remediation_history` | :material-check: | | | | :material-check: | |
 | `get_effectiveness` | :material-check: | | | :material-check: | :material-check: | |
 | `get_audit_trail` | :material-check: | | | | :material-check: | |

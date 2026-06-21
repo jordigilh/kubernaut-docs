@@ -48,6 +48,9 @@ The Helm chart supports three tiers for providing the SDK config -- see [Configu
 
 In **v1.3** the pipeline uses **two distinct LLM invocations** (new v1.3 architecture, superseding the v1.1 three-phase, single-session design). The sessions do not share model chat memory. The first performs RCA with full tool access; the second performs workflow selection from structured inputs only, then Kubernaut Agent merges results.
 
+!!! info "Per-phase model routing (v1.5.1)"
+    Each invocation can use a **different LLM model** via the `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap. The `EffectivePhaseConfig()` function resolves the model for each phase at runtime — non-empty override fields win, empty fields inherit from the base config. Phase keys: `rca` (Invocation 1), `workflow_discovery` (Invocation 2), `validation` (post-selection). See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151).
+
 ```mermaid
 flowchart LR
     I1["Invocation 1: RCA"] -->|structured context| I2["Invocation 2: Workflow selection"]

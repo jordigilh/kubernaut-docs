@@ -90,6 +90,122 @@ spec:
           groups: ["change-mgmt"]
 ```
 
+#### kagenti Integration (A2A) {: #kagenti-integration }
+
+The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut.
+
+!!! warning "Prerequisite"
+    Verify kagenti is running before applying the Kubernaut CR:
+
+    ```bash
+    oc get pods -n kagenti-system
+    # For kagenti 0.3.x+ with SPIRE CRDs:
+    oc get spireclusterconfig
+    ```
+
+    The SPIRE class name must match `spec.apiFrontend.spire.className` in the Kubernaut CR. The default is `zero-trust-workload-identity-manager-spire`.
+
+**Auto-managed resources** — When `spec.apiFrontend.spire.enabled: true`, the kubernaut-operator automatically:
+
+1. **Labels the namespace** — adds `kagenti-enabled=true` to `kubernaut-system`, triggering kagenti's mutating webhook to inject the authbridge sidecar into API Frontend pods
+2. **Creates an `AgentRuntime` CR** — provisions an `AgentRuntime` named `apifrontend` in `kubernaut-system`, telling kagenti to provision ConfigMaps, SCCs, and Keycloak client registrations
+
+Verify the `AgentRuntime` CR is created and active:
+
+```bash
+oc get agentruntime -n kubernaut-system
+# Expected: NAME=apifrontend, PHASE=Active
+```
+
+**SecurityContextConstraints** — The kagenti sidecar requires the `kagenti-authbridge` SCC. Check if your namespace is already permitted:
+
+```bash
+oc get scc kagenti-authbridge -o jsonpath='{.groups}' | grep kubernaut-system
+```
+
+If the output is empty, add it:
+
+```bash
+oc patch scc kagenti-authbridge --type=json -p '[
+  {"op": "add", "path": "/groups/-", "value": "system:serviceaccounts:kubernaut-system"}
+]'
+```
+
+**Keycloak Group Mapper** — The API Frontend authorizes tool access via SAR based on OIDC group claims. Keycloak must include group membership in tokens:
+
+1. In the Keycloak admin console (`kagenti` realm), go to **Client scopes** → **Create client scope**
+2. Create a scope named `groups` (protocol: `openid-connect`)
+3. Add a **Group Membership** mapper:
+
+    | Setting | Value |
+    |---|---|
+    | Token claim name | `groups` |
+    | Full group path | `off` |
+    | Add to ID token | `on` |
+    | Add to access token | `on` |
+
+4. Assign the `groups` scope as a **Default** scope on the `kagenti` client
+5. Create a group (e.g. `platform-engineering`) and assign users who need tool access
+
+!!! tip
+    Users must log out and log back in after being added to a group or after the `groups` scope is created. Stale tokens will have an empty groups array and SAR checks will fail.
+
+**Keycloak Audience Mapper** — For kagenti to authenticate with the API Frontend, the token's `aud` claim must include the AF's SPIFFE ID:
+
+```
+spiffe://<trust-domain>/ns/kubernaut-system/sa/apifrontend
+```
+
+Add a client scope `agent-kubernaut-system-apifrontend-aud` with an `oidc-audience-mapper`:
+
+| Setting | Value |
+|---|---|
+| `included.custom.audience` | `spiffe://<trust-domain>/ns/kubernaut-system/sa/apifrontend` |
+| `access.token.claim` | `true` |
+| `id.token.claim` | `false` |
+
+Assign as a default scope to the `kagenti` client.
+
+**Port configuration** — The operator auto-detects the kagenti version and adjusts ports:
+
+- **kagenti 0.2.x** (envoy sidecar): AF listens on `8443`; metrics shifts to `9092`, health to `8082`
+- **kagenti 0.3.x+** (authbridge-proxy): AF shifts to `8444`; authbridge-proxy takes `8443`
+
+No manual configuration is needed.
+
+**Kubernaut CR fields for kagenti:**
+
+```yaml
+spec:
+  apiFrontend:
+    auth:
+      issuerURL: "https://<KEYCLOAK_HOST>/realms/kagenti"
+      audience: "https://<KEYCLOAK_HOST>/realms/kagenti"
+      jwksURL: "http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs"
+      allowInsecureIssuers: true    # set false in production with proper CA certs
+    spire:
+      enabled: true
+      className: zero-trust-workload-identity-manager-spire
+    rbac:
+      sarCacheTTL: "30s"
+      roleBindings:
+        - role: sre
+          groups: ["platform-engineering"]
+        - role: ai-orchestrator
+          groups: ["platform-engineering"]
+        - role: remediation-approver
+          groups: ["platform-engineering"]
+```
+
+!!! note "Environment-specific values"
+    The `auth.audience`, `auth.issuerURL`, and `auth.jwksURL` fields **must match your Keycloak realm**. Mismatched values cause silent 401 Unauthorized failures. Verify by decoding a JWT:
+
+    ```bash
+    echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{aud, azp, groups}'
+    ```
+
+For the complete kagenti setup including troubleshooting 401 errors, see the [Disconnected Installation Guide](../operations/disconnected-install.md#kagenti-integration).
+
 #### OCP AlertManager Integration
 
 For alert-driven scenarios on OpenShift, configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the [AlertManager configuration](../operations/disconnected-install.md#alertmanager-ocp) for the full setup.
@@ -459,14 +575,6 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 Kubernaut does not support in-place upgrades. To move to a new version,
 perform a fresh install. See [What's New](../whats-new/index.md) for
 changes between releases.
-
-### v1.4 → v1.5 migration notes
-
-v1.5 introduces breaking changes that require manual steps during reinstall:
-
-1. **SAR-based tool authorization** — The API Frontend's `rbac_roles.yaml` ConfigMap is removed. Create `ClusterRoleBindings` mapping OIDC groups to the [per-persona ClusterRoles](../architecture/security-rbac.md#tool-authorization-v15) shipped in the Helm chart.
-2. **11th service — API Frontend** — Resource planning must account for the new service. See [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for resource defaults.
-3. **Lease RBAC** — The Kubernaut Agent ServiceAccount now requires `list` on `coordination.k8s.io/leases`. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.
 
 ## Uninstalling
 

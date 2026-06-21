@@ -167,6 +167,63 @@ integrations:
 !!! info "Operator: BYO runtime ConfigMap"
     When deploying via the Kubernaut Operator, set `spec.kubernautAgent.llm.runtimeConfigMapName` to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.
 
+### Per-phase LLM routing (v1.5.1) {: #per-phase-llm-routing-v151 }
+
+The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows configuring different LLM models for each phase of the investigation pipeline. This is useful for routing expensive reasoning models to RCA while using faster/cheaper models for workflow selection or validation.
+
+**Valid phase keys** (CEL-validated when using the operator CR):
+
+| Phase key | Description |
+|---|---|
+| `rca` | Root-cause analysis loop (K8s + Prometheus tools) |
+| `workflow_discovery` | Workflow selection and discovery |
+| `validation` | Post-selection validation |
+
+**Override fields** (all optional; non-empty fields override the base LLM config):
+
+| Field | Description |
+|---|---|
+| `provider` | Override LLM provider |
+| `model` | Override model name |
+| `endpoint` | Override endpoint URL |
+| `apiKey` | Override API key |
+| `azureApiVersion` | Azure API version override |
+| `vertexProject` | GCP project override |
+| `vertexLocation` | GCP region override |
+| `bedrockRegion` | AWS Bedrock region override |
+
+`temperature`, `maxRetries`, and `timeoutSeconds` are always inherited from the base `LLMRuntimeConfig` and cannot be overridden per phase.
+
+**Merge behavior**: `EffectivePhaseConfig()` copies the base config, then overlays non-empty override fields. If `phaseModels` is empty or the phase has no entry, the base config is used unchanged.
+
+**Validation**: unknown phase keys are rejected at startup. An override where all fields are empty is rejected.
+
+**Hot-reloadable**: yes — changes to the `kubernaut-agent-llm-runtime` ConfigMap take effect via FileWatcher without pod restart.
+
+**Configuration paths**:
+
+- **Operator CR**: `spec.kubernautAgent.llm.phaseModels` (map with CEL validation)
+- **Direct ConfigMap patch**: add `phaseModels:` key to the `kubernaut-agent-llm-runtime` ConfigMap
+- **Helm chart**: not yet exposed as a value key
+
+??? example "phaseModels in kubernaut-agent-llm-runtime ConfigMap"
+    ```yaml
+    model: gpt-4o
+    endpoint: http://llm-gateway:8080/v1
+    temperature: 0.7
+    maxRetries: 3
+    timeoutSeconds: 120
+    phaseModels:
+      rca:
+        provider: anthropic
+        endpoint: http://anthropic-api
+        model: claude-sonnet-4-6
+      workflow_discovery:
+        model: claude-haiku-3
+      validation:
+        model: gpt-4o-mini
+    ```
+
 ## Supported Providers
 
 | Config `ai.llm.provider` | Backend | Implementation |

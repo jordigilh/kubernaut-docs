@@ -227,11 +227,65 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.config.server.healthPort` | Health check port | `8081` |
 | `apifrontend.config.session.disconnectTTL` | TTL before disconnected sessions are cleaned up | `10m` |
 | `apifrontend.config.session.retentionTTL` | How long completed sessions are retained | `720h` |
-| `apifrontend.config.interactive.enabled` | Enable interactive session MCP tools. When `false`, 10 session-dependent tools are hidden from MCP enumeration and the A2A agent tool list, leaving 11 stateless CRD/data tools (#1366). | `true` |
+| `apifrontend.config.interactive.enabled` | Enable interactive session MCP tools. When `false`, 11 session-dependent tools are hidden from MCP enumeration and the A2A agent tool list, leaving 12 stateless CRD/data tools; 13 with `kubernaut_list_alerts` if Prometheus is configured (#1366). | `true` |
 | `apifrontend.config.severityTriage.enabled` | Enable severity triage. Required for alert tools (`list_alerts`, `get_alert_details`, `kubernaut_investigate_alert`). | `false` |
 | `apifrontend.config.severityTriage.prometheusURL` | Prometheus API URL for alert queries. Required when `severityTriage.enabled: true`. | `""` |
 | `apifrontend.config.severityTriage.cacheTTLSeconds` | Severity triage cache TTL | `30` |
 | `apifrontend.config.severityTriage.llmConfidence` | LLM confidence threshold for severity triage | `0.7` |
+
+#### Severity Triage (v1.5.1) {: #severity-triage-v151 }
+
+The severity triage pipeline can use a **dedicated LLM** for LLM-based severity classification, separate from the A2A agent's LLM. This is configured via the `severityTriage.llm` block in the `apifrontend-config` ConfigMap — it is **not** exposed as a Helm value.
+
+The Helm chart exposes only `cacheTTLSeconds` and `llmConfidence` (see table above). All other severity triage fields require a ConfigMap overlay or direct patch.
+
+When deploying via the **Kubernaut Operator**, severity triage is auto-derived from `spec.monitoring.enabled` — there is no CRD field for `severityTriage`.
+
+**ConfigMap fields** (in addition to the Helm-managed values above):
+
+| ConfigMap key | Type | Description |
+|---|---|---|
+| `severityTriage.enabled` | bool | Enable severity triage pipeline |
+| `severityTriage.prometheusURL` | string | Prometheus API URL (required when enabled) |
+| `severityTriage.prometheusTlsCaFile` | string | CA cert for Prometheus TLS |
+| `severityTriage.prometheusBearerTokenFile` | string | Bearer token file for Prometheus auth |
+| `severityTriage.maxQueriesPerCall` | int | Max Prometheus queries per triage call (default 10) |
+| `severityTriage.maxRulesEvaluated` | int | Max rules evaluated per triage (default 100) |
+| `severityTriage.llm.provider` | string | LLM provider: `vertex_ai`, `gemini`, `anthropic` |
+| `severityTriage.llm.model` | string | Model name |
+| `severityTriage.llm.endpoint` | string | Custom endpoint URL |
+| `severityTriage.llm.apiKeyFile` | string | Path to API key file |
+| `severityTriage.llm.timeoutSeconds` | int | HTTP timeout (default 120) |
+| `severityTriage.llm.tlsCaFile` | string | Custom CA for LLM endpoint |
+| `severityTriage.llm.tlsCertFile` | string | Client cert for mTLS |
+| `severityTriage.llm.tlsKeyFile` | string | Client key for mTLS |
+| `severityTriage.llm.oauth2.enabled` | bool | Enable OAuth2 client credentials |
+| `severityTriage.llm.oauth2.tokenURL` | string | OAuth2 token endpoint |
+| `severityTriage.llm.oauth2.scopes` | []string | OAuth2 scopes |
+| `severityTriage.llm.oauth2.credentialsDir` | string | Directory with `client-id`/`client-secret` |
+| `severityTriage.llm.circuitBreaker.enabled` | bool | Enable circuit breaker |
+| `severityTriage.llm.circuitBreaker.failureThreshold` | int | Failures before opening (default 5) |
+| `severityTriage.llm.circuitBreaker.timeout` | string | Open-state duration (default 30s) |
+| `severityTriage.llm.customHeaders` | []object | Custom headers (name/value or name/filePath) |
+
+??? example "ConfigMap overlay with dedicated severity triage LLM"
+    ```yaml
+    severityTriage:
+      enabled: true
+      prometheusURL: "https://prometheus.monitoring:9090"
+      prometheusTlsCaFile: /etc/apifrontend/tls-ca/ca.crt
+      prometheusBearerTokenFile: "/var/run/secrets/kubernetes.io/serviceaccount/token"
+      cacheTTLSeconds: 30
+      maxQueriesPerCall: 10
+      maxRulesEvaluated: 100
+      llmConfidence: 0.7
+      llm:
+        provider: gemini
+        model: gemini-2.0-flash
+        apiKeyFile: /etc/apifrontend/llm-key/key
+        timeoutSeconds: 120
+    ```
+
 | `apifrontend.resources.requests.memory` | Memory request | `64Mi` |
 | `apifrontend.resources.requests.cpu` | CPU request | `50m` |
 | `apifrontend.resources.limits.memory` | Memory limit | `256Mi` |
@@ -241,6 +295,126 @@ The API Frontend service provides the REST API surface for external integrations
 | `apifrontend.config.auth.jwtProviders[].claimMappings.username` | CEL expression to extract username from JWT claims (e.g., `claims.email`). Falls back to `preferred_username` / `sub` when empty (#1392). | `""` |
 | `apifrontend.config.auth.jwtProviders[].claimMappings.groups` | CEL expression to extract groups from JWT claims (e.g., `claims.roles`). Falls back to `groups` claim when empty (#1392). | `""` |
 | `apifrontend.config.rbac.sarCacheTTL` | SAR result cache TTL | `30s` |
+
+#### JWT Providers (v1.5.1) {: #jwt-providers-v151 }
+
+Both the Kubernaut Agent and API Frontend support **multiple JWT providers** via a `jwtProviders[]` array. The two services use intentionally different schemas.
+
+**Kubernaut Agent** (`kubernautAgent.interactive.jwtProviders[]`):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `kubernautAgent.interactive.jwtProviders[].name` | Human-readable provider name (max 63 chars) | — |
+| `kubernautAgent.interactive.jwtProviders[].issuer` | JWT issuer URL (must match `iss` claim, max 2048 chars) | — |
+| `kubernautAgent.interactive.jwtProviders[].jwksURL` | JWKS endpoint URL (**required**, max 2048 chars, must be http/https) | — |
+| `kubernautAgent.interactive.jwtProviders[].audience` | Expected audience claim (singular string) | — |
+| `kubernautAgent.interactive.jwtProviders[].claimMappings.username` | Claim name for username extraction | `preferred_username` |
+| `kubernautAgent.interactive.jwtProviders[].claimMappings.groups` | Claim name for group extraction (supports dot-notation) | `groups` |
+
+Duplicate `issuer` URLs across providers are rejected at startup.
+
+**API Frontend** (`apifrontend.config.auth.jwtProviders[]`):
+
+| Parameter | Description | Default |
+|---|---|---|
+| `apifrontend.config.auth.jwtProviders[].name` | Provider name (optional but must be unique if set) | — |
+| `apifrontend.config.auth.jwtProviders[].issuerURL` | OIDC issuer URL (**required**, must be https unless `allowInsecureIssuers`) | — |
+| `apifrontend.config.auth.jwtProviders[].jwksURL` | JWKS endpoint (optional, falls back to `issuerURL` for OIDC discovery) | — |
+| `apifrontend.config.auth.jwtProviders[].audiences` | Expected audience claims (**required**, non-empty string array) | — |
+| `apifrontend.config.auth.jwtProviders[].claimMappings.username` | CEL expression or claim path for username | — |
+| `apifrontend.config.auth.jwtProviders[].claimMappings.groups` | CEL expression or claim path for groups | — |
+
+Legacy single-provider fields (`apifrontend.config.auth.issuerURL` + `apifrontend.config.auth.audience`) remain supported for backward compatibility.
+
+!!! warning "Schema differences"
+    KA uses `issuer` / `audience` (singular), AF uses `issuerURL` / `audiences` (plural array). KA requires `jwksURL`, AF makes it optional. AF supports CEL expressions in claim mappings, KA uses simple claim names.
+
+??? example "Dual-provider configuration (Keycloak + SPIRE)"
+    ```yaml
+    # Kubernaut Agent (interactive sessions)
+    kubernautAgent:
+      interactive:
+        enabled: true
+        jwtProviders:
+          - name: keycloak
+            issuer: "https://keycloak.example.com/realms/kubernaut"
+            jwksURL: "https://keycloak.example.com/realms/kubernaut/protocol/openid-connect/certs"
+            audience: "kubernaut-agent"
+            claimMappings:
+              username: "preferred_username"
+              groups: "groups"
+
+    # API Frontend
+    apifrontend:
+      config:
+        auth:
+          jwtProviders:
+            - name: keycloak
+              issuerURL: "https://keycloak.example.com/realms/kagenti"
+              jwksURL: "http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs"
+              audiences: ["kubernaut-apifrontend"]
+              claimMappings:
+                username: "preferred_username"
+                groups: "groups"
+            - name: spire
+              issuerURL: "https://oidc-discovery-provider.example.com"
+              jwksURL: "https://spire-spiffe-oidc-discovery-provider.zero-trust-workload-identity-manager.svc:443/keys"
+              audiences: ["spiffe://trust-domain/ns/kubernaut-system/sa/apifrontend"]
+    ```
+
+#### SPIRE JWT-SVID Integration (v1.5.1) {: #spire-integration-v151 }
+
+SPIRE integration enables workload identity for A2A communication between Kubernaut and agents on other platforms (RHDH, ACM) that authenticate via SPIRE JWT-SVIDs. The integration requires [kagenti](https://github.com/kagenti/kagenti) (the SPIRE operator) and involves two layers: the **operator** registering the SPIFFE identity, and the **AF** validating SPIRE-issued JWTs.
+
+**Prerequisites:**
+
+- kagenti installed with a `SPIREClusterConfig` defining the trust domain
+- SPIRE OIDC Discovery Provider deployed (exposes JWKS at `/.well-known/openid-configuration` and `/keys`)
+- The trust domain must match across SPIRE server, ClusterSPIFFEID, and JWT `iss` claim
+
+**Operator setup** (`spec.apiFrontend.spire`):
+
+When `spire.enabled: true`, the operator:
+
+1. Labels the namespace with `kagenti-enabled=true`
+2. Creates a `ClusterSPIFFEID` resource registering a SPIFFE identity for the AF ServiceAccount: `spiffe://{trustDomain}/ns/{namespace}/sa/apifrontend`
+3. kagenti's webhook injects the authbridge sidecar into the AF pod
+
+| CR field | Description |
+|---|---|
+| `spec.apiFrontend.spire.enabled` | Enable SPIRE integration |
+| `spec.apiFrontend.spire.className` | SPIRE class name from kagenti's `SPIREClusterConfig` (e.g., `zero-trust-workload-identity-manager-spire`) |
+| `spec.apiFrontend.spire.trustDomain` | Override trust domain (default: uses SPIRE's `{{ .TrustDomain }}` template variable) |
+
+**AF JWT validation:**
+
+Add SPIRE as a second JWT provider in `apiFrontend.config.auth.jwtProviders[]`. The AF validates SPIRE JWT-SVIDs using the OIDC Discovery Provider's JWKS endpoint:
+
+```yaml
+apifrontend:
+  config:
+    auth:
+      jwtProviders:
+        - name: keycloak
+          issuerURL: "https://keycloak.example.com/realms/kagenti"
+          audiences: ["kubernaut-apifrontend"]
+        - name: spire
+          issuerURL: "https://oidc-discovery-provider.example.com"
+          jwksURL: "https://spire-spiffe-oidc-discovery-provider.zero-trust-workload-identity-manager.svc:443/keys"
+          audiences: ["spiffe://apps.example.com/ns/kubernaut-system/sa/apifrontend"]
+```
+
+**kagenti auto-detection:**
+
+When kagenti's authbridge sidecar is active, the operator auto-detects the OIDC issuer URL and JWKS URL from kagenti's `authbridge-config` ConfigMap. Explicit CR values take precedence over auto-detected values (`CM-6`). When auto-detection is active, `auth.issuerURL` is not required in the CR (`IA-2`).
+
+**SPIFFE ID convention:**
+
+```
+spiffe://{trustDomain}/ns/{namespace}/sa/{serviceAccountName}
+```
+
+This follows kagenti's standard `/ns/{namespace}/sa/{serviceaccount}` path convention (FedRAMP SC-8, IA-5).
 
 #### AF LLM Configuration (v1.5+)
 

@@ -14,7 +14,7 @@ Kubernaut offers two deployment methods:
 
 ## Kubernaut Operator (Production)
 
-The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices (v1.5+; 10 in v1.4), RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
+The Kubernaut Operator manages the full lifecycle of the Kubernaut platform on OpenShift: secret validation, database migrations, CRD installation, deployment of all 11 microservices, RBAC, NetworkPolicies, OCP Routes, and status reporting. It is a singleton — one `Kubernaut` CR named `kubernaut` per cluster.
 
 ### Installation
 
@@ -36,74 +36,346 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | LLM credentials Secret | — | Secret containing the LLM API key — see [Credential Secret Format](../operations/disconnected-install.md#llm-configuration-reference) for the expected keys per provider |
 | SP classification policy | — | ConfigMap with key `policy.rego` — see [Rego Policies](../user-guide/policies.md) |
 | AA approval policy | — | ConfigMap with key `approval.rego` — see [Approval Policy](../user-guide/configmap-approval.md) |
+| kagenti | 0.2.0+ | **AF/Console only** — required when `spec.apiFrontend.enabled: true`. Provides A2A agent integration with SPIRE/authbridge sidecar injection. Must be installed before Kubernaut. |
+| Keycloak | — | **AF/Console only** — OIDC identity provider in the `kagenti` realm. Required for API Frontend authentication and tool authorization. |
 
 !!! warning "CR validation"
     The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
 
 **Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
 
-**Minimal Kubernaut CR:**
+### Provision Prerequisites
 
-```yaml
-apiVersion: kubernaut.ai/v1alpha1
-kind: Kubernaut
-metadata:
-  name: kubernaut
-  namespace: kubernaut-system
-spec:
-  postgresql:
-    host: postgres.database.svc.cluster.local
-    secretName: kubernaut-postgresql
-  valkey:
-    host: valkey.cache.svc.cluster.local
-    secretName: kubernaut-valkey
-  kubernautAgent:
-    llm:
-      provider: openai
-      model: gpt-4o
-      credentialsSecretName: kubernaut-llm
-  signalProcessing:
-    policy:
-      configMapName: signalprocessing-policy   # must contain key: policy.rego
-  aiAnalysis:
-    policy:
-      configMapName: aianalysis-policies        # must contain key: approval.rego
+#### 1. Create the Namespace
+
+```bash
+oc create namespace kubernaut-system
 ```
+
+#### 2. Create Secrets
+
+**PostgreSQL:**
+
+```bash
+oc create secret generic postgresql-secret \
+  --from-literal=POSTGRES_USER=<pg-user> \
+  --from-literal=POSTGRES_PASSWORD=<pg-password> \
+  --from-literal=POSTGRES_DB=action_history \
+  -n kubernaut-system
+```
+
+**Valkey:**
+
+```bash
+oc create secret generic valkey-secret \
+  --from-literal=valkey-secrets.yaml="$(printf 'password: %s' '<valkey-password>')" \
+  -n kubernaut-system
+```
+
+**LLM credentials:**
+
+```bash
+# OpenAI / Azure / OpenAI-compatible
+oc create secret generic llm-credentials \
+  --from-literal=OPENAI_API_KEY=<your-key> \
+  -n kubernaut-system
+```
+
+See the [LLM Configuration Reference](../operations/disconnected-install.md#llm-configuration-reference) for all 10 supported providers and credential formats (Anthropic, Vertex AI, Bedrock, etc.).
+
+**Console OIDC (AF/Console path only):**
+
+Required when `spec.console.enabled: true`. The console uses `oauth2-proxy` for authentication with a Keycloak client:
+
+```bash
+oc create secret generic kubernaut-console-oidc \
+  --from-literal=client-id=kubernaut-console \
+  --from-literal=client-secret=<oidc-client-secret> \
+  --from-literal=cookie-secret=$(openssl rand -base64 32) \
+  -n kubernaut-system
+```
+
+Register the `kubernaut-console` client in your Keycloak realm before creating this secret.
+
+**Slack webhook (optional):**
+
+```bash
+oc create secret generic slack-webhook \
+  --from-literal=webhook-url=https://hooks.slack.com/services/T.../B.../... \
+  -n kubernaut-system
+```
+
+#### 3. Rego Policy ConfigMaps
+
+Create the signal processing and approval policy ConfigMaps before applying the CR. See [Rego Policies](../user-guide/policies.md) and [Approval Policy](../user-guide/configmap-approval.md) for full policy examples.
+
+#### 4. PostgreSQL and Valkey
+
+PostgreSQL and Valkey are BYO preconditions — the operator does not deploy them. If you need to deploy them in the `kubernaut-system` namespace, see the [deployment manifests](../operations/disconnected-install.md#step-35-deploy-postgresql-and-valkey) and [PostgreSQL TLS configuration](../operations/disconnected-install.md#postgresql-tls).
 
 !!! note "Disconnected installs"
     For air-gapped environments, see the [Disconnected Installation Guide](../operations/disconnected-install.md) for mirroring images via `oc-mirror` and installing via OLM or direct manifest. IDMS transparently redirects image pulls — no `RELATED_IMAGE_*` patching is needed.
 
-#### Tool RBAC Role Bindings
+### Kubernaut CR {: #kubernaut-cr }
 
-When `spec.apiFrontend.enabled: true` (default), configure `spec.apiFrontend.rbac.roleBindings` to map OIDC groups to per-persona tool roles. Without these bindings, authenticated users cannot invoke MCP tools (SAR denies every call). See [Security & RBAC: Tool Authorization](../architecture/security-rbac.md#tool-authorization-v15) for details.
+Kubernaut supports two ingress paths. Choose the one that matches your use case:
 
-```yaml
-spec:
-  apiFrontend:
-    rbac:
-      roleBindings:
-        - role: sre
-          groups: ["platform-engineering"]
-        - role: ai-orchestrator
-          groups: ["platform-engineering"]
-        - role: remediation-approver
-          groups: ["change-mgmt"]
+- **Gateway (alert-driven)** — Prometheus alerts trigger automated remediation. No kagenti or Keycloak required.
+- **API Frontend + Console (A2A/MCP)** — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires kagenti and Keycloak.
+
+Both paths can be enabled simultaneously.
+
+=== "Gateway (alert-driven)"
+
+    ```yaml
+    apiVersion: kubernaut.ai/v1alpha1
+    kind: Kubernaut
+    metadata:
+      name: kubernaut
+      namespace: kubernaut-system
+    spec:
+      postgresql:
+        host: postgresql.kubernaut-system.svc.cluster.local
+        port: 5432
+        secretName: postgresql-secret
+        sslMode: require
+      valkey:
+        host: valkey.kubernaut-system.svc.cluster.local
+        port: 6379
+        secretName: valkey-secret
+      kubernautAgent:
+        llm:
+          provider: openai
+          model: gpt-4o
+          credentialsSecretName: llm-credentials
+      signalProcessing:
+        policy:
+          configMapName: signalprocessing-policy
+      aiAnalysis:
+        policy:
+          configMapName: aianalysis-policies
+      gateway:
+        enabled: true
+      apiFrontend:
+        enabled: false
+    ```
+
+    After applying, configure [AlertManager](#ocp-alertmanager-integration) to route alerts to the Gateway.
+
+=== "API Frontend + Console (A2A/MCP)"
+
+    Requires kagenti and Keycloak — see [kagenti Integration](#kagenti-integration) below for the full setup.
+
+    ```yaml
+    apiVersion: kubernaut.ai/v1alpha1
+    kind: Kubernaut
+    metadata:
+      name: kubernaut
+      namespace: kubernaut-system
+    spec:
+      postgresql:
+        host: postgresql.kubernaut-system.svc.cluster.local
+        port: 5432
+        secretName: postgresql-secret
+        sslMode: require
+      valkey:
+        host: valkey.kubernaut-system.svc.cluster.local
+        port: 6379
+        secretName: valkey-secret
+      kubernautAgent:
+        llm:
+          provider: openai
+          model: gpt-4o
+          credentialsSecretName: llm-credentials
+        interactive:
+          enabled: true
+          inactivityTimeout: 10m
+          maxConcurrentSessions: 10
+          sessionTTL: 30m
+      signalProcessing:
+        policy:
+          configMapName: signalprocessing-policy
+      aiAnalysis:
+        policy:
+          configMapName: aianalysis-policies
+      gateway:
+        enabled: false
+      apiFrontend:
+        enabled: true
+        auth:
+          issuerURL: "https://<KEYCLOAK_HOST>/realms/kagenti"
+          audience: "https://<KEYCLOAK_HOST>/realms/kagenti"
+          jwksURL: "http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs"
+          allowInsecureIssuers: true    # set false with proper CA certs
+        spire:
+          enabled: true
+          className: zero-trust-workload-identity-manager-spire
+        rbac:
+          sarCacheTTL: "30s"
+          roleBindings:
+            - role: sre
+              groups: ["platform-engineering"]
+            - role: ai-orchestrator
+              groups: ["platform-engineering"]
+            - role: remediation-approver
+              groups: ["platform-engineering"]
+      console:
+        enabled: true
+        auth:
+          secretName: kubernaut-console-oidc
+        route:
+          enabled: true
+    ```
+
+    !!! warning "Environment-specific values"
+        The `auth.audience`, `auth.issuerURL`, and `auth.jwksURL` fields **must match your Keycloak realm**. Mismatched values cause silent 401 Unauthorized failures. Verify by decoding a JWT:
+
+        ```bash
+        echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{aud, azp, groups}'
+        ```
+
+Apply the CR:
+
+```bash
+oc apply -f kubernaut-cr.yaml
 ```
 
-#### OCP AlertManager Integration
+#### kagenti Integration (A2A) {: #kagenti-integration }
 
-For alert-driven scenarios on OpenShift, configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the [AlertManager configuration](../operations/disconnected-install.md#alertmanager-ocp) for the full setup.
+!!! info "AF/Console path only"
+    The following steps apply only when using the API Frontend and/or Console (`spec.apiFrontend.enabled: true`). If you are using the Gateway path only, skip this section.
 
-#### Demo Workflows and Scenarios
+The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut.
 
-To seed the workflow catalog with sample ActionTypes and RemediationWorkflows, clone the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository and run the seeding scripts. See [Seed Demo Workflows](../operations/disconnected-install.md#seed-demo-workflows) for step-by-step instructions.
+!!! warning "Prerequisite"
+    Verify kagenti is running before applying the Kubernaut CR:
+
+    ```bash
+    oc get pods -n kagenti-system
+    # For kagenti 0.3.x+ with SPIRE CRDs:
+    oc get spireclusterconfig
+    ```
+
+    The SPIRE class name must match `spec.apiFrontend.spire.className` in the Kubernaut CR. The default is `zero-trust-workload-identity-manager-spire`.
+
+**Auto-managed resources** — When `spec.apiFrontend.spire.enabled: true`, the kubernaut-operator automatically:
+
+1. **Labels the namespace** — adds `kagenti-enabled=true` to `kubernaut-system`, triggering kagenti's mutating webhook to inject the authbridge sidecar into API Frontend pods
+2. **Creates an `AgentRuntime` CR** — provisions an `AgentRuntime` named `apifrontend` in `kubernaut-system`, telling kagenti to provision ConfigMaps, SCCs, and Keycloak client registrations
+
+Verify the `AgentRuntime` CR is created and active:
+
+```bash
+oc get agentruntime -n kubernaut-system
+# Expected: NAME=apifrontend, PHASE=Active
+```
+
+**SecurityContextConstraints** — The kagenti sidecar requires the `kagenti-authbridge` SCC. Check if your namespace is already permitted:
+
+```bash
+oc get scc kagenti-authbridge -o jsonpath='{.groups}' | grep kubernaut-system
+```
+
+If the output is empty, add it:
+
+```bash
+oc patch scc kagenti-authbridge --type=json -p '[
+  {"op": "add", "path": "/groups/-", "value": "system:serviceaccounts:kubernaut-system"}
+]'
+```
+
+**kagenti ConfigMaps** — The authbridge sidecar requires ConfigMaps provisioned by the kagenti operator. Verify they exist after the `AgentRuntime` CR becomes active:
+
+```bash
+oc get configmap -n kagenti-system envoy-config spiffe-helper-config authbridge-config
+```
+
+If any are missing, check the kagenti-operator logs for errors.
+
+**Keycloak Group Mapper** — The API Frontend authorizes tool access via SAR based on OIDC group claims. Keycloak must include group membership in tokens:
+
+1. In the Keycloak admin console (`kagenti` realm), go to **Client scopes** → **Create client scope**
+2. Create a scope named `groups` (protocol: `openid-connect`)
+3. Add a **Group Membership** mapper:
+
+    | Setting | Value |
+    |---|---|
+    | Token claim name | `groups` |
+    | Full group path | `off` |
+    | Add to ID token | `on` |
+    | Add to access token | `on` |
+
+4. Assign the `groups` scope as a **Default** scope on the `kagenti` client
+5. Create a group (e.g. `platform-engineering`) and assign users who need tool access
+
+!!! tip
+    Users must log out and log back in after being added to a group or after the `groups` scope is created. Stale tokens will have an empty groups array and SAR checks will fail.
+
+**Keycloak Audience Mapper** — For kagenti to authenticate with the API Frontend, the token's `aud` claim must include the AF's SPIFFE ID:
+
+```
+spiffe://<trust-domain>/ns/kubernaut-system/sa/apifrontend
+```
+
+Add a client scope `agent-kubernaut-system-apifrontend-aud` with an `oidc-audience-mapper`:
+
+| Setting | Value |
+|---|---|
+| `included.custom.audience` | `spiffe://<trust-domain>/ns/kubernaut-system/sa/apifrontend` |
+| `access.token.claim` | `true` |
+| `id.token.claim` | `false` |
+
+Assign as a default scope to the `kagenti` client.
+
+**Port configuration** — The operator auto-detects the kagenti version and adjusts ports:
+
+- **kagenti 0.2.x** (envoy sidecar): AF listens on `8443`; metrics shifts to `9092`, health to `8082`
+- **kagenti 0.3.x+** (authbridge-proxy): AF shifts to `8444`; authbridge-proxy takes `8443`
+
+No manual configuration is needed.
+
+For the complete kagenti setup including troubleshooting 401 errors, see the [Disconnected Installation Guide](../operations/disconnected-install.md#kagenti-integration).
+
+#### OCP AlertManager Integration {: #ocp-alertmanager-integration }
+
+!!! info "Gateway path only"
+    This step applies only when using the Gateway for alert-driven remediation (`spec.gateway.enabled: true`).
+
+Configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the [AlertManager configuration](../operations/disconnected-install.md#alertmanager-ocp) for the full setup.
+
+### Verify the Installation {: #operator-verification }
+
+```bash
+# Operator pod
+oc get pods -n kubernaut-operator-system
+
+# Kubernaut CR status
+oc get kubernaut -n kubernaut-system
+
+# All pods should be Running (db-migrate shows Completed)
+oc get pods -n kubernaut-system
+
+# CR phase should be Running
+oc get kubernaut kubernaut -n kubernaut-system -o jsonpath='{.status.phase}'
+```
+
+If using the **AF/Console path**, also verify:
+
+```bash
+# AF pod should show 3/3 containers (with kagenti sidecar)
+oc get pods -n kubernaut-system -l app=apifrontend
+
+# kagenti agent card should be synced
+oc get agentcard -n kubernaut-system
+# Expected: SYNCED=True for apifrontend-deployment-card
+```
 
 ### What the Operator manages
 
 - Validates BYO PostgreSQL and Valkey secrets before deployment
 - Runs embedded database schema migrations
 - Installs and upgrades the 9 Kubernaut workload CRDs
-- Deploys all 11 microservices (v1.5+; 10 in v1.4) with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
+- Deploys all 11 microservices with RBAC, ConfigMaps, PDBs, admission webhooks, and NetworkPolicies
 - Applies preferred pod anti-affinity to all deployments (spread across nodes by `kubernetes.io/hostname`)
 - Configures OCP Routes and service-serving CA TLS
 - Reports per-service readiness status on the `Kubernaut` CR
@@ -345,11 +617,11 @@ Only required when Slack delivery is configured. When using console-only routing
 
 ## Install
 
-!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator (v1.4)"
-    The **OpenShift-specific** Helm chart path is **deprecated** as of v1.4 (#848). For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
+!!! warning "OCP Helm chart deprecated — use the Kubernaut Operator"
+    The **OpenShift-specific** Helm chart path is **deprecated**. For OpenShift production deployments, use the [Kubernaut Operator](#kubernaut-operator-production) instead. The Helm chart examples below for OpenShift are provided for development and testing convenience only.
 
-!!! info "NetworkPolicies (v1.4)"
-    Kubernaut v1.4 deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
+!!! info "NetworkPolicies"
+    Kubernaut deploys **NetworkPolicies** for all services with a **default-deny** ingress posture. Your cluster's CNI plugin must support NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters without enforcement silently ignore them. Disable per-service with `networkPolicies.<service>.enabled: false`. See [Security & RBAC: NetworkPolicies](../architecture/security-rbac.md#networkpolicies-v14) for details.
 
 The chart is distributed as an OCI artifact. With the namespace and secrets provisioned in [Pre-Installation](#pre-installation), install using `helm install`:
 
@@ -438,11 +710,29 @@ kubectl get remediationworkflows -A
 
 ## Post-Installation
 
-### Action Types and Workflows
+### Seed Workflows
 
-Kubernaut uses an **ActionType taxonomy** to organize remediation capabilities. Operators register `ActionType` CRDs that describe what each remediation does, when to use it, and under what preconditions. `RemediationWorkflow` CRDs reference ActionTypes by name.
+Kubernaut requires **ActionType** and **RemediationWorkflow** CRDs to define what remediations are available. These are user-provided — you bring workflows tailored to your environment.
 
-Register your own ActionType CRs and RemediationWorkflows to build a catalog tailored to your environment. See [Authoring Workflows](../user-guide/workflow-authoring.md) for guidelines and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy) for registration details.
+To get started quickly, the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository provides a reference catalog with 34 ActionTypes and ~28 RemediationWorkflows covering common scenarios (CrashLoopBackOff, memory leaks, stuck rollouts, etc.):
+
+```bash
+git clone https://github.com/jordigilh/kubernaut-demo-scenarios.git
+cd kubernaut-demo-scenarios
+
+# Apply ActionType CRDs
+oc apply -f deploy/action-types/ -n kubernaut-system
+
+# Seed RemediationWorkflows (skips unavailable infrastructure automatically)
+./scripts/seed-workflows.sh
+
+# Verify
+oc get remediationworkflows -n kubernaut-system
+```
+
+See [Seed Demo Workflows](../operations/disconnected-install.md#seed-demo-workflows) for detailed step-by-step instructions.
+
+For authoring your own workflows, see [Authoring Workflows](../user-guide/workflow-authoring.md) and the [Action Type reference](../user-guide/workflows.md#action-type-taxonomy).
 
 ## Resource Scope
 
@@ -459,14 +749,6 @@ See [Signals & Alert Routing](../user-guide/signals.md) for details on scope man
 Kubernaut does not support in-place upgrades. To move to a new version,
 perform a fresh install. See [What's New](../whats-new/index.md) for
 changes between releases.
-
-### v1.4 → v1.5 migration notes
-
-v1.5 introduces breaking changes that require manual steps during reinstall:
-
-1. **SAR-based tool authorization** — The API Frontend's `rbac_roles.yaml` ConfigMap is removed. Create `ClusterRoleBindings` mapping OIDC groups to the [per-persona ClusterRoles](../architecture/security-rbac.md#tool-authorization-v15) shipped in the Helm chart.
-2. **11th service — API Frontend** — Resource planning must account for the new service. See [Configuration: API Frontend](../user-guide/configuration.md#api-frontend-v15) for resource defaults.
-3. **Lease RBAC** — The Kubernaut Agent ServiceAccount now requires `list` on `coordination.k8s.io/leases`. Both Helm and Operator provision this automatically, but custom RBAC configurations may need updating.
 
 ## Uninstalling
 

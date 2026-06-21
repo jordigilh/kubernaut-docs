@@ -384,7 +384,7 @@ When `spire.enabled: true`, the operator:
 |---|---|
 | `spec.apiFrontend.spire.enabled` | Enable SPIRE integration |
 | `spec.apiFrontend.spire.className` | SPIRE class name from kagenti's `SPIREClusterConfig` (e.g., `zero-trust-workload-identity-manager-spire`) |
-| `spec.apiFrontend.spire.trustDomain` | Override trust domain (default: uses SPIRE's `{{ .TrustDomain }}` template variable) |
+| `spec.apiFrontend.spire.trustDomain` | Override trust domain (default: uses SPIRE's `{% raw %}{{ .TrustDomain }}{% endraw %}` template variable) |
 
 **AF JWT validation:**
 

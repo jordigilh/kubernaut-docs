@@ -269,21 +269,20 @@ Used at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.a
 
 ### ToolRoleBinding {: #toolrolebinding }
 
+Exactly one of `role` or `clusterRoleName` must be set. Entries with both or neither are rejected by CR validation.
+
 | Field | Type | Description |
 |---|---|---|
-| `role` | string | Persona name. One of: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver` |
+| `role` | string | Built-in persona name. One of: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver`. Mutually exclusive with `clusterRoleName`. |
+| `clusterRoleName` | string | Reference to a **user-managed** ClusterRole for custom tool authorization. The operator creates only the ClusterRoleBinding; the ClusterRole must be pre-created by the user with rules granting verb `use` on resource `tools` in apiGroup `kubernaut.ai`. Mutually exclusive with `role`. |
 | `groups` | []string | OIDC group names to bind to this role (min 1) |
 
-**Example:**
+**Example (built-in personas only):**
 
 ```yaml
 spec:
   apiFrontend:
-    auth:
-      issuerURL: https://dex.kubernaut.svc.cluster.local:5556/dex
-      audience: kubernaut-apifrontend
     rbac:
-      sarCacheTTL: 30s
       roleBindings:
         - role: sre
           groups: ["sre-team", "platform-eng"]
@@ -292,6 +291,25 @@ spec:
         - role: remediation-approver
           groups: ["change-mgmt"]
 ```
+
+**Example (mixed — built-in + custom ClusterRoles):**
+
+```yaml
+spec:
+  apiFrontend:
+    rbac:
+      roleBindings:
+        # Built-in persona: operator manages the ClusterRole
+        - role: sre
+          groups: ["senior-sres"]
+        # User-managed ClusterRole: operator creates only the CRB
+        - clusterRoleName: kubernaut-restricted-investigator
+          groups: ["junior-sres"]
+        - clusterRoleName: kubernaut-readonly-audit
+          groups: ["compliance-team"]
+```
+
+See [Custom ClusterRoles](../architecture/security-rbac.md#custom-clusterroles) for how to create user-managed ClusterRoles with fine-grained tool subsets.
 
 ### APIFrontendRateLimitSpec {: #apifrontendratelimitspec }
 

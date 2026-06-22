@@ -133,8 +133,7 @@ nav:
       - Data Persistence: architecture/data-persistence.md
       - API Frontend: architecture/apifrontend.md
       - Security & RBAC: architecture/security-rbac.md
-  - Design Decisions:
-      - design-decisions/index.md
+      - Unconstrained Investigation: architecture/unconstrained-investigation.md
   - API Reference:
       - api-reference/index.md
       - Custom Resources: api-reference/crds.md

@@ -12,31 +12,31 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/design-decisions/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.5/architecture/unconstrained-investigation/">
       
       
-        <link rel="prev" href="../architecture/security-rbac/">
+        <link rel="prev" href="../security-rbac/">
       
       
-        <link rel="next" href="../api-reference/">
+        <link rel="next" href="../../api-reference/">
       
       
         
       
       
-      <link rel="icon" href="../assets/images/logo.svg">
+      <link rel="icon" href="../../assets/images/logo.svg">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
-        <title>Design Decisions - Kubernaut</title>
+        <title>Unconstrained Investigation - Kubernaut</title>
       
     
     
-      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
       
         
-        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
       
       
 
@@ -55,9 +55,9 @@
       
     
     
-      <link rel="stylesheet" href="../assets/extra.css">
+      <link rel="stylesheet" href="../../assets/extra.css">
     
-    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#design-decisions" class="md-skip">
+        <a href="#unconstrained-llm-investigation-vs-pre-scripted-skills" class="md-skip">
           Skip to content
         </a>
       
@@ -95,12 +95,12 @@
             <div class="md-banner__inner md-grid md-typeset">
               
   You're viewing an older version of the documentation.
-  <a href="../..">
+  <a href="../../..">
     <strong>Click here to go to latest.</strong>
   </a>
 
             </div>
-            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL(".."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
           </aside>
         
       </div>
@@ -110,9 +110,9 @@
 
 <header class="md-header" data-md-component="header">
   <nav class="md-header__inner md-grid" aria-label="Header">
-    <a href=".." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../assets/images/logo.svg" alt="logo">
+  <img src="../../assets/images/logo.svg" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -129,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Design Decisions
+              Unconstrained Investigation
             
           </span>
         </div>
@@ -216,7 +216,7 @@
   
   
     <li class="md-tabs__item">
-      <a href=".." class="md-tabs__link">
+      <a href="../.." class="md-tabs__link">
         
   
   
@@ -237,7 +237,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../getting-started/" class="md-tabs__link">
+        <a href="../../getting-started/" class="md-tabs__link">
           
   
   
@@ -259,7 +259,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../user-guide/" class="md-tabs__link">
+        <a href="../../user-guide/" class="md-tabs__link">
           
   
   
@@ -277,11 +277,13 @@
   
   
   
+    
+  
   
     
     
-      <li class="md-tabs__item">
-        <a href="../architecture/" class="md-tabs__link">
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
           
   
   
@@ -299,35 +301,11 @@
   
   
   
-    
-  
-  
-    
-    
-      <li class="md-tabs__item md-tabs__item--active">
-        <a href="./" class="md-tabs__link">
-          
-  
-  
-    
-  
-  Design Decisions
-
-        </a>
-      </li>
-    
-  
-
-      
-        
-  
-  
-  
   
     
     
       <li class="md-tabs__item">
-        <a href="../api-reference/" class="md-tabs__link">
+        <a href="../../api-reference/" class="md-tabs__link">
           
   
   
@@ -349,7 +327,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../use-cases/" class="md-tabs__link">
+        <a href="../../use-cases/" class="md-tabs__link">
           
   
   
@@ -371,7 +349,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../operations/" class="md-tabs__link">
+        <a href="../../operations/" class="md-tabs__link">
           
   
   
@@ -393,7 +371,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../whats-new/" class="md-tabs__link">
+        <a href="../../whats-new/" class="md-tabs__link">
           
   
   
@@ -415,7 +393,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../whats-next/" class="md-tabs__link">
+        <a href="../../whats-next/" class="md-tabs__link">
           
   
   
@@ -437,7 +415,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../user-guide/compliance/" class="md-tabs__link">
+        <a href="../../user-guide/compliance/" class="md-tabs__link">
           
   
   
@@ -457,7 +435,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../faq/" class="md-tabs__link">
+      <a href="../../faq/" class="md-tabs__link">
         
   
   
@@ -476,7 +454,7 @@
   
   
     <li class="md-tabs__item">
-      <a href="../contributing/" class="md-tabs__link">
+      <a href="../../contributing/" class="md-tabs__link">
         
   
   
@@ -513,9 +491,9 @@
 
 <nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
   <label class="md-nav__title" for="__drawer">
-    <a href=".." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+    <a href="../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
       
-  <img src="../assets/images/logo.svg" alt="logo">
+  <img src="../../assets/images/logo.svg" alt="logo">
 
     </a>
     Kubernaut
@@ -542,7 +520,7 @@
   
   
     <li class="md-nav__item">
-      <a href=".." class="md-nav__link">
+      <a href="../.." class="md-nav__link">
         
   
   
@@ -606,7 +584,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../getting-started/" class="md-nav__link ">
+            <a href="../../getting-started/" class="md-nav__link ">
               
   
   
@@ -650,7 +628,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/why-kubernaut/" class="md-nav__link">
+      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
         
   
   
@@ -678,7 +656,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/aiops-landscape/" class="md-nav__link">
+      <a href="../../getting-started/aiops-landscape/" class="md-nav__link">
         
   
   
@@ -706,7 +684,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/market-comparison/" class="md-nav__link">
+      <a href="../../getting-started/market-comparison/" class="md-nav__link">
         
   
   
@@ -734,7 +712,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/installation/" class="md-nav__link">
+      <a href="../../getting-started/installation/" class="md-nav__link">
         
   
   
@@ -762,7 +740,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/quickstart/" class="md-nav__link">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
         
   
   
@@ -790,7 +768,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../getting-started/architecture-overview/" class="md-nav__link">
+      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
         
   
   
@@ -880,7 +858,7 @@
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../user-guide/" class="md-nav__link ">
+            <a href="../../user-guide/" class="md-nav__link ">
               
   
   
@@ -924,7 +902,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/trust-ladder/" class="md-nav__link">
+      <a href="../../user-guide/trust-ladder/" class="md-nav__link">
         
   
   
@@ -952,7 +930,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/concepts/" class="md-nav__link">
+      <a href="../../user-guide/concepts/" class="md-nav__link">
         
   
   
@@ -980,7 +958,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/signals/" class="md-nav__link">
+      <a href="../../user-guide/signals/" class="md-nav__link">
         
   
   
@@ -1008,7 +986,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/workflows/" class="md-nav__link">
+      <a href="../../user-guide/workflows/" class="md-nav__link">
         
   
   
@@ -1036,7 +1014,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/workflow-authoring/" class="md-nav__link">
+      <a href="../../user-guide/workflow-authoring/" class="md-nav__link">
         
   
   
@@ -1064,7 +1042,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/policies/" class="md-nav__link">
+      <a href="../../user-guide/policies/" class="md-nav__link">
         
   
   
@@ -1092,7 +1070,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/rego-reference/" class="md-nav__link">
+      <a href="../../user-guide/rego-reference/" class="md-nav__link">
         
   
   
@@ -1120,7 +1098,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/notifications/" class="md-nav__link">
+      <a href="../../user-guide/notifications/" class="md-nav__link">
         
   
   
@@ -1148,7 +1126,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/approval/" class="md-nav__link">
+      <a href="../../user-guide/approval/" class="md-nav__link">
         
   
   
@@ -1176,7 +1154,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/effectiveness/" class="md-nav__link">
+      <a href="../../user-guide/effectiveness/" class="md-nav__link">
         
   
   
@@ -1204,7 +1182,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/audit-and-observability/" class="md-nav__link">
+      <a href="../../user-guide/audit-and-observability/" class="md-nav__link">
         
   
   
@@ -1232,7 +1210,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/data-lifecycle/" class="md-nav__link">
+      <a href="../../user-guide/data-lifecycle/" class="md-nav__link">
         
   
   
@@ -1260,7 +1238,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/interactive-sessions/" class="md-nav__link">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
         
   
   
@@ -1288,7 +1266,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/configuration/" class="md-nav__link">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
         
   
   
@@ -1380,7 +1358,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/configmap-kubernaut-agent/" class="md-nav__link">
+      <a href="../../user-guide/configmap-kubernaut-agent/" class="md-nav__link">
         
   
   
@@ -1408,7 +1386,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/configmap-policies/" class="md-nav__link">
+      <a href="../../user-guide/configmap-policies/" class="md-nav__link">
         
   
   
@@ -1436,7 +1414,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/configmap-approval/" class="md-nav__link">
+      <a href="../../user-guide/configmap-approval/" class="md-nav__link">
         
   
   
@@ -1464,7 +1442,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/configmap-notification/" class="md-nav__link">
+      <a href="../../user-guide/configmap-notification/" class="md-nav__link">
         
   
   
@@ -1504,6 +1482,8 @@
       
   
   
+    
+  
   
   
     
@@ -1543,26 +1523,29 @@
       
         
       
+        
+      
     
     
     
+      
+        
+        
       
       
         
       
     
     
-    <li class="md-nav__item md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
       
         
         
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../architecture/" class="md-nav__link ">
+            <a href="../" class="md-nav__link ">
               
   
   
@@ -1580,13 +1563,13 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
           <label class="md-nav__title" for="__nav_4">
             <span class="md-nav__icon md-icon"></span>
             
@@ -1606,7 +1589,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/overview/" class="md-nav__link">
+      <a href="../overview/" class="md-nav__link">
         
   
   
@@ -1634,7 +1617,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/gateway/" class="md-nav__link">
+      <a href="../gateway/" class="md-nav__link">
         
   
   
@@ -1662,7 +1645,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/signal-processing/" class="md-nav__link">
+      <a href="../signal-processing/" class="md-nav__link">
         
   
   
@@ -1690,7 +1673,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/ai-analysis/" class="md-nav__link">
+      <a href="../ai-analysis/" class="md-nav__link">
         
   
   
@@ -1718,7 +1701,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/kubernaut-agent-investigation/" class="md-nav__link">
+      <a href="../kubernaut-agent-investigation/" class="md-nav__link">
         
   
   
@@ -1746,7 +1729,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/remediation-routing/" class="md-nav__link">
+      <a href="../remediation-routing/" class="md-nav__link">
         
   
   
@@ -1774,7 +1757,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/workflow-selection/" class="md-nav__link">
+      <a href="../workflow-selection/" class="md-nav__link">
         
   
   
@@ -1802,7 +1785,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/workflow-execution/" class="md-nav__link">
+      <a href="../workflow-execution/" class="md-nav__link">
         
   
   
@@ -1830,7 +1813,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/effectiveness/" class="md-nav__link">
+      <a href="../effectiveness/" class="md-nav__link">
         
   
   
@@ -1858,7 +1841,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/notification/" class="md-nav__link">
+      <a href="../notification/" class="md-nav__link">
         
   
   
@@ -1886,7 +1869,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/async-propagation/" class="md-nav__link">
+      <a href="../async-propagation/" class="md-nav__link">
         
   
   
@@ -1914,7 +1897,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/audit-pipeline/" class="md-nav__link">
+      <a href="../audit-pipeline/" class="md-nav__link">
         
   
   
@@ -1942,7 +1925,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/data-persistence/" class="md-nav__link">
+      <a href="../data-persistence/" class="md-nav__link">
         
   
   
@@ -1970,7 +1953,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/apifrontend/" class="md-nav__link">
+      <a href="../apifrontend/" class="md-nav__link">
         
   
   
@@ -1998,7 +1981,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../architecture/security-rbac/" class="md-nav__link">
+      <a href="../security-rbac/" class="md-nav__link">
         
   
   
@@ -2019,56 +2002,30 @@
 
               
             
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-    
-  
-  
-  
-    
-    
-      
-        
-          
-        
-      
-    
-    
-    
-      
-        
-        
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
-      
-        
-        
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
-        
-          
-          <div class="md-nav__link md-nav__container">
-            <a href="./" class="md-nav__link md-nav__link--active">
               
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
   
   
   <span class="md-ellipsis">
     
   
-    Design Decisions
+    Unconstrained Investigation
   
 
     
@@ -2076,21 +2033,242 @@
   
   
 
-            </a>
-            
-          </div>
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_5">
-            <span class="md-nav__icon md-icon"></span>
-            
   
-    Design Decisions
+  
+  <span class="md-ellipsis">
+    
+  
+    Unconstrained Investigation
   
 
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#context" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Context
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-signal-target-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Signal Target Problem
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="The Signal Target Problem">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-kubernaut-handles-this" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How Kubernaut handles this
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predefined-rca-categories-vs-dynamic-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predefined RCA Categories vs Dynamic Discovery
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#scaling-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#addressing-legitimate-gaps-agentic-injection-points" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Addressing Legitimate Gaps: Agentic Injection Points
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Addressing Legitimate Gaps: Agentic Injection Points">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-pre-investigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Pre-Investigation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-pre-workflow-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pre-Workflow Selection
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-custom-effectiveness-probes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Custom Effectiveness Probes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#composability-multiplicative-vs-additive" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Composability: Multiplicative vs Additive
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-long-tail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Long Tail
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trade-Offs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Trade-Offs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#where-skills-have-advantages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where skills have advantages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#where-kubernauts-approach-wins" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Where Kubernaut's approach wins
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#narrowing-gaps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Narrowing gaps
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Conclusion
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
               
             
           </ul>
@@ -2140,11 +2318,11 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../api-reference/" class="md-nav__link ">
+            <a href="../../api-reference/" class="md-nav__link ">
               
   
   
@@ -2162,14 +2340,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_6">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2188,7 +2366,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/crds/" class="md-nav__link">
+      <a href="../../api-reference/crds/" class="md-nav__link">
         
   
   
@@ -2216,7 +2394,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/operator-cr/" class="md-nav__link">
+      <a href="../../api-reference/operator-cr/" class="md-nav__link">
         
   
   
@@ -2244,7 +2422,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/datastorage-api/" class="md-nav__link">
+      <a href="../../api-reference/datastorage-api/" class="md-nav__link">
         
   
   
@@ -2272,7 +2450,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/kubernaut-agent-api/" class="md-nav__link">
+      <a href="../../api-reference/kubernaut-agent-api/" class="md-nav__link">
         
   
   
@@ -2300,7 +2478,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/apifrontend-api/" class="md-nav__link">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
         
   
   
@@ -2328,7 +2506,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../api-reference/mcp-tools/" class="md-nav__link">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
         
   
   
@@ -2392,11 +2570,11 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../use-cases/" class="md-nav__link ">
+            <a href="../../use-cases/" class="md-nav__link ">
               
   
   
@@ -2414,14 +2592,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2440,7 +2618,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/multi-path-remediation/" class="md-nav__link">
+      <a href="../../use-cases/multi-path-remediation/" class="md-nav__link">
         
   
   
@@ -2468,7 +2646,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/remediation-history-feedback/" class="md-nav__link">
+      <a href="../../use-cases/remediation-history-feedback/" class="md-nav__link">
         
   
   
@@ -2496,7 +2674,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
+      <a href="../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
         
   
   
@@ -2524,7 +2702,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../use-cases/supported-scenarios/" class="md-nav__link">
+      <a href="../../use-cases/supported-scenarios/" class="md-nav__link">
         
   
   
@@ -2588,11 +2766,11 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../operations/" class="md-nav__link ">
+            <a href="../../operations/" class="md-nav__link ">
               
   
   
@@ -2610,14 +2788,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_8" id="__nav_8_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_8">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2636,7 +2814,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/monitoring/" class="md-nav__link">
+      <a href="../../operations/monitoring/" class="md-nav__link">
         
   
   
@@ -2664,7 +2842,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/event-exporter/" class="md-nav__link">
+      <a href="../../operations/event-exporter/" class="md-nav__link">
         
   
   
@@ -2692,7 +2870,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/troubleshooting/" class="md-nav__link">
+      <a href="../../operations/troubleshooting/" class="md-nav__link">
         
   
   
@@ -2720,7 +2898,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../operations/disconnected-install/" class="md-nav__link">
+      <a href="../../operations/disconnected-install/" class="md-nav__link">
         
   
   
@@ -2776,11 +2954,11 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
         
           
           <div class="md-nav__link md-nav__container">
-            <a href="../whats-new/" class="md-nav__link ">
+            <a href="../../whats-new/" class="md-nav__link ">
               
   
   
@@ -2799,8 +2977,8 @@
             
           </div>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_9">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2830,6 +3008,75 @@
       
         
           
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whats-next/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's Next
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    What's Next
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
         
       
     
@@ -2850,76 +3097,7 @@
         <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
         
           
-          <div class="md-nav__link md-nav__container">
-            <a href="../whats-next/" class="md-nav__link ">
-              
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    What's Next
-  
-
-    
-  </span>
-  
-  
-
-            </a>
-            
-          </div>
-        
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_10">
-            <span class="md-nav__icon md-icon"></span>
-            
-  
-    What's Next
-  
-
-          </label>
-          <ul class="md-nav__list" data-md-scrollfix>
-            
-              
-            
-          </ul>
-        </nav>
-      
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    
-    
-      
-        
-      
-    
-    
-    
-      
-      
-        
-      
-    
-    
-    <li class="md-nav__item md-nav__item--nested">
-      
-        
-        
-          
-        
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_11" >
-        
-          
-          <label class="md-nav__link" for="__nav_11" id="__nav_11_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
             
   
   
@@ -2937,8 +3115,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_11_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_11">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -2955,7 +3133,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../user-guide/compliance/" class="md-nav__link">
+      <a href="../../user-guide/compliance/" class="md-nav__link">
         
   
   
@@ -2990,7 +3168,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../faq/" class="md-nav__link">
+      <a href="../../faq/" class="md-nav__link">
         
   
   
@@ -3017,7 +3195,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../contributing/" class="md-nav__link">
+      <a href="../../contributing/" class="md-nav__link">
         
   
   
@@ -3054,159 +3232,191 @@
 
 
 
-<h1 id="design-decisions">Design Decisions<a class="headerlink" href="#design-decisions" title="Permanent link">&para;</a></h1>
-<p>This section documents the key architectural decisions made during Kubernaut's development. Decisions marked with a version tag (e.g. <strong>(v1.1)</strong>) indicate the release that introduced them.</p>
-<h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
+<h1 id="unconstrained-llm-investigation-vs-pre-scripted-skills">Unconstrained LLM Investigation vs Pre-Scripted Skills<a class="headerlink" href="#unconstrained-llm-investigation-vs-pre-scripted-skills" title="Permanent link">&para;</a></h1>
+<p>Kubernaut uses an <strong>unconstrained LLM investigation model</strong> for the investigation and root cause analysis (RCA) phase — the AI agent freely investigates cluster state, logs, metrics, and resource relationships to determine root cause, rather than following pre-scripted investigation playbooks (skills) that prescribe specific commands, branching logic, and predefined RCA outcomes.</p>
+<p>The architectural gap is widest in this phase: a skill can only investigate what it was written to check, while Kubernaut's free reasoning follows the evidence wherever it leads — correlating across resource boundaries, subsystems, and failure domains that no single runbook anticipated.</p>
+<p>Institutional and domain-specific knowledge that would otherwise be embedded in skills will be injected through <strong>three agentic workflow injection points</strong> that enrich the LLM's context without constraining its reasoning (planned for v1.7, Q3 2026).</p>
+<h2 id="context">Context<a class="headerlink" href="#context" title="Permanent link">&para;</a></h2>
+<p>The prevailing approach in SRE automation is to encode investigation knowledge as <strong>skills</strong> — natural-language implementations of operational runbooks that tell the LLM exactly what commands to run, in what order, and how to interpret the results. Teams translate their existing runbooks into per-alert-type skill definitions that prescribe a fixed decision tree of investigation steps and predefined root cause categories.</p>
+<p>A typical skill for a single alert type consists of:</p>
+<ul>
+<li>A natural-language investigation playbook derived from the team's runbook, prescribing exact steps, commands, and branching logic</li>
+<li>Bundled diagnostic scripts for specific platform variants</li>
+<li>A report template with a fixed checklist of known root causes</li>
+<li>Total: hundreds to nearly a thousand lines of investigation code per alert type</li>
+</ul>
+<p>Skills can extend beyond investigation into remediation — orchestration skills chain multiple sub-skills into end-to-end workflows (e.g., validate → gather context → generate playbook → execute → verify), and the LLM can use investigation findings to inform a remediation plan. However, this means the <strong>remediation itself is LLM-executed</strong> — the LLM interprets the skill's instructions, generates commands, and runs them. This consumes tokens for what are fundamentally deterministic actions, and introduces the LLM's inherent non-determinism into the execution path. The same skill invoked twice may produce subtly different execution plans, command orderings, or parameter choices — an undesirable property for production remediation where repeatability matters.</p>
+<p>Converting a runbook into a skill also does not reduce the amount of code — moderate-complexity SOPs typically expand 2-3x when translated into a structured skill (the original SOP plus report templates, reference docs, and safety constraints). Complex SOPs compress slightly but require custom diagnostic scripts that add significant engineering effort.</p>
+<p>This approach works but carries structural limitations that become apparent at scale.</p>
+<h2 id="the-signal-target-problem">The Signal Target Problem<a class="headerlink" href="#the-signal-target-problem" title="Permanent link">&para;</a></h2>
+<p>A critical limitation of pre-scripted skills is the assumption that the <strong>signal target</strong> (the resource or subsystem that triggered the alert) is closely related to the <strong>RCA target</strong> (the actual root cause resource).</p>
+<p>In practice, these frequently diverge. An API availability alert fires because blackbox probes detect the API server is unreachable. But the root cause might be:</p>
+<ul>
+<li>Control plane nodes under memory pressure from an unrelated workload</li>
+<li>A network policy change that blocked probe traffic</li>
+<li>An etcd member failure caused by disk I/O saturation from a log-heavy pod on a shared node</li>
+<li>A DNS resolution failure triggered by a CoreDNS OOM event</li>
+</ul>
+<p>A skill for this alert pre-maps a fixed set of investigation paths — typically checking the probe infrastructure, control plane node health, DNS, and a few platform-specific conditions. If the actual root cause falls outside those predefined paths, the skill falls through to "requires further investigation" and pages a human.</p>
+<p>The skill author must anticipate every possible root cause at authoring time. The investigation is bounded by the author's imagination and experience, not by the evidence available in the cluster.</p>
+<h3 id="how-kubernaut-handles-this">How Kubernaut handles this<a class="headerlink" href="#how-kubernaut-handles-this" title="Permanent link">&para;</a></h3>
+<p>Kubernaut Agent receives the alert context and investigates freely using its full tool set — pod logs, events, resource state, owner chains, metrics, and remediation history. The investigation follows the evidence:</p>
+<ol>
+<li>The API availability alert fires</li>
+<li>The agent checks API server health — it's responding slowly</li>
+<li>It checks control plane node resources — memory is saturated on one node</li>
+<li>It follows the memory pressure to discover a logging sidecar consuming excessive memory on a DaemonSet running on control plane nodes</li>
+<li>It identifies the DaemonSet as the root cause and selects a workflow to fix the resource limits</li>
+</ol>
+<p>No skill author anticipated "logging sidecar DaemonSet on control plane nodes" as a root cause for an API availability alert. But the LLM, reasoning from first principles with access to cluster state, follows the causal chain wherever it leads.</p>
+<h2 id="predefined-rca-categories-vs-dynamic-discovery">Predefined RCA Categories vs Dynamic Discovery<a class="headerlink" href="#predefined-rca-categories-vs-dynamic-discovery" title="Permanent link">&para;</a></h2>
+<p>Skills predefine the set of possible root causes. A typical skill includes a "Known Issue Match" checklist — a fixed enumeration of 5-10 root cause categories the skill was designed to detect. The LLM running the skill can only arrive at conclusions within this predefined taxonomy.</p>
+<p>This creates two failure modes:</p>
+<ol>
+<li>
+<p><strong>False negatives</strong> — The actual root cause isn't in the predefined list. The skill reports "no known issue match" and escalates to a human, even though the LLM would have been capable of identifying the root cause if it were allowed to investigate freely.</p>
+</li>
+<li>
+<p><strong>False positives</strong> — The skill's branching logic matches a predefined pattern that superficially resembles the current situation but isn't the actual root cause. For example, high control plane memory triggers the "resize required" path even when the memory pressure is caused by a transient workload spike that will self-resolve.</p>
+</li>
+</ol>
+<p>Kubernaut's unconstrained investigation doesn't suffer from either failure mode. The LLM constructs its root cause analysis from observed evidence, not from a lookup table. It can discover novel failure modes, identify multi-factor root causes, and distinguish between superficially similar symptoms that have different underlying causes.</p>
+<h2 id="scaling-characteristics">Scaling Characteristics<a class="headerlink" href="#scaling-characteristics" title="Permanent link">&para;</a></h2>
+<p>The skill-based approach scales <strong>linearly</strong> — each new alert type requires a new skill, with its own investigation playbook, diagnostic scripts, and report template. In practice, a team converting runbooks into skills produces 1-2 alert-specific skills per sprint. At this rate, achieving broad coverage across hundreds or thousands of unique alert types takes years, with the hardest alerts (etcd cluster health, upgrade pipelines, operator state machines) each requiring hand-crafted investigation logic that cannot be template-generated.</p>
+<p>Even with a <strong>skill generator</strong> that automates the conversion of moderate-complexity runbooks into draft skills, the approach hits a ceiling: complex SOPs with multi-phase decision trees, cross-tool investigation (cluster CLI + cloud provider CLI + platform-specific tooling), and environment-specific branching resist template generation and require significant hand-crafting. The generator accelerates the middle tier but does not change the fundamental scaling curve for the hardest and most valuable alerts.</p>
+<p>Kubernaut's approach scales with the <strong>LLM's reasoning capabilities</strong> rather than with engineering headcount. Workflows define <strong>capabilities</strong> (what the system can do), not <strong>procedures</strong> (what it should do for alert X). A single set of remediation workflows (restart, rollback, scale, reconfigure) applies across many alert types. The LLM bridges the gap between "something is wrong" and "here's how to fix it" through reasoning, not lookup tables.</p>
+<p>Adding coverage for a new class of alerts in Kubernaut means authoring a remediation workflow that defines the <em>action</em>, not the <em>investigation</em>. The investigation is universal — the same LLM reasoning process applies regardless of which alert fired. Coverage grows with the LLM's capabilities, not with engineering headcount.</p>
+<p>Kubernaut draws a deliberate boundary: the LLM drives <strong>investigation and workflow selection</strong> — where reasoning, judgment, and non-determinism are strengths — but remediation is executed by <strong>deterministic workflow executors</strong> (Tekton pipelines and Kubernetes Jobs). The LLM selects <em>which</em> workflow to run based on its investigation, but the workflow itself executes the same way every time, with no token cost and no risk of the LLM deviating from the intended remediation plan.</p>
+<h2 id="addressing-legitimate-gaps-agentic-injection-points">Addressing Legitimate Gaps: Agentic Injection Points<a class="headerlink" href="#addressing-legitimate-gaps-agentic-injection-points" title="Permanent link">&para;</a></h2>
+<p>The strongest argument for skills is <strong>institutional knowledge</strong> — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. For example: "On this platform, always check the banned-user pull-secret before investigating operator logs for this alert type."</p>
+<p>Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three <strong>agentic workflow injection points</strong> where operators will contribute domain-specific context without constraining the LLM's reasoning. These injection points will be implemented via the <a href="../../whats-next/#custom-agent-injection"><code>AgenticWorkflow</code> CRD</a> in <strong>v1.7</strong> (Q3 2026).</p>
+<h3 id="1-pre-investigation">1. Pre-Investigation<a class="headerlink" href="#1-pre-investigation" title="Permanent link">&para;</a></h3>
+<p>Operators will define agent workflows that execute before the LLM begins its investigation. These workflows will:</p>
+<ul>
+<li>Run environment-specific diagnostic checks and attach results to the investigation context</li>
+<li>Frontload SOP knowledge relevant to the alert type, cluster configuration, or business unit</li>
+<li>Gather data from external systems (CMDB, change management, deployment records) that the LLM wouldn't otherwise have access to</li>
+</ul>
+<p>The key distinction from skills: the pre-investigation workflow contributes <strong>context</strong>, not <strong>instructions</strong>. It says "here's what we already know about this environment" rather than "here's what steps to follow." The LLM then reasons freely over the enriched context.</p>
+<p>One pre-investigation agent for a category of alerts (e.g., "etcd alerts") would gather member health, quorum status, disk I/O, and recent node events — and all alert types in that category benefit from the same enriched context. With skills, each alert type needs its own investigation playbook even when the diagnostic data is largely shared.</p>
+<h3 id="2-pre-workflow-selection">2. Pre-Workflow Selection<a class="headerlink" href="#2-pre-workflow-selection" title="Permanent link">&para;</a></h3>
+<p>Operators will define agent workflows that influence which remediation workflows are surfaced as candidates during the workflow selection phase. This injection point will enable <strong>policy-aware remediation</strong> without hardcoding policies into workflow definitions.</p>
+<p><strong>Example: cost optimization.</strong> An organization's FinOps policy discourages increasing resource limits as a default remediation. A pre-workflow discovery agent evaluates the current resource spend, team budget, and cluster capacity — then filters out or deprioritizes "increase memory limits" workflows for non-critical workloads.</p>
+<p>Without this injection point, the LLM sees a pod OOMing and selects the most obvious fix: scale up resources. With the cost-optimization agent, the LLM reasons from a curated set of alternatives — restart the pod, identify a memory leak, roll back to a previous image, or tune application-level settings.</p>
+<p>This is something skills fundamentally cannot do. A skill is a fixed investigation path with no mechanism to say "based on this organization's cost posture right now, choose a different remediation strategy." You would need a separate skill per cost tier, per team, per environment. With injection points, one agent workflow applies contextually across all alert types.</p>
+<h3 id="3-custom-effectiveness-probes">3. Custom Effectiveness Probes<a class="headerlink" href="#3-custom-effectiveness-probes" title="Permanent link">&para;</a></h3>
+<p>Operators will define custom validation workflows to confirm whether a remediation was successful, targeting resources outside Kubernetes' native observability.</p>
+<p>Kubernaut already validates Kubernetes-native remediations by checking pod health, deployment status, and alert resolution. But when remediation touches external systems — databases, cloud services, infrastructure components outside the cluster — operators need custom probes to confirm the fix actually worked.</p>
+<p>This injection point will extend Kubernaut's closed-loop verification to non-Kubernetes resources without requiring the platform to natively understand every external system. The operator's validation workflow will run, and Kubernaut will interpret the result as part of its effectiveness assessment.</p>
+<h2 id="composability-multiplicative-vs-additive">Composability: Multiplicative vs Additive<a class="headerlink" href="#composability-multiplicative-vs-additive" title="Permanent link">&para;</a></h2>
+<p>Skills are <strong>additive</strong> — each new skill adds coverage for one alert type. The total coverage is the sum of individual skills.</p>
+<p>Kubernaut's injection points are <strong>multiplicative</strong> — each injection point will apply across all alert types:</p>
+<ul>
+<li>One pre-investigation agent for etcd diagnostics would benefit all etcd alert types (leader election, insufficient members, members down, database growth, fsync latency) — a skill-based system needs a separate skill for each, or a single large skill with branching logic for all five</li>
+<li>One cost-optimization agent at workflow discovery would apply to every remediation across the platform — not just etcd, not just one alert type</li>
+<li>One effectiveness monitoring workflow for an external database would validate remediations for any alert that touches that database</li>
+</ul>
+<p>Building 3 injection point workflows would provide equivalent contextual enrichment to dozens of per-alert skills, with significantly less authoring and maintenance effort. The contrast is sharpest with high-cardinality alert families: where a skill-based approach recommends "build one shared skill with branching logic" to avoid duplicating diagnostics across related alerts, Kubernaut's investigation is inherently shared — the LLM reasons over the same cluster state regardless of which specific alert fired.</p>
+<h2 id="the-long-tail">The Long Tail<a class="headerlink" href="#the-long-tail" title="Permanent link">&para;</a></h2>
+<p>The most significant architectural advantage is handling the <strong>long tail</strong> of alert types. In any production environment, the majority of alert types are infrequent — they fire a few times per month or less. Building skills for these alerts has poor ROI because the engineering cost per alert is constant regardless of frequency.</p>
+<p>Kubernaut handles long-tail alerts with the same investigation quality as high-frequency alerts because the investigation process is universal. The LLM doesn't need a pre-authored playbook to investigate an alert it has never seen before — it reads the alert context, inspects the affected resources, correlates with cluster state, and reasons about root cause from first principles.</p>
+<p>A skill-based system returns "no skill found" for unseen alert types and pages a human. Kubernaut investigates and may resolve the incident autonomously, even for novel failure modes.</p>
+<h2 id="trade-offs">Trade-Offs<a class="headerlink" href="#trade-offs" title="Permanent link">&para;</a></h2>
+<h3 id="where-skills-have-advantages">Where skills have advantages<a class="headerlink" href="#where-skills-have-advantages" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Decision</th>
-<th>Summary</th>
+<th>Aspect</th>
+<th>Skills</th>
+<th>Kubernaut</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>ADR-001</strong></td>
-<td>CRD-based microservices architecture — inter-service communication via Kubernetes Custom Resources</td>
+<td><strong>Determinism</strong></td>
+<td>Same investigation steps every time — easy to audit</td>
+<td>LLM reasoning is probabilistic — different investigations may follow different paths</td>
 </tr>
 <tr>
-<td><strong>ADR-025</strong></td>
-<td>Kubernetes Executor elimination — consolidated into Workflow Execution with Tekton + Job executors</td>
+<td><strong>Speed</strong></td>
+<td>No reasoning overhead — runs commands immediately</td>
+<td>10-30s investigation time for LLM reasoning</td>
 </tr>
 <tr>
-<td><strong>ADR-030</strong></td>
-<td>Service configuration via YAML ConfigMaps (not environment variables)</td>
+<td><strong>Compliance</strong></td>
+<td>Deterministic playbook satisfies "we know exactly what it will do" requirements</td>
+<td>Requires audit trail of LLM reasoning to satisfy compliance</td>
 </tr>
 <tr>
-<td><strong>ADR-032</strong></td>
-<td>Data access layer isolation — all PostgreSQL access through DataStorage REST API</td>
-</tr>
-<tr>
-<td><strong>ADR-034</strong></td>
-<td>Unified audit table design — single <code>audit_events</code> table with JSONB payloads</td>
-</tr>
-<tr>
-<td><strong>ADR-053</strong></td>
-<td>Resource scope management — label-based opt-in with <code>kubernaut.ai/managed=true</code></td>
-</tr>
-<tr>
-<td><strong>ADR-057</strong></td>
-<td>CRD namespace consolidation — all CRDs in <code>kubernaut-system</code></td>
+<td><strong>Tribal knowledge encoding</strong></td>
+<td>Directly embedded in the playbook</td>
+<td>Requires pre-investigation agent workflows to inject</td>
 </tr>
 </tbody>
 </table>
-<h2 id="ai-analysis">AI &amp; Analysis<a class="headerlink" href="#ai-analysis" title="Permanent link">&para;</a></h2>
+<h3 id="where-kubernauts-approach-wins">Where Kubernaut's approach wins<a class="headerlink" href="#where-kubernauts-approach-wins" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
-<th>Decision</th>
-<th>Summary</th>
+<th>Aspect</th>
+<th>Skills</th>
+<th>Kubernaut</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><strong>ADR-045</strong></td>
-<td>AIAnalysis–Kubernaut Agent contract — session-based async integration</td>
+<td><strong>Novel failures</strong></td>
+<td>Cannot handle — no matching playbook</td>
+<td>Investigates from first principles</td>
 </tr>
 <tr>
-<td><strong>ADR-054</strong></td>
-<td>Proactive signal mode classification — reactive vs proactive handling</td>
+<td><strong>Cross-domain correlation</strong></td>
+<td>Limited to what the skill author included</td>
+<td>Follows evidence across resource boundaries</td>
 </tr>
 <tr>
-<td><strong>ADR-055</strong></td>
-<td>LLM-driven context enrichment — using LLM for deeper signal understanding</td>
+<td><strong>Signal ≠ RCA target</strong></td>
+<td>Must pre-map all possible RCA targets</td>
+<td>Discovers RCA target dynamically</td>
 </tr>
 <tr>
-<td><strong>ADR-056</strong></td>
-<td>Post-RCA label computation — deriving labels from AI analysis results</td>
+<td><strong>Maintenance</strong></td>
+<td>One playbook per alert type, updated per SOP change</td>
+<td>Remediation workflows are alert-agnostic</td>
 </tr>
 <tr>
-<td><strong>ADR-EM-001</strong></td>
-<td>Effectiveness Monitor as CRD controller — watches EffectivenessAssessment CRDs</td>
+<td><strong>Coverage scaling</strong></td>
+<td>Linear with engineering effort</td>
+<td>Scales with LLM capability</td>
 </tr>
 <tr>
-<td><strong>DD-EM-003</strong></td>
-<td>Alert decay detection — EA defers alert scoring during firing→resolved decay window <strong>(v1.1)</strong></td>
+<td><strong>Remediation execution</strong></td>
+<td>LLM-executed: consumes tokens for deterministic actions, non-deterministic output</td>
+<td>Deterministic workflow executors (Tekton/Jobs): LLM selects, executor runs</td>
+</tr>
+<tr>
+<td><strong>Policy-aware remediation</strong></td>
+<td>Requires per-policy skill variants</td>
+<td>One injection point applies globally</td>
+</tr>
+<tr>
+<td><strong>Long tail</strong></td>
+<td>No coverage without a skill</td>
+<td>Same investigation quality for all alerts</td>
 </tr>
 </tbody>
 </table>
-<h2 id="workflows">Workflows<a class="headerlink" href="#workflows" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Decision</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>DD-WORKFLOW-016</strong></td>
-<td>Workflow catalog architecture — searchable catalog in DataStorage; API-based seeding via AuthWebhook <strong>(updated v1.1)</strong></td>
-</tr>
-<tr>
-<td><strong>DD-WORKFLOW-017</strong></td>
-<td>Workflow registration — operators register ActionType and RemediationWorkflow CRDs directly; Auth Webhook syncs to catalog <strong>(updated v1.4)</strong></td>
-</tr>
-<tr>
-<td><strong>DD-WE-003</strong></td>
-<td>Resource lock persistence — deterministic naming with pre-execution cleanup and ownership-verified deletion <strong>(v1.1)</strong></td>
-</tr>
-</tbody>
-</table>
-<h2 id="gateway">Gateway<a class="headerlink" href="#gateway" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Decision</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>DD-GATEWAY-012</strong></td>
-<td>Redis removal — deduplication via CRD Status instead of Redis (migrated to Valkey for DLQ)</td>
-</tr>
-</tbody>
-</table>
-<h2 id="notification">Notification<a class="headerlink" href="#notification" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Decision</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>DD-INFRA-001</strong></td>
-<td>Namespace consolidation — all services in <code>kubernaut-system</code> with RBAC isolation</td>
-</tr>
-</tbody>
-</table>
-<h2 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h2>
-<table>
-<thead>
-<tr>
-<th>Decision</th>
-<th>Summary</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>DD-AUTH-011</strong></td>
-<td>Namespace architecture — single namespace with RBAC isolation per service</td>
-</tr>
-<tr>
-<td><strong>DD-AUTH-012</strong></td>
-<td>OAuth2 patterns for service authentication</td>
-</tr>
-</tbody>
-</table>
-<hr />
-<div class="admonition info">
-<p class="admonition-title">Internal Decisions</p>
-<p>The complete set of 350+ ADRs and Design Decisions is maintained in the <a href="https://github.com/jordigilh/kubernaut/tree/main/docs/architecture/decisions">main repository</a>. This page curates the subset that is most relevant for understanding the current architecture.</p>
-</div>
+<h3 id="narrowing-gaps">Narrowing gaps<a class="headerlink" href="#narrowing-gaps" title="Permanent link">&para;</a></h3>
+<p>The determinism and speed advantages of skills are narrowing:</p>
+<ul>
+<li><strong>Determinism</strong>: Kubernaut's full audit pipeline records every tool call, observation, and decision the LLM makes during investigation. The reasoning path is logged and reviewable, even if it varies between investigations.</li>
+<li><strong>Speed</strong>: The 10-30s investigation time includes root cause analysis, workflow selection, and context gathering — work that a human SRE would spend 10-30 minutes on. The absolute latency is acceptable for incident response.</li>
+<li><strong>Tribal knowledge</strong>: The pre-investigation injection point provides a structured mechanism for encoding institutional knowledge without constraining investigation. As LLMs improve at reasoning from context, the gap between "knowledge embedded in a playbook" and "knowledge provided as context" continues to shrink.</li>
+</ul>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<p>Skills solve a real problem — encoding investigation knowledge so that incidents can be handled consistently and quickly. But they solve it by constraining the LLM to a pre-authored decision tree, which limits the system to known failure modes and known investigation paths.</p>
+<p>Kubernaut's unconstrained investigation model, augmented by agentic injection points for institutional knowledge, achieves broader coverage with less engineering effort, handles novel failures, discovers root causes that skills cannot anticipate, and scales with LLM capabilities rather than with engineering headcount.</p>
+<p>The architectural choice is between building <strong>automation that uses an LLM as a script runner</strong> and building <strong>an LLM-native system that uses automation as a capability</strong>. Kubernaut chooses the latter.</p>
 
 
 
@@ -3242,7 +3452,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../architecture/security-rbac/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Security &amp; RBAC">
+          <a href="../security-rbac/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Security &amp; RBAC">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3259,7 +3469,7 @@
         
         
           
-          <a href="../api-reference/" class="md-footer__link md-footer__link--next" aria-label="Next: API Reference">
+          <a href="../../api-reference/" class="md-footer__link md-footer__link--next" aria-label="Next: API Reference">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
@@ -3322,12 +3532,12 @@
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
     
     
-      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
       
-        <script src="../assets/extra.js"></script>
+        <script src="../../assets/extra.js"></script>
       
     
   </body>

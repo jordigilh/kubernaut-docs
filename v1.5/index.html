@@ -3158,7 +3158,7 @@
 <p><strong>CRD:</strong> <code>SignalProcessing</code></p>
 <p>AlertManager webhooks, Kubernetes Events, and A2A/Interactive sessions (v1.5) are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:</p>
 <ul>
-<li><strong>Severity</strong> — normalized to a standard scale (critical, high, medium, low).</li>
+<li><strong>Severity</strong> — normalized to a standard scale (critical, high, warning, info).</li>
 <li><strong>Environment</strong> — inferred from namespace labels (production, staging, development).</li>
 <li><strong>Priority</strong> — P0–P3 based on policy evaluation.</li>
 <li><strong>Signal mode</strong> — reactive (active incident) or proactive (predicted issue).</li>

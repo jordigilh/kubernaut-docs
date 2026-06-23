@@ -3845,7 +3845,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <p><strong><code>kubernaut_list_alerts</code></strong> — Query firing Prometheus alerts with optional filters</p>
 <ul>
 <li><code>namespace</code> (<code>string</code>) — Filter by namespace</li>
-<li><code>severity</code> (<code>string</code>) — Filter by severity (<code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>, <code>info</code>, <code>warning</code>)</li>
+<li><code>severity</code> (<code>string</code>) — Filter by severity (<code>critical</code>, <code>high</code>, <code>warning</code>, <code>info</code>)</li>
 <li><code>state</code> (<code>string</code>) — Filter by alert state (<code>firing</code>, <code>pending</code>)</li>
 </ul>
 <p>Returns a <code>ListAlertsResult</code> with <code>alerts[]</code> (sorted by severity descending, then <code>active_at</code> ascending FIFO), <code>count</code>, <code>total_count</code>, <code>truncated</code>, and <code>prioritized</code> (index-based priority metadata). Sensitive label keys (<code>password</code>, <code>token</code>, <code>secret</code>, <code>key</code>, <code>credential</code>, <code>bearer</code>) are stripped. URLs and IPs in label/annotation values are redacted (FedRAMP SI-10). If the serialized response exceeds the max tool output size, alerts are trimmed from the tail (lowest priority) and <code>truncated</code> is set to <code>true</code>.</p>
@@ -4238,7 +4238,7 @@ However, they <strong>are</strong> SAR-gated on the A2A path via <code>newRBACGu
 <tbody>
 <tr>
 <td><code>list_alerts</code></td>
-<td>Query Prometheus alerts with optional filters. Params: <code>namespace</code>, <code>severity</code> (critical/high/medium/low/info/warning), <code>state</code> (firing/pending). Returns redacted <code>AlertSummary</code> array.</td>
+<td>Query Prometheus alerts with optional filters. Params: <code>namespace</code>, <code>severity</code> (critical/high/warning/info), <code>state</code> (firing/pending). Returns redacted <code>AlertSummary</code> array.</td>
 </tr>
 <tr>
 <td><code>get_alert_details</code></td>

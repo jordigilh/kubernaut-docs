@@ -3245,7 +3245,7 @@
 <li><strong>Environment classification</strong> — Inferred from namespace labels or Rego policies (production, staging, development, test)</li>
 <li><strong>Priority assignment</strong> — P0–P3 based on Rego policy evaluation or severity-based fallback</li>
 <li><strong>Business classification</strong> — Business unit, service owner, criticality level, and SLA requirement (when labels are present)</li>
-<li><strong>Severity normalization</strong> — Maps raw alert severity to a standard scale (critical, high, medium, low, unknown) via Rego policies with a configurable fallback matrix</li>
+<li><strong>Severity normalization</strong> — Maps raw alert severity to a standard scale (critical, high, warning, info, unknown) via Rego policies with a configurable fallback matrix</li>
 <li><strong>Signal mode</strong> — Reactive (something broke) or proactive (something is predicted to break)</li>
 <li><strong>Signal name normalization</strong> — Normalizes the signal name for downstream matching while preserving the original for audit</li>
 </ul>

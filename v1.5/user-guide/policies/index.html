@@ -3303,7 +3303,7 @@
 <h3 id="severity-rules">Severity Rules<a class="headerlink" href="#severity-rules" title="Permanent link">&para;</a></h3>
 <p>Normalizes the raw alert severity to one of Kubernaut's standard values.</p>
 <p><strong>Rule name:</strong> <code>severity</code></p>
-<p><strong>Output:</strong> string -- one of <code>critical</code>, <code>high</code>, <code>medium</code>, <code>low</code>, <code>unknown</code></p>
+<p><strong>Output:</strong> string -- one of <code>critical</code>, <code>high</code>, <code>warning</code>, <code>info</code>, <code>unknown</code></p>
 <p><strong>Default mapping:</strong></p>
 <table>
 <thead>
@@ -3318,16 +3318,16 @@
 <td><code>critical</code></td>
 </tr>
 <tr>
-<td><code>high</code>, <code>sev2</code>, <code>p2</code>, <code>warning</code></td>
+<td><code>high</code>, <code>sev2</code>, <code>p2</code></td>
 <td><code>high</code></td>
 </tr>
 <tr>
-<td><code>medium</code>, <code>sev3</code></td>
-<td><code>medium</code></td>
+<td><code>warning</code>, <code>medium</code>, <code>sev3</code></td>
+<td><code>warning</code></td>
 </tr>
 <tr>
-<td><code>low</code>, <code>p3</code></td>
-<td><code>low</code></td>
+<td><code>info</code>, <code>low</code>, <code>p3</code></td>
+<td><code>info</code></td>
 </tr>
 <tr>
 <td>Anything else</td>

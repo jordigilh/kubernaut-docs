@@ -3406,7 +3406,7 @@ was selected and no warnings were raised:</p>
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">selectedWorkflow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">null</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="nt">warnings</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="nt">rootCauseAnalysis</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">low</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">severity</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="nt">summary</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">&gt;</span>
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">    </span><span class="no">Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.</span>
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="no">Five PVCs remain after their associated batch jobs completed. The data-processor</span>
@@ -3431,7 +3431,7 @@ These PVCs (batch-output-job-1 through batch-output-job-5) are labeled as
 deployment is healthy and unaffected."</p>
 </blockquote>
 <ul>
-<li><strong>Severity:</strong> <code>low</code></li>
+<li><strong>Severity:</strong> <code>info</code></li>
 <li><strong>Contributing factors:</strong> "Completed batch jobs without automatic PVC cleanup",
   "Missing storage lifecycle management"</li>
 </ul>
@@ -3465,7 +3465,7 @@ think this actually warrants automated action."</em></p>
 </span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">    </span><span class="nt">&quot;rationale&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;The workflow specifically targets orphaned PVCs from completed batch jobs...&quot;</span>
 </span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">  </span><span class="p">},</span>
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">  </span><span class="nt">&quot;rootCauseAnalysis&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;low&quot;</span><span class="p">,</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">&quot;severity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;info&quot;</span><span class="p">,</span>
 </span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="w">    </span><span class="nt">&quot;summary&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Five orphaned PVCs from completed batch jobs consuming 500Mi...&quot;</span><span class="p">,</span>
 </span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="w">    </span><span class="nt">&quot;contributingFactors&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 </span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="w">      </span><span class="s2">&quot;Completed batch jobs without automatic PVC cleanup&quot;</span><span class="p">,</span>
@@ -3493,7 +3493,7 @@ action type, correct parameters, high confidence), giving the operator a ready-t
 remediation if they choose to proceed.</p>
 <p><strong>3. Human-in-the-loop approval</strong> — The Rego policy catches the LLM's warning via the
 <code>has_warnings</code> rule and requires manual approval. The operator receives the full context:
-the LLM's RCA (low severity), the matched workflow (CleanupPVC), and the warning (no
+the LLM's RCA (info severity), the matched workflow (CleanupPVC), and the warning (no
 remediation warranted). They can make an informed decision: clean up now, or leave it for
 the next maintenance window.</p>
 <h3 id="contrast-with-other-scenarios">Contrast with Other Scenarios<a class="headerlink" href="#contrast-with-other-scenarios" title="Permanent link">&para;</a></h3>
@@ -3650,7 +3650,7 @@ actionable — no remediation warranted."</em></p>
 <h3 id="4-approval-gate-triggers">4. Approval gate triggers<a class="headerlink" href="#4-approval-gate-triggers" title="Permanent link">&para;</a></h3>
 <p>Production environment requires manual review. A <code>RemediationApprovalRequest</code> is created.</p>
 <h3 id="5-operator-reviews-and-rejects">5. Operator reviews and rejects<a class="headerlink" href="#5-operator-reviews-and-rejects" title="Permanent link">&para;</a></h3>
-<p>The operator sees the low severity, the 0.9-confidence workflow match, and the "no
+<p>The operator sees the info severity, the 0.9-confidence workflow match, and the "no
 remediation warranted" warning. They reject the cleanup:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>kubectl<span class="w"> </span>patch<span class="w"> </span>rar<span class="w"> </span>rar-rr-4deb88d0bae3-9418f0bc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span>--type<span class="o">=</span>merge<span class="w"> </span>--subresource<span class="o">=</span>status<span class="w"> </span><span class="se">\</span>

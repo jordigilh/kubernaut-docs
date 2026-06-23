@@ -94,8 +94,8 @@ receivers:
 | Key | Source | Example Values |
 |---|---|---|
 | `type` | Notification type | `Escalation`, `Simple`, `StatusUpdate`, `Approval`, `ManualReview`, `Completion` |
-| `severity` | Signal severity | `critical`, `high`, `medium`, `low` |
-| `priority` | Notification priority | `Critical`, `High`, `Medium`, `Low` |
+| `severity` | Signal severity | `critical`, `high`, `warning`, `info` |
+| `priority` | Notification priority | `Critical`, `High`, `Warning`, `Info` |
 | `phase` | Remediation phase | `signal-processing`, `ai-analysis`, `executing` |
 | `environment` | Namespace environment | `production`, `staging`, `development` |
 

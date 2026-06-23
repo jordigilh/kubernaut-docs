@@ -93,7 +93,7 @@ spec:
   actionType: RestartDeployment
 
   labels:
-    severity: [critical, high, medium]
+    severity: [critical, high, warning]
     environment: [production, staging, development, "*"]
     component: [deployment]
     priority: "*"
@@ -316,7 +316,7 @@ spec:
   actionType: FixConfiguration
 
   labels:
-    severity: [high, medium]
+    severity: [high, warning]
     environment: [production, staging]
     component: [deployment]
     priority: "*"
@@ -393,7 +393,7 @@ Mandatory labels control when a workflow is eligible during discovery:
 
 | Label | Type | Required | Description |
 |---|---|---|---|
-| `severity` | string[] | Yes | Severity levels: `critical`, `high`, `medium`, `low` (array, `minItems: 1`) |
+| `severity` | string[] | Yes | Severity levels: `critical`, `high`, `warning`, `info` (array, `minItems: 1`) |
 | `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` (array, `minItems: 1`) |
 | `component` | string[] | Yes | Resource kind(s): `pod`, `deployment`, `node`, or `"*"` (array, `minItems: 1`) |
 | `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` (single value) |
@@ -635,7 +635,7 @@ spec:
     whenToUse: "When config drift is detected and the correct state is in a Git repository"
   actionType: FixConfiguration
   labels:
-    severity: [high, medium]
+    severity: [high, warning]
     environment: [production, staging]
     component: [deployment]
     priority: "*"

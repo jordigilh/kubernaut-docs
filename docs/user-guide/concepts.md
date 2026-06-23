@@ -37,7 +37,7 @@ Created after a RemediationRequest is accepted. The Signal Processing controller
 - **Environment classification** — Inferred from namespace labels or Rego policies (production, staging, development, test)
 - **Priority assignment** — P0–P3 based on Rego policy evaluation or severity-based fallback
 - **Business classification** — Business unit, service owner, criticality level, and SLA requirement (when labels are present)
-- **Severity normalization** — Maps raw alert severity to a standard scale (critical, high, medium, low, unknown) via Rego policies with a configurable fallback matrix
+- **Severity normalization** — Maps raw alert severity to a standard scale (critical, high, warning, info, unknown) via Rego policies with a configurable fallback matrix
 - **Signal mode** — Reactive (something broke) or proactive (something is predicted to break)
 - **Signal name normalization** — Normalizes the signal name for downstream matching while preserving the original for audit
 

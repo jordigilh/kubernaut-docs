@@ -741,6 +741,78 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#investigation-approach-unconstrained-reasoning-vs-pre-scripted-skills" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Investigation Approach: Unconstrained Reasoning vs Pre-Scripted Skills
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Investigation Approach: Unconstrained Reasoning vs Pre-Scripted Skills">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-signal-target-problem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Signal Target Problem
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scaling-characteristics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scaling Characteristics
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-long-tail" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Long Tail
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#agentic-injection-points-v17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Agentic Injection Points (v1.7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#skills-vs-kubernaut-trade-offs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Skills vs Kubernaut: Trade-Offs
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#when-to-use-kubernaut" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1654,8 +1726,6 @@
       
         
       
-        
-      
     
     
     
@@ -2119,34 +2189,6 @@
     
   
     Security & RBAC
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../architecture/unconstrained-investigation/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Unconstrained Investigation
   
 
     
@@ -3336,6 +3378,91 @@
 <p><strong>Where predictive AI fits</strong>: anomaly detection and topology-aware correlation for known failure patterns. Rather than competing with generative AI, predictive AI platforms are most valuable as <strong>knowledge-based agents</strong> that the LLM can query during investigation — confirming hypotheses, providing dependency context, and boosting confidence. See <a href="../aiops-landscape/">AIOps Remediation Landscape</a> for the full integration architecture.</p>
 <p><strong>Where Kubernaut wins</strong>: novel or variable failures, multi-path remediation, environments where the same alert can have different root causes, and scenarios where verification and learning matter. When integrated with predictive AI, Kubernaut can cross-validate its root cause analysis against statistical correlations — increasing confidence when they agree, and flagging discrepancies when they don't.</p>
 <p>For a detailed comparison against specific products and platforms in the agentic remediation space, see <a href="../market-comparison/">Agentic Remediation Market Comparison</a>.</p>
+<h2 id="investigation-approach-unconstrained-reasoning-vs-pre-scripted-skills">Investigation Approach: Unconstrained Reasoning vs Pre-Scripted Skills<a class="headerlink" href="#investigation-approach-unconstrained-reasoning-vs-pre-scripted-skills" title="Permanent link">&para;</a></h2>
+<p>The prevailing approach in SRE automation is to encode investigation knowledge as <strong>skills</strong> — natural-language implementations of operational runbooks that tell the LLM exactly what commands to run, in what order, and how to interpret the results. Teams translate their existing runbooks into per-alert-type skill definitions that prescribe a fixed decision tree of investigation steps and predefined root cause categories.</p>
+<p>A typical skill for a single alert type consists of:</p>
+<ul>
+<li>A natural-language investigation playbook derived from the team's runbook, prescribing exact steps, commands, and branching logic</li>
+<li>Bundled diagnostic scripts for specific platform variants</li>
+<li>A report template with a fixed checklist of known root causes</li>
+<li>Total: hundreds to nearly a thousand lines of investigation code per alert type</li>
+</ul>
+<p>Skills can extend beyond investigation into remediation — orchestration skills chain multiple sub-skills into end-to-end workflows (e.g., validate → gather context → generate playbook → execute → verify), and the LLM can use investigation findings to inform a remediation plan. However, this means the <strong>remediation itself is LLM-executed</strong> — the LLM interprets the skill's instructions, generates commands, and runs them. This consumes tokens for what are fundamentally deterministic actions, and introduces the LLM's inherent non-determinism into the execution path. The same skill invoked twice may produce subtly different execution plans, command orderings, or parameter choices — an undesirable property for production remediation where repeatability matters.</p>
+<p>Converting a runbook into a skill also does not reduce the amount of code — moderate-complexity SOPs typically expand 2-3x when translated into a structured skill (the original SOP plus report templates, reference docs, and safety constraints). Complex SOPs compress slightly but require custom diagnostic scripts that add significant engineering effort.</p>
+<p>Kubernaut takes a fundamentally different approach: the LLM investigates <strong>freely</strong> using its full tool set — pod logs, events, resource state, owner chains, metrics, and remediation history. There is no pre-scripted playbook constraining which paths the investigation can follow.</p>
+<h3 id="the-signal-target-problem">The Signal Target Problem<a class="headerlink" href="#the-signal-target-problem" title="Permanent link">&para;</a></h3>
+<p>A critical limitation of pre-scripted skills is the assumption that the <strong>signal target</strong> (the resource that triggered the alert) is closely related to the <strong>RCA target</strong> (the actual root cause). In practice, these frequently diverge. An API availability alert fires because probes detect the API server is unreachable, but the root cause might be:</p>
+<ul>
+<li>Control plane nodes under memory pressure from an unrelated workload</li>
+<li>A network policy change that blocked probe traffic</li>
+<li>An etcd member failure caused by disk I/O saturation from a log-heavy pod on a shared node</li>
+<li>A DNS resolution failure triggered by a CoreDNS OOM event</li>
+</ul>
+<p>A skill for this alert pre-maps a fixed set of investigation paths. If the actual root cause falls outside those predefined paths, the skill falls through to "requires further investigation" and pages a human. The skill author must anticipate every possible root cause at authoring time.</p>
+<p>Kubernaut Agent follows the evidence wherever it leads — from the API availability alert, to slow API server response, to memory saturation on a control plane node, to a logging sidecar DaemonSet consuming excessive memory. No skill author anticipated "logging sidecar DaemonSet on control plane nodes" as a root cause for an API availability alert. But the LLM, reasoning from first principles with access to cluster state, follows the causal chain.</p>
+<h3 id="scaling-characteristics">Scaling Characteristics<a class="headerlink" href="#scaling-characteristics" title="Permanent link">&para;</a></h3>
+<p>The skill-based approach scales <strong>linearly</strong> — each new alert type requires a new skill, with its own investigation playbook, diagnostic scripts, and report template. Even with a <strong>skill generator</strong> that automates the conversion of moderate-complexity runbooks into draft skills, complex SOPs with multi-phase decision trees and cross-tool investigation resist template generation and require significant hand-crafting.</p>
+<p>Kubernaut scales with the <strong>LLM's reasoning capabilities</strong> rather than with engineering headcount. Adding coverage for a new class of alerts means authoring a remediation workflow that defines the <em>action</em>, not the <em>investigation</em>. The investigation is universal — the same LLM reasoning process applies regardless of which alert fired.</p>
+<p>Kubernaut draws a deliberate boundary: the LLM drives <strong>investigation and workflow selection</strong> — where reasoning, judgment, and non-determinism are strengths — but remediation is executed by <strong>deterministic workflow executors</strong> (Tekton pipelines and Kubernetes Jobs). The LLM selects <em>which</em> workflow to run, but the workflow itself executes the same way every time, with no token cost and no risk of deviation.</p>
+<h3 id="the-long-tail">The Long Tail<a class="headerlink" href="#the-long-tail" title="Permanent link">&para;</a></h3>
+<p>The most significant advantage is handling the <strong>long tail</strong> of alert types. In any production environment, the majority of alert types are infrequent — they fire a few times per month or less. Building skills for these alerts has poor ROI because the engineering cost per alert is constant regardless of frequency.</p>
+<p>Kubernaut handles long-tail alerts with the same investigation quality as high-frequency alerts because the investigation process is universal. A skill-based system returns "no skill found" for unseen alert types and pages a human. Kubernaut investigates and may resolve the incident autonomously, even for novel failure modes.</p>
+<h3 id="agentic-injection-points-v17">Agentic Injection Points (v1.7)<a class="headerlink" href="#agentic-injection-points-v17" title="Permanent link">&para;</a></h3>
+<p>The strongest argument for skills is <strong>institutional knowledge</strong> — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three <strong>agentic workflow injection points</strong> (planned for <a href="../../whats-next/#custom-agent-injection">v1.7, Q3 2026</a>) where operators will contribute domain-specific context without constraining the LLM's reasoning:</p>
+<ol>
+<li><strong>Pre-Investigation</strong> — Agent workflows that execute before investigation begins, contributing <strong>context</strong> (not instructions) such as environment-specific diagnostics, SOP knowledge, or data from external systems (CMDB, change management)</li>
+<li><strong>Pre-Workflow Selection</strong> — Agent workflows that influence which remediation workflows are surfaced as candidates, enabling <strong>policy-aware remediation</strong> (e.g., FinOps cost constraints) without hardcoding policies into workflow definitions</li>
+<li><strong>Custom Effectiveness Probes</strong> — Custom validation workflows to confirm whether a remediation succeeded for resources outside Kubernetes' native observability (databases, cloud services, external infrastructure)</li>
+</ol>
+<p>These injection points are <strong>multiplicative</strong> — one pre-investigation agent for etcd diagnostics benefits all etcd alert types; one cost-optimization agent at workflow discovery applies to every remediation across the platform. Building 3 injection point workflows provides equivalent contextual enrichment to dozens of per-alert skills.</p>
+<h3 id="skills-vs-kubernaut-trade-offs">Skills vs Kubernaut: Trade-Offs<a class="headerlink" href="#skills-vs-kubernaut-trade-offs" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Aspect</th>
+<th>Skills</th>
+<th>Kubernaut</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Determinism</strong></td>
+<td>Same investigation steps every time — easy to audit</td>
+<td>LLM reasoning is probabilistic — different investigations may follow different paths</td>
+</tr>
+<tr>
+<td><strong>Speed</strong></td>
+<td>No reasoning overhead — runs commands immediately</td>
+<td>10-30s investigation time for LLM reasoning</td>
+</tr>
+<tr>
+<td><strong>Novel failures</strong></td>
+<td>Cannot handle — no matching playbook</td>
+<td>Investigates from first principles</td>
+</tr>
+<tr>
+<td><strong>Signal ≠ RCA target</strong></td>
+<td>Must pre-map all possible RCA targets</td>
+<td>Discovers RCA target dynamically</td>
+</tr>
+<tr>
+<td><strong>Coverage scaling</strong></td>
+<td>Linear with engineering effort</td>
+<td>Scales with LLM capability</td>
+</tr>
+<tr>
+<td><strong>Remediation execution</strong></td>
+<td>LLM-executed: consumes tokens, non-deterministic</td>
+<td>Deterministic workflow executors (Tekton/Jobs)</td>
+</tr>
+<tr>
+<td><strong>Long tail</strong></td>
+<td>No coverage without a skill</td>
+<td>Same investigation quality for all alerts</td>
+</tr>
+</tbody>
+</table>
+<p>The determinism and speed advantages of skills are narrowing: Kubernaut's full audit pipeline records every tool call and decision, making the reasoning path reviewable. The 10-30s investigation time replaces 10-30 minutes of manual SRE work. And the pre-investigation injection point provides a structured mechanism for encoding institutional knowledge without constraining investigation.</p>
 <h2 id="when-to-use-kubernaut">When to Use Kubernaut<a class="headerlink" href="#when-to-use-kubernaut" title="Permanent link">&para;</a></h2>
 <p><strong>Good fit:</strong></p>
 <ul>

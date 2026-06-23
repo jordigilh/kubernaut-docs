@@ -1009,7 +1009,7 @@ _Appears in:_
 | ---| ---| ---|
 | `remediationRequestRef`| _[ObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectreference-v1-core)_| Reference to parent RemediationRequest (if applicable)<br />Used for audit correlation and lineage tracking <br />Optional: NotificationRequest can be standalone (e.g., system-generated alerts)|
 | `type`| _[NotificationType](#notificationtype)_| Type of notification (escalation, simple, status-update)|
-| `priority`| _[NotificationPriority](#notificationpriority)_| Priority of notification (critical, high, medium, low)|
+| `priority`| _[NotificationPriority](#notificationpriority)_| Priority of notification (critical, high, warning, info)|
 | `subject`| _string_| Subject line for notification|
 | `body`| _string_| Notification body content|
 | `severity`| _string_| Severity from the originating signal (used for routing)<br /> promoted from mutable label to immutable spec field|
@@ -1755,7 +1755,7 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `summary`| _string_| Brief summary of root cause|
-| `severity`| _string_| Severity determined by RCA <br /> Aligned with KA/workflow catalog (critical, high, medium, low, unknown)|
+| `severity`| _string_| Severity determined by RCA <br /> Aligned with KA/workflow catalog (critical, high, warning, info, unknown)|
 | `signalType`| _string_| Signal type determined by RCA (may differ from input)|
 | `contributingFactors`| _string array_| Contributing factors|
 | `remediationTarget`| _[RemediationTarget](#remediationtarget)_| RemediationTarget identifies the actual resource the LLM determined should be remediated.<br /> The LLM may identify a higher-level resource (e.g., Deployment) rather than<br />the Pod that generated the signal. The WFE creator should prefer this over the RR's<br />TargetResource when available to ensure the correct resource is patched.|
@@ -1797,7 +1797,7 @@ _Appears in:_
 | Field| Type| Description|
 | ---| ---| ---|
 | `fingerprint`| _string_| Signal fingerprint for correlation|
-| `severity`| _string_| Signal severity: critical, high, medium, low, unknown (normalized by SignalProcessing Rego - )|
+| `severity`| _string_| Signal severity: critical, high, warning, info, unknown (normalized by SignalProcessing Rego - )|
 | `signalName`| _string_| Signal name (e.g., OOMKilled, CrashLoopBackOff)<br />Normalized by SignalProcessing: proactive names mapped to base names|
 | `signalMode`| _string_| SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Prompt Strategy<br />Copied from SignalProcessing status by RemediationOrchestrator.<br />Used by Kubernaut Agent to switch investigation prompt (RCA vs. predict & prevent).|
 | `environment`| _string_| Environment classification<br />Examples: "production", "staging", "development", "qa-eu", "canary"|
@@ -1915,7 +1915,7 @@ _Appears in:_
 | `environmentClassification`| _[EnvironmentClassification](#environmentclassification)_| Categorization results|
 | `priorityAssignment`| _[PriorityAssignment](#priorityassignment)_||
 | `businessClassification`| _BusinessClassification_||
-| `severity`| _string_| Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "medium", "low", or "unknown"<br />Aligned with KA/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.|
+| `severity`| _string_| Severity determination <br />Normalized severity determined by Rego policy: "critical", "high", "warning", "info", or "unknown"<br />Aligned with KA/workflow catalog severity levels for consistency across platform<br />Enables downstream services (AIAnalysis, RemediationOrchestrator, Notification)<br />to interpret alert urgency without understanding external severity schemes.|
 | `policyHash`| _string_| PolicyHash is the SHA256 hash of the Rego policy used for severity determination<br />Provides audit trail and policy version tracking for compliance requirements<br />Expected format: 64-character hexadecimal string (SHA256 hash)|
 | `signalMode`| _string_| SignalMode indicates whether this is a reactive or proactive signal.<br /> Proactive Signal Mode Classification<br /> Proactive Signal Mode Classification and Prompt Strategy<br />Set during the Classifying phase alongside severity, environment, and priority.<br />All signals MUST be classified — "reactive" is the default for unmapped types.|
 | `signalName`| _string_| SignalName is the normalized signal name after proactive-to-base mapping.<br /> Signal Name Normalization<br />For proactive signals (e.g., "PredictedOOMKill"), this is the base name (e.g., "OOMKilled").<br />For reactive signals, this matches Spec.Signal.Name unchanged.<br />This is the AUTHORITATIVE signal name for all downstream consumers (RO, AA, KA).|

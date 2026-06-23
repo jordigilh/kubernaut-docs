@@ -57,7 +57,7 @@ actionability: NotActionable
 selectedWorkflow: null
 warnings: []
 rootCauseAnalysis:
-  severity: low
+  severity: info
   summary: >
     Orphaned PVCs from completed batch jobs detected in demo-orphaned-pvc namespace.
     Five PVCs remain after their associated batch jobs completed. The data-processor
@@ -86,7 +86,7 @@ The LLM correctly characterized the situation as low-priority housekeeping:
 > 'batch-run=completed' and are not mounted by any running pods. The data-processor
 > deployment is healthy and unaffected."
 
-- **Severity:** `low`
+- **Severity:** `info`
 - **Contributing factors:** "Completed batch jobs without automatic PVC cleanup",
   "Missing storage lifecycle management"
 
@@ -128,7 +128,7 @@ think this actually warrants automated action."*
     "rationale": "The workflow specifically targets orphaned PVCs from completed batch jobs..."
   },
   "rootCauseAnalysis": {
-    "severity": "low",
+    "severity": "info",
     "summary": "Five orphaned PVCs from completed batch jobs consuming 500Mi...",
     "contributingFactors": [
       "Completed batch jobs without automatic PVC cleanup",
@@ -165,7 +165,7 @@ remediation if they choose to proceed.
 
 **3. Human-in-the-loop approval** — The Rego policy catches the LLM's warning via the
 `has_warnings` rule and requires manual approval. The operator receives the full context:
-the LLM's RCA (low severity), the matched workflow (CleanupPVC), and the warning (no
+the LLM's RCA (info severity), the matched workflow (CleanupPVC), and the warning (no
 remediation warranted). They can make an informed decision: clean up now, or leave it for
 the next maintenance window.
 
@@ -304,7 +304,7 @@ Production environment requires manual review. A `RemediationApprovalRequest` is
 
 ### 5. Operator reviews and rejects
 
-The operator sees the low severity, the 0.9-confidence workflow match, and the "no
+The operator sees the info severity, the 0.9-confidence workflow match, and the "no
 remediation warranted" warning. They reject the cleanup:
 
 ```bash

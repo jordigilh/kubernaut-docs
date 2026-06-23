@@ -108,7 +108,7 @@ Click a phase card above, or select a tab:
 
     AlertManager webhooks, Kubernetes Events, and A2A/Interactive sessions (v1.5) are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:
 
-    - **Severity** — normalized to a standard scale (critical, high, medium, low).
+    - **Severity** — normalized to a standard scale (critical, high, warning, info).
     - **Environment** — inferred from namespace labels (production, staging, development).
     - **Priority** — P0–P3 based on policy evaluation.
     - **Signal mode** — reactive (active incident) or proactive (predicted issue).

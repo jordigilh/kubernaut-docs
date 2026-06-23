@@ -141,7 +141,7 @@ The classification phase evaluates four classifiers in sequence. A failure in se
 - **Query**: `data.signalprocessing.severity`
 - **Input**: `{namespace: {name, labels}, signal: {severity, type, source, labels}, workload: {kind, name, labels}}`
 - **Output**: Normalized severity string
-- **Values**: `critical`, `high`, `medium`, `low`, `unknown`
+- **Values**: `critical`, `high`, `warning`, `info`, `unknown`
 - **Fatal on failure**: A severity policy error transitions the CRD to `Failed` with `RegoEvaluationError`
 
 ### 4. Signal Mode Classifier (YAML)

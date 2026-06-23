@@ -630,7 +630,7 @@ Per-resource action summary joining `resource_references`, `action_histories`, a
 
 ### incident_summary_view
 
-Incident counts grouped by signal severity (ordered critical → low).
+Incident counts grouped by signal severity (ordered critical → info).
 
 ### oscillation_detection_summary
 

@@ -581,7 +581,7 @@ Backend: **Prometheus** (AF ServiceAccount) — queries the configured Prometheu
 - **`kubernaut_list_alerts`** — Query firing Prometheus alerts with optional filters
 
     - `namespace` (`string`) — Filter by namespace
-    - `severity` (`string`) — Filter by severity (`critical`, `high`, `medium`, `low`, `info`, `warning`)
+    - `severity` (`string`) — Filter by severity (`critical`, `high`, `warning`, `info`)
     - `state` (`string`) — Filter by alert state (`firing`, `pending`)
 
     Returns a `ListAlertsResult` with `alerts[]` (sorted by severity descending, then `active_at` ascending FIFO), `count`, `total_count`, `truncated`, and `prioritized` (index-based priority metadata). Sensitive label keys (`password`, `token`, `secret`, `key`, `credential`, `bearer`) are stripped. URLs and IPs in label/annotation values are redacted (FedRAMP SI-10). If the serialized response exceeds the max tool output size, alerts are trimmed from the tail (lowest priority) and `truncated` is set to `true`.
@@ -757,7 +757,7 @@ These tools are only available when the AF has a Prometheus connection configure
 
 | Tool | Purpose |
 |------|---------|
-| `list_alerts` | Query Prometheus alerts with optional filters. Params: `namespace`, `severity` (critical/high/medium/low/info/warning), `state` (firing/pending). Returns redacted `AlertSummary` array. |
+| `list_alerts` | Query Prometheus alerts with optional filters. Params: `namespace`, `severity` (critical/high/warning/info), `state` (firing/pending). Returns redacted `AlertSummary` array. |
 | `get_alert_details` | Get details of a specific alert. Params: `alert_name` (required), `namespace` (optional). Returns matching `AlertSummary` array. |
 | `kubernaut_investigate_alert` | Alert-first RR creation with scope validation. Params: `alert_name`, `api_version`, `kind`, `name` (all required), `namespace` (optional for cluster-scoped). Validates alert exists in Prometheus and checks namespace/cluster scope via RESTMapper before creating the RR (#1372). |
 

@@ -155,7 +155,7 @@ After the Gateway creates a `RemediationRequest`, the Orchestrator creates a `Si
 
 Rego policies evaluate the enriched signal to determine:
 
-- **Severity** — `critical`, `high`, `medium`, `low`, or `unknown`
+- **Severity** — `critical`, `high`, `warning`, `info`, or `unknown`
 - **Priority** — Business impact and urgency
 - **Environment** — Production, staging, development
 - **Signal mode** — Reactive or proactive

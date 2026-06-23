@@ -37,7 +37,7 @@ All SP rules receive the same `PolicyInput` struct:
 
 **Rego query:** `data.signalprocessing.severity`
 
-**Expected output:** A string -- one of `critical`, `high`, `medium`, `low`, `unknown`
+**Expected output:** A string -- one of `critical`, `high`, `warning`, `info`, `unknown`
 
 #### Example: PagerDuty P0--P4 Mapping
 
@@ -50,8 +50,8 @@ severity_map := {
     "p0": "critical",
     "p1": "critical",
     "p2": "high",
-    "p3": "medium",
-    "p4": "low",
+    "p3": "warning",
+    "p4": "info",
 }
 
 severity := severity_map[lower(input.signal.severity)] if {
@@ -78,7 +78,7 @@ severity := "critical" if {
 # Prometheus alerts use standard severity labels
 severity := input.signal.severity if {
     input.signal.source == "prometheus"
-    input.signal.severity in {"critical", "high", "medium", "low"}
+    input.signal.severity in {"critical", "high", "warning", "info"}
 }
 
 default severity := "unknown"
@@ -162,7 +162,7 @@ import rego.v1
 # Severity dimension (cross-references the severity rule)
 severity_score := 3 if { severity == "critical" }
 severity_score := 2 if { severity == "high" }
-severity_score := 1 if { severity == "medium" }
+severity_score := 1 if { severity == "warning" }
 default severity_score := 0
 
 # Environment dimension (cross-references the environment rule)
@@ -295,7 +295,7 @@ The approval policy runs after the investigation pipeline returns a successful w
 | Field | Type | Description |
 |---|---|---|
 | `input.signal_type` | `string` | Signal name that triggered the analysis (e.g., `OOMKilled`, `CrashLoopBackOff`) |
-| `input.severity` | `string` | Normalized severity from SP (`critical`, `high`, `medium`, `low`) |
+| `input.severity` | `string` | Normalized severity from SP (`critical`, `high`, `warning`, `info`) |
 | `input.environment` | `string` | Environment classification from SP (`production`, `staging`, etc.) |
 | `input.business_priority` | `string` | Priority assigned by SP (`P0`--`P3`) |
 
@@ -342,7 +342,7 @@ These are infrastructure characteristics detected by the LLM during root cause a
 | `input.custom_labels` | `map[string][]string` | Operator-defined labels from the custom labels policy |
 | `input.business_classification.business_unit` | `string` | Business unit from the business policy |
 | `input.business_classification.service_owner` | `string` | Service owner team |
-| `input.business_classification.criticality` | `string` | Criticality level (`critical`, `high`, `medium`, `low`) |
+| `input.business_classification.criticality` | `string` | Criticality level (`critical`, `high`, `warning`, `info`) |
 | `input.business_classification.sla_requirement` | `string` | SLA tier (e.g., `platinum`, `gold`, `silver`, `bronze`) |
 
 ### Example: Default Policy (Environment-Gated)

@@ -32,7 +32,7 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 | `kubernaut.ai/environment` | `production`, `staging`, `development`, `qa`, `test` | SP `policy.rego` (environment rules), AA approval | Environment classification and approval gates |
 | `kubernaut.ai/business-unit` | Any string | SP `policy.rego` (custom labels rules) | Business unit classification (LLM context only) |
 | `kubernaut.ai/service-owner` | Any string | SP `policy.rego` (custom labels rules) | Service owner team |
-| `kubernaut.ai/criticality` | `critical`, `high`, `medium`, `low` | SP `policy.rego` (custom labels rules) | Business criticality |
+| `kubernaut.ai/criticality` | `critical`, `high`, `warning`, `info` | SP `policy.rego` (custom labels rules) | Business criticality |
 | `kubernaut.ai/sla-tier` | `platinum`, `gold`, `silver`, `bronze` | SP `policy.rego` (custom labels rules) | SLA tier |
 
 ### Custom Labels

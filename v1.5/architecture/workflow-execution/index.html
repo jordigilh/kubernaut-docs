@@ -3696,7 +3696,11 @@
 </tr>
 <tr>
 <td><code>TARGET_RESOURCE_NAMESPACE</code></td>
-<td><code>wfe.Spec.Parameters</code> (KA-injected from K8s root_owner)</td>
+<td><code>wfe.Spec.Parameters</code> (KA-injected from K8s root_owner; empty for cluster-scoped)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_API_VERSION</code></td>
+<td><code>wfe.Spec.Parameters</code> (KA-injected; auto-resolved via ScopeResolver)</td>
 </tr>
 <tr>
 <td>Custom parameters</td>
@@ -3724,7 +3728,11 @@
 </tr>
 <tr>
 <td><code>TARGET_RESOURCE_NAMESPACE</code></td>
-<td><code>wfe.Spec.Parameters</code> (KA-injected from K8s root_owner)</td>
+<td><code>wfe.Spec.Parameters</code> (KA-injected from K8s root_owner; empty for cluster-scoped)</td>
+</tr>
+<tr>
+<td><code>TARGET_RESOURCE_API_VERSION</code></td>
+<td><code>wfe.Spec.Parameters</code> (KA-injected; auto-resolved via ScopeResolver)</td>
 </tr>
 <tr>
 <td><code>WFE_NAME</code></td>

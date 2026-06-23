@@ -245,7 +245,8 @@ Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that id
 |---|---|---|
 | `TARGET_RESOURCE_NAME` | string | Name of the root managing resource (e.g., `my-app`) |
 | `TARGET_RESOURCE_KIND` | string | Kind of the root managing resource (e.g., `Deployment`, `StatefulSet`, `Node`) |
-| `TARGET_RESOURCE_NAMESPACE` | string | Namespace of the root managing resource. **Omitted** for cluster-scoped resources (e.g., Nodes) |
+| `TARGET_RESOURCE_NAMESPACE` | string | Namespace of the root managing resource. **Empty string** for cluster-scoped resources (e.g., Nodes) |
+| `TARGET_RESOURCE_API_VERSION` | string | API version of the root managing resource (e.g., `apps/v1`, `v1`). Auto-resolved via ScopeResolver for unambiguous kinds |
 
 ### Declaring Standard Parameters in Workflow Schemas
 
@@ -263,13 +264,17 @@ parameters:
     description: "Kind of the root managing resource (auto-injected)"
   - name: TARGET_RESOURCE_NAMESPACE
     type: string
-    required: true
-    description: "Namespace of the root managing resource (auto-injected)"
+    required: false
+    description: "Namespace of the root managing resource (auto-injected; empty for cluster-scoped resources)"
+  - name: TARGET_RESOURCE_API_VERSION
+    type: string
+    required: false
+    description: "API version of the root managing resource (auto-injected when resolved)"
 ```
 
 ### Cluster-Scoped Resources
 
-For cluster-scoped resources (e.g., Nodes, PersistentVolumes), `TARGET_RESOURCE_NAMESPACE` is **not injected** to prevent parameter validation failures. Workflows that handle both namespaced and cluster-scoped resources should declare `TARGET_RESOURCE_NAMESPACE` as **optional** (`required: false`).
+For cluster-scoped resources (e.g., Nodes, PersistentVolumes), `TARGET_RESOURCE_NAMESPACE` is injected as an **empty string**. Workflows that handle both namespaced and cluster-scoped resources should declare `TARGET_RESOURCE_NAMESPACE` as **optional** (`required: false`) and check for an empty value. `TARGET_RESOURCE_API_VERSION` is auto-resolved via the ScopeResolver for unambiguous kinds (e.g., `Deployment` → `apps/v1`) and is only injected when successfully resolved.
 
 See the [worked example below](#step-4-create-the-workflows) for a complete workflow schema that declares these parameters.
 
@@ -354,8 +359,12 @@ spec:
       description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
-      required: true
-      description: "Namespace of the root managing resource (KA-injected)"
+      required: false
+      description: "Namespace of the root managing resource (KA-injected; empty for cluster-scoped)"
+    - name: TARGET_RESOURCE_API_VERSION
+      type: string
+      required: false
+      description: "API version of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -400,8 +409,12 @@ spec:
       description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
-      required: true
-      description: "Namespace of the root managing resource (KA-injected)"
+      required: false
+      description: "Namespace of the root managing resource (KA-injected; empty for cluster-scoped)"
+    - name: TARGET_RESOURCE_API_VERSION
+      type: string
+      required: false
+      description: "API version of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true

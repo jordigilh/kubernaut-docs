@@ -506,7 +506,7 @@ flowchart TD
 
 ### Outcome 1: Success (Workflow Selected)
 
-**Invocation 2** returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters` (through **`submit_result_with_workflow`**), after `mergePhase1Fallbacks` when needed. KA then injects the three canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved in **Invocation 1** via `get_namespaced_resource_context` or `get_cluster_resource_context`). This is the only outcome that proceeds to Rego evaluation.
+**Invocation 2** returns a `selected_workflow` with `workflow_id`, `confidence`, and `parameters` (through **`submit_result_with_workflow`**), after `mergePhase1Fallbacks` when needed. KA then injects the four canonical `TARGET_RESOURCE_*` parameters and constructs `remediationTarget` from the K8s-verified `root_owner` (resolved in **Invocation 1** via `get_namespaced_resource_context` or `get_cluster_resource_context`). This is the only outcome that proceeds to Rego evaluation.
 
 **Fields:** `needs_human_review=false`, `selected_workflow` present, `confidence >= 0.7`
 **Next:** AA transitions to `Analyzing` phase → Rego evaluation
@@ -544,7 +544,7 @@ The first invocation may identify a root cause, but the **workflow selection** s
 
 ### Outcome 5: RCA Incomplete
 
-KA could not determine the target resource identity because `root_owner` is missing from `session_state` -- either `get_namespaced_resource_context` / `get_cluster_resource_context` was never called during the investigation or it returned no owner chain. Without a verified target, KA cannot inject the canonical `TARGET_RESOURCE_*` parameters and the investigation is unsafe to proceed.
+KA could not determine the target resource identity because `root_owner` is missing from `session_state` -- either `get_namespaced_resource_context` / `get_cluster_resource_context` was never called during the investigation or it returned no owner chain. Without a verified target, KA cannot inject the four canonical `TARGET_RESOURCE_*` parameters and the investigation is unsafe to proceed.
 
 **Fields:** `needs_human_review=true`, `human_review_reason=rca_incomplete`
 **Next:** Routed to human review.

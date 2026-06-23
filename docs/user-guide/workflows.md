@@ -117,8 +117,12 @@ spec:
       description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
-      required: true
-      description: "Namespace of the root managing resource (KA-injected)"
+      required: false
+      description: "Namespace of the root managing resource (KA-injected; empty for cluster-scoped)"
+    - name: TARGET_RESOURCE_API_VERSION
+      type: string
+      required: false
+      description: "API version of the root managing resource (KA-injected)"
     - name: TARGET_DEPLOYMENT
       type: string
       required: true
@@ -344,8 +348,12 @@ spec:
       description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
-      required: true
-      description: "Namespace of the root managing resource (KA-injected)"
+      required: false
+      description: "Namespace of the root managing resource (KA-injected; empty for cluster-scoped)"
+    - name: TARGET_RESOURCE_API_VERSION
+      type: string
+      required: false
+      description: "API version of the root managing resource (KA-injected)"
 
   dependencies:
     secrets:
@@ -559,7 +567,8 @@ Every workflow schema **must** declare these three parameters as `required: true
 |---|---|
 | `TARGET_RESOURCE_NAME` | Name of the root managing resource |
 | `TARGET_RESOURCE_KIND` | Kind of the root managing resource (e.g., `Deployment`) |
-| `TARGET_RESOURCE_NAMESPACE` | Namespace of the root managing resource |
+| `TARGET_RESOURCE_NAMESPACE` | Namespace of the root managing resource (empty for cluster-scoped) |
+| `TARGET_RESOURCE_API_VERSION` | API version of the root managing resource (e.g., `apps/v1`) |
 
 These are **KA-injected** -- Kubernaut Agent derives them from the K8s-verified `root_owner` (resolved via the Pod → ReplicaSet → Deployment owner chain) and injects them into `selected_workflow.parameters` before the AIAnalysis completes. The LLM never sees or populates these fields (they are stripped from the schema before the LLM receives it).
 
@@ -596,7 +605,7 @@ execution:
 
 The Workflow Execution controller creates a Job with:
 
-- **Environment variables** -- All parameters (including the three canonical `TARGET_RESOURCE_*` params) injected as env vars, plus the system-injected `TARGET_RESOURCE`
+- **Environment variables** -- All parameters (including the four canonical `TARGET_RESOURCE_*` params) injected as env vars, plus the system-injected `TARGET_RESOURCE`
 - **Dependency mounts** -- Secrets at `/run/kubernaut/secrets/<name>`, ConfigMaps at `/run/kubernaut/configmaps/<name>`
 - **ServiceAccount** -- Per-workflow SA from `execution.serviceAccountName` (recommended). Falls back to the execution namespace default SA if omitted.
 
@@ -613,7 +622,7 @@ execution:
 The bundle must contain a Tekton Pipeline named `workflow`. The controller creates a PipelineRun with:
 
 - **Tekton bundle resolver** -- The bundle is referenced via `resolver: bundles` with the digest-pinned image
-- **Parameters** -- All parameters (including the three canonical `TARGET_RESOURCE_*` params) injected as Tekton params, plus the system-injected `TARGET_RESOURCE`
+- **Parameters** -- All parameters (including the four canonical `TARGET_RESOURCE_*` params) injected as Tekton params, plus the system-injected `TARGET_RESOURCE`
 - **Dependency workspaces** -- Secrets as `secret-<name>` workspace bindings, ConfigMaps as `configmap-<name>` workspace bindings
 
 Tekton provides step ordering, retries, and artifact passing between steps.
@@ -658,8 +667,12 @@ spec:
       description: "Kind of the root managing resource (KA-injected)"
     - name: TARGET_RESOURCE_NAMESPACE
       type: string
-      required: true
-      description: "Namespace of the root managing resource (KA-injected)"
+      required: false
+      description: "Namespace of the root managing resource (KA-injected; empty for cluster-scoped)"
+    - name: TARGET_RESOURCE_API_VERSION
+      type: string
+      required: false
+      description: "API version of the root managing resource (KA-injected)"
 ```
 
 The `engineConfig` fields for Ansible:

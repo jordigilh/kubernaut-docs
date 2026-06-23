@@ -32,16 +32,16 @@ Normalizes the raw alert severity to one of Kubernaut's standard values.
 
 **Rule name:** `severity`
 
-**Output:** string -- one of `critical`, `high`, `medium`, `low`, `unknown`
+**Output:** string -- one of `critical`, `high`, `warning`, `info`, `unknown`
 
 **Default mapping:**
 
 | Input (case-insensitive) | Output |
 |---|---|
 | `critical`, `sev1`, `p0`, `p1`, `error` | `critical` |
-| `high`, `sev2`, `p2`, `warning` | `high` |
-| `medium`, `sev3` | `medium` |
-| `low`, `p3` | `low` |
+| `high`, `sev2`, `p2` | `high` |
+| `warning`, `medium`, `sev3` | `warning` |
+| `info`, `low`, `p3` | `info` |
 | Anything else | `unknown` |
 
 **Input:** `input.signal.severity` (the raw severity string from the alert source)

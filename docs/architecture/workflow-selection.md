@@ -77,7 +77,7 @@ Every workflow declares four mandatory labels. DataStorage applies these as hard
 
 | Label | Type | Values | SQL Pattern |
 |---|---|---|---|
-| `severity` | `string[]` | `critical`, `high`, `medium`, `low`, `"*"` | `labels->'severity' ? $val OR labels->'severity' ? '*'` |
+| `severity` | `string[]` | `critical`, `high`, `warning`, `info`, `"*"` | `labels->'severity' ? $val OR labels->'severity' ? '*'` |
 | `component` | `string[]` | `pod`, `deployment`, `node`, `"*"` | Array containment (case-insensitive match to resource kind), consistent with `severity` / `environment` JSONB patterns |
 | `environment` | `string[]` | `production`, `staging`, `development`, `test`, `"*"` | `labels->'environment' ? $val OR labels->'environment' ? '*'` |
 | `priority` | `string` | `P0`, `P1`, `P2`, `P3`, `"*"` | Scalar match with `"*"` wildcard |

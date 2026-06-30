@@ -100,7 +100,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `provider` | string | **yes** | — | LLM provider: `openai`, `ollama`, `azure`, `vertex`, `vertexAi`, `anthropic`, `bedrock`, `huggingface`, `mistral` |
 | `model` | string | **yes** | — | Model name (e.g., `gpt-4o`, `gemini-2.5-pro`) |
 | `credentialsSecretName` | string | **yes** | — | Secret containing API key |
-| `endpoint` | string | no | — | Custom endpoint (required for `ollama`, `azure`, `mistral`) |
+| `endpoint` | string | no | — | Custom endpoint (required for `openai`, `ollama`, `azure`, `mistral`). For `openai`, the operator appends `/v1` and translates to `openai_compatible` for AF. |
 | `temperature` | string | no | — | LLM temperature |
 | `maxRetries` | int | no | — | Retry count per LLM call |
 | `timeoutSeconds` | int | no | — | Per-call timeout |
@@ -234,9 +234,7 @@ See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase
 | `issuerURL` | string | — | OIDC issuer URL (e.g., `https://login.kubernaut.ai/realms/kubernaut`). Must match the `iss` claim in tokens. |
 | `audience` | string | `kubernaut-apifrontend` | Expected JWT audience claim. Must match the `aud` claim in tokens (typically the Keycloak realm URL). |
 | `jwksURL` | string | — | Cluster-internal JWKS endpoint URL for token validation (e.g., `http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs`). Bypasses OIDC discovery — use when the issuer URL is external but JWKS must be fetched internally. |
-| `allowInsecureIssuers` | bool | `false` | Allow insecure (HTTP or self-signed TLS) issuer verification. Set `true` for development or self-signed Keycloak deployments. **Must be `false` in production.** |
 | `jwtProviders` | [][JWTProviderSpec](#jwtproviderspec) | — | One or more OIDC JWT providers |
-| `allowInsecureJWKS` | bool | `false` | Permit HTTP JWKS URLs for dev/test. **Must be `false` in production.** |
 
 ### JWTProviderSpec (v1.5.1) {: #jwtproviderspec }
 
@@ -246,7 +244,7 @@ Used at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.a
 |---|---|---|---|
 | `name` | string | **yes** | Human-readable provider name (1--63 chars, must be unique) |
 | `issuerURL` | string | **yes** | OIDC issuer URL -- must match the `iss` claim in tokens |
-| `jwksURL` | string | no | JWKS endpoint URL (max 2048 chars). Falls back to `issuerURL` for OIDC discovery if omitted. Must use HTTPS unless `allowInsecureJWKS` is true. |
+| `jwksURL` | string | no | JWKS endpoint URL (max 2048 chars, must use HTTPS). Falls back to `issuerURL` for OIDC discovery if omitted. |
 | `audiences` | []string | **yes** | Expected JWT audience claims (min 1 entry). Tokens without a matching `aud` are rejected. |
 | `claimMappings` | [ClaimMappingsSpec](#claimmappingsspec) | no | Custom claim-to-identity field mappings |
 
@@ -331,7 +329,7 @@ See [Custom ClusterRoles](../architecture/security-rbac.md#custom-clusterroles) 
 
 | Field | Type | Default | Description |
 |---|---|---|---|
-| `enabled` | bool | `false` | Enable SPIRE integration via kagenti. When `true`, the operator labels the namespace with `kagenti-enabled=true` and creates an `AgentRuntime` CR. |
+| `enabled` | *bool | `nil` (treated as `true`) | Enable SPIRE integration via kagenti. When `true`, the operator labels the namespace with `kagenti-enabled=true` and `pod-security.kubernetes.io/enforce=privileged`, and creates an `AgentRuntime` CR. Set to `false` explicitly to disable. |
 | `className` | string | — | SPIRE class name provisioned by kagenti (e.g., `zero-trust-workload-identity-manager-spire`). Must match the `SPIREClusterConfig` deployed by kagenti. |
 
 ### APIFrontendShutdownSpec {: #apifrontendshutdownspec }

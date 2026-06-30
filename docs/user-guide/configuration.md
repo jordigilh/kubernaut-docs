@@ -318,7 +318,7 @@ Duplicate `issuer` URLs across providers are rejected at startup.
 | Parameter | Description | Default |
 |---|---|---|
 | `apifrontend.config.auth.jwtProviders[].name` | Provider name (optional but must be unique if set) | — |
-| `apifrontend.config.auth.jwtProviders[].issuerURL` | OIDC issuer URL (**required**, must be https unless `allowInsecureIssuers`) | — |
+| `apifrontend.config.auth.jwtProviders[].issuerURL` | OIDC issuer URL (**required**, must be HTTPS) | — |
 | `apifrontend.config.auth.jwtProviders[].jwksURL` | JWKS endpoint (optional, falls back to `issuerURL` for OIDC discovery) | — |
 | `apifrontend.config.auth.jwtProviders[].audiences` | Expected audience claims (**required**, non-empty string array) | — |
 | `apifrontend.config.auth.jwtProviders[].claimMappings.username` | CEL expression or claim path for username | — |
@@ -418,11 +418,11 @@ This follows kagenti's standard `/ns/{namespace}/sa/{serviceaccount}` path conve
 
 #### AF LLM Configuration (v1.5+)
 
-The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's `ai.llm` section, supporting `vertex_ai`, `gemini`, and `anthropic` providers. When `provider` is empty, the A2A handler returns 501 (not configured).
+The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's `ai.llm` section, supporting `openai`, `vertex_ai`, `gemini`, and `anthropic` providers. When `provider` is empty, the A2A handler returns 501 (not configured).
 
 | Parameter | Description | Default |
 |---|---|---|
-| `apifrontend.config.agent.llm.provider` | LLM provider: `vertex_ai`, `gemini`, `anthropic` | `""` |
+| `apifrontend.config.agent.llm.provider` | LLM provider: `openai`, `vertex_ai`, `gemini`, `anthropic` | `""` |
 | `apifrontend.config.agent.llm.model` | Model name (e.g., `gemini-2.5-pro`) | `""` |
 | `apifrontend.config.agent.llm.endpoint` | Custom LLM endpoint URL | `""` |
 | `apifrontend.config.agent.llm.apiKeyFile` | Absolute path to file containing LLM API key (replaces env var) | `""` |
@@ -531,7 +531,7 @@ One of `policies.content` or `policies.existingConfigMap` **must** be provided; 
 
 ### PostgreSQL
 
-All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-provision-secrets).
+All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-create-secrets).
 
 | Parameter | Description | Default |
 |---|---|---|
@@ -554,7 +554,7 @@ To use an external PostgreSQL instance, set `postgresql.enabled=false` and provi
 
 ### Valkey
 
-All Valkey credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-provision-secrets).
+All Valkey credentials must be provided via pre-created Kubernetes Secrets. See [Provision Secrets](../getting-started/installation.md#2-create-secrets).
 
 | Parameter | Description | Default |
 |---|---|---|
@@ -587,7 +587,7 @@ gateway:
 
 Each entry creates a `ClusterRoleBinding` granting the ServiceAccount permission to submit signals.
 
-See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR authentication flow and RBAC details. See [Installation -- Signal Source Authentication](../getting-started/installation.md#signal-source-authentication) for AlertManager configuration examples.
+See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signal-ingestion) for the full TokenReview + SAR authentication flow and RBAC details.
 
 ## LLM Provider Setup
 

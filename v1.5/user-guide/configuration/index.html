@@ -3884,7 +3884,7 @@
 </tr>
 </tbody>
 </table>
-<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.1</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.1</code>.</p>
+<p>Image paths are constructed as <code>{registry}{separator}{namespace}{separator}{service}:{tag}</code>. For example, with the defaults: <code>quay.io/kubernaut-ai/gateway:v1.5.2</code>. For flat registries that don't support nested paths, set <code>separator: "-"</code> to produce <code>myregistry.example.com/kubernaut-ai-gateway:v1.5.2</code>.</p>
 <h3 id="gateway">Gateway<a class="headerlink" href="#gateway" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4520,7 +4520,7 @@
 </tr>
 <tr>
 <td><code>apifrontend.config.auth.jwtProviders[].issuerURL</code></td>
-<td>OIDC issuer URL (<strong>required</strong>, must be https unless <code>allowInsecureIssuers</code>)</td>
+<td>OIDC issuer URL (<strong>required</strong>, must be HTTPS)</td>
 <td>—</td>
 </tr>
 <tr>
@@ -4641,7 +4641,7 @@
 </span></code></pre></div>
 <p>This follows kagenti's standard <code>/ns/{namespace}/sa/{serviceaccount}</code> path convention (FedRAMP SC-8, IA-5).</p>
 <h4 id="af-llm-configuration-v15">AF LLM Configuration (v1.5+)<a class="headerlink" href="#af-llm-configuration-v15" title="Permanent link">&para;</a></h4>
-<p>The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's <code>ai.llm</code> section, supporting <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code> providers. When <code>provider</code> is empty, the A2A handler returns 501 (not configured).</p>
+<p>The API Frontend has its own LLM provider for the A2A agent handler. The schema mirrors KA's <code>ai.llm</code> section, supporting <code>openai</code>, <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code> providers. When <code>provider</code> is empty, the A2A handler returns 501 (not configured).</p>
 <table>
 <thead>
 <tr>
@@ -4653,7 +4653,7 @@
 <tbody>
 <tr>
 <td><code>apifrontend.config.agent.llm.provider</code></td>
-<td>LLM provider: <code>vertex_ai</code>, <code>gemini</code>, <code>anthropic</code></td>
+<td>LLM provider: <code>openai</code>, <code>vertex_ai</code>, <code>gemini</code>, <code>anthropic</code></td>
 <td><code>""</code></td>
 </tr>
 <tr>
@@ -4988,7 +4988,7 @@
 </table>
 <p>One of <code>policies.content</code> or <code>policies.existingConfigMap</code> <strong>must</strong> be provided; the chart fails at install if neither is set. The policy file is a single <code>.rego</code> file (not a YAML bundle) containing all classification rules under <code>package signalprocessing</code>. Proactive signal mappings are optional and injected separately. See <a href="../configmap-policies/">SignalProcessing Rego Policies</a> for the policy structure and customization guide.</p>
 <h3 id="postgresql">PostgreSQL<a class="headerlink" href="#postgresql" title="Permanent link">&para;</a></h3>
-<p>All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See <a href="../../getting-started/installation/#2-provision-secrets">Provision Secrets</a>.</p>
+<p>All PostgreSQL credentials must be provided via pre-created Kubernetes Secrets. See <a href="../../getting-started/installation/#2-create-secrets">Provision Secrets</a>.</p>
 <table>
 <thead>
 <tr>
@@ -5068,7 +5068,7 @@
 </tbody>
 </table>
 <h3 id="valkey">Valkey<a class="headerlink" href="#valkey" title="Permanent link">&para;</a></h3>
-<p>All Valkey credentials must be provided via pre-created Kubernetes Secrets. See <a href="../../getting-started/installation/#2-provision-secrets">Provision Secrets</a>.</p>
+<p>All Valkey credentials must be provided via pre-created Kubernetes Secrets. See <a href="../../getting-started/installation/#2-create-secrets">Provision Secrets</a>.</p>
 <table>
 <thead>
 <tr>
@@ -5142,7 +5142,7 @@
 </span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
 </span></code></pre></div>
 <p>Each entry creates a <code>ClusterRoleBinding</code> granting the ServiceAccount permission to submit signals.</p>
-<p>See <a href="../../architecture/security-rbac/#signal-ingestion">Security &amp; RBAC -- Signal Ingestion</a> for the full TokenReview + SAR authentication flow and RBAC details. See <a href="../../getting-started/installation/#signal-source-authentication">Installation -- Signal Source Authentication</a> for AlertManager configuration examples.</p>
+<p>See <a href="../../architecture/security-rbac/#signal-ingestion">Security &amp; RBAC -- Signal Ingestion</a> for the full TokenReview + SAR authentication flow and RBAC details.</p>
 <h2 id="llm-provider-setup">LLM Provider Setup<a class="headerlink" href="#llm-provider-setup" title="Permanent link">&para;</a></h2>
 <p>LLM configuration lives in the <strong>SDK config</strong> file, not in <code>values.yaml</code>. See <a href="../configmap-kubernaut-agent/">Kubernaut Agent SDK config</a> for the full schema and provider examples.</p>
 <p><strong>Quick setup:</strong></p>

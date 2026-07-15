@@ -3788,7 +3788,7 @@
 <td>string</td>
 <td>no</td>
 <td>—</td>
-<td>Custom endpoint (required for <code>ollama</code>, <code>azure</code>, <code>mistral</code>)</td>
+<td>Custom endpoint (required for <code>openai</code>, <code>ollama</code>, <code>azure</code>, <code>mistral</code>). For <code>openai</code>, the operator appends <code>/v1</code> and translates to <code>openai_compatible</code> for AF.</td>
 </tr>
 <tr>
 <td><code>temperature</code></td>
@@ -4352,22 +4352,10 @@
 <td>Cluster-internal JWKS endpoint URL for token validation (e.g., <code>http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs</code>). Bypasses OIDC discovery — use when the issuer URL is external but JWKS must be fetched internally.</td>
 </tr>
 <tr>
-<td><code>allowInsecureIssuers</code></td>
-<td>bool</td>
-<td><code>false</code></td>
-<td>Allow insecure (HTTP or self-signed TLS) issuer verification. Set <code>true</code> for development or self-signed Keycloak deployments. <strong>Must be <code>false</code> in production.</strong></td>
-</tr>
-<tr>
 <td><code>jwtProviders</code></td>
 <td>[]<a href="#jwtproviderspec">JWTProviderSpec</a></td>
 <td>—</td>
 <td>One or more OIDC JWT providers</td>
-</tr>
-<tr>
-<td><code>allowInsecureJWKS</code></td>
-<td>bool</td>
-<td><code>false</code></td>
-<td>Permit HTTP JWKS URLs for dev/test. <strong>Must be <code>false</code> in production.</strong></td>
 </tr>
 </tbody>
 </table>
@@ -4399,7 +4387,7 @@
 <td><code>jwksURL</code></td>
 <td>string</td>
 <td>no</td>
-<td>JWKS endpoint URL (max 2048 chars). Falls back to <code>issuerURL</code> for OIDC discovery if omitted. Must use HTTPS unless <code>allowInsecureJWKS</code> is true.</td>
+<td>JWKS endpoint URL (max 2048 chars, must use HTTPS). Falls back to <code>issuerURL</code> for OIDC discovery if omitted.</td>
 </tr>
 <tr>
 <td><code>audiences</code></td>
@@ -4596,9 +4584,9 @@
 <tbody>
 <tr>
 <td><code>enabled</code></td>
-<td>bool</td>
-<td><code>false</code></td>
-<td>Enable SPIRE integration via kagenti. When <code>true</code>, the operator labels the namespace with <code>kagenti-enabled=true</code> and creates an <code>AgentRuntime</code> CR.</td>
+<td>*bool</td>
+<td><code>nil</code> (treated as <code>true</code>)</td>
+<td>Enable SPIRE integration via kagenti. When <code>true</code>, the operator labels the namespace with <code>kagenti-enabled=true</code> and <code>pod-security.kubernetes.io/enforce=privileged</code>, and creates an <code>AgentRuntime</code> CR. Set to <code>false</code> explicitly to disable.</td>
 </tr>
 <tr>
 <td><code>className</code></td>

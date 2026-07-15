@@ -4081,7 +4081,7 @@
 <p>The operator catalog contains the bundle metadata (CSV, CRDs) and declares every operand image in <code>relatedImages</code>. The <code>oc-mirror</code> tool reads the catalog, discovers all images, and mirrors them in one pass. On the disconnected cluster, an <code>ImageDigestMirrorSet</code> (IDMS) transparently redirects image pulls from the source registries to your mirror at the CRI-O level.</p>
 <h3 id="images">Images<a class="headerlink" href="#images" title="Permanent link">&para;</a></h3>
 <p>The operator catalog embeds references to all required images. You do <strong>not</strong> need to maintain a manual image list — <code>oc-mirror</code> discovers them automatically from the CSV <code>relatedImages</code> section.</p>
-<p>For reference, the full set (17 images) is:</p>
+<p>For reference, the full set (19 images) is:</p>
 <table>
 <thead>
 <tr>
@@ -4170,6 +4170,16 @@
 <td></td>
 <td><code>quay.io/kubernaut-ai/db-migrate</code></td>
 <td>Database schema migration</td>
+</tr>
+<tr>
+<td></td>
+<td><code>quay.io/kubernaut-ai/kubernaut-console</code></td>
+<td>Console web UI (v1.5.1+)</td>
+</tr>
+<tr>
+<td></td>
+<td><code>quay.io/oauth2-proxy/oauth2-proxy</code></td>
+<td>Console authentication sidecar</td>
 </tr>
 <tr>
 <td><strong>Init images</strong></td>
@@ -5022,11 +5032,6 @@
 <td><code>curl</code> from inside the cluster should return a JSON key set</td>
 </tr>
 <tr>
-<td><code>spec.apiFrontend.auth.allowInsecureIssuers</code></td>
-<td><code>true</code> for self-signed Keycloak TLS</td>
-<td>Set <code>false</code> when Keycloak has a trusted certificate</td>
-</tr>
-<tr>
 <td><code>spec.apiFrontend.spire.className</code></td>
 <td>SPIRE class name deployed by kagenti</td>
 <td><code>oc get spireclusterconfig</code></td>
@@ -5103,118 +5108,117 @@
 </span><span id="__span-33-61"><a id="__codelineno-33-61" name="__codelineno-33-61" href="#__codelineno-33-61"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
 </span><span id="__span-33-62"><a id="__codelineno-33-62" name="__codelineno-33-62" href="#__codelineno-33-62"></a><span class="w">      </span><span class="nt">audience</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
 </span><span id="__span-33-63"><a id="__codelineno-33-63" name="__codelineno-33-63" href="#__codelineno-33-63"></a><span class="w">      </span><span class="nt">jwksURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs&quot;</span>
-</span><span id="__span-33-64"><a id="__codelineno-33-64" name="__codelineno-33-64" href="#__codelineno-33-64"></a><span class="w">      </span><span class="nt">allowInsecureIssuers</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-65"><a id="__codelineno-33-65" name="__codelineno-33-65" href="#__codelineno-33-65"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-66"><a id="__codelineno-33-66" name="__codelineno-33-66" href="#__codelineno-33-66"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
-</span><span id="__span-33-67"><a id="__codelineno-33-67" name="__codelineno-33-67" href="#__codelineno-33-67"></a><span class="w">    </span><span class="nt">rateLimit</span><span class="p">:</span>
-</span><span id="__span-33-68"><a id="__codelineno-33-68" name="__codelineno-33-68" href="#__codelineno-33-68"></a><span class="w">      </span><span class="nt">ipRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
-</span><span id="__span-33-69"><a id="__codelineno-33-69" name="__codelineno-33-69" href="#__codelineno-33-69"></a><span class="w">      </span><span class="nt">userRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-</span><span id="__span-33-70"><a id="__codelineno-33-70" name="__codelineno-33-70" href="#__codelineno-33-70"></a><span class="w">      </span><span class="nt">toolCallsPerMinute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
-</span><span id="__span-33-71"><a id="__codelineno-33-71" name="__codelineno-33-71" href="#__codelineno-33-71"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
-</span><span id="__span-33-72"><a id="__codelineno-33-72" name="__codelineno-33-72" href="#__codelineno-33-72"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-33-73"><a id="__codelineno-33-73" name="__codelineno-33-73" href="#__codelineno-33-73"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-33-74"><a id="__codelineno-33-74" name="__codelineno-33-74" href="#__codelineno-33-74"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
-</span><span id="__span-33-75"><a id="__codelineno-33-75" name="__codelineno-33-75" href="#__codelineno-33-75"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-</span><span id="__span-33-76"><a id="__codelineno-33-76" name="__codelineno-33-76" href="#__codelineno-33-76"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
-</span><span id="__span-33-77"><a id="__codelineno-33-77" name="__codelineno-33-77" href="#__codelineno-33-77"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-78"><a id="__codelineno-33-78" name="__codelineno-33-78" href="#__codelineno-33-78"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
-</span><span id="__span-33-79"><a id="__codelineno-33-79" name="__codelineno-33-79" href="#__codelineno-33-79"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-33-80"><a id="__codelineno-33-80" name="__codelineno-33-80" href="#__codelineno-33-80"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
-</span><span id="__span-33-81"><a id="__codelineno-33-81" name="__codelineno-33-81" href="#__codelineno-33-81"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-33-82"><a id="__codelineno-33-82" name="__codelineno-33-82" href="#__codelineno-33-82"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-33-83"><a id="__codelineno-33-83" name="__codelineno-33-83" href="#__codelineno-33-83"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-84"><a id="__codelineno-33-84" name="__codelineno-33-84" href="#__codelineno-33-84"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
-</span><span id="__span-33-85"><a id="__codelineno-33-85" name="__codelineno-33-85" href="#__codelineno-33-85"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-86"><a id="__codelineno-33-86" name="__codelineno-33-86" href="#__codelineno-33-86"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cicd</span>
-</span><span id="__span-33-87"><a id="__codelineno-33-87" name="__codelineno-33-87" href="#__codelineno-33-87"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-88"><a id="__codelineno-33-88" name="__codelineno-33-88" href="#__codelineno-33-88"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
-</span><span id="__span-33-89"><a id="__codelineno-33-89" name="__codelineno-33-89" href="#__codelineno-33-89"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-90"><a id="__codelineno-33-90" name="__codelineno-33-90" href="#__codelineno-33-90"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l3-audit</span>
-</span><span id="__span-33-91"><a id="__codelineno-33-91" name="__codelineno-33-91" href="#__codelineno-33-91"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-92"><a id="__codelineno-33-92" name="__codelineno-33-92" href="#__codelineno-33-92"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
-</span><span id="__span-33-93"><a id="__codelineno-33-93" name="__codelineno-33-93" href="#__codelineno-33-93"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-33-94"><a id="__codelineno-33-94" name="__codelineno-33-94" href="#__codelineno-33-94"></a>
-</span><span id="__span-33-95"><a id="__codelineno-33-95" name="__codelineno-33-95" href="#__codelineno-33-95"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
-</span><span id="__span-33-96"><a id="__codelineno-33-96" name="__codelineno-33-96" href="#__codelineno-33-96"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-97"><a id="__codelineno-33-97" name="__codelineno-33-97" href="#__codelineno-33-97"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-98"><a id="__codelineno-33-98" name="__codelineno-33-98" href="#__codelineno-33-98"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-99"><a id="__codelineno-33-99" name="__codelineno-33-99" href="#__codelineno-33-99"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-33-100"><a id="__codelineno-33-100" name="__codelineno-33-100" href="#__codelineno-33-100"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-101"><a id="__codelineno-33-101" name="__codelineno-33-101" href="#__codelineno-33-101"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-33-102"><a id="__codelineno-33-102" name="__codelineno-33-102" href="#__codelineno-33-102"></a><span class="w">      </span><span class="nt">deduplicationCooldown</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-33-103"><a id="__codelineno-33-103" name="__codelineno-33-103" href="#__codelineno-33-103"></a><span class="w">      </span><span class="nt">k8sRequestTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
-</span><span id="__span-33-104"><a id="__codelineno-33-104" name="__codelineno-33-104" href="#__codelineno-33-104"></a><span class="w">      </span><span class="nt">cors</span><span class="p">:</span>
-</span><span id="__span-33-105"><a id="__codelineno-33-105" name="__codelineno-33-105" href="#__codelineno-33-105"></a><span class="w">        </span><span class="nt">allowCredentials</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-33-106"><a id="__codelineno-33-106" name="__codelineno-33-106" href="#__codelineno-33-106"></a><span class="w">        </span><span class="nt">maxAge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
-</span><span id="__span-33-107"><a id="__codelineno-33-107" name="__codelineno-33-107" href="#__codelineno-33-107"></a>
-</span><span id="__span-33-108"><a id="__codelineno-33-108" name="__codelineno-33-108" href="#__codelineno-33-108"></a><span class="w">  </span><span class="nt">dataStorage</span><span class="p">:</span>
-</span><span id="__span-33-109"><a id="__codelineno-33-109" name="__codelineno-33-109" href="#__codelineno-33-109"></a><span class="w">    </span><span class="nt">endpointPropagationDelay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-</span><span id="__span-33-110"><a id="__codelineno-33-110" name="__codelineno-33-110" href="#__codelineno-33-110"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-111"><a id="__codelineno-33-111" name="__codelineno-33-111" href="#__codelineno-33-111"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-112"><a id="__codelineno-33-112" name="__codelineno-33-112" href="#__codelineno-33-112"></a>
-</span><span id="__span-33-113"><a id="__codelineno-33-113" name="__codelineno-33-113" href="#__codelineno-33-113"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
-</span><span id="__span-33-114"><a id="__codelineno-33-114" name="__codelineno-33-114" href="#__codelineno-33-114"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-115"><a id="__codelineno-33-115" name="__codelineno-33-115" href="#__codelineno-33-115"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-116"><a id="__codelineno-33-116" name="__codelineno-33-116" href="#__codelineno-33-116"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-33-117"><a id="__codelineno-33-117" name="__codelineno-33-117" href="#__codelineno-33-117"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span>
-</span><span id="__span-33-118"><a id="__codelineno-33-118" name="__codelineno-33-118" href="#__codelineno-33-118"></a>
-</span><span id="__span-33-119"><a id="__codelineno-33-119" name="__codelineno-33-119" href="#__codelineno-33-119"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
-</span><span id="__span-33-120"><a id="__codelineno-33-120" name="__codelineno-33-120" href="#__codelineno-33-120"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-121"><a id="__codelineno-33-121" name="__codelineno-33-121" href="#__codelineno-33-121"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-122"><a id="__codelineno-33-122" name="__codelineno-33-122" href="#__codelineno-33-122"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-33-123"><a id="__codelineno-33-123" name="__codelineno-33-123" href="#__codelineno-33-123"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
-</span><span id="__span-33-124"><a id="__codelineno-33-124" name="__codelineno-33-124" href="#__codelineno-33-124"></a>
-</span><span id="__span-33-125"><a id="__codelineno-33-125" name="__codelineno-33-125" href="#__codelineno-33-125"></a><span class="w">  </span><span class="nt">remediationOrchestrator</span><span class="p">:</span>
-</span><span id="__span-33-126"><a id="__codelineno-33-126" name="__codelineno-33-126" href="#__codelineno-33-126"></a><span class="w">    </span><span class="nt">dryRun</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-33-127"><a id="__codelineno-33-127" name="__codelineno-33-127" href="#__codelineno-33-127"></a><span class="w">    </span><span class="nt">dryRunHoldPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
-</span><span id="__span-33-128"><a id="__codelineno-33-128" name="__codelineno-33-128" href="#__codelineno-33-128"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-129"><a id="__codelineno-33-129" name="__codelineno-33-129" href="#__codelineno-33-129"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-130"><a id="__codelineno-33-130" name="__codelineno-33-130" href="#__codelineno-33-130"></a><span class="w">    </span><span class="nt">retention</span><span class="p">:</span>
-</span><span id="__span-33-131"><a id="__codelineno-33-131" name="__codelineno-33-131" href="#__codelineno-33-131"></a><span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24h</span>
-</span><span id="__span-33-132"><a id="__codelineno-33-132" name="__codelineno-33-132" href="#__codelineno-33-132"></a><span class="w">    </span><span class="nt">effectivenessAssessment</span><span class="p">:</span>
-</span><span id="__span-33-133"><a id="__codelineno-33-133" name="__codelineno-33-133" href="#__codelineno-33-133"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-33-134"><a id="__codelineno-33-134" name="__codelineno-33-134" href="#__codelineno-33-134"></a><span class="w">    </span><span class="nt">notifications</span><span class="p">:</span>
-</span><span id="__span-33-135"><a id="__codelineno-33-135" name="__codelineno-33-135" href="#__codelineno-33-135"></a><span class="w">      </span><span class="nt">notifySelfResolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-33-136"><a id="__codelineno-33-136" name="__codelineno-33-136" href="#__codelineno-33-136"></a><span class="w">    </span><span class="nt">timeouts</span><span class="p">:</span>
-</span><span id="__span-33-137"><a id="__codelineno-33-137" name="__codelineno-33-137" href="#__codelineno-33-137"></a><span class="w">      </span><span class="nt">global</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
-</span><span id="__span-33-138"><a id="__codelineno-33-138" name="__codelineno-33-138" href="#__codelineno-33-138"></a><span class="w">      </span><span class="nt">processing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-33-139"><a id="__codelineno-33-139" name="__codelineno-33-139" href="#__codelineno-33-139"></a><span class="w">      </span><span class="nt">analyzing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
-</span><span id="__span-33-140"><a id="__codelineno-33-140" name="__codelineno-33-140" href="#__codelineno-33-140"></a><span class="w">      </span><span class="nt">awaitingApproval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15m</span>
-</span><span id="__span-33-141"><a id="__codelineno-33-141" name="__codelineno-33-141" href="#__codelineno-33-141"></a><span class="w">      </span><span class="nt">executing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-33-142"><a id="__codelineno-33-142" name="__codelineno-33-142" href="#__codelineno-33-142"></a><span class="w">      </span><span class="nt">verifying</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-33-143"><a id="__codelineno-33-143" name="__codelineno-33-143" href="#__codelineno-33-143"></a>
-</span><span id="__span-33-144"><a id="__codelineno-33-144" name="__codelineno-33-144" href="#__codelineno-33-144"></a><span class="w">  </span><span class="nt">workflowExecution</span><span class="p">:</span>
-</span><span id="__span-33-145"><a id="__codelineno-33-145" name="__codelineno-33-145" href="#__codelineno-33-145"></a><span class="w">    </span><span class="nt">cooldownPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
-</span><span id="__span-33-146"><a id="__codelineno-33-146" name="__codelineno-33-146" href="#__codelineno-33-146"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-147"><a id="__codelineno-33-147" name="__codelineno-33-147" href="#__codelineno-33-147"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-148"><a id="__codelineno-33-148" name="__codelineno-33-148" href="#__codelineno-33-148"></a><span class="w">    </span><span class="nt">workflowNamespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-workflows</span>
-</span><span id="__span-33-149"><a id="__codelineno-33-149" name="__codelineno-33-149" href="#__codelineno-33-149"></a>
-</span><span id="__span-33-150"><a id="__codelineno-33-150" name="__codelineno-33-150" href="#__codelineno-33-150"></a><span class="w">  </span><span class="nt">effectivenessMonitor</span><span class="p">:</span>
-</span><span id="__span-33-151"><a id="__codelineno-33-151" name="__codelineno-33-151" href="#__codelineno-33-151"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-152"><a id="__codelineno-33-152" name="__codelineno-33-152" href="#__codelineno-33-152"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-153"><a id="__codelineno-33-153" name="__codelineno-33-153" href="#__codelineno-33-153"></a><span class="w">    </span><span class="nt">assessment</span><span class="p">:</span>
-</span><span id="__span-33-154"><a id="__codelineno-33-154" name="__codelineno-33-154" href="#__codelineno-33-154"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-</span><span id="__span-33-155"><a id="__codelineno-33-155" name="__codelineno-33-155" href="#__codelineno-33-155"></a><span class="w">      </span><span class="nt">validityWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
-</span><span id="__span-33-156"><a id="__codelineno-33-156" name="__codelineno-33-156" href="#__codelineno-33-156"></a>
-</span><span id="__span-33-157"><a id="__codelineno-33-157" name="__codelineno-33-157" href="#__codelineno-33-157"></a><span class="w">  </span><span class="nt">notification</span><span class="p">:</span>
-</span><span id="__span-33-158"><a id="__codelineno-33-158" name="__codelineno-33-158" href="#__codelineno-33-158"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-159"><a id="__codelineno-33-159" name="__codelineno-33-159" href="#__codelineno-33-159"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-160"><a id="__codelineno-33-160" name="__codelineno-33-160" href="#__codelineno-33-160"></a><span class="w">    </span><span class="nt">slack</span><span class="p">:</span>
-</span><span id="__span-33-161"><a id="__codelineno-33-161" name="__codelineno-33-161" href="#__codelineno-33-161"></a><span class="w">      </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
-</span><span id="__span-33-162"><a id="__codelineno-33-162" name="__codelineno-33-162" href="#__codelineno-33-162"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-33-163"><a id="__codelineno-33-163" name="__codelineno-33-163" href="#__codelineno-33-163"></a>
-</span><span id="__span-33-164"><a id="__codelineno-33-164" name="__codelineno-33-164" href="#__codelineno-33-164"></a><span class="w">  </span><span class="nt">authWebhook</span><span class="p">:</span>
-</span><span id="__span-33-165"><a id="__codelineno-33-165" name="__codelineno-33-165" href="#__codelineno-33-165"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-33-166"><a id="__codelineno-33-166" name="__codelineno-33-166" href="#__codelineno-33-166"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-33-167"><a id="__codelineno-33-167" name="__codelineno-33-167" href="#__codelineno-33-167"></a>
-</span><span id="__span-33-168"><a id="__codelineno-33-168" name="__codelineno-33-168" href="#__codelineno-33-168"></a><span class="w">  </span><span class="nt">monitoring</span><span class="p">:</span>
-</span><span id="__span-33-169"><a id="__codelineno-33-169" name="__codelineno-33-169" href="#__codelineno-33-169"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-170"><a id="__codelineno-33-170" name="__codelineno-33-170" href="#__codelineno-33-170"></a>
-</span><span id="__span-33-171"><a id="__codelineno-33-171" name="__codelineno-33-171" href="#__codelineno-33-171"></a><span class="w">  </span><span class="nt">networkPolicies</span><span class="p">:</span>
-</span><span id="__span-33-172"><a id="__codelineno-33-172" name="__codelineno-33-172" href="#__codelineno-33-172"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-33-173"><a id="__codelineno-33-173" name="__codelineno-33-173" href="#__codelineno-33-173"></a>
-</span><span id="__span-33-174"><a id="__codelineno-33-174" name="__codelineno-33-174" href="#__codelineno-33-174"></a><span class="w">  </span><span class="nt">ansible</span><span class="p">:</span>
-</span><span id="__span-33-175"><a id="__codelineno-33-175" name="__codelineno-33-175" href="#__codelineno-33-175"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-33-64"><a id="__codelineno-33-64" name="__codelineno-33-64" href="#__codelineno-33-64"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-65"><a id="__codelineno-33-65" name="__codelineno-33-65" href="#__codelineno-33-65"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
+</span><span id="__span-33-66"><a id="__codelineno-33-66" name="__codelineno-33-66" href="#__codelineno-33-66"></a><span class="w">    </span><span class="nt">rateLimit</span><span class="p">:</span>
+</span><span id="__span-33-67"><a id="__codelineno-33-67" name="__codelineno-33-67" href="#__codelineno-33-67"></a><span class="w">      </span><span class="nt">ipRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
+</span><span id="__span-33-68"><a id="__codelineno-33-68" name="__codelineno-33-68" href="#__codelineno-33-68"></a><span class="w">      </span><span class="nt">userRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+</span><span id="__span-33-69"><a id="__codelineno-33-69" name="__codelineno-33-69" href="#__codelineno-33-69"></a><span class="w">      </span><span class="nt">toolCallsPerMinute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+</span><span id="__span-33-70"><a id="__codelineno-33-70" name="__codelineno-33-70" href="#__codelineno-33-70"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+</span><span id="__span-33-71"><a id="__codelineno-33-71" name="__codelineno-33-71" href="#__codelineno-33-71"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-33-72"><a id="__codelineno-33-72" name="__codelineno-33-72" href="#__codelineno-33-72"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-33-73"><a id="__codelineno-33-73" name="__codelineno-33-73" href="#__codelineno-33-73"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
+</span><span id="__span-33-74"><a id="__codelineno-33-74" name="__codelineno-33-74" href="#__codelineno-33-74"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+</span><span id="__span-33-75"><a id="__codelineno-33-75" name="__codelineno-33-75" href="#__codelineno-33-75"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
+</span><span id="__span-33-76"><a id="__codelineno-33-76" name="__codelineno-33-76" href="#__codelineno-33-76"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-33-77"><a id="__codelineno-33-77" name="__codelineno-33-77" href="#__codelineno-33-77"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
+</span><span id="__span-33-78"><a id="__codelineno-33-78" name="__codelineno-33-78" href="#__codelineno-33-78"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-33-79"><a id="__codelineno-33-79" name="__codelineno-33-79" href="#__codelineno-33-79"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
+</span><span id="__span-33-80"><a id="__codelineno-33-80" name="__codelineno-33-80" href="#__codelineno-33-80"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-33-81"><a id="__codelineno-33-81" name="__codelineno-33-81" href="#__codelineno-33-81"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-33-82"><a id="__codelineno-33-82" name="__codelineno-33-82" href="#__codelineno-33-82"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-83"><a id="__codelineno-33-83" name="__codelineno-33-83" href="#__codelineno-33-83"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
+</span><span id="__span-33-84"><a id="__codelineno-33-84" name="__codelineno-33-84" href="#__codelineno-33-84"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-85"><a id="__codelineno-33-85" name="__codelineno-33-85" href="#__codelineno-33-85"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cicd</span>
+</span><span id="__span-33-86"><a id="__codelineno-33-86" name="__codelineno-33-86" href="#__codelineno-33-86"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-87"><a id="__codelineno-33-87" name="__codelineno-33-87" href="#__codelineno-33-87"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-33-88"><a id="__codelineno-33-88" name="__codelineno-33-88" href="#__codelineno-33-88"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-89"><a id="__codelineno-33-89" name="__codelineno-33-89" href="#__codelineno-33-89"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l3-audit</span>
+</span><span id="__span-33-90"><a id="__codelineno-33-90" name="__codelineno-33-90" href="#__codelineno-33-90"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-91"><a id="__codelineno-33-91" name="__codelineno-33-91" href="#__codelineno-33-91"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-33-92"><a id="__codelineno-33-92" name="__codelineno-33-92" href="#__codelineno-33-92"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-33-93"><a id="__codelineno-33-93" name="__codelineno-33-93" href="#__codelineno-33-93"></a>
+</span><span id="__span-33-94"><a id="__codelineno-33-94" name="__codelineno-33-94" href="#__codelineno-33-94"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-33-95"><a id="__codelineno-33-95" name="__codelineno-33-95" href="#__codelineno-33-95"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-33-96"><a id="__codelineno-33-96" name="__codelineno-33-96" href="#__codelineno-33-96"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-97"><a id="__codelineno-33-97" name="__codelineno-33-97" href="#__codelineno-33-97"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-98"><a id="__codelineno-33-98" name="__codelineno-33-98" href="#__codelineno-33-98"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-33-99"><a id="__codelineno-33-99" name="__codelineno-33-99" href="#__codelineno-33-99"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-33-100"><a id="__codelineno-33-100" name="__codelineno-33-100" href="#__codelineno-33-100"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-33-101"><a id="__codelineno-33-101" name="__codelineno-33-101" href="#__codelineno-33-101"></a><span class="w">      </span><span class="nt">deduplicationCooldown</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-33-102"><a id="__codelineno-33-102" name="__codelineno-33-102" href="#__codelineno-33-102"></a><span class="w">      </span><span class="nt">k8sRequestTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+</span><span id="__span-33-103"><a id="__codelineno-33-103" name="__codelineno-33-103" href="#__codelineno-33-103"></a><span class="w">      </span><span class="nt">cors</span><span class="p">:</span>
+</span><span id="__span-33-104"><a id="__codelineno-33-104" name="__codelineno-33-104" href="#__codelineno-33-104"></a><span class="w">        </span><span class="nt">allowCredentials</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-33-105"><a id="__codelineno-33-105" name="__codelineno-33-105" href="#__codelineno-33-105"></a><span class="w">        </span><span class="nt">maxAge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+</span><span id="__span-33-106"><a id="__codelineno-33-106" name="__codelineno-33-106" href="#__codelineno-33-106"></a>
+</span><span id="__span-33-107"><a id="__codelineno-33-107" name="__codelineno-33-107" href="#__codelineno-33-107"></a><span class="w">  </span><span class="nt">dataStorage</span><span class="p">:</span>
+</span><span id="__span-33-108"><a id="__codelineno-33-108" name="__codelineno-33-108" href="#__codelineno-33-108"></a><span class="w">    </span><span class="nt">endpointPropagationDelay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+</span><span id="__span-33-109"><a id="__codelineno-33-109" name="__codelineno-33-109" href="#__codelineno-33-109"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-110"><a id="__codelineno-33-110" name="__codelineno-33-110" href="#__codelineno-33-110"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-111"><a id="__codelineno-33-111" name="__codelineno-33-111" href="#__codelineno-33-111"></a>
+</span><span id="__span-33-112"><a id="__codelineno-33-112" name="__codelineno-33-112" href="#__codelineno-33-112"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
+</span><span id="__span-33-113"><a id="__codelineno-33-113" name="__codelineno-33-113" href="#__codelineno-33-113"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-114"><a id="__codelineno-33-114" name="__codelineno-33-114" href="#__codelineno-33-114"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-115"><a id="__codelineno-33-115" name="__codelineno-33-115" href="#__codelineno-33-115"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-33-116"><a id="__codelineno-33-116" name="__codelineno-33-116" href="#__codelineno-33-116"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span>
+</span><span id="__span-33-117"><a id="__codelineno-33-117" name="__codelineno-33-117" href="#__codelineno-33-117"></a>
+</span><span id="__span-33-118"><a id="__codelineno-33-118" name="__codelineno-33-118" href="#__codelineno-33-118"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-33-119"><a id="__codelineno-33-119" name="__codelineno-33-119" href="#__codelineno-33-119"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-120"><a id="__codelineno-33-120" name="__codelineno-33-120" href="#__codelineno-33-120"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-121"><a id="__codelineno-33-121" name="__codelineno-33-121" href="#__codelineno-33-121"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-33-122"><a id="__codelineno-33-122" name="__codelineno-33-122" href="#__codelineno-33-122"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
+</span><span id="__span-33-123"><a id="__codelineno-33-123" name="__codelineno-33-123" href="#__codelineno-33-123"></a>
+</span><span id="__span-33-124"><a id="__codelineno-33-124" name="__codelineno-33-124" href="#__codelineno-33-124"></a><span class="w">  </span><span class="nt">remediationOrchestrator</span><span class="p">:</span>
+</span><span id="__span-33-125"><a id="__codelineno-33-125" name="__codelineno-33-125" href="#__codelineno-33-125"></a><span class="w">    </span><span class="nt">dryRun</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-33-126"><a id="__codelineno-33-126" name="__codelineno-33-126" href="#__codelineno-33-126"></a><span class="w">    </span><span class="nt">dryRunHoldPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+</span><span id="__span-33-127"><a id="__codelineno-33-127" name="__codelineno-33-127" href="#__codelineno-33-127"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-128"><a id="__codelineno-33-128" name="__codelineno-33-128" href="#__codelineno-33-128"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-129"><a id="__codelineno-33-129" name="__codelineno-33-129" href="#__codelineno-33-129"></a><span class="w">    </span><span class="nt">retention</span><span class="p">:</span>
+</span><span id="__span-33-130"><a id="__codelineno-33-130" name="__codelineno-33-130" href="#__codelineno-33-130"></a><span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24h</span>
+</span><span id="__span-33-131"><a id="__codelineno-33-131" name="__codelineno-33-131" href="#__codelineno-33-131"></a><span class="w">    </span><span class="nt">effectivenessAssessment</span><span class="p">:</span>
+</span><span id="__span-33-132"><a id="__codelineno-33-132" name="__codelineno-33-132" href="#__codelineno-33-132"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-33-133"><a id="__codelineno-33-133" name="__codelineno-33-133" href="#__codelineno-33-133"></a><span class="w">    </span><span class="nt">notifications</span><span class="p">:</span>
+</span><span id="__span-33-134"><a id="__codelineno-33-134" name="__codelineno-33-134" href="#__codelineno-33-134"></a><span class="w">      </span><span class="nt">notifySelfResolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-33-135"><a id="__codelineno-33-135" name="__codelineno-33-135" href="#__codelineno-33-135"></a><span class="w">    </span><span class="nt">timeouts</span><span class="p">:</span>
+</span><span id="__span-33-136"><a id="__codelineno-33-136" name="__codelineno-33-136" href="#__codelineno-33-136"></a><span class="w">      </span><span class="nt">global</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+</span><span id="__span-33-137"><a id="__codelineno-33-137" name="__codelineno-33-137" href="#__codelineno-33-137"></a><span class="w">      </span><span class="nt">processing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-33-138"><a id="__codelineno-33-138" name="__codelineno-33-138" href="#__codelineno-33-138"></a><span class="w">      </span><span class="nt">analyzing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+</span><span id="__span-33-139"><a id="__codelineno-33-139" name="__codelineno-33-139" href="#__codelineno-33-139"></a><span class="w">      </span><span class="nt">awaitingApproval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15m</span>
+</span><span id="__span-33-140"><a id="__codelineno-33-140" name="__codelineno-33-140" href="#__codelineno-33-140"></a><span class="w">      </span><span class="nt">executing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-33-141"><a id="__codelineno-33-141" name="__codelineno-33-141" href="#__codelineno-33-141"></a><span class="w">      </span><span class="nt">verifying</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-33-142"><a id="__codelineno-33-142" name="__codelineno-33-142" href="#__codelineno-33-142"></a>
+</span><span id="__span-33-143"><a id="__codelineno-33-143" name="__codelineno-33-143" href="#__codelineno-33-143"></a><span class="w">  </span><span class="nt">workflowExecution</span><span class="p">:</span>
+</span><span id="__span-33-144"><a id="__codelineno-33-144" name="__codelineno-33-144" href="#__codelineno-33-144"></a><span class="w">    </span><span class="nt">cooldownPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+</span><span id="__span-33-145"><a id="__codelineno-33-145" name="__codelineno-33-145" href="#__codelineno-33-145"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-146"><a id="__codelineno-33-146" name="__codelineno-33-146" href="#__codelineno-33-146"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-147"><a id="__codelineno-33-147" name="__codelineno-33-147" href="#__codelineno-33-147"></a><span class="w">    </span><span class="nt">workflowNamespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-workflows</span>
+</span><span id="__span-33-148"><a id="__codelineno-33-148" name="__codelineno-33-148" href="#__codelineno-33-148"></a>
+</span><span id="__span-33-149"><a id="__codelineno-33-149" name="__codelineno-33-149" href="#__codelineno-33-149"></a><span class="w">  </span><span class="nt">effectivenessMonitor</span><span class="p">:</span>
+</span><span id="__span-33-150"><a id="__codelineno-33-150" name="__codelineno-33-150" href="#__codelineno-33-150"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-151"><a id="__codelineno-33-151" name="__codelineno-33-151" href="#__codelineno-33-151"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-152"><a id="__codelineno-33-152" name="__codelineno-33-152" href="#__codelineno-33-152"></a><span class="w">    </span><span class="nt">assessment</span><span class="p">:</span>
+</span><span id="__span-33-153"><a id="__codelineno-33-153" name="__codelineno-33-153" href="#__codelineno-33-153"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</span><span id="__span-33-154"><a id="__codelineno-33-154" name="__codelineno-33-154" href="#__codelineno-33-154"></a><span class="w">      </span><span class="nt">validityWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
+</span><span id="__span-33-155"><a id="__codelineno-33-155" name="__codelineno-33-155" href="#__codelineno-33-155"></a>
+</span><span id="__span-33-156"><a id="__codelineno-33-156" name="__codelineno-33-156" href="#__codelineno-33-156"></a><span class="w">  </span><span class="nt">notification</span><span class="p">:</span>
+</span><span id="__span-33-157"><a id="__codelineno-33-157" name="__codelineno-33-157" href="#__codelineno-33-157"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-158"><a id="__codelineno-33-158" name="__codelineno-33-158" href="#__codelineno-33-158"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-159"><a id="__codelineno-33-159" name="__codelineno-33-159" href="#__codelineno-33-159"></a><span class="w">    </span><span class="nt">slack</span><span class="p">:</span>
+</span><span id="__span-33-160"><a id="__codelineno-33-160" name="__codelineno-33-160" href="#__codelineno-33-160"></a><span class="w">      </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
+</span><span id="__span-33-161"><a id="__codelineno-33-161" name="__codelineno-33-161" href="#__codelineno-33-161"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
+</span><span id="__span-33-162"><a id="__codelineno-33-162" name="__codelineno-33-162" href="#__codelineno-33-162"></a>
+</span><span id="__span-33-163"><a id="__codelineno-33-163" name="__codelineno-33-163" href="#__codelineno-33-163"></a><span class="w">  </span><span class="nt">authWebhook</span><span class="p">:</span>
+</span><span id="__span-33-164"><a id="__codelineno-33-164" name="__codelineno-33-164" href="#__codelineno-33-164"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-33-165"><a id="__codelineno-33-165" name="__codelineno-33-165" href="#__codelineno-33-165"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-33-166"><a id="__codelineno-33-166" name="__codelineno-33-166" href="#__codelineno-33-166"></a>
+</span><span id="__span-33-167"><a id="__codelineno-33-167" name="__codelineno-33-167" href="#__codelineno-33-167"></a><span class="w">  </span><span class="nt">monitoring</span><span class="p">:</span>
+</span><span id="__span-33-168"><a id="__codelineno-33-168" name="__codelineno-33-168" href="#__codelineno-33-168"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-33-169"><a id="__codelineno-33-169" name="__codelineno-33-169" href="#__codelineno-33-169"></a>
+</span><span id="__span-33-170"><a id="__codelineno-33-170" name="__codelineno-33-170" href="#__codelineno-33-170"></a><span class="w">  </span><span class="nt">networkPolicies</span><span class="p">:</span>
+</span><span id="__span-33-171"><a id="__codelineno-33-171" name="__codelineno-33-171" href="#__codelineno-33-171"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-33-172"><a id="__codelineno-33-172" name="__codelineno-33-172" href="#__codelineno-33-172"></a>
+</span><span id="__span-33-173"><a id="__codelineno-33-173" name="__codelineno-33-173" href="#__codelineno-33-173"></a><span class="w">  </span><span class="nt">ansible</span><span class="p">:</span>
+</span><span id="__span-33-174"><a id="__codelineno-33-174" name="__codelineno-33-174" href="#__codelineno-33-174"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </span></code></pre></div>
 <p>Apply:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>kubernaut-cr.yaml
@@ -5435,7 +5439,7 @@
 <p>Kubernaut has two components that consume LLM configuration:</p>
 <ul>
 <li><strong>Kubernaut Agent (KA)</strong> — the investigation/analysis engine. Supports 9 providers.</li>
-<li><strong>API Frontend (AF)</strong> — the MCP/A2A gateway. Supports 3 providers (subset of KA).</li>
+<li><strong>API Frontend (AF)</strong> — the MCP/A2A gateway. Supports 4 providers (subset of KA).</li>
 </ul>
 <p>The operator populates AF's LLM config from the same <code>spec.kubernautAgent.llm</code> CR fields. There is no separate AF LLM section in the CR.</p>
 <h3 id="supported-providers">Supported Providers<a class="headerlink" href="#supported-providers" title="Permanent link">&para;</a></h3>
@@ -5454,8 +5458,8 @@
 <td><code>openai</code></td>
 <td>OpenAI API</td>
 <td>Yes</td>
-<td>No</td>
-<td>Works with any OpenAI-compatible endpoint (vLLM, LiteLLM, etc.)</td>
+<td>Yes</td>
+<td>Works with any OpenAI-compatible endpoint (vLLM, LiteLLM, etc.); <code>endpoint</code> <strong>required</strong></td>
 </tr>
 <tr>
 <td><code>ollama</code></td>
@@ -5564,7 +5568,7 @@
 <td>string</td>
 <td>Depends</td>
 <td>—</td>
-<td>API endpoint URL. Required for <code>ollama</code>, <code>azure</code>, <code>mistral</code>. Optional for others.</td>
+<td>API endpoint URL. Required for <code>openai</code>, <code>ollama</code>, <code>azure</code>, <code>mistral</code>. Optional for others.</td>
 </tr>
 <tr>
 <td><code>temperature</code></td>
@@ -5733,7 +5737,11 @@
 <p>OAuth2 is <strong>not supported</strong> for <code>vertex_ai</code> (uses GCP ADC internally).</p>
 </div>
 <h3 id="af-llm-limitations">AF LLM Limitations<a class="headerlink" href="#af-llm-limitations" title="Permanent link">&para;</a></h3>
-<p>The AF supports only <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code>. If the KA is configured with a provider not supported by AF (e.g. <code>openai</code>, <code>ollama</code>), the AF's A2A endpoint returns <code>501 Not Implemented</code> for direct LLM-powered operations. MCP tool proxying to the KA still works regardless.</p>
+<p>The AF supports <code>openai</code>, <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code>. If the KA is configured with a provider not supported by AF (e.g. <code>ollama</code>, <code>azure</code>), the AF's A2A endpoint returns <code>501 Not Implemented</code> for direct LLM-powered operations. MCP tool proxying to the KA still works regardless.</p>
+<div class="admonition note">
+<p class="admonition-title">OpenAI provider translation (v1.5.2+)</p>
+<p>When the CR specifies <code>provider: openai</code>, the operator translates this to <code>openai_compatible</code> in the AF config and appends <code>/v1</code> to the endpoint automatically. The <code>endpoint</code> field is <strong>required</strong> when using the <code>openai</code> provider — the operator validates this at CR apply time.</p>
+</div>
 <hr />
 <h2 id="helm-chart">Helm Chart — Development/Testing Only<a class="headerlink" href="#helm-chart" title="Permanent link">&para;</a></h2>
 <div class="admonition warning">
@@ -5763,12 +5771,12 @@
 <h3 id="step-1-identify-all-images">Step 1: Identify all images<a class="headerlink" href="#step-1-identify-all-images" title="Permanent link">&para;</a></h3>
 <p>All published under <code>quay.io/kubernaut-ai/</code> with a tag matching the chart version. Use the included script to extract the exact images:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-47-1"><a id="__codelineno-47-1" name="__codelineno-47-1" href="#__codelineno-47-1"></a>./hack/airgap/generate-image-list.sh<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span>v1.5.1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-47-2"><a id="__codelineno-47-2" name="__codelineno-47-2" href="#__codelineno-47-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span>v1.5.2<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-47-3"><a id="__codelineno-47-3" name="__codelineno-47-3" href="#__codelineno-47-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml
 </span></code></pre></div>
 <h3 id="step-2-mirror-images_1">Step 2: Mirror images<a class="headerlink" href="#step-2-mirror-images_1" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>cp<span class="w"> </span>hack/airgap/imageset-config.yaml.tmpl<span class="w"> </span>imageset-config.yaml
-</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/v1.5.1/g&#39;</span><span class="w"> </span>imageset-config.yaml
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/v1.5.2/g&#39;</span><span class="w"> </span>imageset-config.yaml
 </span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a>
 </span><span id="__span-48-4"><a id="__codelineno-48-4" name="__codelineno-48-4" href="#__codelineno-48-4"></a>oc<span class="w"> </span>mirror<span class="w"> </span>--config<span class="o">=</span>imageset-config.yaml<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-48-5"><a id="__codelineno-48-5" name="__codelineno-48-5" href="#__codelineno-48-5"></a><span class="w">  </span>docker://&lt;mirror-registry&gt;

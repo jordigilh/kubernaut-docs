@@ -3687,7 +3687,7 @@
 </span></code></pre></div>
 <p>If you deploy a Kubernetes Event Exporter separately (not included in the chart since v1.1), its ServiceAccount must also be registered as a signal source in the same <code>signalSources</code> list.</p>
 <p>Without the bearer token, the Gateway returns <code>401 Unauthorized</code>. Without the ClusterRoleBinding, the Gateway returns <code>403 Forbidden</code>.</p>
-<p>See <a href="../../getting-started/installation/#signal-source-authentication">Installation</a> for the complete AlertManager configuration example.</p>
+<p>See <a href="../../user-guide/configuration/#signal-source-authentication">Configuration Reference</a> for the complete AlertManager configuration example.</p>
 <h2 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h2>
 <p>Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).</p>
 <p>Four services (Kubernaut Agent, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
@@ -4846,7 +4846,7 @@
 </div>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../../getting-started/installation/#signal-source-authentication">Installation</a> -- Configure AlertManager and other signal sources</li>
+<li><a href="../../user-guide/configuration/#signal-source-authentication">Configuration Reference</a> -- Configure AlertManager and other signal sources</li>
 <li><a href="../../user-guide/configuration/">Configuration Reference</a> -- Helm values for all services</li>
 <li><a href="../../operations/disconnected-install/">Disconnected Installation</a> -- Air-gapped installation with Keycloak integration</li>
 <li><a href="../../operations/troubleshooting/">Troubleshooting</a> -- Diagnose RBAC-related issues</li>

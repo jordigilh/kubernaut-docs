@@ -3158,9 +3158,6 @@
 
 
 <h1 id="api-frontend-architecture">API Frontend Architecture<a class="headerlink" href="#api-frontend-architecture" title="Permanent link">&para;</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">This page is under active development for v1.5 GA</p>
-</div>
 <p>The API Frontend (AF) is the unified external protocol layer introduced in v1.5. It provides MCP, A2A, and REST access to Kubernaut for operators, AI agents, and the Backstage console.</p>
 <h2 id="overview">Overview<a class="headerlink" href="#overview" title="Permanent link">&para;</a></h2>
 <p>The AF sits between external clients and the Kubernaut Engine, handling:</p>
@@ -3367,7 +3364,7 @@
 </table>
 <h2 id="llm-provider-a2a-agent">LLM Provider (A2A Agent)<a class="headerlink" href="#llm-provider-a2a-agent" title="Permanent link">&para;</a></h2>
 <p>The AF runs its own LLM-backed agent for the A2A handler. The LLM config (<code>agent.llm</code> in the AF config.yaml) mirrors the KA <code>ai.llm</code> schema so operators use one config style across services.</p>
-<p>Supported providers: <code>vertex_ai</code> (Claude on Vertex AI — requires <code>vertexProject</code> + <code>vertexLocation</code>), <code>gemini</code> (Gemini API direct — requires <code>apiKeyFile</code> or OAuth2), <code>anthropic</code> (Anthropic API direct — requires <code>apiKeyFile</code> or OAuth2). When <code>provider</code> is empty, the A2A handler returns HTTP 501.</p>
+<p>Supported providers: <code>openai</code> (OpenAI-compatible endpoints — requires <code>endpoint</code>; operator translates to <code>openai_compatible</code> and appends <code>/v1</code>), <code>vertex_ai</code> (Claude on Vertex AI — requires <code>vertexProject</code> + <code>vertexLocation</code>), <code>gemini</code> (Gemini API direct — requires <code>apiKeyFile</code> or OAuth2), <code>anthropic</code> (Anthropic API direct — requires <code>apiKeyFile</code> or OAuth2). When <code>provider</code> is empty, the A2A handler returns HTTP 501.</p>
 <p><strong>Multi-provider factory</strong> — The AF uses a transport chain that resolves the provider at startup, wires TLS (including mTLS client certificates for corporate LLM gateways via <code>tlsCertFile</code>/<code>tlsKeyFile</code> — #1342), and applies an optional circuit breaker around all outbound LLM HTTP calls.</p>
 <p><strong>File-based API key</strong> — The <code>apiKeyFile</code> field replaces the former <code>LLM_API_KEY</code> environment variable (#1251). Mount the key as a Kubernetes Secret volume; the AF reads it at startup and trims whitespace.</p>
 <p><strong>OAuth2 client credentials</strong> — For auth-gated LLM gateways, configure <code>oauth2.enabled: true</code> with <code>tokenURL</code>, <code>scopes</code>, and a <code>credentialsDir</code> containing <code>client-id</code> and <code>client-secret</code> files. Token refresh is handled automatically.</p>

@@ -20,4 +20,4 @@ gateway:
         namespace: <event-exporter-namespace>
 ```
 
-See [Signal Source Authentication](../getting-started/installation.md#signal-source-authentication) for RBAC details.
+See [Signal Source Authentication](../user-guide/configuration.md#signal-source-authentication) for RBAC details.

@@ -71,7 +71,7 @@ If you deploy a Kubernetes Event Exporter separately (not included in the chart 
 
 Without the bearer token, the Gateway returns `401 Unauthorized`. Without the ClusterRoleBinding, the Gateway returns `403 Forbidden`.
 
-See [Installation](../getting-started/installation.md#signal-source-authentication) for the complete AlertManager configuration example.
+See [Configuration Reference](../user-guide/configuration.md#signal-source-authentication) for the complete AlertManager configuration example.
 
 ## CRD Controllers
 
@@ -678,7 +678,7 @@ Assign this scope as a default scope to the `kagenti` client. The trust domain m
 
 ## Next Steps
 
-- [Installation](../getting-started/installation.md#signal-source-authentication) -- Configure AlertManager and other signal sources
+- [Configuration Reference](../user-guide/configuration.md#signal-source-authentication) -- Configure AlertManager and other signal sources
 - [Configuration Reference](../user-guide/configuration.md) -- Helm values for all services
 - [Disconnected Installation](../operations/disconnected-install.md) -- Air-gapped installation with Keycloak integration
 - [Troubleshooting](../operations/troubleshooting.md) -- Diagnose RBAC-related issues

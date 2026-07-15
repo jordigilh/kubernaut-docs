@@ -1,7 +1,5 @@
 # Interactive Sessions
 
-!!! warning "This page is under active development for v1.5 GA"
-
 Interactive MCP sessions let operators and AI agents connect to Kubernaut for real-time investigation, workflow discovery, and remediation steering. This is an alternative to the fully autonomous pipeline — operators stay in the loop and make decisions at key points.
 
 ## Overview

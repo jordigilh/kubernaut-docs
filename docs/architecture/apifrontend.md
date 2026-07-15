@@ -1,7 +1,5 @@
 # API Frontend Architecture
 
-!!! warning "This page is under active development for v1.5 GA"
-
 The API Frontend (AF) is the unified external protocol layer introduced in v1.5. It provides MCP, A2A, and REST access to Kubernaut for operators, AI agents, and the Backstage console.
 
 ## Overview
@@ -195,7 +193,7 @@ The AF streams investigation output to clients via **Server-Sent Events**:
 
 The AF runs its own LLM-backed agent for the A2A handler. The LLM config (`agent.llm` in the AF config.yaml) mirrors the KA `ai.llm` schema so operators use one config style across services.
 
-Supported providers: `vertex_ai` (Claude on Vertex AI — requires `vertexProject` + `vertexLocation`), `gemini` (Gemini API direct — requires `apiKeyFile` or OAuth2), `anthropic` (Anthropic API direct — requires `apiKeyFile` or OAuth2). When `provider` is empty, the A2A handler returns HTTP 501.
+Supported providers: `openai` (OpenAI-compatible endpoints — requires `endpoint`; operator translates to `openai_compatible` and appends `/v1`), `vertex_ai` (Claude on Vertex AI — requires `vertexProject` + `vertexLocation`), `gemini` (Gemini API direct — requires `apiKeyFile` or OAuth2), `anthropic` (Anthropic API direct — requires `apiKeyFile` or OAuth2). When `provider` is empty, the A2A handler returns HTTP 501.
 
 **Multi-provider factory** — The AF uses a transport chain that resolves the provider at startup, wires TLS (including mTLS client certificates for corporate LLM gateways via `tlsCertFile`/`tlsKeyFile` — #1342), and applies an optional circuit breaker around all outbound LLM HTTP calls.
 

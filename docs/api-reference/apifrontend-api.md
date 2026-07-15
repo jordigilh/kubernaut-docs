@@ -1,7 +1,5 @@
 # API Frontend API
 
-!!! warning "This page is under active development for v1.5 GA"
-
 The API Frontend (AF) is the unified external gateway introduced in v1.5. It exposes MCP Streamable HTTP and A2A JSON-RPC protocols for operators, AI agents, and the Backstage console.
 
 ## Base URL

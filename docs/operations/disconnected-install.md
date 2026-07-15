@@ -35,7 +35,7 @@ The operator catalog contains the bundle metadata (CSV, CRDs) and declares every
 
 The operator catalog embeds references to all required images. You do **not** need to maintain a manual image list — `oc-mirror` discovers them automatically from the CSV `relatedImages` section.
 
-For reference, the full set (17 images) is:
+For reference, the full set (19 images) is:
 
 | Layer | Image | Purpose |
 |---|---|---|
@@ -55,6 +55,8 @@ For reference, the full set (17 images) is:
 | | `quay.io/kubernaut-ai/authwebhook` | Admission controller for CRD authorization |
 | | `quay.io/kubernaut-ai/apifrontend` | API Frontend service (v1.5+) |
 | | `quay.io/kubernaut-ai/db-migrate` | Database schema migration |
+| | `quay.io/kubernaut-ai/kubernaut-console` | Console web UI (v1.5.1+) |
+| | `quay.io/oauth2-proxy/oauth2-proxy` | Console authentication sidecar |
 | **Init images** | | |
 | | `registry.redhat.io/rhel10/postgresql-16` | PostgreSQL client for init containers |
 | | `registry.access.redhat.com/ubi10/ubi-minimal` | Minimal UBI for CA-bundle init containers |
@@ -880,7 +882,6 @@ oc create secret tls postgresql-tls \
     | `spec.apiFrontend.auth.audience` | Keycloak realm URL (e.g. `https://<host>/realms/kagenti`) | Decode a JWT: `echo $TOKEN \| cut -d. -f2 \| base64 -d \| jq '.aud'` |
     | `spec.apiFrontend.auth.issuerURL` | External Keycloak realm URL | Must match the `iss` claim in tokens |
     | `spec.apiFrontend.auth.jwksURL` | Cluster-internal Keycloak JWKS endpoint | `curl` from inside the cluster should return a JSON key set |
-    | `spec.apiFrontend.auth.allowInsecureIssuers` | `true` for self-signed Keycloak TLS | Set `false` when Keycloak has a trusted certificate |
     | `spec.apiFrontend.spire.className` | SPIRE class name deployed by kagenti | `oc get spireclusterconfig` |
     | `spec.apiFrontend.spire.enabled` | `true` when kagenti is installed | Must be `true` for A2A integration |
 
@@ -950,7 +951,6 @@ spec:
       issuerURL: "https://<KEYCLOAK_HOST>/realms/kagenti"
       audience: "https://<KEYCLOAK_HOST>/realms/kagenti"
       jwksURL: "http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs"
-      allowInsecureIssuers: true
     logging:
       level: debug
     rateLimit:
@@ -1300,7 +1300,7 @@ The `SYNCED` column should show `True` for the `apifrontend-deployment-card`.
 Kubernaut has two components that consume LLM configuration:
 
 - **Kubernaut Agent (KA)** — the investigation/analysis engine. Supports 9 providers.
-- **API Frontend (AF)** — the MCP/A2A gateway. Supports 3 providers (subset of KA).
+- **API Frontend (AF)** — the MCP/A2A gateway. Supports 4 providers (subset of KA).
 
 The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` CR fields. There is no separate AF LLM section in the CR.
 
@@ -1308,7 +1308,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 
 | Provider value | Backend | KA | AF | Notes |
 |---|---|---|---|---|
-| `openai` | OpenAI API | Yes | No | Works with any OpenAI-compatible endpoint (vLLM, LiteLLM, etc.) |
+| `openai` | OpenAI API | Yes | Yes | Works with any OpenAI-compatible endpoint (vLLM, LiteLLM, etc.); `endpoint` **required** |
 | `ollama` | Ollama | Yes | No | `endpoint` **required** (e.g. `http://ollama.svc:11434`) |
 | `azure` | Azure OpenAI | Yes | No | Requires `azureApiVersion`; `endpoint` = Azure resource URL |
 | `vertex` | Google Vertex AI (Gemini) | Yes | No | Gemini models via GCP; requires `vertexProject` |
@@ -1329,7 +1329,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 | `provider` | string | Yes | — | Provider name from the table above |
 | `model` | string | Yes | — | Model name (e.g. `gpt-4o`, `claude-sonnet-4-6`, `llama3`) |
 | `credentialsSecretName` | string | Yes | — | Secret name containing API credentials |
-| `endpoint` | string | Depends | — | API endpoint URL. Required for `ollama`, `azure`, `mistral`. Optional for others. |
+| `endpoint` | string | Depends | — | API endpoint URL. Required for `openai`, `ollama`, `azure`, `mistral`. Optional for others. |
 | `temperature` | string | No | `"0.7"` | Sampling temperature (string to avoid CRD float issues) |
 | `maxRetries` | int | No | `3` | Maximum retry attempts for API calls |
 | `timeoutSeconds` | int | No | `120` | Timeout per API call in seconds |
@@ -1370,7 +1370,10 @@ For LLM endpoints behind OAuth2 (client credentials grant):
 
 ### AF LLM Limitations
 
-The AF supports only `vertex_ai`, `gemini`, and `anthropic`. If the KA is configured with a provider not supported by AF (e.g. `openai`, `ollama`), the AF's A2A endpoint returns `501 Not Implemented` for direct LLM-powered operations. MCP tool proxying to the KA still works regardless.
+The AF supports `openai`, `vertex_ai`, `gemini`, and `anthropic`. If the KA is configured with a provider not supported by AF (e.g. `ollama`, `azure`), the AF's A2A endpoint returns `501 Not Implemented` for direct LLM-powered operations. MCP tool proxying to the KA still works regardless.
+
+!!! note "OpenAI provider translation (v1.5.2+)"
+    When the CR specifies `provider: openai`, the operator translates this to `openai_compatible` in the AF config and appends `/v1` to the endpoint automatically. The `endpoint` field is **required** when using the `openai` provider — the operator validates this at CR apply time.
 
 ---
 

@@ -1042,6 +1042,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#console-shows-session-expired-please-sign-in-or-http-400-after-adding-keycloak-mappers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Console shows "Session expired, please sign in" or HTTP 400 after adding Keycloak mappers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#consolechat-returns-an-empty-kind-alert-namespace-for-list-active-alerts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Console/chat returns an empty {"kind": "Alert", "namespace": ""} for "list active alerts"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#authbridge-client-identity-kagenti-020-rc1" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3415,22 +3437,26 @@
 <td>ConfigMap with key <code>approval.rego</code> — see <a href="../../user-guide/configmap-approval/">Approval Policy</a></td>
 </tr>
 <tr>
-<td>kagenti</td>
-<td>0.2.0+</td>
-<td><strong>AF/Console only</strong> — required when <code>spec.apiFrontend.enabled: true</code>. Provides A2A agent integration with SPIRE/authbridge sidecar injection. Must be installed before Kubernaut.</td>
+<td>OIDC provider</td>
+<td>—</td>
+<td><strong>AF/Console only</strong> — required when <code>spec.apiFrontend.enabled: true</code> or <code>spec.console.enabled: true</code>. Any standards-compliant OIDC provider works (Keycloak, Dex, Okta, Auth0, etc.) — Console's <code>oauth2-proxy</code> sidecar just needs a reachable <code>issuerURL</code> to perform OIDC discovery, and AF needs <code>issuerURL</code>/<code>audience</code>/<code>jwksURL</code> for JWT validation. This is <strong>independent of kagenti</strong> — see the note below.</td>
 </tr>
 <tr>
-<td>Keycloak</td>
-<td>—</td>
-<td><strong>AF/Console only</strong> — OIDC identity provider in the <code>kagenti</code> realm. Required for API Frontend authentication and tool authorization.</td>
+<td>kagenti</td>
+<td>0.2.0+</td>
+<td><strong>A2A only, optional</strong> — required only when enabling <code>spec.apiFrontend.spire.enabled: true</code> for A2A agent-to-agent integration (SPIRE/authbridge sidecar injection). Not required for Console or for AF's own OIDC-based user/API authentication. Must be installed before Kubernaut when used.</td>
 </tr>
 </tbody>
 </table>
+<div class="admonition info">
+<p class="admonition-title">kagenti is not a Console/AF-auth dependency</p>
+<p>kagenti and the OIDC provider requirement are frequently conflated because kagenti's own Kind/OCP installers bundle a Keycloak instance (<code>scripts/kind/setup-kagenti.sh</code> deploys Keycloak as a <strong>core</strong> component), and several reference deployment guides reuse that bundled Keycloak as the OIDC provider for convenience. That makes kagenti a <em>practical</em> way to get a working OIDC provider quickly, but there is no code-level dependency: Console's <code>oauth2-proxy</code> sidecar and AF's JWT validation talk directly to whatever <code>issuerURL</code> you configure — they never call kagenti's API, its operator, or SPIRE. You can point <code>spec.apiFrontend.auth.issuerURL</code> / <code>spec.console.auth</code> at any OIDC provider without installing kagenti at all, as long as <code>spec.apiFrontend.spire.enabled</code> stays <code>false</code> (the default).</p>
+</div>
 <div class="admonition warning">
 <p class="admonition-title">CR validation</p>
 <p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
 </div>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.4</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.2</code>).</p>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.4</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.3</code>).</p>
 <h3 id="provision-prerequisites">Provision Prerequisites<a class="headerlink" href="#provision-prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h4>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>oc<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
@@ -3468,7 +3494,7 @@
 </span></code></pre></div>
 <p>See the <a href="../../operations/disconnected-install/#llm-configuration-reference">LLM Configuration Reference</a> for all 10 supported providers and credential formats (Anthropic, Vertex AI, Bedrock, etc.).</p>
 <p><strong>Console OIDC (AF/Console path only):</strong></p>
-<p>Required when <code>spec.console.enabled: true</code>. The console uses <code>oauth2-proxy</code> for authentication. You must register a Keycloak client and configure it with the required mappers <strong>before</strong> creating the secret.</p>
+<p>Required when <code>spec.console.enabled: true</code>. The console uses <code>oauth2-proxy</code> for authentication, which requires <strong>any</strong> reachable OIDC provider — Keycloak is used in the example below because it is what kagenti's reference deployments bundle, not because Console has a hard dependency on Keycloak or kagenti specifically. You must register an OIDC client for the console (with the mappers below, if your provider supports them) and configure it <strong>before</strong> creating the secret.</p>
 <p><strong>Step 1 — Register the <code>kubernaut-console</code> client in Keycloak:</strong></p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nv">KC_URL</span><span class="o">=</span><span class="s2">&quot;https://&lt;KEYCLOAK_HOST&gt;&quot;</span>
 </span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nv">KC_REALM</span><span class="o">=</span><span class="s2">&quot;kagenti&quot;</span>
@@ -3588,8 +3614,8 @@
 <h3 id="kubernaut-cr">Kubernaut CR<a class="headerlink" href="#kubernaut-cr" title="Permanent link">&para;</a></h3>
 <p>Kubernaut supports two ingress paths. Choose the one that matches your use case:</p>
 <ul>
-<li><strong>Gateway (alert-driven)</strong> — Prometheus alerts trigger automated remediation. No kagenti or Keycloak required.</li>
-<li><strong>API Frontend + Console (A2A/MCP)</strong> — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires kagenti and Keycloak.</li>
+<li><strong>Gateway (alert-driven)</strong> — Prometheus alerts trigger automated remediation. No OIDC provider or kagenti required.</li>
+<li><strong>API Frontend + Console (A2A/MCP)</strong> — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires an OIDC provider (e.g. Keycloak). kagenti is only required in addition if you also enable <code>spec.apiFrontend.spire.enabled: true</code> for A2A agent integration — see the note in <a href="#prerequisites">Prerequisites</a>.</li>
 </ul>
 <p>Both paths can be enabled simultaneously.</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gateway (alert-driven)</label><label for="__tabbed_1_2">API Frontend + Console (A2A/MCP)</label></div>
@@ -3629,7 +3655,7 @@
 <p>After applying, configure <a href="#ocp-alertmanager-integration">AlertManager</a> to route alerts to the Gateway.</p>
 </div>
 <div class="tabbed-block">
-<p>Requires kagenti and Keycloak — see <a href="#kagenti-integration">kagenti Integration</a> below for the full setup.</p>
+<p>Requires an OIDC provider (e.g. Keycloak) for <code>apiFrontend.auth</code> and <code>console.auth</code>. The <code>spire</code> block below is optional and only needed for A2A agent integration via kagenti — see <a href="#kagenti-integration">kagenti Integration</a> below. Omit <code>spire</code> (or set <code>enabled: false</code>) to run AF/Console with plain OIDC and no kagenti dependency at all.</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="nt">metadata</span><span class="p">:</span>
@@ -3702,10 +3728,10 @@
 </span></code></pre></div>
 <h4 id="kagenti-integration">kagenti Integration (A2A)<a class="headerlink" href="#kagenti-integration" title="Permanent link">&para;</a></h4>
 <div class="admonition info">
-<p class="admonition-title">AF/Console path only</p>
-<p>The following steps apply only when using the API Frontend and/or Console (<code>spec.apiFrontend.enabled: true</code>). If you are using the Gateway path only, skip this section.</p>
+<p class="admonition-title">A2A agent integration only — not required for Console or AF's own OIDC auth</p>
+<p>The following steps apply <strong>only</strong> when enabling <code>spec.apiFrontend.spire.enabled: true</code> for A2A agent-to-agent communication. They do <strong>not</strong> apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (<code>spec.apiFrontend.auth.*</code>), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with <code>spire.enabled: false</code> and a standalone OIDC provider, skip this section entirely.</p>
 </div>
-<p>The API Frontend integrates with <a href="https://github.com/kagenti/kagenti">kagenti</a> for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy <strong>before</strong> deploying Kubernaut.</p>
+<p>The API Frontend integrates with <a href="https://github.com/kagenti/kagenti">kagenti</a> for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy <strong>before</strong> deploying Kubernaut, but only if you need this A2A capability.</p>
 <p>The kagenti integration depends on your OCP and kagenti version:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">OCP 4.19+ / kagenti v0.6.0+</label><label for="__tabbed_2_2">OCP 4.18 / kagenti v0.5.1</label></div>
 <div class="tabbed-content">
@@ -4007,7 +4033,7 @@
 <p><strong>Common causes:</strong></p>
 <ol>
 <li>
-<p><strong>CR audience mismatch</strong> — The Keycloak realm issuer URL (e.g. <code>https://keycloak.../realms/kagenti</code>) is always present in <code>aud</code>. Set the CR audience to the realm URL:</p>
+<p><strong>CR audience mismatch</strong> — The <code>kagenti</code> Keycloak client used for user authentication issues tokens with <code>azp: kagenti</code>, but the <code>aud</code> claim only contains values explicitly added via audience mappers — it does <strong>not</strong> automatically include the client ID itself. The realm issuer URL (e.g. <code>https://keycloak.../realms/kagenti</code>) is always present in <code>aud</code>. Set the CR audience to the realm URL to match all tokens from this realm:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{</span>
 </span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="s1">  &quot;spec&quot;: {&quot;apiFrontend&quot;: {&quot;auth&quot;: {&quot;audience&quot;: &quot;https://&lt;keycloak-host&gt;/realms/kagenti&quot;}}}</span>
 </span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="s1">}&#39;</span>
@@ -4034,39 +4060,68 @@
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrolebinding<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/part-of<span class="o">=</span>kubernaut<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>tool
 </span></code></pre></div>
 <p>If empty, add <code>roleBindings</code> to the CR — see <a href="#kagenti-integration">Tool Personas</a>.</p>
+<h3 id="console-shows-session-expired-please-sign-in-or-http-400-after-adding-keycloak-mappers">Console shows "Session expired, please sign in" or HTTP 400 after adding Keycloak mappers<a class="headerlink" href="#console-shows-session-expired-please-sign-in-or-http-400-after-adding-keycloak-mappers" title="Permanent link">&para;</a></h3>
+<p>If the <code>kubernaut-console</code> client's audience mapper and/or groups mapper (see <a href="#2-create-secrets">Console OIDC</a>) were added or changed <strong>after</strong> a user had already logged into the Console at least once, that user may still see <code>Session expired, please sign in</code>, or an HTTP 400 from <code>oauth2-proxy</code>, even though the mapper configuration is now correct.</p>
+<p><strong>Root cause:</strong> The browser holds an <code>oauth2-proxy</code> session cookie tied to a Keycloak session/token minted <strong>before</strong> the mappers existed. <code>oauth2-proxy</code> transparently refreshes the <em>access token</em> via the refresh token on expiry, but the underlying Keycloak session — and the claims baked into tokens issued from it — do not automatically pick up newly added protocol mappers. The refreshed token can still be missing the <code>aud</code>/<code>groups</code> claims, or the stale session state can trigger an HTTP 400 from oauth2-proxy's callback/refresh handling.</p>
+<p><strong>Fix:</strong> Have the affected user fully clear cookies for the Console route's domain (or use a private/incognito window) and log in again, forcing a brand-new authorization-code flow against Keycloak that mints a token from scratch with the current mapper configuration.</p>
+<p>Verify the new token has the expected claims before retrying in the browser:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$KC_URL</span><span class="s2">/realms/</span><span class="nv">$KC_REALM</span><span class="s2">/protocol/openid-connect/token&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;grant_type=password&amp;client_id=kubernaut-console&amp;client_secret=</span><span class="nv">$CLIENT_SECRET</span><span class="s2">&amp;username=&lt;user&gt;&amp;password=&lt;pass&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.access_token&#39;</span><span class="k">)</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, groups}&#39;</span>
+</span></code></pre></div>
+<p>If <code>aud</code>/<code>groups</code> are correct here but the browser still fails, this confirms stale browser/session state rather than a Keycloak configuration problem.</p>
+<p><strong>Alternative fix (forces re-auth for all Console users at once):</strong> Instead of relying on each affected user to clear their own cookies, rotate the <code>cookie-secret</code> and restart the Console pod:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>secret<span class="w"> </span>kubernaut-console-oidc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">  </span>-p<span class="o">=</span><span class="s1">&#39;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/data/cookie-secret&quot;,&quot;value&quot;:&quot;&#39;</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="s2">&quot;</span><span class="s1">&#39;&quot;}]&#39;</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>console
+</span></code></pre></div>
+<p>The operator wires <code>oauth2-proxy</code> with its default cookie session store (no <code>--session-store-type=redis</code>) — the entire session is encrypted client-side in the browser cookie using the <code>cookie-secret</code>. Rotating it makes every existing cookie undecryptable by the new pod, forcing every user through a fresh OIDC login. Trade-off: this logs out every Console user at once, versus the targeted per-user cookie-clear above.</p>
+<h3 id="consolechat-returns-an-empty-kind-alert-namespace-for-list-active-alerts">Console/chat returns an empty <code>{"kind": "Alert", "namespace": ""}</code> for "list active alerts"<a class="headerlink" href="#consolechat-returns-an-empty-kind-alert-namespace-for-list-active-alerts" title="Permanent link">&para;</a></h3>
+<p>If asking the assistant to "list active alerts" (or similar) returns a bare JSON object like <code>{"kind": "Alert", "namespace": ""}</code> instead of an actual alert list or a helpful message, <code>spec.monitoring.enabled</code> is <code>false</code> on the Kubernaut CR (or unset with a <code>false</code> default from an older CR).</p>
+<p><strong>Root cause:</strong> API Frontend only registers the dedicated <code>list_alerts</code>/<code>get_alert_details</code> tools (which query the OCP Thanos-querier) when <code>spec.monitoring.enabled: true</code>. When monitoring is disabled, those tools don't exist, so the LLM falls back to the generic <code>kubectl_list</code> tool and guesses <code>kind: "Alert"</code> — which is not a real Kubernetes/Kubernaut resource kind (alerts live in Prometheus, not as a CRD). The tool call fails to resolve a kind, and the raw tool-call arguments get surfaced back instead of a useful answer.</p>
+<p><strong>Diagnosis:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.monitoring.enabled}&#39;</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="c1"># &quot;false&quot; (or empty) confirms the cause</span>
+</span></code></pre></div>
+<p><strong>Fix:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;monitoring&quot;:{&quot;enabled&quot;:true}}}&#39;</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+</span></code></pre></div>
+<p><code>monitoring.enabled</code> defaults to <code>true</code> and auto-derives the in-cluster Thanos-querier/AlertManager URLs (<code>openshift-monitoring</code> namespace) — no extra Prometheus setup is required on OCP. This is independent of <a href="#ocp-alertmanager-integration">OCP AlertManager Integration</a>: that step routes firing alerts <em>into</em> Kubernaut (Gateway webhook) to auto-create RemediationRequests and requires <code>spec.gateway.enabled: true</code>, whereas <code>monitoring.enabled: true</code> is only needed for the assistant to <em>read</em> currently firing/pending alerts via <code>list_alerts</code>.</p>
 <h3 id="authbridge-client-identity-kagenti-020-rc1">Authbridge Client Identity (kagenti ≤ 0.2.0-rc.1)<a class="headerlink" href="#authbridge-client-identity-kagenti-020-rc1" title="Permanent link">&para;</a></h3>
 <div class="admonition note">
-<p class="admonition-title">Automated in kubernaut-operator v1.5.4+</p>
-<p>The operator now patches the authbridge <code>client_id</code> automatically via <code>ensureAuthbridgeClientID</code>. If you are using kubernaut-operator v1.5.4 or later, skip this section.</p>
+<p class="admonition-title">Automated in kubernaut-operator v1.5.2+</p>
+<p>The operator now patches the authbridge <code>client_id</code> automatically via <code>ensureAuthbridgeClientID</code>. If you are using kubernaut-operator v1.5.2 or later, skip this section.</p>
 </div>
-<p>Affects kagenti-operator <code>0.2.0-rc.1</code> and earlier with kubernaut-operator &lt; v1.5.4. The webhook does not mount <code>authbridge-runtime-config</code> into the envoy-proxy sidecar, leaving the authbridge with no <code>client_id</code> and rejecting all inbound JWT tokens.</p>
+<p>Affects kagenti-operator <code>0.2.0-rc.1</code> and earlier with kubernaut-operator &lt; v1.5.2. The webhook does not mount <code>authbridge-runtime-config</code> into the envoy-proxy sidecar, leaving the authbridge with no <code>client_id</code> and rejecting all inbound JWT tokens.</p>
 <p><strong>Symptom:</strong> AF pod shows 3/3 Running but all authenticated requests return 401. Envoy logs: <code>JWT validation failed" error="audience is required (prevents confused deputy attacks)"</code></p>
 <p><strong>Workaround:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nv">TRUST_DOMAIN</span><span class="o">=</span><span class="k">$(</span>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-config<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.TRUST_DOMAIN}&#39;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;localtest.me&quot;</span><span class="k">)</span>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-runtime-config<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="s2">import json, sys, yaml</span>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="s2">cm = json.load(sys.stdin)</span>
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a><span class="s2">cfg = yaml.safe_load(cm[&#39;data&#39;][&#39;config.yaml&#39;])</span>
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a><span class="s2">cfg[&#39;identity&#39;][&#39;client_id&#39;] = &#39;spiffe://</span><span class="si">${</span><span class="nv">TRUST_DOMAIN</span><span class="si">}</span><span class="s2">/ns/kubernaut-system/sa/apifrontend&#39;</span>
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a><span class="s2">cm[&#39;data&#39;][&#39;config.yaml&#39;] = yaml.dump(cfg, default_flow_style=False)</span>
-</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a><span class="s2">json.dump(cm, sys.stdout)</span>
-</span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
-</span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a>
-</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="nv">TRUST_DOMAIN</span><span class="o">=</span><span class="k">$(</span>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-config<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.TRUST_DOMAIN}&#39;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;localtest.me&quot;</span><span class="k">)</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-runtime-config<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-39-5"><a id="__codelineno-39-5" name="__codelineno-39-5" href="#__codelineno-39-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+</span><span id="__span-39-6"><a id="__codelineno-39-6" name="__codelineno-39-6" href="#__codelineno-39-6"></a><span class="s2">import json, sys, yaml</span>
+</span><span id="__span-39-7"><a id="__codelineno-39-7" name="__codelineno-39-7" href="#__codelineno-39-7"></a><span class="s2">cm = json.load(sys.stdin)</span>
+</span><span id="__span-39-8"><a id="__codelineno-39-8" name="__codelineno-39-8" href="#__codelineno-39-8"></a><span class="s2">cfg = yaml.safe_load(cm[&#39;data&#39;][&#39;config.yaml&#39;])</span>
+</span><span id="__span-39-9"><a id="__codelineno-39-9" name="__codelineno-39-9" href="#__codelineno-39-9"></a><span class="s2">cfg[&#39;identity&#39;][&#39;client_id&#39;] = &#39;spiffe://</span><span class="si">${</span><span class="nv">TRUST_DOMAIN</span><span class="si">}</span><span class="s2">/ns/kubernaut-system/sa/apifrontend&#39;</span>
+</span><span id="__span-39-10"><a id="__codelineno-39-10" name="__codelineno-39-10" href="#__codelineno-39-10"></a><span class="s2">cm[&#39;data&#39;][&#39;config.yaml&#39;] = yaml.dump(cfg, default_flow_style=False)</span>
+</span><span id="__span-39-11"><a id="__codelineno-39-11" name="__codelineno-39-11" href="#__codelineno-39-11"></a><span class="s2">json.dump(cm, sys.stdout)</span>
+</span><span id="__span-39-12"><a id="__codelineno-39-12" name="__codelineno-39-12" href="#__codelineno-39-12"></a><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
+</span><span id="__span-39-13"><a id="__codelineno-39-13" name="__codelineno-39-13" href="#__codelineno-39-13"></a>
+</span><span id="__span-39-14"><a id="__codelineno-39-14" name="__codelineno-39-14" href="#__codelineno-39-14"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
 </span></code></pre></div>
 <h3 id="kagenti-controller-manager-crash-ovn-routing">kagenti-controller-manager Crash (OVN Routing)<a class="headerlink" href="#kagenti-controller-manager-crash-ovn-routing" title="Permanent link">&para;</a></h3>
 <p>If <code>kagenti-controller-manager</code> pods crash or the authbridge webhook has no endpoints, the OVN <code>routingViaHost</code> patch may be required:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>network.operator.openshift.io<span class="w"> </span>cluster<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;defaultNetwork&quot;:{&quot;ovnKubernetesConfig&quot;:{&quot;gatewayConfig&quot;:{&quot;routingViaHost&quot;:true}}}}}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>network.operator.openshift.io<span class="w"> </span>cluster<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;defaultNetwork&quot;:{&quot;ovnKubernetesConfig&quot;:{&quot;gatewayConfig&quot;:{&quot;routingViaHost&quot;:true}}}}}&#39;</span>
 </span></code></pre></div>
 <p>Wait ~5 minutes for the network operator rollout, then verify kagenti pods recover.</p>
 <h3 id="postgresql-data-loss-after-pod-restart">PostgreSQL Data Loss After Pod Restart<a class="headerlink" href="#postgresql-data-loss-after-pod-restart" title="Permanent link">&para;</a></h3>
 <p>If DataStorage fails with <code>ERROR: relation "audit_events" does not exist</code>, the database was using ephemeral storage (<code>emptyDir</code>). Provision PVCs as described in <a href="#4-postgresql-and-valkey">PostgreSQL and Valkey</a>. After mounting the PVC, the operator runs the migration automatically on CR reconciliation.</p>
 <h3 id="migration-job-failure">Migration Job Failure<a class="headerlink" href="#migration-job-failure" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>job/kubernaut-db-migration<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>job/kubernaut-db-migration<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>Common causes:</p>
 <ul>

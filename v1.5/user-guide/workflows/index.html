@@ -4041,6 +4041,10 @@
 <li>An optional tag before <code>@</code> is allowed: <code>image:v1.0.0@sha256:abc123...</code></li>
 </ul>
 <p>For the <code>ansible</code> engine, the <code>execution.bundle</code> field is a Git repository URL, and <code>execution.bundleDigest</code> is the Git commit SHA.</p>
+<div class="admonition note">
+<p class="admonition-title">No registry pre-flight check (v1.5.3+)</p>
+<p>DataStorage does <strong>not</strong> verify that <code>execution.bundle</code> resolves in the registry at registration time. Earlier versions ran an OCI existence check from the DataStorage pod's own network/credential context, but this could not validate self-signed or credential-required private registries reachable only by the actual workflow execution environment, so it was removed. An incorrect or unreachable image reference now registers successfully and only fails later, at Job/PipelineRun image-pull time (<code>ImagePullBackOff</code>/<code>ErrImagePull</code> — check via <code>kubectl describe pod</code> or <code>kubectl get job</code>).</p>
+</div>
 <h3 id="dependencies">Dependencies<a class="headerlink" href="#dependencies" title="Permanent link">&para;</a></h3>
 <p>Workflows can declare Secrets and ConfigMaps that must exist in the execution namespace:</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">dependencies</span><span class="p">:</span>
@@ -4389,7 +4393,7 @@
 </tr>
 <tr>
 <td><code>Invalid</code></td>
-<td>Registration failed (e.g., execution bundle image not found in registry)</td>
+<td>Registration failed (e.g., action type not found in taxonomy, or a schema-declared dependency Secret/ConfigMap does not exist)</td>
 <td>No</td>
 </tr>
 <tr>

@@ -43,8 +43,11 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | LLM credentials Secret | — | Secret containing the LLM API key — see [Credential Secret Format](../operations/disconnected-install.md#llm-configuration-reference) for the expected keys per provider |
 | SP classification policy | — | ConfigMap with key `policy.rego` — see [Rego Policies](../user-guide/policies.md) |
 | AA approval policy | — | ConfigMap with key `approval.rego` — see [Approval Policy](../user-guide/configmap-approval.md) |
-| kagenti | 0.2.0+ | **AF/Console only** — required when `spec.apiFrontend.enabled: true`. Provides A2A agent integration with SPIRE/authbridge sidecar injection. Must be installed before Kubernaut. |
-| Keycloak | — | **AF/Console only** — OIDC identity provider in the `kagenti` realm. Required for API Frontend authentication and tool authorization. |
+| OIDC provider | — | **AF/Console only** — required when `spec.apiFrontend.enabled: true` or `spec.console.enabled: true`. Any standards-compliant OIDC provider works (Keycloak, Dex, Okta, Auth0, etc.) — Console's `oauth2-proxy` sidecar just needs a reachable `issuerURL` to perform OIDC discovery, and AF needs `issuerURL`/`audience`/`jwksURL` for JWT validation. This is **independent of kagenti** — see the note below. |
+| kagenti | 0.2.0+ | **A2A only, optional** — required only when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent integration (SPIRE/authbridge sidecar injection). Not required for Console or for AF's own OIDC-based user/API authentication. Must be installed before Kubernaut when used. |
+
+!!! info "kagenti is not a Console/AF-auth dependency"
+    kagenti and the OIDC provider requirement are frequently conflated because kagenti's own Kind/OCP installers bundle a Keycloak instance (`scripts/kind/setup-kagenti.sh` deploys Keycloak as a **core** component), and several reference deployment guides reuse that bundled Keycloak as the OIDC provider for convenience. That makes kagenti a *practical* way to get a working OIDC provider quickly, but there is no code-level dependency: Console's `oauth2-proxy` sidecar and AF's JWT validation talk directly to whatever `issuerURL` you configure — they never call kagenti's API, its operator, or SPIRE. You can point `spec.apiFrontend.auth.issuerURL` / `spec.console.auth` at any OIDC provider without installing kagenti at all, as long as `spec.apiFrontend.spire.enabled` stays `false` (the default).
 
 !!! warning "CR validation"
     The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
@@ -104,7 +107,7 @@ See the [LLM Configuration Reference](../operations/disconnected-install.md#llm-
 
 **Console OIDC (AF/Console path only):**
 
-Required when `spec.console.enabled: true`. The console uses `oauth2-proxy` for authentication. You must register a Keycloak client and configure it with the required mappers **before** creating the secret.
+Required when `spec.console.enabled: true`. The console uses `oauth2-proxy` for authentication, which requires **any** reachable OIDC provider — Keycloak is used in the example below because it is what kagenti's reference deployments bundle, not because Console has a hard dependency on Keycloak or kagenti specifically. You must register an OIDC client for the console (with the mappers below, if your provider supports them) and configure it **before** creating the secret.
 
 **Step 1 — Register the `kubernaut-console` client in Keycloak:**
 
@@ -228,8 +231,8 @@ If you need to deploy PostgreSQL and Valkey in the `kubernaut-system` namespace,
 
 Kubernaut supports two ingress paths. Choose the one that matches your use case:
 
-- **Gateway (alert-driven)** — Prometheus alerts trigger automated remediation. No kagenti or Keycloak required.
-- **API Frontend + Console (A2A/MCP)** — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires kagenti and Keycloak.
+- **Gateway (alert-driven)** — Prometheus alerts trigger automated remediation. No OIDC provider or kagenti required.
+- **API Frontend + Console (A2A/MCP)** — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires an OIDC provider (e.g. Keycloak). kagenti is only required in addition if you also enable `spec.apiFrontend.spire.enabled: true` for A2A agent integration — see the note in [Prerequisites](#prerequisites).
 
 Both paths can be enabled simultaneously.
 
@@ -272,7 +275,7 @@ Both paths can be enabled simultaneously.
 
 === "API Frontend + Console (A2A/MCP)"
 
-    Requires kagenti and Keycloak — see [kagenti Integration](#kagenti-integration) below for the full setup.
+    Requires an OIDC provider (e.g. Keycloak) for `apiFrontend.auth` and `console.auth`. The `spire` block below is optional and only needed for A2A agent integration via kagenti — see [kagenti Integration](#kagenti-integration) below. Omit `spire` (or set `enabled: false`) to run AF/Console with plain OIDC and no kagenti dependency at all.
 
     ```yaml
     apiVersion: kubernaut.ai/v1alpha1
@@ -349,10 +352,10 @@ oc apply -f kubernaut-cr.yaml
 
 #### kagenti Integration (A2A) {: #kagenti-integration }
 
-!!! info "AF/Console path only"
-    The following steps apply only when using the API Frontend and/or Console (`spec.apiFrontend.enabled: true`). If you are using the Gateway path only, skip this section.
+!!! info "A2A agent integration only — not required for Console or AF's own OIDC auth"
+    The following steps apply **only** when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent communication. They do **not** apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (`spec.apiFrontend.auth.*`), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with `spire.enabled: false` and a standalone OIDC provider, skip this section entirely.
 
-The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut.
+The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut, but only if you need this A2A capability.
 
 The kagenti integration depends on your OCP and kagenti version:
 

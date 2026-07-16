@@ -37,7 +37,12 @@ theme:
     - toc.integrate
 
 extra:
-  chart_version: "1.5.3"
+  # chart_version tracks kubernaut's CHART_VERSION file (Helm chart packaging
+  # version, published to oci://quay.io/kubernaut-ai/charts/kubernaut), NOT
+  # the app release below — the two are intentionally decoupled upstream
+  # (kubernaut commit 55bd533ca) and only bump together occasionally. Verify
+  # against the registry before bumping: `crane manifest quay.io/kubernaut-ai/charts/kubernaut:<version>`
+  chart_version: "1.4.2"
   image_tag: "v1.5.3"
   operator_image_tag: "1.5.4"
   version:

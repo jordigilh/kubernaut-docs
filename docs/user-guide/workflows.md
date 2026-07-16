@@ -473,6 +473,9 @@ registry.example.com/repo/image@sha256:<64 hex characters>
 
 For the `ansible` engine, the `execution.bundle` field is a Git repository URL, and `execution.bundleDigest` is the Git commit SHA.
 
+!!! note "No registry pre-flight check (v1.5.3+)"
+    DataStorage does **not** verify that `execution.bundle` resolves in the registry at registration time. Earlier versions ran an OCI existence check from the DataStorage pod's own network/credential context, but this could not validate self-signed or credential-required private registries reachable only by the actual workflow execution environment, so it was removed. An incorrect or unreachable image reference now registers successfully and only fails later, at Job/PipelineRun image-pull time (`ImagePullBackOff`/`ErrImagePull` — check via `kubectl describe pod` or `kubectl get job`).
+
 ### Dependencies
 
 Workflows can declare Secrets and ConfigMaps that must exist in the execution namespace:
@@ -744,7 +747,7 @@ Workflows have seven lifecycle states:
 |---|---|---|
 | `Pending` | Initial state before Auth Webhook registration completes | No |
 | `Active` | Available for selection | Yes (if `is_latest_version`) |
-| `Invalid` | Registration failed (e.g., execution bundle image not found in registry) | No |
+| `Invalid` | Registration failed (e.g., action type not found in taxonomy, or a schema-declared dependency Secret/ConfigMap does not exist) | No |
 | `Disabled` | Temporarily unavailable (CRD deleted, or manually disabled) | No |
 | `Superseded` | Replaced by a new registration with different content for the same `metadata.name` + `version` | No |
 | `Deprecated` | Marked for removal, still usable | No |

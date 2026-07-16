@@ -43,8 +43,11 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 | LLM credentials Secret | — | Secret containing the LLM API key — see [Credential Secret Format](../operations/disconnected-install.md#llm-configuration-reference) for the expected keys per provider |
 | SP classification policy | — | ConfigMap with key `policy.rego` — see [Rego Policies](../user-guide/policies.md) |
 | AA approval policy | — | ConfigMap with key `approval.rego` — see [Approval Policy](../user-guide/configmap-approval.md) |
-| kagenti | 0.2.0+ | **AF/Console only** — required when `spec.apiFrontend.enabled: true`. Provides A2A agent integration with SPIRE/authbridge sidecar injection. Must be installed before Kubernaut. |
-| Keycloak | — | **AF/Console only** — OIDC identity provider in the `kagenti` realm. Required for API Frontend authentication and tool authorization. |
+| OIDC provider | — | **AF/Console only** — required when `spec.apiFrontend.enabled: true` or `spec.console.enabled: true`. Any standards-compliant OIDC provider works (Keycloak, Dex, Okta, Auth0, etc.) — Console's `oauth2-proxy` sidecar just needs a reachable `issuerURL` to perform OIDC discovery, and AF needs `issuerURL`/`audience`/`jwksURL` for JWT validation. This is **independent of kagenti** — see the note below. |
+| kagenti | 0.2.0+ | **A2A only, optional** — required only when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent integration (SPIRE/authbridge sidecar injection). Not required for Console or for AF's own OIDC-based user/API authentication. Must be installed before Kubernaut when used. |
+
+!!! info "kagenti is not a Console/AF-auth dependency"
+    kagenti and the OIDC provider requirement are frequently conflated because kagenti's own Kind/OCP installers bundle a Keycloak instance (`scripts/kind/setup-kagenti.sh` deploys Keycloak as a **core** component), and several reference deployment guides reuse that bundled Keycloak as the OIDC provider for convenience. That makes kagenti a *practical* way to get a working OIDC provider quickly, but there is no code-level dependency: Console's `oauth2-proxy` sidecar and AF's JWT validation talk directly to whatever `issuerURL` you configure — they never call kagenti's API, its operator, or SPIRE. You can point `spec.apiFrontend.auth.issuerURL` / `spec.console.auth` at any OIDC provider without installing kagenti at all, as long as `spec.apiFrontend.spire.enabled` stays `false` (the default).
 
 !!! warning "CR validation"
     The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
@@ -104,7 +107,7 @@ See the [LLM Configuration Reference](../operations/disconnected-install.md#llm-
 
 **Console OIDC (AF/Console path only):**
 
-Required when `spec.console.enabled: true`. The console uses `oauth2-proxy` for authentication. You must register a Keycloak client and configure it with the required mappers **before** creating the secret.
+Required when `spec.console.enabled: true`. The console uses `oauth2-proxy` for authentication, which requires **any** reachable OIDC provider — Keycloak is used in the example below because it is what kagenti's reference deployments bundle, not because Console has a hard dependency on Keycloak or kagenti specifically. You must register an OIDC client for the console (with the mappers below, if your provider supports them) and configure it **before** creating the secret.
 
 **Step 1 — Register the `kubernaut-console` client in Keycloak:**
 
@@ -228,8 +231,8 @@ If you need to deploy PostgreSQL and Valkey in the `kubernaut-system` namespace,
 
 Kubernaut supports two ingress paths. Choose the one that matches your use case:
 
-- **Gateway (alert-driven)** — Prometheus alerts trigger automated remediation. No kagenti or Keycloak required.
-- **API Frontend + Console (A2A/MCP)** — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires kagenti and Keycloak.
+- **Gateway (alert-driven)** — Prometheus alerts trigger automated remediation. No OIDC provider or kagenti required.
+- **API Frontend + Console (A2A/MCP)** — Interactive investigation and remediation via MCP clients, A2A agents, or the Kubernaut Console web UI. Requires an OIDC provider (e.g. Keycloak). kagenti is only required in addition if you also enable `spec.apiFrontend.spire.enabled: true` for A2A agent integration — see the note in [Prerequisites](#prerequisites).
 
 Both paths can be enabled simultaneously.
 
@@ -272,7 +275,7 @@ Both paths can be enabled simultaneously.
 
 === "API Frontend + Console (A2A/MCP)"
 
-    Requires kagenti and Keycloak — see [kagenti Integration](#kagenti-integration) below for the full setup.
+    Requires an OIDC provider (e.g. Keycloak) for `apiFrontend.auth` and `console.auth`. The `spire` block below is optional and only needed for A2A agent integration via kagenti — see [kagenti Integration](#kagenti-integration) below. Omit `spire` (or set `enabled: false`) to run AF/Console with plain OIDC and no kagenti dependency at all.
 
     ```yaml
     apiVersion: kubernaut.ai/v1alpha1
@@ -349,10 +352,10 @@ oc apply -f kubernaut-cr.yaml
 
 #### kagenti Integration (A2A) {: #kagenti-integration }
 
-!!! info "AF/Console path only"
-    The following steps apply only when using the API Frontend and/or Console (`spec.apiFrontend.enabled: true`). If you are using the Gateway path only, skip this section.
+!!! info "A2A agent integration only — not required for Console or AF's own OIDC auth"
+    The following steps apply **only** when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent communication. They do **not** apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (`spec.apiFrontend.auth.*`), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with `spire.enabled: false` and a standalone OIDC provider, skip this section entirely.
 
-The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut.
+The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut, but only if you need this A2A capability.
 
 The kagenti integration depends on your OCP and kagenti version:
 
@@ -648,7 +651,7 @@ oc logs <af-pod> -c envoy-proxy | grep -E "authorized|rejected"
 
 **Common causes:**
 
-1. **CR audience mismatch** — The Keycloak realm issuer URL (e.g. `https://keycloak.../realms/kagenti`) is always present in `aud`. Set the CR audience to the realm URL:
+1. **CR audience mismatch** — The `kagenti` Keycloak client used for user authentication issues tokens with `azp: kagenti`, but the `aud` claim only contains values explicitly added via audience mappers — it does **not** automatically include the client ID itself. The realm issuer URL (e.g. `https://keycloak.../realms/kagenti`) is always present in `aud`. Set the CR audience to the realm URL to match all tokens from this realm:
 
     ```bash
     oc patch kubernaut kubernaut -n kubernaut-system --type merge -p '{
@@ -681,12 +684,63 @@ oc get clusterrolebinding -l app.kubernetes.io/part-of=kubernaut | grep tool
 
 If empty, add `roleBindings` to the CR — see [Tool Personas](#kagenti-integration).
 
+### Console shows "Session expired, please sign in" or HTTP 400 after adding Keycloak mappers
+
+If the `kubernaut-console` client's audience mapper and/or groups mapper (see [Console OIDC](#2-create-secrets)) were added or changed **after** a user had already logged into the Console at least once, that user may still see `Session expired, please sign in`, or an HTTP 400 from `oauth2-proxy`, even though the mapper configuration is now correct.
+
+**Root cause:** The browser holds an `oauth2-proxy` session cookie tied to a Keycloak session/token minted **before** the mappers existed. `oauth2-proxy` transparently refreshes the *access token* via the refresh token on expiry, but the underlying Keycloak session — and the claims baked into tokens issued from it — do not automatically pick up newly added protocol mappers. The refreshed token can still be missing the `aud`/`groups` claims, or the stale session state can trigger an HTTP 400 from oauth2-proxy's callback/refresh handling.
+
+**Fix:** Have the affected user fully clear cookies for the Console route's domain (or use a private/incognito window) and log in again, forcing a brand-new authorization-code flow against Keycloak that mints a token from scratch with the current mapper configuration.
+
+Verify the new token has the expected claims before retrying in the browser:
+
+```bash
+TOKEN=$(curl -sk -X POST "$KC_URL/realms/$KC_REALM/protocol/openid-connect/token" \
+  -d "grant_type=password&client_id=kubernaut-console&client_secret=$CLIENT_SECRET&username=<user>&password=<pass>" \
+  | jq -r '.access_token')
+echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '{aud, groups}'
+```
+
+If `aud`/`groups` are correct here but the browser still fails, this confirms stale browser/session state rather than a Keycloak configuration problem.
+
+**Alternative fix (forces re-auth for all Console users at once):** Instead of relying on each affected user to clear their own cookies, rotate the `cookie-secret` and restart the Console pod:
+
+```bash
+oc patch secret kubernaut-console-oidc -n kubernaut-system --type=json \
+  -p='[{"op":"replace","path":"/data/cookie-secret","value":"'"$(openssl rand -hex 16 | base64)"'"}]'
+oc delete pod -n kubernaut-system -l app=console
+```
+
+The operator wires `oauth2-proxy` with its default cookie session store (no `--session-store-type=redis`) — the entire session is encrypted client-side in the browser cookie using the `cookie-secret`. Rotating it makes every existing cookie undecryptable by the new pod, forcing every user through a fresh OIDC login. Trade-off: this logs out every Console user at once, versus the targeted per-user cookie-clear above.
+
+### Console/chat returns an empty `{"kind": "Alert", "namespace": ""}` for "list active alerts"
+
+If asking the assistant to "list active alerts" (or similar) returns a bare JSON object like `{"kind": "Alert", "namespace": ""}` instead of an actual alert list or a helpful message, `spec.monitoring.enabled` is `false` on the Kubernaut CR (or unset with a `false` default from an older CR).
+
+**Root cause:** API Frontend only registers the dedicated `list_alerts`/`get_alert_details` tools (which query the OCP Thanos-querier) when `spec.monitoring.enabled: true`. When monitoring is disabled, those tools don't exist, so the LLM falls back to the generic `kubectl_list` tool and guesses `kind: "Alert"` — which is not a real Kubernetes/Kubernaut resource kind (alerts live in Prometheus, not as a CRD). The tool call fails to resolve a kind, and the raw tool-call arguments get surfaced back instead of a useful answer.
+
+**Diagnosis:**
+
+```bash
+oc get kubernaut kubernaut -n kubernaut-system -o jsonpath='{.spec.monitoring.enabled}'
+# "false" (or empty) confirms the cause
+```
+
+**Fix:**
+
+```bash
+oc patch kubernaut kubernaut -n kubernaut-system --type=merge -p '{"spec":{"monitoring":{"enabled":true}}}'
+oc delete pod -n kubernaut-system -l app=apifrontend
+```
+
+`monitoring.enabled` defaults to `true` and auto-derives the in-cluster Thanos-querier/AlertManager URLs (`openshift-monitoring` namespace) — no extra Prometheus setup is required on OCP. This is independent of [OCP AlertManager Integration](#ocp-alertmanager-integration): that step routes firing alerts *into* Kubernaut (Gateway webhook) to auto-create RemediationRequests and requires `spec.gateway.enabled: true`, whereas `monitoring.enabled: true` is only needed for the assistant to *read* currently firing/pending alerts via `list_alerts`.
+
 ### Authbridge Client Identity (kagenti ≤ 0.2.0-rc.1)
 
-!!! note "Automated in kubernaut-operator v1.5.4+"
-    The operator now patches the authbridge `client_id` automatically via `ensureAuthbridgeClientID`. If you are using kubernaut-operator v1.5.4 or later, skip this section.
+!!! note "Automated in kubernaut-operator v1.5.2+"
+    The operator now patches the authbridge `client_id` automatically via `ensureAuthbridgeClientID`. If you are using kubernaut-operator v1.5.2 or later, skip this section.
 
-Affects kagenti-operator `0.2.0-rc.1` and earlier with kubernaut-operator < v1.5.4. The webhook does not mount `authbridge-runtime-config` into the envoy-proxy sidecar, leaving the authbridge with no `client_id` and rejecting all inbound JWT tokens.
+Affects kagenti-operator `0.2.0-rc.1` and earlier with kubernaut-operator < v1.5.2. The webhook does not mount `authbridge-runtime-config` into the envoy-proxy sidecar, leaving the authbridge with no `client_id` and rejecting all inbound JWT tokens.
 
 **Symptom:** AF pod shows 3/3 Running but all authenticated requests return 401. Envoy logs: `JWT validation failed" error="audience is required (prevents confused deputy attacks)"`
 

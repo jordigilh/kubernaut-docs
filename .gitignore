@@ -5,3 +5,8 @@ __pycache__/
 venv/
 .cache/
 .DS_Store
+
+# Cursor MCP config contains machine-specific absolute paths
+.cursor/*
+!.cursor/rules/
+!.cursor/skills/

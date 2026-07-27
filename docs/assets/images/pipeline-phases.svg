@@ -66,7 +66,7 @@
     <text x="1768" y="40" text-anchor="middle" font-size="11px" font-weight="700" fill="white">v1.5</text>
     <text x="1570" y="74" font-size="13px" font-weight="600" fill="#64748B">Interactive entry</text>
     <text x="1570" y="94" font-size="13px" fill="#374151">MCP Streamable HTTP · A2A</text>
-    <text x="1570" y="112" font-size="13px" fill="#374151">Watches RemediationRequest</text>
+    <text x="1570" y="112" font-size="13px" fill="#374151">Creates RemediationRequest</text>
     <rect x="1550" y="130" width="270" height="4" rx="2" fill="transparent" class="phase-indicator" data-color="#64748B"/>
     <rect x="1550" y="16" width="270" height="110" rx="12" fill="transparent" style="cursor:pointer"/>
   </g>
@@ -236,9 +236,9 @@
       <rect x="20" y="736" width="1800" height="70" rx="12" fill="#64748B"/>
     </g>
     <text x="48" y="768" font-size="17px" font-weight="700" fill="white">DataStorage</text>
-    <text x="48" y="792" font-size="13px" fill="#E2E8F0">Unified audit trail (SOC2/FedRAMP) · workflow catalog · effectiveness history — written by every service above</text>
+    <text x="48" y="792" font-size="13px" fill="#E2E8F0">Audit trail (SOC2/FedRAMP) · workflow catalog · remediation history — written by every service above</text>
     <rect x="1560" y="750" width="240" height="24" rx="6" fill="rgba(255,255,255,0.15)"/>
-    <text x="1680" y="767" text-anchor="middle" font-size="12px" font-weight="600" fill="white">PostgreSQL + pgvector</text>
+    <text x="1680" y="767" text-anchor="middle" font-size="12px" font-weight="600" fill="white">PostgreSQL + Valkey</text>
   </g>
 
 </svg>

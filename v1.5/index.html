@@ -3118,12 +3118,33 @@
 <h2 id="how-it-works">How It Works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h2>
 <p>Kubernaut automates the entire incident response lifecycle through a CRD-native pipeline.</p>
 <div style="max-width:100%;overflow-x:auto;margin:1.5rem 0" id="pipeline-svg-wrap">
-<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — 6 phases + interactive mode"></object>
+<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — Gateway and API Frontend entry points, Remediation Orchestrator hub, 6 pipeline phases, and DataStorage audit foundation"></object>
 </div>
 
 <p>Click a phase card above, or select a tab:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="1:7"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><input id="__tabbed_1_6" name="__tabbed_1" type="radio" /><input id="__tabbed_1_7" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">1 · Signal Processing</label><label for="__tabbed_1_2">2 · AI Analysis</label><label for="__tabbed_1_3">3 · Approval</label><label for="__tabbed_1_4">4 · Execution</label><label for="__tabbed_1_5">5 · Effectiveness</label><label for="__tabbed_1_6">6 · Notification</label><label for="__tabbed_1_7">API Frontend (v1.5)</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:9"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><input id="__tabbed_1_5" name="__tabbed_1" type="radio" /><input id="__tabbed_1_6" name="__tabbed_1" type="radio" /><input id="__tabbed_1_7" name="__tabbed_1" type="radio" /><input id="__tabbed_1_8" name="__tabbed_1" type="radio" /><input id="__tabbed_1_9" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Gateway</label><label for="__tabbed_1_2">Remediation Orchestrator</label><label for="__tabbed_1_3">1 · Signal Processing</label><label for="__tabbed_1_4">2 · AI Analysis</label><label for="__tabbed_1_5">3 · Approval</label><label for="__tabbed_1_6">4 · Execution</label><label for="__tabbed_1_7">5 · Effectiveness</label><label for="__tabbed_1_8">6 · Notification</label><label for="__tabbed_1_9">API Frontend (v1.5)</label></div>
 <div class="tabbed-content">
+<div class="tabbed-block">
+<p><strong>CRD:</strong> <code>RemediationRequest</code> (creates)</p>
+<p>The entry point for all signals into Kubernaut. Accepts alerts from Prometheus AlertManager and Kubernetes Event Exporter, authenticates the source, and validates resource scope before a signal is allowed into the pipeline.</p>
+<ul>
+<li><strong>Deduplication</strong> — Signals are fingerprinted (<code>SHA256(namespace:kind:name)</code> of the top-level owning resource); a duplicate increments the existing RR's occurrence count instead of creating a new one.</li>
+<li><strong>Concurrency safety</strong> — A Kubernetes Lease lock prevents race conditions between the dedup check and RR creation across multiple Gateway replicas.</li>
+<li>Creates the <code>RemediationRequest</code> CRD that the Remediation Orchestrator picks up to start the pipeline.</li>
+</ul>
+<p>See <a href="architecture/gateway/">Gateway</a> for the full webhook contract and API reference.</p>
+</div>
+<div class="tabbed-block">
+<p><strong>CRD:</strong> <code>RemediationRequest</code> (watches)</p>
+<p>The central coordinator. Watches <code>RemediationRequest</code> CRDs created by Gateway or API Frontend and drives the lifecycle by creating 6 child CRDs in sequence — one per pipeline phase:</p>
+<p><code>SignalProcessing</code> → <code>AIAnalysis</code> → <code>RemediationApprovalRequest</code> (when needed) → <code>WorkflowExecution</code> → <code>EffectivenessAssessment</code> → <code>NotificationRequest</code></p>
+<ul>
+<li><strong>Sequencing</strong> — Watches every child CRD for status changes and advances the parent RR through its phase state machine as each phase completes.</li>
+<li><strong>Routing</strong> — Timeout enforcement and routing/escalation decisions live here.</li>
+<li>Owner references on each child CRD enable cascade deletion when the parent RR is garbage collected.</li>
+</ul>
+<p>See <a href="architecture/remediation-routing/">Remediation Routing</a> for the full phase state machine.</p>
+</div>
 <div class="tabbed-block">
 <p><strong>CRD:</strong> <code>SignalProcessing</code></p>
 <p>AlertManager webhooks, Kubernetes Events, and A2A/Interactive sessions (v1.5) are ingested, enriched with Kubernetes context (owner chain, namespace labels, workload metadata), and classified by OPA/Rego policies across multiple dimensions:</p>
@@ -3194,12 +3215,12 @@
 <p><strong>CRD:</strong> <code>InvestigationSession</code> &nbsp; <strong>Services:</strong> API Frontend ↔ Kubernaut Agent</p>
 <p>The interactive path is a <strong>parallel entry point</strong>, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:</p>
 <ol>
-<li><strong>Investigate</strong> — AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.</li>
+<li><strong>Investigate</strong> — <code>kubernaut_investigate</code> creates the <code>RemediationRequest</code> (via AF's own ServiceAccount) and co-creates the <code>InvestigationSession</code>, then AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.</li>
 <li><strong>Discover</strong> — After RCA, AF calls <code>kubernaut_discover_workflows</code> to present workflow options with LLM-populated parameters.</li>
-<li><strong>Select</strong> — Operator picks a workflow via <code>kubernaut_select_workflow</code> → KA creates the <code>RemediationRequest</code>, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).</li>
+<li><strong>Select</strong> — Operator picks a workflow via <code>kubernaut_select_workflow</code>, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).</li>
 <li><strong>Watch</strong> — AF monitors CRD status transitions and reports progress to the user until a terminal phase.</li>
 </ol>
-<p>The investigation creates an <code>InvestigationSession</code> CRD (deferred until RR creation). The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See <a href="user-guide/interactive-sessions/">Interactive Sessions</a>.</p>
+<p>The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See <a href="user-guide/interactive-sessions/">Interactive Sessions</a>.</p>
 <p><strong>SAR-gated personas</strong> — All MCP/A2A tool access is gated by SubjectAccessReview against 6 per-persona ClusterRoles:</p>
 <table>
 <thead>

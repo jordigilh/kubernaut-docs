@@ -183,12 +183,12 @@ Click a phase card above, or select a tab:
 
     The interactive path is a **parallel entry point**, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:
 
-    1. **Investigate** — AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
+    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
     2. **Discover** — After RCA, AF calls `kubernaut_discover_workflows` to present workflow options with LLM-populated parameters.
-    3. **Select** — Operator picks a workflow via `kubernaut_select_workflow` → KA creates the `RemediationRequest`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
+    3. **Select** — Operator picks a workflow via `kubernaut_select_workflow`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
     4. **Watch** — AF monitors CRD status transitions and reports progress to the user until a terminal phase.
 
-    The investigation creates an `InvestigationSession` CRD (deferred until RR creation). The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See [Interactive Sessions](user-guide/interactive-sessions.md).
+    The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See [Interactive Sessions](user-guide/interactive-sessions.md).
 
     **SAR-gated personas** — All MCP/A2A tool access is gated by SubjectAccessReview against 6 per-persona ClusterRoles:
 

@@ -97,7 +97,7 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 Kubernaut automates the entire incident response lifecycle through a CRD-native pipeline.
 
 <div style="max-width:100%;overflow-x:auto;margin:1.5rem 0" id="pipeline-svg-wrap">
-<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — 6 phases + interactive mode"></object>
+<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — Gateway and API Frontend entry points, Remediation Orchestrator hub, 6 pipeline phases, and DataStorage audit foundation"></object>
 </div>
 
 Click a phase card above, or select a tab:

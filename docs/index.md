@@ -102,6 +102,32 @@ Kubernaut automates the entire incident response lifecycle through a CRD-native 
 
 Click a phase card above, or select a tab:
 
+=== "Gateway"
+
+    **CRD:** `RemediationRequest` (creates)
+
+    The entry point for all signals into Kubernaut. Accepts alerts from Prometheus AlertManager and Kubernetes Event Exporter, authenticates the source, and validates resource scope before a signal is allowed into the pipeline.
+
+    - **Deduplication** — Signals are fingerprinted (`SHA256(namespace:kind:name)` of the top-level owning resource); a duplicate increments the existing RR's occurrence count instead of creating a new one.
+    - **Concurrency safety** — A Kubernetes Lease lock prevents race conditions between the dedup check and RR creation across multiple Gateway replicas.
+    - Creates the `RemediationRequest` CRD that the Remediation Orchestrator picks up to start the pipeline.
+
+    See [Gateway](architecture/gateway.md) for the full webhook contract and API reference.
+
+=== "Remediation Orchestrator"
+
+    **CRD:** `RemediationRequest` (watches)
+
+    The central coordinator. Watches `RemediationRequest` CRDs created by Gateway or API Frontend and drives the lifecycle by creating 6 child CRDs in sequence — one per pipeline phase:
+
+    `SignalProcessing` → `AIAnalysis` → `RemediationApprovalRequest` (when needed) → `WorkflowExecution` → `EffectivenessAssessment` → `NotificationRequest`
+
+    - **Sequencing** — Watches every child CRD for status changes and advances the parent RR through its phase state machine as each phase completes.
+    - **Routing** — Timeout enforcement and routing/escalation decisions live here.
+    - Owner references on each child CRD enable cascade deletion when the parent RR is garbage collected.
+
+    See [Remediation Routing](architecture/remediation-routing.md) for the full phase state machine.
+
 === "1 · Signal Processing"
 
     **CRD:** `SignalProcessing`

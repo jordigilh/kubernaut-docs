@@ -97,10 +97,36 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 Kubernaut automates the entire incident response lifecycle through a CRD-native pipeline.
 
 <div style="max-width:100%;overflow-x:auto;margin:1.5rem 0" id="pipeline-svg-wrap">
-<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — 6 phases + interactive mode"></object>
+<object data="assets/images/pipeline-phases.svg" type="image/svg+xml" style="width:100%;height:auto" id="pipeline-svg" aria-label="Kubernaut Remediation Pipeline — Gateway and API Frontend entry points, Remediation Orchestrator hub, 6 pipeline phases, and DataStorage audit foundation"></object>
 </div>
 
 Click a phase card above, or select a tab:
+
+=== "Gateway"
+
+    **CRD:** `RemediationRequest` (creates)
+
+    The entry point for all signals into Kubernaut. Accepts alerts from Prometheus AlertManager and Kubernetes Event Exporter, authenticates the source, and validates resource scope before a signal is allowed into the pipeline.
+
+    - **Deduplication** — Signals are fingerprinted (`SHA256(namespace:kind:name)` of the top-level owning resource); a duplicate increments the existing RR's occurrence count instead of creating a new one.
+    - **Concurrency safety** — A Kubernetes Lease lock prevents race conditions between the dedup check and RR creation across multiple Gateway replicas.
+    - Creates the `RemediationRequest` CRD that the Remediation Orchestrator picks up to start the pipeline.
+
+    See [Gateway](architecture/gateway.md) for the full webhook contract and API reference.
+
+=== "Remediation Orchestrator"
+
+    **CRD:** `RemediationRequest` (watches)
+
+    The central coordinator. Watches `RemediationRequest` CRDs created by Gateway or API Frontend and drives the lifecycle by creating 6 child CRDs in sequence — one per pipeline phase:
+
+    `SignalProcessing` → `AIAnalysis` → `RemediationApprovalRequest` (when needed) → `WorkflowExecution` → `EffectivenessAssessment` → `NotificationRequest`
+
+    - **Sequencing** — Watches every child CRD for status changes and advances the parent RR through its phase state machine as each phase completes.
+    - **Routing** — Timeout enforcement and routing/escalation decisions live here.
+    - Owner references on each child CRD enable cascade deletion when the parent RR is garbage collected.
+
+    See [Remediation Routing](architecture/remediation-routing.md) for the full phase state machine.
 
 === "1 · Signal Processing"
 
@@ -183,12 +209,12 @@ Click a phase card above, or select a tab:
 
     The interactive path is a **parallel entry point**, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:
 
-    1. **Investigate** — AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
+    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
     2. **Discover** — After RCA, AF calls `kubernaut_discover_workflows` to present workflow options with LLM-populated parameters.
-    3. **Select** — Operator picks a workflow via `kubernaut_select_workflow` → KA creates the `RemediationRequest`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
+    3. **Select** — Operator picks a workflow via `kubernaut_select_workflow`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
     4. **Watch** — AF monitors CRD status transitions and reports progress to the user until a terminal phase.
 
-    The investigation creates an `InvestigationSession` CRD (deferred until RR creation). The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See [Interactive Sessions](user-guide/interactive-sessions.md).
+    The same Rego approval gates apply — identity-aware policies can auto-approve trusted operators. See [Interactive Sessions](user-guide/interactive-sessions.md).
 
     **SAR-gated personas** — All MCP/A2A tool access is gated by SubjectAccessReview against 6 per-persona ClusterRoles:
 

@@ -125,7 +125,7 @@ The AF sits between external clients and the Kubernaut Engine, handling:
 Session management spans two layers:
 
 - **KA MCP layer** (`internal/kubernautagent/mcp/`) — Owns interactive investigation state via Lease-based single-driver locking. The AF dispatches interactive tools (`kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_select_workflow`, `kubernaut_discover_workflows`) to KA's MCP server.
-- **AF session layer** (`pkg/apifrontend/session/`) — Manages `InvestigationSession` CRDs with **deferred creation**: the CRD is not created when the A2A session starts, but only when `kubernaut_remediate` succeeds and calls `MaterializeCRD()`. Sessions that never produce a RemediationRequest leave no cluster footprint.
+- **AF session layer** (`pkg/apifrontend/session/`) — Manages `InvestigationSession` CRDs with **deferred creation**: the CRD is not created when the A2A session starts, but only once `kubernaut_investigate` (or `kubernaut_investigate_alert`) has created the `RemediationRequest`, at which point `ISSignaler.SignalInteractive` co-creates the IS CRD via `CreateInvestigationSession()`. (Design change #1293→#1332: the IS-creation trigger moved off the `kubernaut_remediate` / `MaterializeCRD()` path — that tool is now autonomous-only and never creates an IS.) Sessions that never produce a RemediationRequest leave no cluster footprint.
 
 ### Lease-based distributed locking
 

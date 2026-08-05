@@ -405,6 +405,45 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 !!! info "Internal tools"
     The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
 
+### Console-Access Gate {: #console-access-gate }
+
+In addition to the per-tool `kubernaut.ai/tools` check above, the API Frontend enforces a second, coarser-grained `kubernaut.ai/console` **use** SAR grant (#1919) -- a deliberately separate, independently-auditable authorization step from per-tool access (least privilege, AC-6). Operators grant "console access" and "tool access" as two explicit steps rather than one implying the other.
+
+**Enforcement is server-side, at both existing tool-invocation paths** -- `checkRBAC()` for `/mcp` and `newRBACGuard()` for `/a2a/invoke` -- not merely at a UI-advisory endpoint. A client that calls `/mcp` or `/a2a/invoke` directly, without ever hitting the pre-flight endpoint below, still cannot bypass the gate.
+
+`GET /a2a/access` is a lightweight, authenticated pre-flight endpoint the console/chat client can call once at load time to decide whether to render its UI at all, backed by the same grant:
+
+| Response | Meaning |
+|---|---|
+| `200` | Caller has console access |
+| `403` (RFC 7807 `application/problem+json`) | Caller lacks console access |
+| `401` | No valid identity (same `AuthMiddleware` tier as other authenticated routes) |
+
+Denials at either the endpoint or the two enforcement points emit an `EventAuthAccessDenied` audit event.
+
+#### `consoleAccessGroups`
+
+The Helm chart ships a `kubernaut-console-access` ClusterRole plus one ClusterRoleBinding per group listed in `apifrontend.config.rbac.consoleAccessGroups`, defaulted to all six built-in personas (`sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver`):
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      consoleAccessGroups:
+        - sre
+        - ai-orchestrator
+        - cicd
+        - observability
+        - l3-audit
+        - remediation-approver
+```
+
+!!! warning "consoleAccessGroups is independent of personas -- keep them in sync"
+    `consoleAccessGroups` is a separate, independently-maintained list -- it is **not** derived from `apifrontend.config.rbac.personas`'s keys. If you configure a custom persona group (or replace the default six), you must add that same group name to `consoleAccessGroups`, or users in that group will have **every** AF tool call denied, even though their per-tool grants are unchanged. `helm install`/`helm upgrade` prints a `NOTES.txt` warning listing any `personas` group missing from `consoleAccessGroups` to catch this at deploy time.
+
+!!! note "Helm-only as of this writing"
+    Unlike the per-persona tool ClusterRoles referenced in the info box above, the `kubernaut-console-access` ClusterRole and `consoleAccessGroups` are currently implemented in the **Helm chart only**. Kubernaut Operator parity is not yet tracked in this document -- check the [Kubernaut Operator repo](https://github.com/jordigilh/kubernaut-operator) for current status before relying on it there.
+
 ### Custom ClusterRoles {: #custom-clusterroles }
 
 For organizations that need tool subsets not covered by the 6 built-in personas — for example, separation of duties where SREs can investigate but not approve — the operator supports **user-managed ClusterRoles** via the `clusterRoleName` field on `ToolRoleBinding`.

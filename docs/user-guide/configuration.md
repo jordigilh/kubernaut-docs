@@ -69,7 +69,7 @@ Key differences from Helm:
 | NetworkPolicies | Enabled by default, per-service toggles | Disabled by default (`spec.networkPolicies.enabled`) |
 | Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | Controlled by `spec.monitoring.enabled` (default: `true`) |
 | Database | In-chart PostgreSQL option | BYO only — `spec.postgresql.host` + `spec.postgresql.secretName` |
-| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.llm.runtimeConfigMapName` for BYO hot-reloadable config |
+| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.runtimeConfigMapName` for BYO hot-reloadable config |
 | Image references | Standard Helm `image.repository`/`image.tag` | `RELATED_IMAGE_*` env vars for disconnected installs |
 | Agent RBAC extension | Manual ClusterRoleBinding creation | `spec.kubernautAgent.additionalClusterRoleBindings` (max 64) |
 

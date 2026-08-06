@@ -50,7 +50,7 @@ For complete installation instructions, see the [Kubernaut Operator Installation
     kagenti and the OIDC provider requirement are frequently conflated because kagenti's own Kind/OCP installers bundle a Keycloak instance (`scripts/kind/setup-kagenti.sh` deploys Keycloak as a **core** component), and several reference deployment guides reuse that bundled Keycloak as the OIDC provider for convenience. That makes kagenti a *practical* way to get a working OIDC provider quickly, but there is no code-level dependency: Console's `oauth2-proxy` sidecar and AF's JWT validation talk directly to whatever `issuerURL` you configure — they never call kagenti's API, its operator, or SPIRE. You can point `spec.apiFrontend.auth.issuerURL` / `spec.console.auth` at any OIDC provider without installing kagenti at all, as long as `spec.apiFrontend.spire.enabled` stays `false` (the default).
 
 !!! warning "CR validation"
-    The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
+    The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llmProfileRef` (must name a key in `spec.llmProfiles`), each `spec.llmProfiles[<name>].provider`/`.model`/`.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
 
 **Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
 
@@ -254,11 +254,13 @@ Both paths can be enabled simultaneously.
         host: valkey.kubernaut-system.svc.cluster.local
         port: 6379
         secretName: valkey-secret
-      kubernautAgent:
-        llm:
+      llmProfiles:
+        primary:
           provider: openai
           model: gpt-4o
           credentialsSecretName: llm-credentials
+      kubernautAgent:
+        llmProfileRef: primary
       signalProcessing:
         policy:
           configMapName: signalprocessing-policy
@@ -293,11 +295,13 @@ Both paths can be enabled simultaneously.
         host: valkey.kubernaut-system.svc.cluster.local
         port: 6379
         secretName: valkey-secret
-      kubernautAgent:
-        llm:
+      llmProfiles:
+        primary:
           provider: openai
           model: gpt-4o
           credentialsSecretName: llm-credentials
+      kubernautAgent:
+        llmProfileRef: primary
         interactive:
           enabled: true
           inactivityTimeout: 10m

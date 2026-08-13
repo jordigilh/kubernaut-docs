@@ -264,6 +264,14 @@ Used at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.a
 |---|---|---|---|
 | `sarCacheTTL` | string | `30s` | Cache duration for SAR results (Go duration format) |
 | `roleBindings` | [][ToolRoleBinding](#toolrolebinding) | — | Maps persona-based tool roles to OIDC groups |
+| `consoleAccessGroups` | []string | auto-derived (see below) | OIDC groups granted the coarse-grained `kubernaut.ai/console` "use" gate (v1.5.6, kubernaut#1919). Checked in addition to the per-tool `kubernaut.ai/tools` grant on every `/mcp` and `/a2a/invoke` call. |
+
+!!! info "`consoleAccessGroups` default differs from the Helm chart (kubernaut-operator#289)"
+    When **unset** (`nil`, the field has no `omitempty` — an explicit `[]` is a distinct, meaningful value from "unset"), the operator defaults `consoleAccessGroups` to the deduplicated union of every group already present in `roleBindings` above — **not** the Helm chart's static list of the 6 built-in persona names. This makes the Operator path upgrade-safe by construction: any group with an existing per-tool binding automatically keeps console access, with no risk of the tool-call lockout described in [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate).
+
+    - Omit the field to keep this auto-derived default.
+    - Set an explicit non-empty list for independent, narrower control.
+    - Set an explicit empty list (`consoleAccessGroups: []`) to deny console access to everyone via this gate.
 
 ### ToolRoleBinding {: #toolrolebinding }
 

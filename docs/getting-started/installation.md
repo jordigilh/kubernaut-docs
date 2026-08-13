@@ -54,7 +54,7 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 !!! warning "CR validation"
     The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
 
-**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
+**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` — no `v` prefix. This applies to component images (`{{ image_tag }}`) too; neither uses a `v` prefix on quay.io, despite the git tags themselves being `v`-prefixed (e.g. git tag `v1.5.6` publishes image tag `1.5.6`).
 
 ### Provision Prerequisites
 

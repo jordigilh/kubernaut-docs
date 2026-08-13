@@ -20,7 +20,7 @@ The operator is available through OLM (Operator Lifecycle Manager) or direct man
 
 ```bash
 curl -fsSL \
-  https://raw.githubusercontent.com/jordigilh/kubernaut-operator/v1.5.4/dist/install.yaml \
+  https://github.com/jordigilh/kubernaut-operator/releases/latest/download/install.yaml \
   -o install.yaml
 
 oc apply -f install.yaml
@@ -29,6 +29,8 @@ oc rollout status deployment/kubernaut-operator-controller-manager \
 ```
 
 This creates the `kubernaut-operator-system` namespace, 11 CRDs (all under `kubernaut.ai`), RBAC, and the operator Deployment. With [IDMS](../operations/disconnected-install.md) in place, image references are transparently redirected to the mirror — no `RELATED_IMAGE_*` patching is needed.
+
+To pin to a specific operator release instead of the latest, replace `latest` in the URL with a tag, e.g. `.../releases/download/v1.5.10/install.yaml`. See the [operator releases page](https://github.com/jordigilh/kubernaut-operator/releases) for available tags — the operator has its own release cadence, independent of the core Kubernaut release version.
 
 For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
 
@@ -52,7 +54,7 @@ For complete installation instructions, see the [Kubernaut Operator Installation
 !!! warning "CR validation"
     The operator **rejects the Kubernaut CR** if any of the following fields are missing or reference non-existent resources: `spec.kubernautAgent.llm.provider`, `spec.kubernautAgent.llm.model`, `spec.kubernautAgent.llm.credentialsSecretName`, `spec.signalProcessing.policy.configMapName`, `spec.aiAnalysis.policy.configMapName`. Create these resources before applying the CR.
 
-**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` (note: no `v` prefix, unlike component images which use `{{ image_tag }}`).
+**Operator image:** `quay.io/kubernaut-ai/kubernaut-operator:{{ operator_image_tag }}` — no `v` prefix. This applies to component images (`{{ image_tag }}`) too; neither uses a `v` prefix on quay.io, despite the git tags themselves being `v`-prefixed (e.g. git tag `v1.5.6` publishes image tag `1.5.6`).
 
 ### Provision Prerequisites
 

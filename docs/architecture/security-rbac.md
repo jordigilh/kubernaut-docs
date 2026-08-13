@@ -405,6 +405,59 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 !!! info "Internal tools"
     The AF also uses 5 internal tools (`kubectl_get`, `kubectl_list`, `kubectl_list_events`, `kubernaut_check_existing_remediation`, `kubernaut_remediate`) that run under the AF pod's own ServiceAccount. These are **not** exposed via MCP/A2A, are **not** SAR-gated, and are not included in persona tool counts.
 
+### Console-access authorization gate (v1.5.6) {: #console-access-gate }
+
+v1.5.6 adds a second, **coarse-grained** SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12). Every tool-invocation request on `POST /mcp` and `POST /a2a/invoke` must now pass **both**:
+
+1. `can <user> use console in apiGroup kubernaut.ai?` — the new coarse-grained gate, checked once per request
+2. `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?` — the existing per-tool check described above
+
+Both are independent SAR calls (different `resource` values, same `apiGroup: kubernaut.ai`, `verb: use`) with independently cached results — a group can hold one without the other. The gate is **fail-closed**: an SAR API error is treated the same as denial.
+
+**Advisory pre-flight endpoint** — `GET /a2a/access` lets a UI client check the console gate before opening a session, without the roundtrip cost of a real tool call:
+
+| Response | Meaning |
+|---|---|
+| `200 OK` (empty body) | Authenticated user holds the console-access grant |
+| `401 Unauthorized` (RFC 7807) | No authenticated identity on the request |
+| `403 Forbidden` (RFC 7807) | Authenticated but not granted (or the SAR call itself errored); emits an `EventAuthAccessDenied` audit event with `endpoint: "console"` |
+
+This endpoint is **advisory only** — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every `/mcp` and `/a2a/invoke` call, identical to the per-tool gate.
+
+#### Helm: `consoleAccessGroups`
+
+The chart's `apifrontend.config.rbac.consoleAccessGroups` value controls which OIDC groups pass the console gate. It **defaults to all 6 built-in persona names** (`sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver`):
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      consoleAccessGroups:
+        - sre
+        - ai-orchestrator
+        - cicd
+        - observability
+        - l3-audit
+        - remediation-approver
+```
+
+!!! danger "Upgrade action required for custom persona groups"
+    If you deploy via Helm and configured a **custom** group under `apifrontend.config.rbac.personas` (renamed or added to the 6 defaults), that group's name is **not** automatically added to `consoleAccessGroups`. Members of that group will have **every** AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to `consoleAccessGroups`.
+
+    `helm install`/`helm upgrade` prints an `NOTES.txt` warning that lists any `personas` group missing from `consoleAccessGroups`, to catch this at deploy time rather than at first login.
+
+Deployments using only the 6 default persona group names need no changes.
+
+#### Kubernaut Operator: `spec.apiFrontend.rbac.consoleAccessGroups`
+
+The Operator CR field behaves differently from the Helm default by design (kubernaut-operator#289): when `consoleAccessGroups` is **unset** (the CR field is `nil`, not an explicit empty list), the operator derives it as the deduplicated union of every group already referenced in `spec.apiFrontend.rbac.roleBindings` — not the static 6-persona list. This means an existing Operator-managed deployment upgrading to an AF version that enforces this gate is **not** at risk of the lockout described above: every group with an existing per-tool binding automatically retains console access.
+
+- Leave the field unset to keep this auto-derived, upgrade-safe default.
+- Set it to an explicit non-empty list for independent, narrower control (e.g., granting console access to a strict subset of your tool-authorized groups).
+- Set it to an explicit empty list (`[]`) to opt out entirely (deny console access to everyone via this gate).
+
+See [Operator CR Reference: APIFrontendRBACSpec](../api-reference/operator-cr.md#apifrontendrbacspec) for the field definition.
+
 ### Custom ClusterRoles {: #custom-clusterroles }
 
 For organizations that need tool subsets not covered by the 6 built-in personas — for example, separation of duties where SREs can investigate but not approve — the operator supports **user-managed ClusterRoles** via the `clusterRoleName` field on `ToolRoleBinding`.

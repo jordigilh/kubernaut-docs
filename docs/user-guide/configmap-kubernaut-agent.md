@@ -130,7 +130,10 @@ ai:
     vertexLocation: ""        # Vertex-specific
     bedrockRegion: ""         # Bedrock-specific
     structuredOutput: false   # Reserved; KA always enables JSON mode internally (see note below)
-    temperature: 0.7          # Creativity vs determinism (0.0--1.0)
+    temperature: 0.7          # Creativity vs determinism (0.0--1.0). Omit this key entirely to
+                              #   send no temperature parameter at all (v1.5.5+, #1749) -- required
+                              #   for models (e.g. claude-opus-4-8) that reject the parameter with
+                              #   an HTTP 400 if present. See "Temperature Tuning" below.
     maxRetries: 3             # LLM call retry count
     timeoutSeconds: 120       # Per-call timeout
     tlsCaFile: ""             # Custom CA cert for LLM endpoint (PEM, absolute path)
@@ -191,8 +194,9 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
 | `vertexProject` | GCP project override |
 | `vertexLocation` | GCP region override |
 | `bedrockRegion` | AWS Bedrock region override |
+| `temperature` | Override base/phase temperature (v1.5.5+, #1749). `nil`/omitted means inherit the base value unchanged. |
 
-`temperature`, `maxRetries`, and `timeoutSeconds` are always inherited from the base `LLMRuntimeConfig` and cannot be overridden per phase.
+`maxRetries` and `timeoutSeconds` are always inherited from the base `LLMRuntimeConfig` and cannot be overridden per phase.
 
 **Merge behavior**: `EffectivePhaseConfig()` copies the base config, then overlays non-empty override fields. If `phaseModels` is empty or the phase has no entry, the base config is used unchanged.
 
@@ -210,7 +214,7 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
     ```yaml
     model: gpt-4o
     endpoint: http://llm-gateway:8080/v1
-    temperature: 0.7
+    # temperature omitted here -- base calls send no temperature parameter (v1.5.5+ default)
     maxRetries: 3
     timeoutSeconds: 120
     phaseModels:
@@ -218,6 +222,7 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
         provider: anthropic
         endpoint: http://anthropic-api
         model: claude-sonnet-4-6
+        temperature: 0.4       # RCA phase overrides the (omitted) base temperature explicitly
       workflow_discovery:
         model: claude-haiku-3
       validation:
@@ -390,9 +395,16 @@ The Secret is marked `optional: true` — the agent starts without it but all LL
 
 ## Temperature Tuning
 
+!!! info "Default changed in v1.5.5 (#1749, BR-HAPI-199)"
+    `ai.llm.temperature` has **no default value** — if the key is absent from the runtime ConfigMap, KA sends no `temperature` parameter at all in LLM requests, rather than defaulting to `0.7`. This is required for models (e.g. `claude-opus-4-8`) that reject the request outright with an HTTP 400 if `temperature` is present at all. `Temperature` is a pointer end-to-end (`*float64`) so "unset" and "explicitly set to `0`" are distinguishable — an explicit `temperature: 0` is still sent as `0`, not omitted. Set the key explicitly (any value, including `0`) if your model supports and requires an explicit temperature.
+
+When you do set it explicitly:
+
 - **0.3--0.5**: More deterministic. Recommended for production.
-- **0.7** (default): Balanced.
+- **0.7**: Balanced — commonly used, but no longer applied automatically.
 - **0.8--1.0**: More creative. May discover non-obvious root causes but less consistent.
+
+`phaseModels.<phase>.temperature` can override the base value per phase (v1.5.5+) — see [Per-phase LLM routing](#per-phase-llm-routing-v151).
 
 ## mTLS for LLM Proxy (#1342)
 

@@ -52,7 +52,10 @@ environment := {"environment": "production", "source": "namespace-labels"} if {
 }
 
 # ========== Severity ==========
-# Returns: string (critical/high/medium/low/unknown)
+# Returns: string (critical/high/warning/info/unknown) -- 4-level model, ADR-066/#1484 (v1.5.2+).
+# `input.signal.severity` may still carry legacy raw values like "medium"/"low"/"sev3" from the
+# alert source -- map those down explicitly (e.g. medium/sev3 -> "warning", low -> "info"); this
+# rule's *output* must always be one of the 5 values above.
 default severity := "unknown"
 severity := "critical" if { input.signal.severity == "critical" }
 

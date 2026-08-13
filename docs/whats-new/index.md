@@ -6,6 +6,88 @@ Review the changes below to understand what differs from the version you are cur
 
 ---
 
+## v1.5.6
+
+### Security: Console-access authorization gate
+
+v1.5.6 adds a **coarse-grained console-access SAR check** in front of every AF tool call, independent of the existing per-tool authorization (#1919, #1941, AC-3/AC-6/AU-12). Every `POST /mcp` and `POST /a2a/invoke` request must now pass both the new `kubernaut.ai/console` "use" check and the pre-existing per-tool `kubernaut.ai/tools` check. A new advisory `GET /a2a/access` endpoint lets UI clients pre-flight the gate.
+
+!!! danger "Operator action may be required"
+    The Helm chart's `apifrontend.config.rbac.consoleAccessGroups` value defaults to all 6 built-in persona group names, so deployments using only those defaults need no changes. If you configured a **custom** group under `apifrontend.config.rbac.personas`, you must add that same group name to `consoleAccessGroups`, or its members will have **every** tool call denied after upgrading — even though their existing per-tool grants are unchanged. `helm install`/`helm upgrade` now prints a `NOTES.txt` warning listing any `personas` group missing from `consoleAccessGroups` to catch this at deploy time.
+
+    Deployments via the **Kubernaut Operator** are not at risk of this: when `spec.apiFrontend.rbac.consoleAccessGroups` is left unset, the operator auto-derives it as the union of groups already present in `roleBindings`, so every group with existing tool access keeps console access automatically.
+
+See [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model, and [Configuration: RBAC](../user-guide/configuration.md) for the Helm value.
+
+### Platform hardening
+
+Several reliability fixes to the interactive investigation pipeline, most notably:
+
+- **`kubernaut_present_decision` crashed the entire interactive approve/decline/dismiss flow on every grounded decision (#2110)** — a structured RCA substitution was assigned as a non-`gob`-registered struct pointer, which failed the a2a artifact deep-copy pipeline. Fixed by assigning a plain map instead.
+- **`workflow_discovery` could hang indefinitely** when a same-kind/API-version validation gate's non-streamed retry call exceeded AF's inactivity budget (#2086), or after the LLM's terminal decision response with no timeout at all (#1949) — both now emit keepalive events / are wired into inactivity-cancel paths.
+- **Interactive session capacity eroded under sustained load** before configured concurrency limits were reached (#2100), and the active-sessions gauge drifted upward instead of tracking real capacity (#2103) — the previously-unused `SessionJanitor` is now wired in, and every completion path decrements the gauge centrally.
+- **`apiVersion` could fail to reach KA's workflow-discovery filter**, silently degrading to kind-only matching and risking the wrong workflow being selected when a Kind exists in more than one API group (#2061, #2064, #2066) — closed across the CRD-fallback resolver, AA's request to KA, and Gateway's event/alert resolution.
+
+See the [v1.5.6 release notes](https://github.com/jordigilh/kubernaut/releases/tag/v1.5.6) for the complete list (23 fixed issues in this release).
+
+### Security: CVE remediation
+
+- **CVE-2026-56852** in `golang.org/x/text`, pulled in transitively by the `db-migrate` image's goose builder (#1763, #1781) — pinned to the patched version.
+
+---
+
+## v1.5.5
+
+### Fixed: Kubernaut Agent `temperature` is no longer sent unless explicitly configured
+
+Some models (e.g. `claude-opus-4-8`) reject the LLM `temperature` parameter outright with an HTTP 400, which previously surfaced to users as a generic `internal_error` during workflow discovery (#1749, BR-HAPI-199). `Temperature` is now a pointer end-to-end, and the `kubernaut-agent-llm-runtime` ConfigMap rendered by the Helm chart **omits `temperature` by default** instead of defaulting to `0.7`.
+
+!!! info "Action needed only if your model requires an explicit temperature"
+    Set `kubernautAgent.llm.temperature` explicitly (including `0`) if your model supports and requires it. See [Kubernaut Agent Config: Temperature Tuning](../user-guide/configmap-kubernaut-agent.md#temperature-tuning).
+
+---
+
+## v1.5.4
+
+Primarily a CI/Helm-smoke-test infrastructure release (a CI runner Kind version bump exposed four latent chart/test gaps, all backported fixes of issues already fixed independently on `main`). One change affects real cluster installs:
+
+- **`networkPolicies.apiServerCIDR` auto-discovery** — previously required manually setting the API-server CIDR/port for NetworkPolicy-selected pods to reach the Kubernetes API server (a hard requirement for `authwebhook`'s startup init container). The chart now auto-discovers the real backend endpoint IP(s) and port via a Helm `lookup` against the live `kubernetes` Endpoints object during any real `helm install`/`upgrade` — no manual `--set` needed in the common case. Manual override remains available and is **required** for `helm template`/GitOps rendering, where `lookup` has no live-cluster access.
+
+---
+
+## v1.5.3
+
+### Fixed: workflow registration no longer pre-flights the registry
+
+DataStorage no longer performs a registry existence check (`execution.bundle`) at workflow registration time (#1642) — that check ran from DataStorage's own network/credential context and couldn't validate self-signed or credential-required private registries reachable only by the workflow execution environment. An incorrect or unreachable image now registers successfully and fails later, at Job/PipelineRun image-pull time. See [Workflow Schema Reference: Bundle Digest Format](../user-guide/workflows.md#bundle-digest-format) for the operator-facing detail.
+
+---
+
+## v1.5.2
+
+### Breaking: 4-level severity model (ADR-066)
+
+The severity model was collapsed from a free-form scheme to 4 canonical values: `critical`, `high`, `warning`, `info` (plus `unknown` as the classification fallback) — replacing `medium` with `warning` and `low` with `info` across CRD enums, OpenAPI specs, Rego policies, LLM prompt templates, and mock-LLM fixtures (#1484).
+
+`medium` and `low` remain accepted as **input aliases** in the shipped example Rego policy (mapped down to `warning`/`info` respectively) for backward compatibility with existing AlertManager/webhook severity labels — but no Kubernaut component ever stores or emits `medium`/`low` as an output value anymore. If you have external tooling, dashboards, or custom Rego policies that branch on the literal strings `medium` or `low` coming out of Kubernaut's `SignalProcessing.status.severity` (or the equivalent `Signal.severity` audit field), update them to `warning`/`info`.
+
+### Added: OpenAI-compatible LLM adapter
+
+A new `openai_compatible` provider lets the **Kubernaut Agent** connect to OpenAI-compatible endpoints (LlamaStack, vLLM, Ollama, Azure OpenAI) over plain `net/http` with `http.Client` injection for mTLS transport chains — supporting streaming (SSE), tool-call accumulation, and generation-config forwarding (#1487, BR-INTEGRATION-1254). Configure via `ai.llm.provider: openai` and an `endpoint` pointing at the server origin. See [Kubernaut Agent Config: OpenAI-Compatible](../user-guide/configmap-kubernaut-agent.md#openai-compatible-vllm-localai-tgi).
+
+!!! warning "Not available for severity triage"
+    The API Frontend's `severityTriage.llm` block does **not** go through this adapter — it only supports `vertex_ai`, `gemini`, and `anthropic`. Setting `severityTriage.llm.provider: openai` or `openai_compatible` passes config validation but fails at runtime with `unsupported triage LLM provider`. See [Configuration: Severity Triage](../user-guide/configuration.md#severity-triage-v151).
+
+### Fixed
+
+- **Cluster-scoped namespace strip (#1480, #1477)** — Dynamic scope resolution via RESTMapper for `ka_investigate_mcp`, self-healing namespace strip for cluster-scoped resources in AF, and scope-aware namespace resolution in Effectiveness Monitor target resource fetch.
+
+### Security
+
+- **CVE remediation in db-migrate (#1485)** — Pinned `x/crypto` and `x/net` to resolve known CVEs.
+
+---
+
 ## v1.5.1
 
 ### Kubernaut Console

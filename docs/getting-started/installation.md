@@ -20,7 +20,7 @@ The operator is available through OLM (Operator Lifecycle Manager) or direct man
 
 ```bash
 curl -fsSL \
-  https://raw.githubusercontent.com/jordigilh/kubernaut-operator/v1.5.4/dist/install.yaml \
+  https://github.com/jordigilh/kubernaut-operator/releases/latest/download/install.yaml \
   -o install.yaml
 
 oc apply -f install.yaml
@@ -29,6 +29,8 @@ oc rollout status deployment/kubernaut-operator-controller-manager \
 ```
 
 This creates the `kubernaut-operator-system` namespace, 11 CRDs (all under `kubernaut.ai`), RBAC, and the operator Deployment. With [IDMS](../operations/disconnected-install.md) in place, image references are transparently redirected to the mirror — no `RELATED_IMAGE_*` patching is needed.
+
+To pin to a specific operator release instead of the latest, replace `latest` in the URL with a tag, e.g. `.../releases/download/v1.5.10/install.yaml`. See the [operator releases page](https://github.com/jordigilh/kubernaut-operator/releases) for available tags — the operator has its own release cadence, independent of the core Kubernaut release version.
 
 For complete installation instructions, see the [Kubernaut Operator Installation Guide](https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation).
 

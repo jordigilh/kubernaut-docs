@@ -4452,8 +4452,23 @@
 <td>—</td>
 <td>Maps persona-based tool roles to OIDC groups</td>
 </tr>
+<tr>
+<td><code>consoleAccessGroups</code></td>
+<td>[]string</td>
+<td>auto-derived (see below)</td>
+<td>OIDC groups granted the coarse-grained <code>kubernaut.ai/console</code> "use" gate (v1.5.6, kubernaut#1919). Checked in addition to the per-tool <code>kubernaut.ai/tools</code> grant on every <code>/mcp</code> and <code>/a2a/invoke</code> call.</td>
+</tr>
 </tbody>
 </table>
+<div class="admonition info">
+<p class="admonition-title"><code>consoleAccessGroups</code> default differs from the Helm chart (kubernaut-operator#289)</p>
+<p>When <strong>unset</strong> (<code>nil</code>, the field has no <code>omitempty</code> — an explicit <code>[]</code> is a distinct, meaningful value from "unset"), the operator defaults <code>consoleAccessGroups</code> to the deduplicated union of every group already present in <code>roleBindings</code> above — <strong>not</strong> the Helm chart's static list of the 6 built-in persona names. This makes the Operator path upgrade-safe by construction: any group with an existing per-tool binding automatically keeps console access, with no risk of the tool-call lockout described in <a href="../../architecture/security-rbac/#console-access-gate">Security &amp; RBAC: Console-access authorization gate</a>.</p>
+<ul>
+<li>Omit the field to keep this auto-derived default.</li>
+<li>Set an explicit non-empty list for independent, narrower control.</li>
+<li>Set an explicit empty list (<code>consoleAccessGroups: []</code>) to deny console access to everyone via this gate.</li>
+</ul>
+</div>
 <h3 id="toolrolebinding">ToolRoleBinding<a class="headerlink" href="#toolrolebinding" title="Permanent link">&para;</a></h3>
 <p>Exactly one of <code>role</code> or <code>clusterRoleName</code> must be set. Entries with both or neither are rejected by CR validation.</p>
 <table>

@@ -3382,7 +3382,7 @@
 <li><strong>Direct manifest</strong> — For environments without OLM or for quick evaluation:</li>
 </ol>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>curl<span class="w"> </span>-fsSL<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>https://raw.githubusercontent.com/jordigilh/kubernaut-operator/v1.5.4/dist/install.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span>https://github.com/jordigilh/kubernaut-operator/releases/latest/download/install.yaml<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span>-o<span class="w"> </span>install.yaml
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>install.yaml
@@ -3390,6 +3390,7 @@
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-operator-system<span class="w"> </span>--timeout<span class="o">=</span>120s
 </span></code></pre></div>
 <p>This creates the <code>kubernaut-operator-system</code> namespace, 11 CRDs (all under <code>kubernaut.ai</code>), RBAC, and the operator Deployment. With <a href="../../operations/disconnected-install/">IDMS</a> in place, image references are transparently redirected to the mirror — no <code>RELATED_IMAGE_*</code> patching is needed.</p>
+<p>To pin to a specific operator release instead of the latest, replace <code>latest</code> in the URL with a tag, e.g. <code>.../releases/download/v1.5.10/install.yaml</code>. See the <a href="https://github.com/jordigilh/kubernaut-operator/releases">operator releases page</a> for available tags — the operator has its own release cadence, independent of the core Kubernaut release version.</p>
 <p>For complete installation instructions, see the <a href="https://github.com/jordigilh/kubernaut-operator/tree/main/docs/installation">Kubernaut Operator Installation Guide</a>.</p>
 <h3 id="prerequisites">Prerequisites (Operator)<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <table>
@@ -3456,7 +3457,7 @@
 <p class="admonition-title">CR validation</p>
 <p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
 </div>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.4</code> (note: no <code>v</code> prefix, unlike component images which use <code>v1.5.3</code>).</p>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.10</code> — no <code>v</code> prefix. This applies to component images (<code>1.5.6</code>) too; neither uses a <code>v</code> prefix on quay.io, despite the git tags themselves being <code>v</code>-prefixed (e.g. git tag <code>v1.5.6</code> publishes image tag <code>1.5.6</code>).</p>
 <h3 id="provision-prerequisites">Provision Prerequisites<a class="headerlink" href="#provision-prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h4>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>oc<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system

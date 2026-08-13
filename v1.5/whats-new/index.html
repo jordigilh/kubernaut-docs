@@ -2966,6 +2966,66 @@
 Kubernaut does not support in-place upgrades — each release is a fresh install.
 Review the changes below to understand what differs from the version you are currently running.</p>
 <hr />
+<h2 id="v156">v1.5.6<a class="headerlink" href="#v156" title="Permanent link">&para;</a></h2>
+<h3 id="security-console-access-authorization-gate">Security: Console-access authorization gate<a class="headerlink" href="#security-console-access-authorization-gate" title="Permanent link">&para;</a></h3>
+<p>v1.5.6 adds a <strong>coarse-grained console-access SAR check</strong> in front of every AF tool call, independent of the existing per-tool authorization (#1919, #1941, AC-3/AC-6/AU-12). Every <code>POST /mcp</code> and <code>POST /a2a/invoke</code> request must now pass both the new <code>kubernaut.ai/console</code> "use" check and the pre-existing per-tool <code>kubernaut.ai/tools</code> check. A new advisory <code>GET /a2a/access</code> endpoint lets UI clients pre-flight the gate.</p>
+<div class="admonition danger">
+<p class="admonition-title">Operator action may be required</p>
+<p>The Helm chart's <code>apifrontend.config.rbac.consoleAccessGroups</code> value defaults to all 6 built-in persona group names, so deployments using only those defaults need no changes. If you configured a <strong>custom</strong> group under <code>apifrontend.config.rbac.personas</code>, you must add that same group name to <code>consoleAccessGroups</code>, or its members will have <strong>every</strong> tool call denied after upgrading — even though their existing per-tool grants are unchanged. <code>helm install</code>/<code>helm upgrade</code> now prints a <code>NOTES.txt</code> warning listing any <code>personas</code> group missing from <code>consoleAccessGroups</code> to catch this at deploy time.</p>
+<p>Deployments via the <strong>Kubernaut Operator</strong> are not at risk of this: when <code>spec.apiFrontend.rbac.consoleAccessGroups</code> is left unset, the operator auto-derives it as the union of groups already present in <code>roleBindings</code>, so every group with existing tool access keeps console access automatically.</p>
+</div>
+<p>See <a href="../architecture/security-rbac/#console-access-gate">Security &amp; RBAC: Console-access authorization gate</a> for the full model, and <a href="../user-guide/configuration/">Configuration: RBAC</a> for the Helm value.</p>
+<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<p>Several reliability fixes to the interactive investigation pipeline, most notably:</p>
+<ul>
+<li><strong><code>kubernaut_present_decision</code> crashed the entire interactive approve/decline/dismiss flow on every grounded decision (#2110)</strong> — a structured RCA substitution was assigned as a non-<code>gob</code>-registered struct pointer, which failed the a2a artifact deep-copy pipeline. Fixed by assigning a plain map instead.</li>
+<li><strong><code>workflow_discovery</code> could hang indefinitely</strong> when a same-kind/API-version validation gate's non-streamed retry call exceeded AF's inactivity budget (#2086), or after the LLM's terminal decision response with no timeout at all (#1949) — both now emit keepalive events / are wired into inactivity-cancel paths.</li>
+<li><strong>Interactive session capacity eroded under sustained load</strong> before configured concurrency limits were reached (#2100), and the active-sessions gauge drifted upward instead of tracking real capacity (#2103) — the previously-unused <code>SessionJanitor</code> is now wired in, and every completion path decrements the gauge centrally.</li>
+<li><strong><code>apiVersion</code> could fail to reach KA's workflow-discovery filter</strong>, silently degrading to kind-only matching and risking the wrong workflow being selected when a Kind exists in more than one API group (#2061, #2064, #2066) — closed across the CRD-fallback resolver, AA's request to KA, and Gateway's event/alert resolution.</li>
+</ul>
+<p>See the <a href="https://github.com/jordigilh/kubernaut/releases/tag/v1.5.6">v1.5.6 release notes</a> for the complete list (23 fixed issues in this release).</p>
+<h3 id="security-cve-remediation">Security: CVE remediation<a class="headerlink" href="#security-cve-remediation" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CVE-2026-56852</strong> in <code>golang.org/x/text</code>, pulled in transitively by the <code>db-migrate</code> image's goose builder (#1763, #1781) — pinned to the patched version.</li>
+</ul>
+<hr />
+<h2 id="v155">v1.5.5<a class="headerlink" href="#v155" title="Permanent link">&para;</a></h2>
+<h3 id="fixed-kubernaut-agent-temperature-is-no-longer-sent-unless-explicitly-configured">Fixed: Kubernaut Agent <code>temperature</code> is no longer sent unless explicitly configured<a class="headerlink" href="#fixed-kubernaut-agent-temperature-is-no-longer-sent-unless-explicitly-configured" title="Permanent link">&para;</a></h3>
+<p>Some models (e.g. <code>claude-opus-4-8</code>) reject the LLM <code>temperature</code> parameter outright with an HTTP 400, which previously surfaced to users as a generic <code>internal_error</code> during workflow discovery (#1749, BR-HAPI-199). <code>Temperature</code> is now a pointer end-to-end, and the <code>kubernaut-agent-llm-runtime</code> ConfigMap rendered by the Helm chart <strong>omits <code>temperature</code> by default</strong> instead of defaulting to <code>0.7</code>.</p>
+<div class="admonition info">
+<p class="admonition-title">Action needed only if your model requires an explicit temperature</p>
+<p>Set <code>kubernautAgent.llm.temperature</code> explicitly (including <code>0</code>) if your model supports and requires it. See <a href="../user-guide/configmap-kubernaut-agent/#temperature-tuning">Kubernaut Agent Config: Temperature Tuning</a>.</p>
+</div>
+<hr />
+<h2 id="v154">v1.5.4<a class="headerlink" href="#v154" title="Permanent link">&para;</a></h2>
+<p>Primarily a CI/Helm-smoke-test infrastructure release (a CI runner Kind version bump exposed four latent chart/test gaps, all backported fixes of issues already fixed independently on <code>main</code>). One change affects real cluster installs:</p>
+<ul>
+<li><strong><code>networkPolicies.apiServerCIDR</code> auto-discovery</strong> — previously required manually setting the API-server CIDR/port for NetworkPolicy-selected pods to reach the Kubernetes API server (a hard requirement for <code>authwebhook</code>'s startup init container). The chart now auto-discovers the real backend endpoint IP(s) and port via a Helm <code>lookup</code> against the live <code>kubernetes</code> Endpoints object during any real <code>helm install</code>/<code>upgrade</code> — no manual <code>--set</code> needed in the common case. Manual override remains available and is <strong>required</strong> for <code>helm template</code>/GitOps rendering, where <code>lookup</code> has no live-cluster access.</li>
+</ul>
+<hr />
+<h2 id="v153">v1.5.3<a class="headerlink" href="#v153" title="Permanent link">&para;</a></h2>
+<h3 id="fixed-workflow-registration-no-longer-pre-flights-the-registry">Fixed: workflow registration no longer pre-flights the registry<a class="headerlink" href="#fixed-workflow-registration-no-longer-pre-flights-the-registry" title="Permanent link">&para;</a></h3>
+<p>DataStorage no longer performs a registry existence check (<code>execution.bundle</code>) at workflow registration time (#1642) — that check ran from DataStorage's own network/credential context and couldn't validate self-signed or credential-required private registries reachable only by the workflow execution environment. An incorrect or unreachable image now registers successfully and fails later, at Job/PipelineRun image-pull time. See <a href="../user-guide/workflows/#bundle-digest-format">Workflow Schema Reference: Bundle Digest Format</a> for the operator-facing detail.</p>
+<hr />
+<h2 id="v152">v1.5.2<a class="headerlink" href="#v152" title="Permanent link">&para;</a></h2>
+<h3 id="breaking-4-level-severity-model-adr-066">Breaking: 4-level severity model (ADR-066)<a class="headerlink" href="#breaking-4-level-severity-model-adr-066" title="Permanent link">&para;</a></h3>
+<p>The severity model was collapsed from a free-form scheme to 4 canonical values: <code>critical</code>, <code>high</code>, <code>warning</code>, <code>info</code> (plus <code>unknown</code> as the classification fallback) — replacing <code>medium</code> with <code>warning</code> and <code>low</code> with <code>info</code> across CRD enums, OpenAPI specs, Rego policies, LLM prompt templates, and mock-LLM fixtures (#1484).</p>
+<p><code>medium</code> and <code>low</code> remain accepted as <strong>input aliases</strong> in the shipped example Rego policy (mapped down to <code>warning</code>/<code>info</code> respectively) for backward compatibility with existing AlertManager/webhook severity labels — but no Kubernaut component ever stores or emits <code>medium</code>/<code>low</code> as an output value anymore. If you have external tooling, dashboards, or custom Rego policies that branch on the literal strings <code>medium</code> or <code>low</code> coming out of Kubernaut's <code>SignalProcessing.status.severity</code> (or the equivalent <code>Signal.severity</code> audit field), update them to <code>warning</code>/<code>info</code>.</p>
+<h3 id="added-openai-compatible-llm-adapter">Added: OpenAI-compatible LLM adapter<a class="headerlink" href="#added-openai-compatible-llm-adapter" title="Permanent link">&para;</a></h3>
+<p>A new <code>openai_compatible</code> provider lets the <strong>Kubernaut Agent</strong> connect to OpenAI-compatible endpoints (LlamaStack, vLLM, Ollama, Azure OpenAI) over plain <code>net/http</code> with <code>http.Client</code> injection for mTLS transport chains — supporting streaming (SSE), tool-call accumulation, and generation-config forwarding (#1487, BR-INTEGRATION-1254). Configure via <code>ai.llm.provider: openai</code> and an <code>endpoint</code> pointing at the server origin. See <a href="../user-guide/configmap-kubernaut-agent/#openai-compatible-vllm-localai-tgi">Kubernaut Agent Config: OpenAI-Compatible</a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Not available for severity triage</p>
+<p>The API Frontend's <code>severityTriage.llm</code> block does <strong>not</strong> go through this adapter — it only supports <code>vertex_ai</code>, <code>gemini</code>, and <code>anthropic</code>. Setting <code>severityTriage.llm.provider: openai</code> or <code>openai_compatible</code> passes config validation but fails at runtime with <code>unsupported triage LLM provider</code>. See <a href="../user-guide/configuration/#severity-triage-v151">Configuration: Severity Triage</a>.</p>
+</div>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Cluster-scoped namespace strip (#1480, #1477)</strong> — Dynamic scope resolution via RESTMapper for <code>ka_investigate_mcp</code>, self-healing namespace strip for cluster-scoped resources in AF, and scope-aware namespace resolution in Effectiveness Monitor target resource fetch.</li>
+</ul>
+<h3 id="security">Security<a class="headerlink" href="#security" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>CVE remediation in db-migrate (#1485)</strong> — Pinned <code>x/crypto</code> and <code>x/net</code> to resolve known CVEs.</li>
+</ul>
+<hr />
 <h2 id="v151">v1.5.1<a class="headerlink" href="#v151" title="Permanent link">&para;</a></h2>
 <h3 id="kubernaut-console">Kubernaut Console<a class="headerlink" href="#kubernaut-console" title="Permanent link">&para;</a></h3>
 <p>Kubernaut v1.5.1 introduces the <strong>Kubernaut Console</strong>, a web UI for interactive investigation and remediation. Operators can chat with the Kubernaut Agent in real time, view live RCA progress, approve remediation actions, and inspect audit trails from a single pane of glass.</p>
@@ -3281,7 +3341,7 @@ Review the changes below to understand what differs from the version you are cur
 <li><strong><code>ConsoleSpec</code></strong> at <code>spec.console</code> — <code>enabled</code>, <code>auth.secretName</code>, <code>route.enabled</code>, <code>route.host</code>, <code>resources</code></li>
 </ul>
 <p>See <a href="../api-reference/operator-cr/">Operator CR Reference</a> for the full schema.</p>
-<h3 id="platform-hardening">Platform hardening<a class="headerlink" href="#platform-hardening" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_1">Platform hardening<a class="headerlink" href="#platform-hardening_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Cascade terminal phase</strong> — When a RemediationRequest enters a terminal phase, all child resources (AIAnalysis, SignalProcessing, WorkflowExecution) are patched to <code>PhaseFailed</code>. Idempotent, non-fatal.</li>
 <li><strong><code>alignment_verdict</code> audit event</strong> — Emitted after every investigation with structured payload: <code>result</code> (aligned/suspicious), <code>circuit_breaker_activated</code>, <code>summary</code>, <code>findings[]</code>, and optional <code>grounding_review</code></li>
@@ -3431,7 +3491,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>The OLM flow uses <code>oc-mirror</code> v2 with an upstream digest-pinned <code>ImageSetConfiguration</code> from the operator repository, producing IDMS and CatalogSource resources automatically.</p>
 <h3 id="lease-rbac-for-session-management">Lease RBAC for session management<a class="headerlink" href="#lease-rbac-for-session-management" title="Permanent link">&para;</a></h3>
 <p>The Kubernaut Agent ServiceAccount now requires <code>list</code> permission on <code>coordination.k8s.io/leases</code> (in addition to the existing create/get/update/delete) for orphaned session reclamation at startup. The Helm chart and Operator both provision this automatically.</p>
-<h3 id="platform-hardening_1">Platform hardening<a class="headerlink" href="#platform-hardening_1" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_2">Platform hardening<a class="headerlink" href="#platform-hardening_2" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>SessionDrainer</strong> (BR-OPS-013) — Active MCP sessions are drained before KA pod termination during rolling updates</li>
 <li><strong>Race-safe session transitions</strong> — Mutex-protected session state machine prevents concurrent state corruption</li>
@@ -3466,7 +3526,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>See <a href="../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK Config</a> for the updated reference.</p>
 <h3 id="parallel-tool-execution">Parallel tool execution<a class="headerlink" href="#parallel-tool-execution" title="Permanent link">&para;</a></h3>
 <p>The <a href="../architecture/kubernaut-agent-investigation/">investigation pipeline</a> now executes multiple LLM tool calls concurrently when the model returns batched requests. The investigation prompt also instructs the LLM to batch independent tool calls for reduced round-trips.</p>
-<h3 id="platform-hardening_2">Platform hardening<a class="headerlink" href="#platform-hardening_2" title="Permanent link">&para;</a></h3>
+<h3 id="platform-hardening_3">Platform hardening<a class="headerlink" href="#platform-hardening_3" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>Inconclusive outcome exponential backoff</strong> (#1091) — <code>Inconclusive</code> outcomes trigger exponential backoff (1m → 10m cap) and 3-strikes blocking, preventing RR flood for persistent alerts</li>
 <li><strong>SA token refresh</strong> (#1055) — Custom token path constructor with 401 cache invalidation for Kubernaut Agent</li>

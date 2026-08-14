@@ -322,7 +322,7 @@ Both paths can be enabled simultaneously.
         spire:
           enabled: true
           className: zero-trust-workload-identity-manager-spire
-        rbac:
+        rbac: # required -- see "Required: API Frontend & Console Authorization" below
           sarCacheTTL: "30s"
           roleBindings:
             - role: sre
@@ -352,10 +352,81 @@ Apply the CR:
 oc apply -f kubernaut-cr.yaml
 ```
 
+#### Required: API Frontend & Console Authorization (RBAC) {: #af-console-rbac-required }
+
+!!! danger "Required for both Console and MCP/A2A tool access — configure this before going live, not kagenti-specific"
+    `spec.apiFrontend.rbac` must be configured with at least one group whenever `spec.apiFrontend.enabled: true`, **regardless of whether kagenti/SPIRE is used at all**. Leaving it entirely unset does not mean "no restrictions" — it means **every** user is denied: both the Console's `GET /a2a/access` pre-flight check on page load, and every `/mcp`/`/a2a/invoke` tool call, with no default-open fallback.
+
+    This is a behavior change from earlier Kubernaut releases (kubernaut#1919): authorization used to be enforced only per-tool, at call time. A coarse-grained `kubernaut.ai/console` gate now also runs on every Console load and every tool-invocation request, before the per-tool check ever runs. If you are copying a CR from an older Kubernaut deployment (or from documentation predating this change) that never set `apiFrontend.rbac`, you must add it now. See [Console "Access Denied" troubleshooting](#console-access-denied) if you hit this after an upgrade, and [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model.
+
+The `roleBindings` in `spec.apiFrontend.rbac` map your OIDC groups to tool personas:
+
+```yaml
+apiFrontend:
+  rbac:
+    roleBindings:
+      - role: sre
+        groups: ["<YOUR-OIDC-GROUP-NAME>"]
+```
+
+**How to find `<YOUR-OIDC-GROUP-NAME>`**: it's the same value that ends up in the `groups` claim of your users' JWTs after configuring the groups mapper in [Console OIDC Step 3](#2-create-secrets) (or the kagenti client's group mapper below, for A2A callers) — i.e. whatever OIDC/AD/LDAP group your identity provider already places your intended users into. If you're not sure of the exact string, decode a real token from one of those users and read it directly:
+
+```bash
+echo "$TOKEN" | cut -d. -f2 | base64 -d 2>/dev/null | jq '.groups'
+```
+
+Each persona grants access to a specific set of MCP tools:
+
+| Persona | Tools granted |
+|---|---|
+| `sre` | `kubernaut_investigate`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_list_workflows`, `kubernaut_remediate`, `kubernaut_check_existing_remediation`, `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert` |
+| `ai-orchestrator` | `kubernaut_investigate`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_remediate`, `kubernaut_check_existing_remediation`, `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert` |
+| `cicd` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
+| `observability` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
+| `l3-audit` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
+| `remediation-approver` | `kubernaut_approve`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
+
+**Custom ClusterRoles** — For fine-grained tool authorization beyond built-in personas, reference pre-created ClusterRoles using `clusterRoleName` instead of `role`:
+
+```yaml
+apiFrontend:
+  rbac:
+    roleBindings:
+      - role: sre
+        groups: ["senior-sres"]
+      - clusterRoleName: kubernaut-restricted-investigator
+        groups: ["junior-sres"]
+      - clusterRoleName: kubernaut-approver
+        groups: ["change-advisory-board"]
+```
+
+`role` and `clusterRoleName` are mutually exclusive within a single binding entry. Create the ClusterRoles before applying the Kubernaut CR. Each grants verb `use` on resource `tools` in apiGroup `kubernaut.ai` with specific `resourceNames`:
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubernaut-restricted-investigator
+rules:
+  - apiGroups: ["kubernaut.ai"]
+    resources: ["tools"]
+    verbs: ["use"]
+    resourceNames:
+      - kubernaut_investigate
+      - kubernaut_watch
+      - kubernaut_await_session
+      - kubernaut_status
+      - kubectl_get
+      - kubectl_list
+      - kubectl_list_events
+```
+
+**Console access specifically** is gated by a second, separate field, `spec.apiFrontend.rbac.consoleAccessGroups` — but you do **not** need to set it explicitly in the common case: when left unset, the operator automatically derives it as the deduplicated union of every group already listed in `roleBindings` above, so any persona group you configure here also gets Console access automatically. Only set `consoleAccessGroups` explicitly if you need it to differ from your tool-persona groups (e.g. a narrower or entirely separate set).
+
 #### kagenti Integration (A2A) {: #kagenti-integration }
 
 !!! info "A2A agent integration only — not required for Console or AF's own OIDC auth"
-    The following steps apply **only** when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent communication. They do **not** apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (`spec.apiFrontend.auth.*`), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with `spire.enabled: false` and a standalone OIDC provider, skip this section entirely.
+    The following steps apply **only** when enabling `spec.apiFrontend.spire.enabled: true` for A2A agent-to-agent communication. They do **not** apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (`spec.apiFrontend.auth.*`), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with `spire.enabled: false` and a standalone OIDC provider, skip this section entirely — but do **not** skip [Required: API Frontend & Console Authorization (RBAC)](#af-console-rbac-required) above, which applies either way.
 
 The API Frontend integrates with [kagenti](https://github.com/kagenti/kagenti) for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy **before** deploying Kubernaut, but only if you need this A2A capability.
 
@@ -451,51 +522,8 @@ Assign as a default scope to the `kagenti` client.
 !!! note
     When SPIRE is disabled (OCP 4.18), the AF authenticates directly using the Keycloak realm URL as the audience (set in `spec.apiFrontend.auth.audience`). This audience mapper is not needed.
 
-**Tool Personas** — The `roleBindings` in `spec.apiFrontend.rbac` map OIDC groups to tool personas. Each persona grants access to a specific set of MCP tools:
-
-| Persona | Tools granted |
-|---|---|
-| `sre` | `kubernaut_investigate`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_list_workflows`, `kubernaut_remediate`, `kubernaut_check_existing_remediation`, `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert` |
-| `ai-orchestrator` | `kubernaut_investigate`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_present_decision`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect`, `kubernaut_remediate`, `kubernaut_check_existing_remediation`, `kubectl_get`, `kubectl_list`, `kubectl_list_events`, `list_alerts`, `get_alert_details`, `kubernaut_investigate_alert` |
-| `cicd` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
-| `observability` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session`, `kubernaut_get_effectiveness`, `kubernaut_list_workflows` |
-| `l3-audit` | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
-| `remediation-approver` | `kubernaut_approve`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_watch`, `kubernaut_await_session` |
-
-**Custom ClusterRoles** — For fine-grained tool authorization beyond built-in personas, reference pre-created ClusterRoles using `clusterRoleName` instead of `role`:
-
-```yaml
-apiFrontend:
-  rbac:
-    roleBindings:
-      - role: sre
-        groups: ["senior-sres"]
-      - clusterRoleName: kubernaut-restricted-investigator
-        groups: ["junior-sres"]
-      - clusterRoleName: kubernaut-approver
-        groups: ["change-advisory-board"]
-```
-
-`role` and `clusterRoleName` are mutually exclusive within a single binding entry. Create the ClusterRoles before applying the Kubernaut CR. Each grants verb `use` on resource `tools` in apiGroup `kubernaut.ai` with specific `resourceNames`:
-
-```yaml
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: kubernaut-restricted-investigator
-rules:
-  - apiGroups: ["kubernaut.ai"]
-    resources: ["tools"]
-    verbs: ["use"]
-    resourceNames:
-      - kubernaut_investigate
-      - kubernaut_watch
-      - kubernaut_await_session
-      - kubernaut_status
-      - kubectl_get
-      - kubectl_list
-      - kubectl_list_events
-```
+!!! note "Tool personas / RBAC roleBindings"
+    `apiFrontend.rbac.roleBindings` and Console access authorization apply to **all** AF/Console deployments, not just kagenti/SPIRE-enabled ones — see [Required: API Frontend & Console Authorization (RBAC)](#af-console-rbac-required) above, before this section.
 
 **Port configuration** — The operator auto-detects the kagenti version and adjusts ports:
 
@@ -684,7 +712,7 @@ If the token validates but tool calls return 403, the user's OIDC groups are not
 oc get clusterrolebinding -l app.kubernetes.io/part-of=kubernaut | grep tool
 ```
 
-If empty, add `roleBindings` to the CR — see [Tool Personas](#kagenti-integration).
+If empty, add `roleBindings` to the CR — see [Required: API Frontend & Console Authorization (RBAC)](#af-console-rbac-required).
 
 ### Console shows "Access Denied" — missing `consoleAccessGroups` RBAC {: #console-access-denied }
 

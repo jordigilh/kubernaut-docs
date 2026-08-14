@@ -686,6 +686,49 @@ oc get clusterrolebinding -l app.kubernetes.io/part-of=kubernaut | grep tool
 
 If empty, add `roleBindings` to the CR — see [Tool Personas](#kagenti-integration).
 
+### Console shows "Access Denied" — missing `consoleAccessGroups` RBAC {: #console-access-denied }
+
+**Symptom**: the Console loads and immediately shows "Access Denied — You don't have permission to use Kubernaut. Contact your administrator to request access", for some or all users.
+
+**Root cause**: the Console performs a coarse-grained pre-flight check (`GET /a2a/access`) before rendering the chat UI — advisory/UX-only, but fail-closed. AF answers it with a `SubjectAccessReview` against a synthetic `kubernaut.ai/console` resource (`verb=use`), scoped to the caller's OIDC groups. A `403` from that SAR is exactly this screen (kubernaut#1919). See [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model.
+
+For that SAR to succeed, the operator must have created a `ClusterRoleBinding` named `<namespace>-console-access-binding` — which it only does when the *effective* `consoleAccessGroups` (`spec.apiFrontend.rbac.consoleAccessGroups`, or the union of `roleBindings` groups if unset — see [Operator CR: APIFrontendRBACSpec](../api-reference/operator-cr.md#apifrontendrbacspec)) is non-empty.
+
+!!! danger "Known gap: fresh CRs with `spec.apiFrontend.rbac` entirely unset (operator v1.5.8–v1.5.10)"
+    If `spec.apiFrontend.rbac` was never configured at all (not even `roleBindings`), the effective group list is empty, so the `ClusterRoleBinding` is never created — and **everyone** gets "Access Denied", regardless of which OIDC group they're in. This affects `kubernaut-operator` v1.5.8 through v1.5.10 specifically (landed in v1.5.8-rc1; does not exist on v1.5.7 or earlier, since the console-access gate itself didn't exist yet). Tracked as kubernaut-operator#289.
+
+    The operator also actively reconciles this CRB on every loop: if the effective group list is empty, it **deletes** any CRB with that exact name. Don't hand-create a `ClusterRoleBinding` named `<namespace>-console-access-binding` as a workaround — the operator will silently reap it on the next reconcile. Configure the CR instead (see Fix below).
+
+**Diagnose:**
+
+```bash
+# What RBAC config does the CR currently have?
+oc get kubernaut kubernaut -n kubernaut-system \
+  -o jsonpath='{.spec.apiFrontend.rbac}{"\n"}'
+
+# Confirm the console-access ClusterRole exists (operator always creates this
+# when AF is enabled — should be present on operator v1.5.8+; NotFound means
+# the operator predates v1.5.8 and doesn't support this gate at all)
+oc get clusterrole kubernaut-system-console-access
+
+# Confirm whether the console-access ClusterRoleBinding exists
+oc get clusterrolebinding kubernaut-system-console-access-binding
+```
+
+If `roleBindings` already lists groups (e.g. persona-to-group mappings for `sre`, `ai-orchestrator`, etc.), the CRB should already exist and this is very likely a different problem — check the JWT `groups` claim instead (see [401 Unauthorized above](#401-unauthorized-invalid-token-audience) for how to decode a token and verify `groups`). AF also logs the exact denied groups at debug level: set `spec.apiFrontend.logging.level: debug` on the CR, retry in the browser, then `oc logs -n kubernaut-system deploy/apifrontend | grep "SAR denied access"`.
+
+**Fix** (only if `roleBindings` has no groups at all):
+
+```bash
+oc patch kubernaut kubernaut -n kubernaut-system --type=merge -p \
+  '{"spec":{"apiFrontend":{"rbac":{"consoleAccessGroups":["<YOUR-OIDC-GROUP-NAME>"]}}}}'
+```
+
+The operator reconciles within seconds and creates `clusterrolebinding.rbac.authorization.k8s.io/kubernaut-system-console-access-binding`. Verify with the `oc get clusterrolebinding` command above.
+
+!!! warning "This alone may not be enough"
+    If `spec.apiFrontend.rbac` was entirely unset — not just `consoleAccessGroups`, but `roleBindings` too — then every per-tool SAR gate (`kubernaut_approve`, `kubectl_get`, etc.) is also denied for everyone, not just this pre-flight check. Fixing only `consoleAccessGroups` gets users past "Access Denied," but they will immediately hit tool-call failures once inside the chat UI. Configure `spec.apiFrontend.rbac.roleBindings` at the same time — see [401/403 — Missing Tool Persona RBAC Bindings](#401403-missing-tool-persona-rbac-bindings) above. Once `roleBindings` includes a group, `consoleAccessGroups` doesn't need to be set separately for it — it's automatically included in the derived union.
+
 ### Console shows "Session expired, please sign in" or HTTP 400 after adding Keycloak mappers
 
 If the `kubernaut-console` client's audience mapper and/or groups mapper (see [Console OIDC](#2-create-secrets)) were added or changed **after** a user had already logged into the Console at least once, that user may still see `Session expired, please sign in`, or an HTTP 400 from `oauth2-proxy`, even though the mapper configuration is now correct.

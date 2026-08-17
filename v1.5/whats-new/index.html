@@ -3371,7 +3371,7 @@ Review the changes below to understand what differs from the version you are cur
 <tbody>
 <tr>
 <td><strong>Investigation &amp; session lifecycle</strong></td>
-<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
 </tr>
 <tr>
 <td><strong>CRD operations</strong></td>
@@ -3388,6 +3388,10 @@ Review the changes below to understand what differs from the version you are cur
 <tr>
 <td><strong>Presentation</strong></td>
 <td><code>kubernaut_present_decision</code></td>
+</tr>
+<tr>
+<td><strong>Alerts (conditional)</strong></td>
+<td><code>kubernaut_list_alerts</code> — registered only when <code>severityTriage.enabled: true</code> and Prometheus is configured (v1.5.2+)</td>
 </tr>
 </tbody>
 </table>

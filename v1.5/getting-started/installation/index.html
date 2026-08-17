@@ -893,6 +893,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#af-console-rbac-required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required: API Frontend &amp; Console Authorization (RBAC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#kagenti-integration" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3468,7 +3479,7 @@
 <p class="admonition-title">CR validation</p>
 <p>The operator <strong>rejects the Kubernaut CR</strong> if any of the following fields are missing or reference non-existent resources: <code>spec.kubernautAgent.llm.provider</code>, <code>spec.kubernautAgent.llm.model</code>, <code>spec.kubernautAgent.llm.credentialsSecretName</code>, <code>spec.signalProcessing.policy.configMapName</code>, <code>spec.aiAnalysis.policy.configMapName</code>. Create these resources before applying the CR.</p>
 </div>
-<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.10</code> — no <code>v</code> prefix. This applies to component images (<code>1.5.6</code>) too; neither uses a <code>v</code> prefix on quay.io, despite the git tags themselves being <code>v</code>-prefixed (e.g. git tag <code>v1.5.6</code> publishes image tag <code>1.5.6</code>).</p>
+<p><strong>Operator image:</strong> <code>quay.io/kubernaut-ai/kubernaut-operator:1.5.10</code> — no <code>v</code> prefix. This applies to component images (<code>1.5.7</code>) too; neither uses a <code>v</code> prefix on quay.io, despite the git tags themselves being <code>v</code>-prefixed (e.g. git tag <code>v1.5.6</code> publishes image tag <code>1.5.6</code>).</p>
 <h3 id="provision-prerequisites">Provision Prerequisites<a class="headerlink" href="#provision-prerequisites" title="Permanent link">&para;</a></h3>
 <h4 id="1-create-the-namespace">1. Create the Namespace<a class="headerlink" href="#1-create-the-namespace" title="Permanent link">&para;</a></h4>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>oc<span class="w"> </span>create<span class="w"> </span>namespace<span class="w"> </span>kubernaut-system
@@ -3710,7 +3721,7 @@
 </span><span id="__span-13-40"><a id="__codelineno-13-40" name="__codelineno-13-40" href="#__codelineno-13-40"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
 </span><span id="__span-13-41"><a id="__codelineno-13-41" name="__codelineno-13-41" href="#__codelineno-13-41"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 </span><span id="__span-13-42"><a id="__codelineno-13-42" name="__codelineno-13-42" href="#__codelineno-13-42"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
-</span><span id="__span-13-43"><a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-13-43"><a id="__codelineno-13-43" name="__codelineno-13-43" href="#__codelineno-13-43"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span><span class="w"> </span><span class="c1"># required -- see &quot;Required: API Frontend &amp; Console Authorization&quot; below</span>
 </span><span id="__span-13-44"><a id="__codelineno-13-44" name="__codelineno-13-44" href="#__codelineno-13-44"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
 </span><span id="__span-13-45"><a id="__codelineno-13-45" name="__codelineno-13-45" href="#__codelineno-13-45"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
 </span><span id="__span-13-46"><a id="__codelineno-13-46" name="__codelineno-13-46" href="#__codelineno-13-46"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
@@ -3738,10 +3749,91 @@
 <p>Apply the CR:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>kubernaut-cr.yaml
 </span></code></pre></div>
+<h4 id="af-console-rbac-required">Required: API Frontend &amp; Console Authorization (RBAC)<a class="headerlink" href="#af-console-rbac-required" title="Permanent link">&para;</a></h4>
+<div class="admonition danger">
+<p class="admonition-title">Required for both Console and MCP/A2A tool access — configure this before going live, not kagenti-specific</p>
+<p><code>spec.apiFrontend.rbac</code> must be configured with at least one group whenever <code>spec.apiFrontend.enabled: true</code>, <strong>regardless of whether kagenti/SPIRE is used at all</strong>. Leaving it entirely unset does not mean "no restrictions" — it means <strong>every</strong> user is denied: both the Console's <code>GET /a2a/access</code> pre-flight check on page load, and every <code>/mcp</code>/<code>/a2a/invoke</code> tool call, with no default-open fallback.</p>
+<p>This is a behavior change from earlier Kubernaut releases (kubernaut#1919): authorization used to be enforced only per-tool, at call time. A coarse-grained <code>kubernaut.ai/console</code> gate now also runs on every Console load and every tool-invocation request, before the per-tool check ever runs. If you are copying a CR from an older Kubernaut deployment (or from documentation predating this change) that never set <code>apiFrontend.rbac</code>, you must add it now. See <a href="#console-access-denied">Console "Access Denied" troubleshooting</a> if you hit this after an upgrade, and <a href="../../architecture/security-rbac/#console-access-gate">Security &amp; RBAC: Console-access authorization gate</a> for the full model.</p>
+</div>
+<p>The <code>roleBindings</code> in <code>spec.apiFrontend.rbac</code> map your OIDC groups to tool personas:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;&lt;YOUR-OIDC-GROUP-NAME&gt;&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p><strong>How to find <code>&lt;YOUR-OIDC-GROUP-NAME&gt;</code></strong>: it's the same value that ends up in the <code>groups</code> claim of your users' JWTs after configuring the groups mapper in <a href="#2-create-secrets">Console OIDC Step 3</a> (or the kagenti client's group mapper below, for A2A callers) — i.e. whatever OIDC/AD/LDAP group your identity provider already places your intended users into. If you're not sure of the exact string, decode a real token from one of those users and read it directly:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.groups&#39;</span>
+</span></code></pre></div>
+<p>Each persona grants access to a specific set of MCP tools:</p>
+<table>
+<thead>
+<tr>
+<th>Persona</th>
+<th>Tools granted</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sre</code></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_remediate</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code></td>
+</tr>
+<tr>
+<td><code>ai-orchestrator</code></td>
+<td><code>kubernaut_investigate</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_remediate</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code></td>
+</tr>
+<tr>
+<td><code>cicd</code></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
+</tr>
+<tr>
+<td><code>observability</code></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
+</tr>
+<tr>
+<td><code>l3-audit</code></td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code></td>
+</tr>
+<tr>
+<td><code>remediation-approver</code></td>
+<td><code>kubernaut_approve</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Custom ClusterRoles</strong> — For fine-grained tool authorization beyond built-in personas, reference pre-created ClusterRoles using <code>clusterRoleName</code> instead of <code>role</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-approver</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-advisory-board&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p><code>role</code> and <code>clusterRoleName</code> are mutually exclusive within a single binding entry. Create the ClusterRoles before applying the Kubernaut CR. Each grants verb <code>use</code> on resource <code>tools</code> in apiGroup <code>kubernaut.ai</code> with specific <code>resourceNames</code>:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_investigate</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_watch</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_await_session</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_status</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_get</span>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_list</span>
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_list_events</span>
+</span></code></pre></div>
+<p><strong>Console access specifically</strong> is gated by a second, separate field, <code>spec.apiFrontend.rbac.consoleAccessGroups</code> — but you do <strong>not</strong> need to set it explicitly in the common case: when left unset, the operator automatically derives it as the deduplicated union of every group already listed in <code>roleBindings</code> above, so any persona group you configure here also gets Console access automatically. Only set <code>consoleAccessGroups</code> explicitly if you need it to differ from your tool-persona groups (e.g. a narrower or entirely separate set).</p>
 <h4 id="kagenti-integration">kagenti Integration (A2A)<a class="headerlink" href="#kagenti-integration" title="Permanent link">&para;</a></h4>
 <div class="admonition info">
 <p class="admonition-title">A2A agent integration only — not required for Console or AF's own OIDC auth</p>
-<p>The following steps apply <strong>only</strong> when enabling <code>spec.apiFrontend.spire.enabled: true</code> for A2A agent-to-agent communication. They do <strong>not</strong> apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (<code>spec.apiFrontend.auth.*</code>), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with <code>spire.enabled: false</code> and a standalone OIDC provider, skip this section entirely.</p>
+<p>The following steps apply <strong>only</strong> when enabling <code>spec.apiFrontend.spire.enabled: true</code> for A2A agent-to-agent communication. They do <strong>not</strong> apply to Console's browser-based OIDC login or to AF's own user/API JWT authentication (<code>spec.apiFrontend.auth.*</code>), which work against any OIDC provider without kagenti installed at all. If you are using the Gateway path only, or using AF/Console with <code>spire.enabled: false</code> and a standalone OIDC provider, skip this section entirely — but do <strong>not</strong> skip <a href="#af-console-rbac-required">Required: API Frontend &amp; Console Authorization (RBAC)</a> above, which applies either way.</p>
 </div>
 <p>The API Frontend integrates with <a href="https://github.com/kagenti/kagenti">kagenti</a> for A2A agent communication via SPIRE/authbridge sidecar injection. kagenti must be installed and healthy <strong>before</strong> deploying Kubernaut, but only if you need this A2A capability.</p>
 <p>The kagenti integration depends on your OCP and kagenti version:</p>
@@ -3749,8 +3841,8 @@
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p><strong>Prerequisite</strong> — Verify kagenti is running with SPIRE:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kagenti-system
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>oc<span class="w"> </span>get<span class="w"> </span>spireclusterconfig
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kagenti-system
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>oc<span class="w"> </span>get<span class="w"> </span>spireclusterconfig
 </span></code></pre></div>
 <p>The SPIRE class name must match <code>spec.apiFrontend.spire.className</code> in the Kubernaut CR. The default is <code>zero-trust-workload-identity-manager-spire</code>.</p>
 <p><strong>Auto-managed resources</strong> — When <code>spec.apiFrontend.spire.enabled: true</code> (the default when omitted), the kubernaut-operator automatically:</p>
@@ -3760,21 +3852,21 @@
 <li><strong>Creates an <code>AgentRuntime</code> CR</strong> — provisions an <code>AgentRuntime</code> named <code>apifrontend</code> in <code>kubernaut-system</code>, telling kagenti to provision ConfigMaps, SCCs, and Keycloak client registrations</li>
 </ol>
 <p>Verify the <code>AgentRuntime</code> CR is created and active:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>oc<span class="w"> </span>get<span class="w"> </span>agentruntime<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="c1"># Expected: NAME=apifrontend, PHASE=Active</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>oc<span class="w"> </span>get<span class="w"> </span>agentruntime<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="c1"># Expected: NAME=apifrontend, PHASE=Active</span>
 </span></code></pre></div>
 <p><strong>SecurityContextConstraints</strong> — The kagenti sidecar requires the <code>kagenti-authbridge</code> SCC:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>oc<span class="w"> </span>adm<span class="w"> </span>policy<span class="w"> </span>add-scc-to-user<span class="w"> </span>kagenti-authbridge<span class="w"> </span>-z<span class="w"> </span>apifrontend<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>oc<span class="w"> </span>adm<span class="w"> </span>policy<span class="w"> </span>add-scc-to-user<span class="w"> </span>kagenti-authbridge<span class="w"> </span>-z<span class="w"> </span>apifrontend<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p><strong>kagenti ConfigMaps</strong> — These are automatically provisioned by the kagenti operator when it reconciles the <code>AgentRuntime</code> CR. Verify they exist:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span>envoy-config<span class="w"> </span>spiffe-helper-config<span class="w"> </span>authbridge-config
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span>envoy-config<span class="w"> </span>spiffe-helper-config<span class="w"> </span>authbridge-config
 </span></code></pre></div>
 <p>If any are missing, check the kagenti-operator logs for errors.</p>
 </div>
 <div class="tabbed-block">
 <p>Authbridge sidecar injection is <strong>not functional</strong> without SPIRE in kagenti v0.5.1. The authbridge webhook exists but requires SPIRE SVIDs to operate. Disable SPIRE in the CR:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">spire</span><span class="p">:</span>
-</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="nt">spire</span><span class="p">:</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
 </span></code></pre></div>
 <p>The AF runs in standalone mode (1/1 pod) with direct OIDC authentication. No SCC grants, namespace labels, or AgentRuntime CRs are needed. Skip to the Keycloak configuration below.</p>
 <div class="admonition warning">
@@ -3827,7 +3919,7 @@
 <p>Users must log out and log back in after being added to a group or after the <code>groups</code> scope is created. Stale tokens will have an empty groups array and SAR checks will fail.</p>
 </div>
 <p><strong>Keycloak Audience Mapper</strong> — For kagenti to authenticate with the API Frontend (SPIRE-enabled environments only), the token's <code>aud</code> claim must include the AF's SPIFFE ID:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend
 </span></code></pre></div>
 <p>Add a client scope <code>agent-kubernaut-system-apifrontend-aud</code> with an <code>oidc-audience-mapper</code>:</p>
 <table>
@@ -3857,70 +3949,10 @@
 <p class="admonition-title">Note</p>
 <p>When SPIRE is disabled (OCP 4.18), the AF authenticates directly using the Keycloak realm URL as the audience (set in <code>spec.apiFrontend.auth.audience</code>). This audience mapper is not needed.</p>
 </div>
-<p><strong>Tool Personas</strong> — The <code>roleBindings</code> in <code>spec.apiFrontend.rbac</code> map OIDC groups to tool personas. Each persona grants access to a specific set of MCP tools:</p>
-<table>
-<thead>
-<tr>
-<th>Persona</th>
-<th>Tools granted</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>sre</code></td>
-<td><code>kubernaut_investigate</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_remediate</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code></td>
-</tr>
-<tr>
-<td><code>ai-orchestrator</code></td>
-<td><code>kubernaut_investigate</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code>, <code>kubernaut_remediate</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>list_alerts</code>, <code>get_alert_details</code>, <code>kubernaut_investigate_alert</code></td>
-</tr>
-<tr>
-<td><code>cicd</code></td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
-</tr>
-<tr>
-<td><code>observability</code></td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
-</tr>
-<tr>
-<td><code>l3-audit</code></td>
-<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code></td>
-</tr>
-<tr>
-<td><code>remediation-approver</code></td>
-<td><code>kubernaut_approve</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
-</tr>
-</tbody>
-</table>
-<p><strong>Custom ClusterRoles</strong> — For fine-grained tool authorization beyond built-in personas, reference pre-created ClusterRoles using <code>clusterRoleName</code> instead of <code>role</code>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="nt">apiFrontend</span><span class="p">:</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">  </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
-</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-approver</span>
-</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="w">        </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-advisory-board&quot;</span><span class="p p-Indicator">]</span>
-</span></code></pre></div>
-<p><code>role</code> and <code>clusterRoleName</code> are mutually exclusive within a single binding entry. Create the ClusterRoles before applying the Kubernaut CR. Each grants verb <code>use</code> on resource <code>tools</code> in apiGroup <code>kubernaut.ai</code> with specific <code>resourceNames</code>:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nt">metadata</span><span class="p">:</span>
-</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
-</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="nt">rules</span><span class="p">:</span>
-</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
-</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_investigate</span>
-</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_watch</span>
-</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_await_session</span>
-</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_status</span>
-</span><span id="__span-23-14"><a id="__codelineno-23-14" name="__codelineno-23-14" href="#__codelineno-23-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_get</span>
-</span><span id="__span-23-15"><a id="__codelineno-23-15" name="__codelineno-23-15" href="#__codelineno-23-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_list</span>
-</span><span id="__span-23-16"><a id="__codelineno-23-16" name="__codelineno-23-16" href="#__codelineno-23-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_list_events</span>
-</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Tool personas / RBAC roleBindings</p>
+<p><code>apiFrontend.rbac.roleBindings</code> and Console access authorization apply to <strong>all</strong> AF/Console deployments, not just kagenti/SPIRE-enabled ones — see <a href="#af-console-rbac-required">Required: API Frontend &amp; Console Authorization (RBAC)</a> above, before this section.</p>
+</div>
 <p><strong>Port configuration</strong> — The operator auto-detects the kagenti version and adjusts ports:</p>
 <ul>
 <li><strong>kagenti 0.2.x</strong> (envoy sidecar): AF listens on <code>8443</code>; metrics shifts to <code>9092</code>, health to <code>8082</code></li>
@@ -3934,34 +3966,34 @@
 </div>
 <p>Configure AlertManager to route alerts to the Gateway webhook. The Gateway authenticates signal sources via Kubernetes TokenReview + SAR. See the <a href="../../operations/disconnected-install/#alertmanager-ocp">AlertManager configuration</a> for the full setup.</p>
 <h3 id="operator-verification">Verify the Installation<a class="headerlink" href="#operator-verification" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Operator pod</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-operator-system
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="c1"># Kubernaut CR status</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="c1"># All pods should be Running (db-migrate shows Completed)</span>
-</span><span id="__span-24-8"><a id="__codelineno-24-8" name="__codelineno-24-8" href="#__codelineno-24-8"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-24-9"><a id="__codelineno-24-9" name="__codelineno-24-9" href="#__codelineno-24-9"></a>
-</span><span id="__span-24-10"><a id="__codelineno-24-10" name="__codelineno-24-10" href="#__codelineno-24-10"></a><span class="c1"># CR phase should be Running</span>
-</span><span id="__span-24-11"><a id="__codelineno-24-11" name="__codelineno-24-11" href="#__codelineno-24-11"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.phase}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Operator pod</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-operator-system
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># Kubernaut CR status</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="c1"># All pods should be Running (db-migrate shows Completed)</span>
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="c1"># CR phase should be Running</span>
+</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.phase}&#39;</span>
 </span></code></pre></div>
 <p>If using the <strong>AF/Console path</strong>, also verify:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">OCP 4.19+ / SPIRE enabled</label><label for="__tabbed_3_2">OCP 4.18 / SPIRE disabled</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <p>AF has sidecar containers injected by kagenti (3/3 for kagenti 0.2.x):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="c1"># Expected: 3/3 Running</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>oc<span class="w"> </span>get<span class="w"> </span>agentcard<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="c1"># Expected: SYNCED=True for apifrontend-deployment-card</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="c1"># Expected: 3/3 Running</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>oc<span class="w"> </span>get<span class="w"> </span>agentcard<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="c1"># Expected: SYNCED=True for apifrontend-deployment-card</span>
 </span></code></pre></div>
 </div>
 <div class="tabbed-block">
 <p>AF runs as a single container without the authbridge sidecar:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="c1"># Expected: 1/1 Running</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>oc<span class="w"> </span>get<span class="w"> </span>pods<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="c1"># Expected: 1/1 Running</span>
 </span></code></pre></div>
 </div>
 </div>
@@ -3982,29 +4014,29 @@
 <h3 id="seed-workflows">Seed Workflows<a class="headerlink" href="#seed-workflows" title="Permanent link">&para;</a></h3>
 <p>Kubernaut requires <strong>ActionType</strong> and <strong>RemediationWorkflow</strong> CRDs to define what remediations are available. These are user-provided — you bring workflows tailored to your environment.</p>
 <p>To get started quickly, the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository provides a reference catalog with 34 ActionTypes and ~28 RemediationWorkflows covering common scenarios (CrashLoopBackOff, memory leaks, stuck rollouts, etc.):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="c1"># Apply ActionType CRDs</span>
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/action-types/<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
-</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>
-</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="c1"># Seed RemediationWorkflows (skips unavailable infrastructure automatically)</span>
-</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>./scripts/seed-workflows.sh
-</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>
-</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="c1"># Verify</span>
-</span><span id="__span-27-11"><a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>oc<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/jordigilh/kubernaut-demo-scenarios.git
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="nb">cd</span><span class="w"> </span>kubernaut-demo-scenarios
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="c1"># Apply ActionType CRDs</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>deploy/action-types/<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="c1"># Seed RemediationWorkflows (skips unavailable infrastructure automatically)</span>
+</span><span id="__span-29-8"><a id="__codelineno-29-8" name="__codelineno-29-8" href="#__codelineno-29-8"></a>./scripts/seed-workflows.sh
+</span><span id="__span-29-9"><a id="__codelineno-29-9" name="__codelineno-29-9" href="#__codelineno-29-9"></a>
+</span><span id="__span-29-10"><a id="__codelineno-29-10" name="__codelineno-29-10" href="#__codelineno-29-10"></a><span class="c1"># Verify</span>
+</span><span id="__span-29-11"><a id="__codelineno-29-11" name="__codelineno-29-11" href="#__codelineno-29-11"></a>oc<span class="w"> </span>get<span class="w"> </span>remediationworkflows<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>See <a href="../../operations/disconnected-install/#seed-demo-workflows">Seed Demo Workflows</a> for detailed step-by-step instructions.</p>
 <p>For authoring your own workflows, see <a href="../../user-guide/workflow-authoring/">Authoring Workflows</a> and the <a href="../../user-guide/workflows/#action-type-taxonomy">Action Type reference</a>.</p>
 <h2 id="resource-scope">Resource Scope<a class="headerlink" href="#resource-scope" title="Permanent link">&para;</a></h2>
 <p>After installation, Kubernaut only manages namespaces and resources that opt in via labels:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
 </span></code></pre></div>
 <p>See <a href="../../user-guide/signals/">Signals &amp; Alert Routing</a> for details on scope management.</p>
 <h2 id="troubleshooting">Troubleshooting<a class="headerlink" href="#troubleshooting" title="Permanent link">&para;</a></h2>
 <h3 id="imagepullbackoff">ImagePullBackOff<a class="headerlink" href="#imagepullbackoff" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A5<span class="w"> </span><span class="s2">&quot;Events:&quot;</span>
-</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.containers[0].image}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>oc<span class="w"> </span>describe<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-A5<span class="w"> </span><span class="s2">&quot;Events:&quot;</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a>oc<span class="w"> </span>get<span class="w"> </span>pod<span class="w"> </span>&lt;pod-name&gt;<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.containers[0].image}&#39;</span>
 </span></code></pre></div>
 <p>Common causes:</p>
 <ul>
@@ -4029,7 +4061,7 @@
 </div>
 <div class="tabbed-block">
 <p>AF runs without a sidecar. Check application logs only:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>apifrontend
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>apifrontend
 </span></code></pre></div>
 <p>Common causes: incorrect <code>auth.issuerURL</code>/<code>auth.audience</code> values, Keycloak unreachable, or missing OIDC client scope configuration.</p>
 </div>
@@ -4038,17 +4070,17 @@
 <h3 id="401-unauthorized-invalid-token-audience">401 Unauthorized — "invalid token audience"<a class="headerlink" href="#401-unauthorized-invalid-token-audience" title="Permanent link">&para;</a></h3>
 <p>The AF validates the JWT <code>aud</code> claim against <code>spec.apiFrontend.auth.audience</code>. A 401 with <code>"invalid token audience"</code> means the token's <code>aud</code> array does not contain the expected audience string.</p>
 <p><strong>Diagnosis:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>apifrontend<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;auth failed&quot;</span>
-</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="c1"># For SPIRE-enabled: also check envoy</span>
-</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>envoy-proxy<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;authorized|rejected&quot;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>apifrontend<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span><span class="s2">&quot;auth failed&quot;</span>
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="c1"># For SPIRE-enabled: also check envoy</span>
+</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a>oc<span class="w"> </span>logs<span class="w"> </span>&lt;af-pod&gt;<span class="w"> </span>-c<span class="w"> </span>envoy-proxy<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;authorized|rejected&quot;</span>
 </span></code></pre></div>
 <p><strong>Common causes:</strong></p>
 <ol>
 <li>
 <p><strong>CR audience mismatch</strong> — The <code>kagenti</code> Keycloak client used for user authentication issues tokens with <code>azp: kagenti</code>, but the <code>aud</code> claim only contains values explicitly added via audience mappers — it does <strong>not</strong> automatically include the client ID itself. The realm issuer URL (e.g. <code>https://keycloak.../realms/kagenti</code>) is always present in <code>aud</code>. Set the CR audience to the realm URL to match all tokens from this realm:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{</span>
-</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="s1">  &quot;spec&quot;: {&quot;apiFrontend&quot;: {&quot;auth&quot;: {&quot;audience&quot;: &quot;https://&lt;keycloak-host&gt;/realms/kagenti&quot;}}}</span>
-</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="s1">}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="w"> </span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="s1">  &quot;spec&quot;: {&quot;apiFrontend&quot;: {&quot;auth&quot;: {&quot;audience&quot;: &quot;https://&lt;keycloak-host&gt;/realms/kagenti&quot;}}}</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="s1">}&#39;</span>
 </span></code></pre></div>
 </li>
 <li>
@@ -4062,16 +4094,16 @@
 </li>
 </ol>
 <p><strong>Verify</strong> by decoding a fresh token:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;https://&lt;keycloak-host&gt;/realms/kagenti/protocol/openid-connect/token&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;grant_type=password&amp;client_id=kagenti&amp;client_secret=&lt;secret&gt;&amp;username=&lt;user&gt;&amp;password=&lt;pass&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-33-3"><a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.access_token&#39;</span><span class="k">)</span>
-</span><span id="__span-33-4"><a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, azp, groups, preferred_username}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;https://&lt;keycloak-host&gt;/realms/kagenti/protocol/openid-connect/token&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;grant_type=password&amp;client_id=kagenti&amp;client_secret=&lt;secret&gt;&amp;username=&lt;user&gt;&amp;password=&lt;pass&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.access_token&#39;</span><span class="k">)</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, azp, groups, preferred_username}&#39;</span>
 </span></code></pre></div>
 <h3 id="401403-missing-tool-persona-rbac-bindings">401/403 — Missing Tool Persona RBAC Bindings<a class="headerlink" href="#401403-missing-tool-persona-rbac-bindings" title="Permanent link">&para;</a></h3>
 <p>If the token validates but tool calls return 403, the user's OIDC groups are not bound to tool persona ClusterRoles. Verify CRBs exist:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrolebinding<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/part-of<span class="o">=</span>kubernaut<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>tool
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrolebinding<span class="w"> </span>-l<span class="w"> </span>app.kubernetes.io/part-of<span class="o">=</span>kubernaut<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>tool
 </span></code></pre></div>
-<p>If empty, add <code>roleBindings</code> to the CR — see <a href="#kagenti-integration">Tool Personas</a>.</p>
+<p>If empty, add <code>roleBindings</code> to the CR — see <a href="#af-console-rbac-required">Required: API Frontend &amp; Console Authorization (RBAC)</a>.</p>
 <h3 id="console-access-denied">Console shows "Access Denied" — missing <code>consoleAccessGroups</code> RBAC<a class="headerlink" href="#console-access-denied" title="Permanent link">&para;</a></h3>
 <p><strong>Symptom</strong>: the Console loads and immediately shows "Access Denied — You don't have permission to use Kubernaut. Contact your administrator to request access", for some or all users.</p>
 <p><strong>Root cause</strong>: the Console performs a coarse-grained pre-flight check (<code>GET /a2a/access</code>) before rendering the chat UI — advisory/UX-only, but fail-closed. AF answers it with a <code>SubjectAccessReview</code> against a synthetic <code>kubernaut.ai/console</code> resource (<code>verb=use</code>), scoped to the caller's OIDC groups. A <code>403</code> from that SAR is exactly this screen (kubernaut#1919). See <a href="../../architecture/security-rbac/#console-access-gate">Security &amp; RBAC: Console-access authorization gate</a> for the full model.</p>
@@ -4082,22 +4114,22 @@
 <p>The operator also actively reconciles this CRB on every loop: if the effective group list is empty, it <strong>deletes</strong> any CRB with that exact name. Don't hand-create a <code>ClusterRoleBinding</code> named <code>&lt;namespace&gt;-console-access-binding</code> as a workaround — the operator will silently reap it on the next reconcile. Configure the CR instead (see Fix below).</p>
 </div>
 <p><strong>Diagnose:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># What RBAC config does the CR currently have?</span>
-</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.apiFrontend.rbac}{&quot;\n&quot;}&#39;</span>
-</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a>
-</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="c1"># Confirm the console-access ClusterRole exists (operator always creates this</span>
-</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="c1"># when AF is enabled — should be present on operator v1.5.8+; NotFound means</span>
-</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="c1"># the operator predates v1.5.8 and doesn&#39;t support this gate at all)</span>
-</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-system-console-access
-</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a>
-</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a><span class="c1"># Confirm whether the console-access ClusterRoleBinding exists</span>
-</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-system-console-access-binding
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="c1"># What RBAC config does the CR currently have?</span>
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.apiFrontend.rbac}{&quot;\n&quot;}&#39;</span>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="c1"># Confirm the console-access ClusterRole exists (operator always creates this</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="c1"># when AF is enabled — should be present on operator v1.5.8+; NotFound means</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="c1"># the operator predates v1.5.8 and doesn&#39;t support this gate at all)</span>
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrole<span class="w"> </span>kubernaut-system-console-access
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a>
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a><span class="c1"># Confirm whether the console-access ClusterRoleBinding exists</span>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a>oc<span class="w"> </span>get<span class="w"> </span>clusterrolebinding<span class="w"> </span>kubernaut-system-console-access-binding
 </span></code></pre></div>
 <p>If <code>roleBindings</code> already lists groups (e.g. persona-to-group mappings for <code>sre</code>, <code>ai-orchestrator</code>, etc.), the CRB should already exist and this is very likely a different problem — check the JWT <code>groups</code> claim instead (see <a href="#401-unauthorized-invalid-token-audience">401 Unauthorized above</a> for how to decode a token and verify <code>groups</code>). AF also logs the exact denied groups at debug level: set <code>spec.apiFrontend.logging.level: debug</code> on the CR, retry in the browser, then <code>oc logs -n kubernaut-system deploy/apifrontend | grep "SAR denied access"</code>.</p>
 <p><strong>Fix</strong> (only if <code>roleBindings</code> has no groups at all):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">  </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;apiFrontend&quot;:{&quot;rbac&quot;:{&quot;consoleAccessGroups&quot;:[&quot;&lt;YOUR-OIDC-GROUP-NAME&gt;&quot;]}}}}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">  </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;apiFrontend&quot;:{&quot;rbac&quot;:{&quot;consoleAccessGroups&quot;:[&quot;&lt;YOUR-OIDC-GROUP-NAME&gt;&quot;]}}}}&#39;</span>
 </span></code></pre></div>
 <p>The operator reconciles within seconds and creates <code>clusterrolebinding.rbac.authorization.k8s.io/kubernaut-system-console-access-binding</code>. Verify with the <code>oc get clusterrolebinding</code> command above.</p>
 <div class="admonition warning">
@@ -4109,28 +4141,28 @@
 <p><strong>Root cause:</strong> The browser holds an <code>oauth2-proxy</code> session cookie tied to a Keycloak session/token minted <strong>before</strong> the mappers existed. <code>oauth2-proxy</code> transparently refreshes the <em>access token</em> via the refresh token on expiry, but the underlying Keycloak session — and the claims baked into tokens issued from it — do not automatically pick up newly added protocol mappers. The refreshed token can still be missing the <code>aud</code>/<code>groups</code> claims, or the stale session state can trigger an HTTP 400 from oauth2-proxy's callback/refresh handling.</p>
 <p><strong>Fix:</strong> Have the affected user fully clear cookies for the Console route's domain (or use a private/incognito window) and log in again, forcing a brand-new authorization-code flow against Keycloak that mints a token from scratch with the current mapper configuration.</p>
 <p>Verify the new token has the expected claims before retrying in the browser:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$KC_URL</span><span class="s2">/realms/</span><span class="nv">$KC_REALM</span><span class="s2">/protocol/openid-connect/token&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;grant_type=password&amp;client_id=kubernaut-console&amp;client_secret=</span><span class="nv">$CLIENT_SECRET</span><span class="s2">&amp;username=&lt;user&gt;&amp;password=&lt;pass&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.access_token&#39;</span><span class="k">)</span>
-</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, groups}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a><span class="nv">TOKEN</span><span class="o">=</span><span class="k">$(</span>curl<span class="w"> </span>-sk<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$KC_URL</span><span class="s2">/realms/</span><span class="nv">$KC_REALM</span><span class="s2">/protocol/openid-connect/token&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="w">  </span>-d<span class="w"> </span><span class="s2">&quot;grant_type=password&amp;client_id=kubernaut-console&amp;client_secret=</span><span class="nv">$CLIENT_SECRET</span><span class="s2">&amp;username=&lt;user&gt;&amp;password=&lt;pass&gt;&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-39-3"><a id="__codelineno-39-3" name="__codelineno-39-3" href="#__codelineno-39-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span>-r<span class="w"> </span><span class="s1">&#39;.access_token&#39;</span><span class="k">)</span>
+</span><span id="__span-39-4"><a id="__codelineno-39-4" name="__codelineno-39-4" href="#__codelineno-39-4"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;{aud, groups}&#39;</span>
 </span></code></pre></div>
 <p>If <code>aud</code>/<code>groups</code> are correct here but the browser still fails, this confirms stale browser/session state rather than a Keycloak configuration problem.</p>
 <p><strong>Alternative fix (forces re-auth for all Console users at once):</strong> Instead of relying on each affected user to clear their own cookies, rotate the <code>cookie-secret</code> and restart the Console pod:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>secret<span class="w"> </span>kubernaut-console-oidc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">  </span>-p<span class="o">=</span><span class="s1">&#39;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/data/cookie-secret&quot;,&quot;value&quot;:&quot;&#39;</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="s2">&quot;</span><span class="s1">&#39;&quot;}]&#39;</span>
-</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>console
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>secret<span class="w"> </span>kubernaut-console-oidc<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a><span class="w">  </span>-p<span class="o">=</span><span class="s1">&#39;[{&quot;op&quot;:&quot;replace&quot;,&quot;path&quot;:&quot;/data/cookie-secret&quot;,&quot;value&quot;:&quot;&#39;</span><span class="s2">&quot;</span><span class="k">$(</span>openssl<span class="w"> </span>rand<span class="w"> </span>-hex<span class="w"> </span><span class="m">16</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="k">)</span><span class="s2">&quot;</span><span class="s1">&#39;&quot;}]&#39;</span>
+</span><span id="__span-40-3"><a id="__codelineno-40-3" name="__codelineno-40-3" href="#__codelineno-40-3"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>console
 </span></code></pre></div>
 <p>The operator wires <code>oauth2-proxy</code> with its default cookie session store (no <code>--session-store-type=redis</code>) — the entire session is encrypted client-side in the browser cookie using the <code>cookie-secret</code>. Rotating it makes every existing cookie undecryptable by the new pod, forcing every user through a fresh OIDC login. Trade-off: this logs out every Console user at once, versus the targeted per-user cookie-clear above.</p>
 <h3 id="consolechat-returns-an-empty-kind-alert-namespace-for-list-active-alerts">Console/chat returns an empty <code>{"kind": "Alert", "namespace": ""}</code> for "list active alerts"<a class="headerlink" href="#consolechat-returns-an-empty-kind-alert-namespace-for-list-active-alerts" title="Permanent link">&para;</a></h3>
 <p>If asking the assistant to "list active alerts" (or similar) returns a bare JSON object like <code>{"kind": "Alert", "namespace": ""}</code> instead of an actual alert list or a helpful message, <code>spec.monitoring.enabled</code> is <code>false</code> on the Kubernaut CR (or unset with a <code>false</code> default from an older CR).</p>
 <p><strong>Root cause:</strong> API Frontend only registers the dedicated <code>list_alerts</code>/<code>get_alert_details</code> tools (which query the OCP Thanos-querier) when <code>spec.monitoring.enabled: true</code>. When monitoring is disabled, those tools don't exist, so the LLM falls back to the generic <code>kubectl_list</code> tool and guesses <code>kind: "Alert"</code> — which is not a real Kubernetes/Kubernaut resource kind (alerts live in Prometheus, not as a CRD). The tool call fails to resolve a kind, and the raw tool-call arguments get surfaced back instead of a useful answer.</p>
 <p><strong>Diagnosis:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-39-1"><a id="__codelineno-39-1" name="__codelineno-39-1" href="#__codelineno-39-1"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.monitoring.enabled}&#39;</span>
-</span><span id="__span-39-2"><a id="__codelineno-39-2" name="__codelineno-39-2" href="#__codelineno-39-2"></a><span class="c1"># &quot;false&quot; (or empty) confirms the cause</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a>oc<span class="w"> </span>get<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.monitoring.enabled}&#39;</span>
+</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="c1"># &quot;false&quot; (or empty) confirms the cause</span>
 </span></code></pre></div>
 <p><strong>Fix:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-40-1"><a id="__codelineno-40-1" name="__codelineno-40-1" href="#__codelineno-40-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;monitoring&quot;:{&quot;enabled&quot;:true}}}&#39;</span>
-</span><span id="__span-40-2"><a id="__codelineno-40-2" name="__codelineno-40-2" href="#__codelineno-40-2"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>kubernaut<span class="w"> </span>kubernaut<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;monitoring&quot;:{&quot;enabled&quot;:true}}}&#39;</span>
+</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
 </span></code></pre></div>
 <p><code>monitoring.enabled</code> defaults to <code>true</code> and auto-derives the in-cluster Thanos-querier/AlertManager URLs (<code>openshift-monitoring</code> namespace) — no extra Prometheus setup is required on OCP. This is independent of <a href="#ocp-alertmanager-integration">OCP AlertManager Integration</a>: that step routes firing alerts <em>into</em> Kubernaut (Gateway webhook) to auto-create RemediationRequests and requires <code>spec.gateway.enabled: true</code>, whereas <code>monitoring.enabled: true</code> is only needed for the assistant to <em>read</em> currently firing/pending alerts via <code>list_alerts</code>.</p>
 <h3 id="authbridge-client-identity-kagenti-020-rc1">Authbridge Client Identity (kagenti ≤ 0.2.0-rc.1)<a class="headerlink" href="#authbridge-client-identity-kagenti-020-rc1" title="Permanent link">&para;</a></h3>
@@ -4141,31 +4173,31 @@
 <p>Affects kagenti-operator <code>0.2.0-rc.1</code> and earlier with kubernaut-operator &lt; v1.5.2. The webhook does not mount <code>authbridge-runtime-config</code> into the envoy-proxy sidecar, leaving the authbridge with no <code>client_id</code> and rejecting all inbound JWT tokens.</p>
 <p><strong>Symptom:</strong> AF pod shows 3/3 Running but all authenticated requests return 401. Envoy logs: <code>JWT validation failed" error="audience is required (prevents confused deputy attacks)"</code></p>
 <p><strong>Workaround:</strong></p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-41-1"><a id="__codelineno-41-1" name="__codelineno-41-1" href="#__codelineno-41-1"></a><span class="nv">TRUST_DOMAIN</span><span class="o">=</span><span class="k">$(</span>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-config<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-41-2"><a id="__codelineno-41-2" name="__codelineno-41-2" href="#__codelineno-41-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.TRUST_DOMAIN}&#39;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;localtest.me&quot;</span><span class="k">)</span>
-</span><span id="__span-41-3"><a id="__codelineno-41-3" name="__codelineno-41-3" href="#__codelineno-41-3"></a>
-</span><span id="__span-41-4"><a id="__codelineno-41-4" name="__codelineno-41-4" href="#__codelineno-41-4"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-runtime-config<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-41-5"><a id="__codelineno-41-5" name="__codelineno-41-5" href="#__codelineno-41-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
-</span><span id="__span-41-6"><a id="__codelineno-41-6" name="__codelineno-41-6" href="#__codelineno-41-6"></a><span class="s2">import json, sys, yaml</span>
-</span><span id="__span-41-7"><a id="__codelineno-41-7" name="__codelineno-41-7" href="#__codelineno-41-7"></a><span class="s2">cm = json.load(sys.stdin)</span>
-</span><span id="__span-41-8"><a id="__codelineno-41-8" name="__codelineno-41-8" href="#__codelineno-41-8"></a><span class="s2">cfg = yaml.safe_load(cm[&#39;data&#39;][&#39;config.yaml&#39;])</span>
-</span><span id="__span-41-9"><a id="__codelineno-41-9" name="__codelineno-41-9" href="#__codelineno-41-9"></a><span class="s2">cfg[&#39;identity&#39;][&#39;client_id&#39;] = &#39;spiffe://</span><span class="si">${</span><span class="nv">TRUST_DOMAIN</span><span class="si">}</span><span class="s2">/ns/kubernaut-system/sa/apifrontend&#39;</span>
-</span><span id="__span-41-10"><a id="__codelineno-41-10" name="__codelineno-41-10" href="#__codelineno-41-10"></a><span class="s2">cm[&#39;data&#39;][&#39;config.yaml&#39;] = yaml.dump(cfg, default_flow_style=False)</span>
-</span><span id="__span-41-11"><a id="__codelineno-41-11" name="__codelineno-41-11" href="#__codelineno-41-11"></a><span class="s2">json.dump(cm, sys.stdout)</span>
-</span><span id="__span-41-12"><a id="__codelineno-41-12" name="__codelineno-41-12" href="#__codelineno-41-12"></a><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
-</span><span id="__span-41-13"><a id="__codelineno-41-13" name="__codelineno-41-13" href="#__codelineno-41-13"></a>
-</span><span id="__span-41-14"><a id="__codelineno-41-14" name="__codelineno-41-14" href="#__codelineno-41-14"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a><span class="nv">TRUST_DOMAIN</span><span class="o">=</span><span class="k">$(</span>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-config<span class="w"> </span>-n<span class="w"> </span>kagenti-system<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-43-2"><a id="__codelineno-43-2" name="__codelineno-43-2" href="#__codelineno-43-2"></a><span class="w">  </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.data.TRUST_DOMAIN}&#39;</span><span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;localtest.me&quot;</span><span class="k">)</span>
+</span><span id="__span-43-3"><a id="__codelineno-43-3" name="__codelineno-43-3" href="#__codelineno-43-3"></a>
+</span><span id="__span-43-4"><a id="__codelineno-43-4" name="__codelineno-43-4" href="#__codelineno-43-4"></a>oc<span class="w"> </span>get<span class="w"> </span>configmap<span class="w"> </span>authbridge-runtime-config<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-o<span class="w"> </span>json<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-43-5"><a id="__codelineno-43-5" name="__codelineno-43-5" href="#__codelineno-43-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>python3<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;</span>
+</span><span id="__span-43-6"><a id="__codelineno-43-6" name="__codelineno-43-6" href="#__codelineno-43-6"></a><span class="s2">import json, sys, yaml</span>
+</span><span id="__span-43-7"><a id="__codelineno-43-7" name="__codelineno-43-7" href="#__codelineno-43-7"></a><span class="s2">cm = json.load(sys.stdin)</span>
+</span><span id="__span-43-8"><a id="__codelineno-43-8" name="__codelineno-43-8" href="#__codelineno-43-8"></a><span class="s2">cfg = yaml.safe_load(cm[&#39;data&#39;][&#39;config.yaml&#39;])</span>
+</span><span id="__span-43-9"><a id="__codelineno-43-9" name="__codelineno-43-9" href="#__codelineno-43-9"></a><span class="s2">cfg[&#39;identity&#39;][&#39;client_id&#39;] = &#39;spiffe://</span><span class="si">${</span><span class="nv">TRUST_DOMAIN</span><span class="si">}</span><span class="s2">/ns/kubernaut-system/sa/apifrontend&#39;</span>
+</span><span id="__span-43-10"><a id="__codelineno-43-10" name="__codelineno-43-10" href="#__codelineno-43-10"></a><span class="s2">cm[&#39;data&#39;][&#39;config.yaml&#39;] = yaml.dump(cfg, default_flow_style=False)</span>
+</span><span id="__span-43-11"><a id="__codelineno-43-11" name="__codelineno-43-11" href="#__codelineno-43-11"></a><span class="s2">json.dump(cm, sys.stdout)</span>
+</span><span id="__span-43-12"><a id="__codelineno-43-12" name="__codelineno-43-12" href="#__codelineno-43-12"></a><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>-<span class="w"> </span><span class="m">2</span>&gt;<span class="p">&amp;</span><span class="m">1</span>
+</span><span id="__span-43-13"><a id="__codelineno-43-13" name="__codelineno-43-13" href="#__codelineno-43-13"></a>
+</span><span id="__span-43-14"><a id="__codelineno-43-14" name="__codelineno-43-14" href="#__codelineno-43-14"></a>oc<span class="w"> </span>delete<span class="w"> </span>pod<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>-l<span class="w"> </span><span class="nv">app</span><span class="o">=</span>apifrontend
 </span></code></pre></div>
 <h3 id="kagenti-controller-manager-crash-ovn-routing">kagenti-controller-manager Crash (OVN Routing)<a class="headerlink" href="#kagenti-controller-manager-crash-ovn-routing" title="Permanent link">&para;</a></h3>
 <p>If <code>kagenti-controller-manager</code> pods crash or the authbridge webhook has no endpoints, the OVN <code>routingViaHost</code> patch may be required:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-42-1"><a id="__codelineno-42-1" name="__codelineno-42-1" href="#__codelineno-42-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>network.operator.openshift.io<span class="w"> </span>cluster<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-42-2"><a id="__codelineno-42-2" name="__codelineno-42-2" href="#__codelineno-42-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;defaultNetwork&quot;:{&quot;ovnKubernetesConfig&quot;:{&quot;gatewayConfig&quot;:{&quot;routingViaHost&quot;:true}}}}}&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-44-1"><a id="__codelineno-44-1" name="__codelineno-44-1" href="#__codelineno-44-1"></a>oc<span class="w"> </span>patch<span class="w"> </span>network.operator.openshift.io<span class="w"> </span>cluster<span class="w"> </span>--type<span class="o">=</span>merge<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-44-2"><a id="__codelineno-44-2" name="__codelineno-44-2" href="#__codelineno-44-2"></a><span class="w">  </span>-p<span class="w"> </span><span class="s1">&#39;{&quot;spec&quot;:{&quot;defaultNetwork&quot;:{&quot;ovnKubernetesConfig&quot;:{&quot;gatewayConfig&quot;:{&quot;routingViaHost&quot;:true}}}}}&#39;</span>
 </span></code></pre></div>
 <p>Wait ~5 minutes for the network operator rollout, then verify kagenti pods recover.</p>
 <h3 id="postgresql-data-loss-after-pod-restart">PostgreSQL Data Loss After Pod Restart<a class="headerlink" href="#postgresql-data-loss-after-pod-restart" title="Permanent link">&para;</a></h3>
 <p>If DataStorage fails with <code>ERROR: relation "audit_events" does not exist</code>, the database was using ephemeral storage (<code>emptyDir</code>). Provision PVCs as described in <a href="#4-postgresql-and-valkey">PostgreSQL and Valkey</a>. After mounting the PVC, the operator runs the migration automatically on CR reconciliation.</p>
 <h3 id="migration-job-failure">Migration Job Failure<a class="headerlink" href="#migration-job-failure" title="Permanent link">&para;</a></h3>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-43-1"><a id="__codelineno-43-1" name="__codelineno-43-1" href="#__codelineno-43-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>job/kubernaut-db-migration<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-45-1"><a id="__codelineno-45-1" name="__codelineno-45-1" href="#__codelineno-45-1"></a>oc<span class="w"> </span>logs<span class="w"> </span>job/kubernaut-db-migration<span class="w"> </span>-n<span class="w"> </span>kubernaut-system
 </span></code></pre></div>
 <p>Common causes:</p>
 <ul>

@@ -294,11 +294,12 @@ The API Frontend exposes **23 `kubernaut_*` MCP tools** on its MCP endpoint (`PO
 
 | Domain | Tools |
 |---|---|
-| **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
+| **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` |
 | **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_await_session` |
 | **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` |
 | **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` |
 | **Presentation** | `kubernaut_present_decision` |
+| **Alerts (conditional)** | `kubernaut_list_alerts` — registered only when `severityTriage.enabled: true` and Prometheus is configured (v1.5.2+) |
 
 The Kubernaut Agent also runs a separate MCP server (`/api/v1/mcp`) with 3 tools (`kubernaut_investigate`, `kubernaut_select_workflow`, `kubernaut_complete_no_action`) for direct client connections with Lease-based session management.
 

@@ -48,7 +48,7 @@ extra:
   # registry (`quay.io/api/v1/repository/kubernaut-ai/<repo>/tag/`) before
   # each bump. image_tag tracks kubernaut's app release; operator_image_tag
   # tracks kubernaut-operator's own, independently-versioned release.
-  image_tag: "1.5.6"
+  image_tag: "1.5.7"
   operator_image_tag: "1.5.10"
   version:
     provider: mike

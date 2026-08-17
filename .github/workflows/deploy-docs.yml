@@ -55,7 +55,7 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
-            VERSION="v1.5"
+            VERSION="v1.6"
           fi
 
           if [ "$VERSION" = "v1.5" ]; then

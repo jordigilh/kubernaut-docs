@@ -1,0 +1,5075 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="AIOps Platform for Intelligent Kubernetes Remediation">
+      
+      
+        <meta name="author" content="Kubernaut Contributors">
+      
+      
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.6/architecture/security-rbac/">
+      
+      
+        <link rel="prev" href="../apifrontend/">
+      
+      
+        <link rel="next" href="../../api-reference/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/logo.svg">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>Security & RBAC - Kubernaut</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Inter:300,300i,400,400i,700,700i%7CJetBrains+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Inter";--md-code-font:"JetBrains Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#security-rbac" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're viewing an older version of the documentation.
+  <a href="../../..">
+    <strong>Click here to go to latest.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),base=new URL("../.."),outdated=__md_get("__outdated",sessionStorage,base);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Kubernaut" class="md-header__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Kubernaut
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Security & RBAC
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jordigilh/kubernaut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordigilh/kubernaut
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../getting-started/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Getting Started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Architecture
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api-reference/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../use-cases/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Use Cases
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../operations/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Operations
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whats-new/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  What's New
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../whats-next/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  What's Next
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../user-guide/compliance/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Compliance
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../faq/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  FAQ
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../contributing/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Contributing
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Kubernaut" class="md-nav__button md-logo" aria-label="Kubernaut" data-md-component="logo">
+      
+  <img src="../../assets/images/logo.svg" alt="logo">
+
+    </a>
+    Kubernaut
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jordigilh/kubernaut" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jordigilh/kubernaut
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../getting-started/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting Started
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_2" id="__nav_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting Started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/why-kubernaut/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Why Kubernaut
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/aiops-landscape/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIOps Remediation Landscape
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/market-comparison/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Market Comparison
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting-started/architecture-overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../user-guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/trust-ladder/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trust Ladder
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/concepts/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Core Concepts
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/signals/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signals & Alert Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflows/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/workflow-authoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authoring Workflows
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/rego-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Rego Policy Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/notifications/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Channels
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Human Approval
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Effectiveness Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/audit-and-observability/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit & Observability
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/data-lifecycle/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Lifecycle
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/interactive-sessions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Interactive Sessions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configuration/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        
+          
+          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ConfigMap References
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_16">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ConfigMap References
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-kubernaut-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernaut Agent SDK Config
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-policies/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SignalProcessing Rego Policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-approval/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AIAnalysis Approval Policy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/configmap-notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Architecture
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    System Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gateway/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gateway
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../signal-processing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Signal Processing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ai-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kubernaut-agent-investigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Investigation Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../remediation-routing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation Routing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow-selection/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Selection
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow-execution/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Workflow Execution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../effectiveness/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Effectiveness Assessment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notification/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notification Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../async-propagation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Async Propagation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../audit-pipeline/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit Pipeline
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../data-persistence/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Data Persistence
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../apifrontend/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security & RBAC
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security & RBAC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#signal-ingestion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signal Ingestion
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Signal Ingestion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#gateway-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gateway RBAC
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#signal-source-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Signal Source RBAC
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#crd-controllers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CRD Controllers
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CRD Controllers">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#broad-read-access-via-view-clusterrole" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Broad Read Access via view ClusterRole
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#workflow-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workflow Execution
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Workflow Execution">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#per-workflow-serviceaccount-v12" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-Workflow ServiceAccount (v1.2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ocp-monitoring-rbac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OCP Monitoring RBAC
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OCP Monitoring RBAC">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ansible-credential-injection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ansible Credential Injection
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#internal-service-communication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Internal Service Communication
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Internal Service Communication">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#datastorage-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DataStorage Authentication
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut-agent-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernaut Agent Access
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lease-rbac-for-interactive-sessions-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lease RBAC for Interactive Sessions (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#api-frontend-rbac-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API Frontend RBAC (v1.5+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#infrastructure-and-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Infrastructure and Hooks
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Infrastructure and Hooks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#postgresql-and-valkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PostgreSQL and Valkey
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#helm-hooks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helm Hooks
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#shadow-agent" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Prompt Injection Defense — Shadow Agent (v1.4)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Prompt Injection Defense — Shadow Agent (v1.4)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enforcement-modes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enforcement modes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alignment-verdicts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alignment verdicts
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#false-positive-handling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        False positive handling
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#networkpolicies-v14" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NetworkPolicies (v1.4)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NetworkPolicies (v1.4)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#default-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Default behavior
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tool-authorization-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tool Authorization
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tool Authorization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sar-based-tool-authorization-v15" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAR-based tool authorization (v1.5)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#how-it-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How it works
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#per-persona-clusterroles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Per-persona ClusterRoles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#console-access-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Console-access authorization gate (v1.5.6)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Console-access authorization gate (v1.5.6)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#helm-consoleaccessgroups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Helm: consoleAccessGroups
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernaut-operator-specapifrontendrbacconsoleaccessgroups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernaut Operator: spec.apiFrontend.rbac.consoleAccessGroups
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#custom-clusterroles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom ClusterRoles
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom ClusterRoles">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#available-tool-resourcenames" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Available tool resourceNames
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#binding-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Binding example
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sar-caching" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SAR caching
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#migration-from-rbac_rolesyaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Migration from rbac_roles.yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#unified-sa-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Unified ServiceAccount model (v1.5, ADR-022)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approval-consent-guard" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approval Consent Guard (DD-AF-006, v1.5.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trusted-intermediary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Trusted Intermediary Delegation (#1287)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#tokenreview" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        TokenReview Identity Enrichment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#oidc-ca-trust" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OIDC CA Trust (#1245)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#auth-auto-detect" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Auth Mode Auto-Detection (#1309)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keycloak-oidc" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Keycloak OIDC Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Keycloak OIDC Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-groups-scope" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Groups Client Scope
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-audience-mapper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audience Mapper
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#keycloak-stale-tokens" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Stale Token Warning
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../api-reference/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_5" id="__nav_5_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/crds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom Resources
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/operator-cr/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operator CR
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/datastorage-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DataStorage API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/kubernaut-agent-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Kubernaut Agent API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/apifrontend-api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Frontend API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/mcp-tools/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MCP Tool Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../use-cases/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6" id="__nav_6_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Use Cases
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/multi-path-remediation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Multi-Path Remediation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/remediation-history-feedback/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Remediation History Feedback
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/llm-judgment-approval-gate/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    LLM Judgment & Approval Gate
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../use-cases/supported-scenarios/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Supported Scenarios
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../operations/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Operations
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_7" id="__nav_7_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Operations
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/monitoring/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/event-exporter/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Event Exporter
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/troubleshooting/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../operations/disconnected-install/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Disconnected Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whats-new/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's New
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    What's New
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../whats-next/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    What's Next
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    What's Next
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compliance
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Compliance
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../user-guide/compliance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    SOC2 Alignment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../faq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    FAQ
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="security-rbac">Security &amp; RBAC<a class="headerlink" href="#security-rbac" title="Permanent link">&para;</a></h1>
+<p>Kubernaut follows a least-privilege model: each service runs under its own ServiceAccount with only the permissions it needs. This page is the consolidated reference for all RBAC resources.</p>
+<div class="admonition info">
+<p class="admonition-title">Helm vs Operator RBAC</p>
+<p>The Helm chart and the Kubernaut Operator create the same logical set of ClusterRoles, but the <strong>Operator</strong> prefixes each name with the CR's namespace (e.g., <code>kubernaut-system-gateway-role</code>) to prevent collisions when multiple Kubernaut CRs exist. The Operator creates <strong>14</strong> baseline ClusterRoles (including the API Frontend ClusterRole in v1.5+), plus <strong>2</strong> additional ones (<code>alertmanager-view</code>, <code>gateway-signal-source</code>) when <code>spec.monitoring.enabled: true</code>, <strong>6</strong> per-persona tool ClusterRoles for SAR authorization (v1.5+), and an optional <code>workflowexecution-awx</code> ClusterRole when Ansible integration is enabled.</p>
+<p>The Operator also supports <code>spec.kubernautAgent.additionalClusterRoleBindings</code> — a list of pre-existing ClusterRole names to bind to the Kubernaut Agent ServiceAccount (max 64). <strong>Use with caution</strong>: any writable cluster-scoped privileges referenced here are granted to the agent, creating a privilege escalation path. Restrict who may edit the Kubernaut CR via cluster RBAC. See the <a href="https://github.com/jordigilh/kubernaut-operator/blob/main/docs/security/threat-model.md">Operator threat model</a> for details.</p>
+</div>
+<h2 id="signal-ingestion">Signal Ingestion<a class="headerlink" href="#signal-ingestion" title="Permanent link">&para;</a></h2>
+<p>The Gateway authenticates every signal ingestion request using <strong>Kubernetes TokenReview + SubjectAccessReview (SAR)</strong>:</p>
+<pre class="mermaid"><code>sequenceDiagram
+    participant AM as AlertManager
+    participant GW as Gateway
+    participant K8s as Kubernetes API
+
+    AM-&gt;&gt;GW: POST /api/v1/signals/prometheus&lt;br/&gt;Authorization: Bearer &lt;token&gt;
+    GW-&gt;&gt;K8s: TokenReview (validate token)
+    K8s--&gt;&gt;GW: Authenticated as SA "alertmanager-..."
+    GW-&gt;&gt;K8s: SubjectAccessReview&lt;br/&gt;(can SA create services/gateway-service?)
+    K8s--&gt;&gt;GW: Allowed
+    GW-&gt;&gt;GW: Process signal, create RemediationRequest</code></pre>
+<h3 id="gateway-rbac">Gateway RBAC<a class="headerlink" href="#gateway-rbac" title="Permanent link">&para;</a></h3>
+<p>The Gateway's own ClusterRole (<code>gateway-role</code>) includes:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>remediationrequests</code>, <code>remediationrequests/status</code></td>
+<td>create, get, list, watch, update, patch</td>
+<td>Create and manage RRs from incoming signals</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>namespaces</code></td>
+<td>get, list, watch</td>
+<td>Scope label checks (<code>kubernaut.ai/managed</code>)</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>nodes</code>, <code>pods</code>, <code>services</code>, <code>persistentvolumes</code></td>
+<td>get, list, watch</td>
+<td>Owner chain resolution for fingerprinting</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td><code>deployments</code>, <code>replicasets</code>, <code>statefulsets</code>, <code>daemonsets</code></td>
+<td>get, list, watch</td>
+<td>Owner chain resolution</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code>, <code>cronjobs</code></td>
+<td>get, list, watch</td>
+<td>Owner chain resolution</td>
+</tr>
+<tr>
+<td><code>authentication.k8s.io</code></td>
+<td><code>tokenreviews</code></td>
+<td>create</td>
+<td>Validate bearer tokens from signal sources</td>
+</tr>
+<tr>
+<td><code>authorization.k8s.io</code></td>
+<td><code>subjectaccessreviews</code></td>
+<td>create</td>
+<td>Check signal source RBAC via SAR</td>
+</tr>
+<tr>
+<td><code>coordination.k8s.io</code></td>
+<td><code>leases</code></td>
+<td>get, create, update, delete</td>
+<td>Leader election</td>
+</tr>
+</tbody>
+</table>
+<h3 id="signal-source-rbac">Signal Source RBAC<a class="headerlink" href="#signal-source-rbac" title="Permanent link">&para;</a></h3>
+<p>External signal sources (AlertManager, custom webhooks) must satisfy two requirements:</p>
+<ol>
+<li><strong>A valid bearer token</strong> -- The source must send its ServiceAccount token in the <code>Authorization</code> header. The Gateway validates it via TokenReview.</li>
+<li>
+<p><strong>SAR authorization</strong> -- The ServiceAccount must have <code>create</code> permission on <code>services/gateway-service</code>. The chart provides the <code>gateway-signal-source</code> ClusterRole for this:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1"># gateway-signal-source ClusterRole</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;services&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;gateway-service&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;create&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+</li>
+</ol>
+<p>The Helm value <code>gateway.auth.signalSources</code> creates a ClusterRoleBinding for each entry:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">signalSources</span><span class="p">:</span>
+</span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="nt">serviceAccount</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">alertmanager-kube-prometheus-stack-alertmanager</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="nt">namespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">monitoring</span>
+</span></code></pre></div>
+<p>If you deploy a Kubernetes Event Exporter separately (not included in the chart since v1.1), its ServiceAccount must also be registered as a signal source in the same <code>signalSources</code> list.</p>
+<p>Without the bearer token, the Gateway returns <code>401 Unauthorized</code>. Without the ClusterRoleBinding, the Gateway returns <code>403 Forbidden</code>.</p>
+<p>See <a href="../../user-guide/configuration/#signal-source-authentication">Configuration Reference</a> for the complete AlertManager configuration example.</p>
+<h2 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h2>
+<p>Each CRD controller runs under its own ServiceAccount with a dedicated ClusterRole scoped to the CRDs it manages. All controllers also get a namespace-scoped Role for reading ConfigMaps and Secrets in the release namespace (Rego policies, credentials).</p>
+<p>Four services (Kubernaut Agent, WorkflowExecution, RemediationOrchestrator, EffectivenessMonitor) include read access to <code>security.istio.io</code> and <code>networking.istio.io</code> resources for service mesh awareness during investigation and remediation.</p>
+<table>
+<thead>
+<tr>
+<th>Controller</th>
+<th>ServiceAccount</th>
+<th>CRDs Managed</th>
+<th>Additional Access</th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>RemediationOrchestrator</td>
+<td><code>remediationorchestrator-controller</code></td>
+<td>All 7 child CRDs (full CRUD)</td>
+<td>Pods, nodes, events, namespaces, services, deployments, statefulsets, daemonsets, jobs, cronjobs (read)</td>
+<td>Broadest permissions -- creates and watches all child CRDs</td>
+</tr>
+<tr>
+<td>SignalProcessing</td>
+<td><code>signalprocessing-controller</code></td>
+<td>SignalProcessing, RemediationRequest</td>
+<td>Pods, services, namespaces, nodes, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, network policies (read); leases (full)</td>
+<td>Owner chain resolution and enrichment</td>
+</tr>
+<tr>
+<td>AIAnalysis</td>
+<td><code>aianalysis-controller</code></td>
+<td>AIAnalysis</td>
+<td>Events (create)</td>
+<td>Also bound to <code>kubernaut-agent-client</code> for Kubernaut Agent access and <code>data-storage-client</code> for DataStorage access</td>
+</tr>
+<tr>
+<td>WorkflowExecution</td>
+<td><code>workflowexecution-controller</code></td>
+<td>WorkflowExecution</td>
+<td>Tekton PipelineRuns (full), TaskRuns (read), Jobs (full), events (create); leases (full)</td>
+<td>Creates Jobs and PipelineRuns in the execution namespace. When the ansible engine is enabled, also requires <code>get</code> on the AWX API token Secret -- see <a href="../../user-guide/configuration/#ansible-engine-awxaap">Ansible Engine Setup</a>.</td>
+</tr>
+<tr>
+<td>EffectivenessMonitor</td>
+<td><code>effectivenessmonitor-controller</code></td>
+<td>EffectivenessAssessment, RemediationRequest (read)</td>
+<td>Pods, nodes, services, PVCs, events, deployments, replicasets, statefulsets, daemonsets, HPAs, PDBs, jobs, cronjobs (read)</td>
+<td>Post-remediation health checks</td>
+</tr>
+<tr>
+<td>Notification</td>
+<td><code>notification-controller</code></td>
+<td>NotificationRequest</td>
+<td>Events (create)</td>
+<td>Minimal scope</td>
+</tr>
+<tr>
+<td>AuthWebhook</td>
+<td><code>authwebhook</code></td>
+<td>All Kubernaut CRDs (read), status subresources (update, patch)</td>
+<td>--</td>
+<td>Admission webhook validation, defaulting, and catalog registration. Intercepts CREATE and UPDATE operations on <code>RemediationWorkflow</code> CRDs. Uses retry-on-conflict for <code>ActionType</code> status updates.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="broad-read-access-via-view-clusterrole">Broad Read Access via <code>view</code> ClusterRole<a class="headerlink" href="#broad-read-access-via-view-clusterrole" title="Permanent link">&para;</a></h3>
+<p>The RemediationOrchestrator and EffectivenessMonitor are additionally bound to the Kubernetes built-in <code>view</code> ClusterRole via <code>remediationorchestrator-view</code> and <code>effectivenessmonitor-view</code> ClusterRoleBindings. This provides broad read access to CRD types not individually enumerated in their dedicated ClusterRoles -- for example, cert-manager <code>Certificate</code> resources and Istio networking resources -- which is required for pre- and post-remediation hash capture (DD-EM-002).</p>
+<p>If the <code>view</code> ClusterRole lacks read permission for a particular resource type (e.g., a third-party CRD), the <strong>Remediation Orchestrator</strong> emits a <code>HashCaptureDegraded</code> Kubernetes event on the <code>RemediationRequest</code> when <code>CapturePreRemediationHash</code> returns a degraded reason. The EffectivenessAssessment then proceeds in <strong>degraded mode</strong> — the EA skips the hash comparison component and relies on the remaining health-check signals (alert state, metric thresholds, pod readiness) to determine effectiveness.</p>
+<h2 id="workflow-execution">Workflow Execution<a class="headerlink" href="#workflow-execution" title="Permanent link">&para;</a></h2>
+<p>Remediation workflows (Jobs, Tekton PipelineRuns, Ansible playbooks) execute in the <code>kubernaut-workflows</code> namespace. By default, workflow executions run with the execution namespace default ServiceAccount. Many deployments bind that default to <code>kubernaut-workflow-runner</code>, which carries the broadest ClusterRole in the system because workflows need to act on the cluster to remediate issues.</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>apps</code></td>
+<td><code>deployments</code>, <code>statefulsets</code>, <code>daemonsets</code></td>
+<td>get, list, patch, update</td>
+<td>Scale, restart, or patch workloads</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td><code>replicasets</code></td>
+<td>get, list, watch</td>
+<td>Read replica state</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>pods</code>, <code>pods/eviction</code></td>
+<td>get, list, create, delete</td>
+<td>Evict pods, read pod state</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>configmaps</code>, <code>secrets</code></td>
+<td>get, list, create, update, patch, delete</td>
+<td>Read/write configuration</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>nodes</code></td>
+<td>get, list</td>
+<td>Read node state for drain/cordon</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>namespaces</code>, <code>services</code>, <code>persistentvolumeclaims</code></td>
+<td>get, list</td>
+<td>Read cluster state</td>
+</tr>
+<tr>
+<td><code>autoscaling</code></td>
+<td><code>horizontalpodautoscalers</code></td>
+<td>get, list, patch</td>
+<td>Scale HPAs</td>
+</tr>
+<tr>
+<td><code>policy</code></td>
+<td><code>poddisruptionbudgets</code></td>
+<td>get, list, patch</td>
+<td>Adjust PDBs during remediation</td>
+</tr>
+<tr>
+<td><code>networking.k8s.io</code></td>
+<td><code>networkpolicies</code></td>
+<td>get, list, create, update, patch, delete</td>
+<td>Manage network policies</td>
+</tr>
+<tr>
+<td><code>argoproj.io</code></td>
+<td><code>applications</code></td>
+<td>get, list</td>
+<td>Read ArgoCD application state</td>
+</tr>
+<tr>
+<td><code>cert-manager.io</code></td>
+<td><code>certificates</code>, <code>clusterissuers</code></td>
+<td>get, list</td>
+<td>Read certificate state</td>
+</tr>
+<tr>
+<td><code>policy.linkerd.io</code></td>
+<td><code>authorizationpolicies</code>, <code>servers</code>, <code>meshtlsauthentications</code></td>
+<td>get, list, delete</td>
+<td>Manage Linkerd policies (legacy)</td>
+</tr>
+<tr>
+<td><code>security.istio.io</code></td>
+<td><code>authorizationpolicies</code>, <code>peerauthentications</code>, <code>requestauthentications</code></td>
+<td>get, list, delete</td>
+<td>Manage Istio security policies</td>
+</tr>
+<tr>
+<td><code>networking.istio.io</code></td>
+<td><code>virtualservices</code>, <code>destinationrules</code>, <code>gateways</code>, <code>serviceentries</code></td>
+<td>get, list, create, update, patch, delete</td>
+<td>Manage Istio networking resources</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>workflowexecutions</code></td>
+<td>get</td>
+<td>Ansible playbooks read WFE ownerReferences for RR correlation</td>
+</tr>
+<tr>
+<td><code>storage.k8s.io</code></td>
+<td><code>storageclasses</code></td>
+<td>get, list</td>
+<td>Discover default StorageClass for PVC migration</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>endpoints</code></td>
+<td>get, list</td>
+<td>Check service endpoint health</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code></td>
+<td>get, list, create, delete</td>
+<td>pg_dump/pg_restore Job lifecycle (disk-pressure-emptydir scenario)</td>
+</tr>
+</tbody>
+</table>
+<p>The last four rules were added for production Ansible playbooks (DD-WE-007).</p>
+<p>Additionally, a namespace-scoped <code>workflowexecution-dep-reader</code> Role grants <code>get</code>, <code>list</code>, <code>watch</code> on Secrets and ConfigMaps in the execution namespace for dependency validation before workflow launch.</p>
+<h3 id="per-workflow-serviceaccount-v12">Per-Workflow ServiceAccount (v1.2)<a class="headerlink" href="#per-workflow-serviceaccount-v12" title="Permanent link">&para;</a></h3>
+<p>Starting with v1.2, workflows can declare a dedicated ServiceAccount via the <code>spec.execution.serviceAccountName</code> field on the <code>RemediationWorkflow</code> CRD. This value is propagated into <code>WorkflowExecution.spec.serviceAccountName</code>.</p>
+<ul>
+<li><strong>Job/Tekton execution</strong>: the service account name is set directly on the created Job or PipelineRun.</li>
+<li><strong>Ansible execution</strong>: the WE controller requests a short-lived token via the Kubernetes <a href="https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-request-v1/">TokenRequest API</a> and injects it into AWX credentials.</li>
+</ul>
+<p>This enables least-privilege RBAC per workflow — each SA needs only the permissions required by its specific remediation.</p>
+<p>The WE controller's ClusterRole includes the following permissions for TokenRequest:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(core)</td>
+<td><code>serviceaccounts</code></td>
+<td>get</td>
+<td>Look up the per-workflow SA</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>serviceaccounts/token</code></td>
+<td>create</td>
+<td>Create short-lived tokens via TokenRequest</td>
+</tr>
+</tbody>
+</table>
+<p><strong>TTL validation (Ansible path):</strong> The controller requests tokens with a <strong>3600s (1 hour)</strong> TTL by default. When an execution timeout is configured, the controller validates that the requested token TTL covers the execution window. If the TTL is insufficient, it sets <code>TokenTTLInsufficient</code> on the WorkflowExecution and emits a warning event (<code>TokenTTLShortened</code>).</p>
+<div class="admonition warning">
+<p class="admonition-title">Cluster-level TTL constraints</p>
+<p>The Kubernetes API server flag <code>--service-account-max-token-expiration</code> (or OpenShift <code>ServiceAccountTokenMaxExpiration</code>) can silently cap token TTLs below the requested duration. If the cap is lower than the workflow execution timeout, Ansible jobs may receive <strong>401 Unauthorized</strong> errors mid-execution. Ensure the cluster-level maximum is at least <strong>3600s</strong> (or greater than your longest workflow execution timeout). Check for <code>TokenTTLShortened</code> warning events on WorkflowExecution CRDs if Ansible jobs fail unexpectedly with authentication errors.</p>
+</div>
+<p><strong>Fallback behavior:</strong> If <code>serviceAccountName</code> is not set:</p>
+<ul>
+<li>Job/Tekton run with the execution namespace default ServiceAccount.</li>
+<li>Ansible falls back to controller in-cluster credentials for AWX credential injection.</li>
+</ul>
+<p>For the Ansible executor (#501), TokenRequest tokens replace the controller's own in-cluster SA token for AWX credential injection, ensuring each playbook runs with the minimum permissions declared by the workflow author.</p>
+<h2 id="ocp-monitoring-rbac">OCP Monitoring RBAC<a class="headerlink" href="#ocp-monitoring-rbac" title="Permanent link">&para;</a></h2>
+<p>When <code>effectivenessmonitor.external.ocpMonitoringRbac</code> is <code>true</code>, the chart creates additional RBAC resources for EM to access OCP's monitoring stack through <code>kube-rbac-proxy</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Resource</th>
+<th>Kind</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>effectivenessmonitor-monitoring-view</code></td>
+<td>ClusterRoleBinding</td>
+<td>Binds EM ServiceAccount to the built-in <code>cluster-monitoring-view</code> ClusterRole for Prometheus API access</td>
+</tr>
+<tr>
+<td><code>kubernaut-alertmanager-view</code></td>
+<td>ClusterRole</td>
+<td>Grants <code>get</code> on <code>monitoring.coreos.com/alertmanagers/api</code> for AlertManager API access through <code>kube-rbac-proxy</code></td>
+</tr>
+<tr>
+<td><code>effectivenessmonitor-alertmanager-view</code></td>
+<td>ClusterRoleBinding</td>
+<td>Binds EM ServiceAccount to <code>kubernaut-alertmanager-view</code></td>
+</tr>
+</tbody>
+</table>
+<p>The AlertManager ClusterRole and ClusterRoleBinding are only created when <strong>both</strong> <code>ocpMonitoringRbac</code> and <code>alertManagerEnabled</code> are <code>true</code>.</p>
+<p>OCP's <code>kube-rbac-proxy</code> requires <strong>resource-level</strong> RBAC (<code>monitoring.coreos.com/alertmanagers/api</code>) rather than <code>nonResourceURLs</code> for AlertManager API access. Standard <code>nonResourceURLs</code> rules are silently ignored by <code>kube-rbac-proxy</code>, causing EM AlertManager queries to fail with <code>403 Forbidden</code>.</p>
+<h3 id="ansible-credential-injection">Ansible Credential Injection<a class="headerlink" href="#ansible-credential-injection" title="Permanent link">&para;</a></h3>
+<p>When the Ansible/AWX execution engine is enabled, the WorkflowExecution controller injects the cluster's Kubernetes API credentials into AWX Job Templates so that <code>kubernetes.core</code> Ansible modules can authenticate against the target cluster. The v2 custom credential type (<code>kubernaut-k8s-bearer-token-v2</code>) uses <strong>kubeconfig-file injection</strong> rather than environment variables, because in-cluster ServiceAccount config inside AAP execution environments takes precedence over <code>K8S_AUTH_*</code> env vars. If resolution picks a built-in or kind-matched type, the injector may differ.</p>
+<p>The credential type resolution follows a 6-step process:</p>
+<ol>
+<li>Look for the built-in AWX type ("OpenShift or Kubernetes API Bearer Token")</li>
+<li>Look up a credential type by kind (<code>FindCredentialTypeByKind("kubernetes", true)</code>)</li>
+<li>Fall back to <code>kubernaut-k8s-bearer-token</code> (custom type from earlier versions)</li>
+<li>Fall back to <code>kubernaut-k8s-bearer-token-v2</code> (kubeconfig-based type)</li>
+<li>If none exist, create the v2 type with a Jinja2 kubeconfig template that AWX renders at job launch</li>
+<li>Create an ephemeral credential populated with the controller's in-cluster SA token, API server host, and CA certificate</li>
+</ol>
+<p>The v2 kubeconfig template conditionally includes <code>certificate-authority-data</code> when the cluster CA is available, or sets <code>insecure-skip-tls-verify: true</code> otherwise. AWX injects the rendered kubeconfig as a temp file and sets <code>K8S_AUTH_KUBECONFIG</code> to point to it, ensuring <code>kubernetes.core</code> modules use the injected credentials instead of in-cluster config.</p>
+<p>Ephemeral credentials are cleaned up after the AWX job completes. See <a href="https://github.com/jordigilh/kubernaut/blob/main/docs/requirements/BR-WE-017-shared-sa-execution-model.md">BR-WE-017</a> for the full shared SA model. In v1.2, workflows can declare a dedicated ServiceAccount via <code>spec.execution.serviceAccountName</code> — see <a href="#per-workflow-serviceaccount-v12">Per-Workflow ServiceAccount</a> above.</p>
+<h2 id="internal-service-communication">Internal Service Communication<a class="headerlink" href="#internal-service-communication" title="Permanent link">&para;</a></h2>
+<h3 id="datastorage-authentication">DataStorage Authentication<a class="headerlink" href="#datastorage-authentication" title="Permanent link">&para;</a></h3>
+<p>DataStorage uses the same TokenReview + SAR pattern as the Gateway. The <code>data-storage-auth-middleware</code> ClusterRole grants DataStorage permission to validate client tokens:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>authentication.k8s.io</code></td>
+<td><code>tokenreviews</code></td>
+<td>create</td>
+</tr>
+<tr>
+<td><code>authorization.k8s.io</code></td>
+<td><code>subjectaccessreviews</code></td>
+<td>create</td>
+</tr>
+</tbody>
+</table>
+<p>Clients must have <code>create</code> permission on <code>services/data-storage-service</code> (via the <code>data-storage-client</code> ClusterRole). The chart binds every Kubernaut service to this role:</p>
+<p>Gateway, SignalProcessing, RemediationOrchestrator, AIAnalysis, WorkflowExecution, EffectivenessMonitor, Notification, AuthWebhook, Kubernaut Agent, and DataStorage itself.</p>
+<h3 id="kubernaut-agent-access">Kubernaut Agent Access<a class="headerlink" href="#kubernaut-agent-access" title="Permanent link">&para;</a></h3>
+<p>The AIAnalysis controller communicates with Kubernaut Agent via the <code>kubernaut-agent-client</code> ClusterRole, which grants <code>create</code> and <code>get</code> on <code>services/kubernaut-agent</code>.</p>
+<p>Kubernaut Agent itself has a broad <strong>read-only</strong> ClusterRole (<code>kubernaut-agent-investigator</code>) for its kubectl-based investigation:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(core)</td>
+<td>pods, pods/log, events, services, endpoints, configmaps, secrets, nodes, namespaces, replicationcontrollers, PVCs, resourcequotas</td>
+<td>get, list, watch</td>
+<td>Cluster state investigation</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td>deployments, replicasets, statefulsets, daemonsets</td>
+<td>get, list, watch</td>
+<td>Workload investigation</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td>jobs, cronjobs</td>
+<td>get, list, watch</td>
+<td>Job investigation</td>
+</tr>
+<tr>
+<td><code>events.k8s.io</code></td>
+<td>events</td>
+<td>get, list, watch</td>
+<td>Event investigation</td>
+</tr>
+<tr>
+<td><code>autoscaling</code></td>
+<td>horizontalpodautoscalers</td>
+<td>get, list, watch</td>
+<td>HPA investigation</td>
+</tr>
+<tr>
+<td><code>policy</code></td>
+<td>poddisruptionbudgets</td>
+<td>get, list, watch</td>
+<td>PDB investigation</td>
+</tr>
+<tr>
+<td><code>networking.k8s.io</code></td>
+<td>networkpolicies</td>
+<td>get, list, watch</td>
+<td>Network policy investigation</td>
+</tr>
+<tr>
+<td><code>cert-manager.io</code></td>
+<td>certificates, clusterissuers, certificaterequests</td>
+<td>get, list, watch</td>
+<td>Certificate investigation</td>
+</tr>
+<tr>
+<td><code>argoproj.io</code></td>
+<td>applications</td>
+<td>get, list, watch</td>
+<td>ArgoCD investigation</td>
+</tr>
+<tr>
+<td><code>policy.linkerd.io</code></td>
+<td>servers, authorizationpolicies, meshtlsauthentications</td>
+<td>get, list, watch</td>
+<td>Linkerd mesh investigation (legacy)</td>
+</tr>
+<tr>
+<td><code>security.istio.io</code></td>
+<td>authorizationpolicies, peerauthentications, requestauthentications</td>
+<td>get, list, watch</td>
+<td>Istio security policy investigation</td>
+</tr>
+<tr>
+<td><code>networking.istio.io</code></td>
+<td>virtualservices, destinationrules, gateways, serviceentries</td>
+<td>get, list, watch</td>
+<td>Istio networking investigation</td>
+</tr>
+<tr>
+<td><code>monitoring.coreos.com</code></td>
+<td>prometheusrules, servicemonitors, podmonitors, probes</td>
+<td>get, list, watch</td>
+<td>Monitoring investigation</td>
+</tr>
+<tr>
+<td><code>config.openshift.io</code></td>
+<td>nodes, clusteroperators, clusterversions, infrastructures</td>
+<td>get, list, watch</td>
+<td>OCP platform investigation (Operator only)</td>
+</tr>
+</tbody>
+</table>
+<p>This read-only access allows the LLM to investigate root causes using live cluster data without making changes.</p>
+<h3 id="lease-rbac-for-interactive-sessions-v15">Lease RBAC for Interactive Sessions (v1.5+)<a class="headerlink" href="#lease-rbac-for-interactive-sessions-v15" title="Permanent link">&para;</a></h3>
+<p>Interactive MCP sessions use Kubernetes Leases for distributed locking. The Kubernaut Agent ServiceAccount requires Lease permissions in addition to its existing investigator role:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>coordination.k8s.io</code></td>
+<td><code>leases</code></td>
+<td>get, create, update, delete, <strong>list</strong></td>
+<td>Session locking + orphan reclamation</td>
+</tr>
+</tbody>
+</table>
+<p>The <code>list</code> verb (new in v1.5) is required for <code>ReconcileOrphanedLeases</code> — on startup, KA scans for Leases whose holder identity no longer exists and reclaims them.</p>
+<div class="admonition note">
+<p class="admonition-title">Automatic provisioning</p>
+<p>Both the Helm chart and the Kubernaut Operator provision this permission automatically. Only custom RBAC configurations need manual updating.</p>
+</div>
+<h3 id="api-frontend-rbac-v15">API Frontend RBAC (v1.5+)<a class="headerlink" href="#api-frontend-rbac-v15" title="Permanent link">&para;</a></h3>
+<p>The API Frontend ServiceAccount requires:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>investigationsessions</code>, <code>investigationsessions/status</code></td>
+<td>get, list, watch, create, update, patch, delete</td>
+<td>Session CRD management</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>remediationrequests</code></td>
+<td>get, list, watch, create, update, patch</td>
+<td>RR lifecycle for MCP/A2A sessions</td>
+</tr>
+<tr>
+<td><code>kubernaut.ai</code></td>
+<td><code>remediationapprovalrequests</code>, <code>remediationapprovalrequests/status</code></td>
+<td>get, list, create, update, patch</td>
+<td>Approval request access</td>
+</tr>
+<tr>
+<td><code>authorization.k8s.io</code></td>
+<td><code>subjectaccessreviews</code></td>
+<td>create</td>
+<td>SAR-based tool authorization</td>
+</tr>
+<tr>
+<td><em>(core)</em></td>
+<td><code>events</code></td>
+<td>get, list, create, patch</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><em>(core)</em></td>
+<td><code>pods</code>, <code>replicationcontrollers</code></td>
+<td>get, list</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td><code>deployments</code>, <code>replicasets</code>, <code>statefulsets</code>, <code>daemonsets</code></td>
+<td>get, list</td>
+<td>Cluster context triage tools</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code>, <code>cronjobs</code></td>
+<td>get</td>
+<td>Cluster context triage tools</td>
+</tr>
+</tbody>
+</table>
+<h2 id="infrastructure-and-hooks">Infrastructure and Hooks<a class="headerlink" href="#infrastructure-and-hooks" title="Permanent link">&para;</a></h2>
+<h3 id="postgresql-and-valkey">PostgreSQL and Valkey<a class="headerlink" href="#postgresql-and-valkey" title="Permanent link">&para;</a></h3>
+<p>Both run with dedicated ServiceAccounts that have <code>automountServiceAccountToken: false</code>, preventing unnecessary API token mounting.</p>
+<h3 id="helm-hooks">Helm Hooks<a class="headerlink" href="#helm-hooks" title="Permanent link">&para;</a></h3>
+<p>The shared hook ServiceAccount (<code>kubernaut-hook-sa</code>) and its ClusterRole are used by TLS certificate generation jobs, the database migration job, and the CRD upgrade job:</p>
+<table>
+<thead>
+<tr>
+<th>apiGroup</th>
+<th>Resources</th>
+<th>Verbs</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(core)</td>
+<td><code>secrets</code>, <code>configmaps</code></td>
+<td>get, create, update, patch, delete</td>
+<td>TLS cert/CA storage, migration state</td>
+</tr>
+<tr>
+<td><code>admissionregistration.k8s.io</code></td>
+<td><code>mutatingwebhookconfigurations</code>, <code>validatingwebhookconfigurations</code></td>
+<td>get, patch</td>
+<td>Patch <code>caBundle</code> (hook mode only, see <a href="https://github.com/jordigilh/kubernaut/issues/334">#334</a>)</td>
+</tr>
+<tr>
+<td><code>apiextensions.k8s.io</code></td>
+<td><code>customresourcedefinitions</code></td>
+<td>get, list, create, update, patch</td>
+<td>CRD pre-upgrade server-side apply (<a href="https://github.com/jordigilh/kubernaut/issues/521">#521</a>)</td>
+</tr>
+<tr>
+<td>(core)</td>
+<td><code>pods</code></td>
+<td>get, list</td>
+<td>Post-install verification</td>
+</tr>
+<tr>
+<td><code>apps</code></td>
+<td><code>deployments</code></td>
+<td>get</td>
+<td>Post-install verification</td>
+</tr>
+<tr>
+<td><code>batch</code></td>
+<td><code>jobs</code></td>
+<td>get, list</td>
+<td>Migration job monitoring</td>
+</tr>
+</tbody>
+</table>
+<p>Hook jobs only run during <code>helm install</code>, <code>helm upgrade</code>, and <code>helm delete</code>. They do not have long-lived pods.</p>
+<h2 id="shadow-agent">Prompt Injection Defense — Shadow Agent (v1.4)<a class="headerlink" href="#shadow-agent" title="Permanent link">&para;</a></h2>
+<p>Kubernaut v1.4 introduces a <strong>shadow agent</strong> that evaluates every LLM tool output for prompt injection attacks. The shadow agent runs as a fail-closed defense layer inside Kubernaut Agent.</p>
+<h3 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h3>
+<p>The shadow agent operates at two levels:</p>
+<ol>
+<li>
+<p><strong>Per-step evaluation</strong> — After each tool call, the shadow agent scans the tool output using random boundary markers, head+tail truncation, and data exfiltration detection patterns. This catches injection attempts embedded in Kubernetes resource data (ConfigMaps, Secrets, annotations).</p>
+</li>
+<li>
+<p><strong>Full-context grounding review</strong> — At the RCA-to-workflow boundary, a second evaluation layer reviews the entire investigation conversation through the shadow LLM. This detects distributed injection ("boiling frog" attacks) where individually benign tool outputs combine into a malicious instruction. Runs in parallel with workflow discovery for zero added latency.</p>
+</li>
+</ol>
+<h3 id="enforcement-modes">Enforcement modes<a class="headerlink" href="#enforcement-modes" title="Permanent link">&para;</a></h3>
+<p>The shadow agent supports two modes controlled by the Kubernaut Agent configuration:</p>
+<table>
+<thead>
+<tr>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Monitor</strong></td>
+<td>Log alignment verdicts and emit audit events, but do not block investigations</td>
+</tr>
+<tr>
+<td><strong>Enforce</strong></td>
+<td>Cancel the investigation via circuit breaker when suspicious content is detected</td>
+</tr>
+</tbody>
+</table>
+<p>In enforce mode, a positive detection triggers <code>context.WithCancelCause(ErrCircuitBreaker)</code>, immediately terminating the primary investigation. The <code>kubernaut_alignment_circuit_breaker_total</code> Prometheus counter tracks activations.</p>
+<h3 id="alignment-verdicts">Alignment verdicts<a class="headerlink" href="#alignment-verdicts" title="Permanent link">&para;</a></h3>
+<p>Shadow agent results are propagated through the system:</p>
+<ul>
+<li><strong><code>alignment_verdict</code></strong> field on the Kubernaut Agent <code>IncidentResponse</code> (OpenAPI) and <code>AIAnalysisStatus</code> (CRD) carrying the verdict (<code>result</code>, <code>circuit_breaker_activated</code>, <code>summary</code>, <code>findings</code>)</li>
+<li><strong><code>aiagent.alignment.verdict</code> audit event</strong> — emitted by <code>InvestigatorWrapper.emitVerdictEvent()</code> after every investigation. Payload includes <code>result</code> (<code>aligned</code>/<code>suspicious</code>), <code>circuit_breaker_activated</code>, <code>summary</code>, <code>flagged</code>/<code>total</code> counts, <code>findings[]</code>, and optional <code>grounding_review</code> (v1.5.1)</li>
+<li><strong>NotificationRequest <code>ReviewContext</code></strong> includes <code>alignmentVerdict</code> and <code>circuitBreakerActivated</code> fields for routing rule support</li>
+<li><strong>Manual review notifications</strong> render shadow agent findings prominently when <code>alignment_check_failed</code> SubReason escalates to <code>NotificationPriorityCritical</code></li>
+</ul>
+<h3 id="observability">Observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut_alignment_grounding_total</code></td>
+<td>Counter</td>
+<td>Grounding review invocations</td>
+</tr>
+<tr>
+<td><code>kubernaut_alignment_grounding_duration_seconds</code></td>
+<td>Histogram</td>
+<td>Grounding review latency</td>
+</tr>
+<tr>
+<td><code>kubernaut_alignment_circuit_breaker_total</code></td>
+<td>Counter</td>
+<td>Circuit breaker activations</td>
+</tr>
+</tbody>
+</table>
+<p>Per-step audit events include shadow LLM request/response payloads and token counts for cost tracking (<code>aiagent.alignment.step</code>).</p>
+<h3 id="false-positive-handling">False positive handling<a class="headerlink" href="#false-positive-handling" title="Permanent link">&para;</a></h3>
+<p>v1.4 includes targeted fixes to reduce false positives:</p>
+<ul>
+<li>Well-known Kubernetes/OpenShift annotation namespaces, container commands, probe commands, event messages, RBAC verbs, and registry URLs are whitelisted (CLEAN classification)</li>
+<li>The shadow agent evaluates <strong>raw</strong> tool output (post-sanitizer, pre-summarizer) to avoid false positives from LLM-generated analysis content</li>
+</ul>
+<h2 id="networkpolicies-v14">NetworkPolicies (v1.4)<a class="headerlink" href="#networkpolicies-v14" title="Permanent link">&para;</a></h2>
+<p>Kubernaut v1.4 deploys <strong>12 NetworkPolicy templates</strong> covering all services with a <strong>default-deny</strong> ingress posture. Each policy restricts ingress to only the expected callers.</p>
+<h3 id="default-behavior">Default behavior<a class="headerlink" href="#default-behavior" title="Permanent link">&para;</a></h3>
+<p>The default depends on your deployment method:</p>
+<table>
+<thead>
+<tr>
+<th>Deployment</th>
+<th>Default</th>
+<th>How to change</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Helm</strong></td>
+<td>Enabled for all services</td>
+<td>Set <code>networkPolicies.&lt;service&gt;.enabled: false</code> per service</td>
+</tr>
+<tr>
+<td><strong>Operator</strong></td>
+<td><strong>Disabled</strong> (<code>spec.networkPolicies.enabled: false</code>)</td>
+<td>Set <code>spec.networkPolicies.enabled: true</code> in the Kubernaut CR</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Operator users: NetworkPolicies are off by default</p>
+<p>If you deploy via the Kubernaut Operator and expect network segmentation, you must explicitly enable it. The Operator uses a single toggle (<code>spec.networkPolicies.enabled</code>) rather than per-service toggles.</p>
+</div>
+<p>Verify your cluster's CNI plugin supports NetworkPolicy enforcement (Calico, Cilium, etc.) — clusters with CNI plugins that do not enforce NetworkPolicies silently ignore them.</p>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Helm</label><label for="__tabbed_1_2">Operator</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Per-service toggle via Helm values:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">networkPolicies</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span><span class="nt">dataStorage</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">  </span><span class="c1"># ... per-service toggle for all 12 services</span>
+</span></code></pre></div>
+</div>
+<div class="tabbed-block">
+<p>Global toggle in the Kubernaut CR:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="w">  </span><span class="nt">networkPolicies</span><span class="p">:</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="w">    </span><span class="nt">apiServerCIDR</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;10.0.0.0/16&quot;</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="w">    </span><span class="nt">monitoringNamespace</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;openshift-monitoring&quot;</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="w">    </span><span class="nt">gatewayIngressNamespaces</span><span class="p">:</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;openshift-monitoring&quot;</span>
+</span></code></pre></div>
+</div>
+</div>
+</div>
+<p>Custom CIDR ranges can be configured for services that need external access (e.g., Gateway ingress from AlertManager).</p>
+<h2 id="tool-authorization-v15">Tool Authorization<a class="headerlink" href="#tool-authorization-v15" title="Permanent link">&para;</a></h2>
+<h3 id="sar-based-tool-authorization-v15">SAR-based tool authorization (v1.5)<a class="headerlink" href="#sar-based-tool-authorization-v15" title="Permanent link">&para;</a></h3>
+<p>v1.5 replaces the API Frontend's file-based <code>rbac_roles.yaml</code> with <strong>Kubernetes-native SubjectAccessReview (SAR)</strong> authorization (PR #1222). Every MCP <code>tools/call</code> invocation triggers a SAR check before execution. <code>tools/list</code> is unfiltered (ADR-020) — authorization is enforced only at call time.</p>
+<h3 id="how-it-works">How it works<a class="headerlink" href="#how-it-works" title="Permanent link">&para;</a></h3>
+<ol>
+<li>Client authenticates via OIDC — the API Frontend extracts the user identity from the JWT</li>
+<li>On each tool invocation, AF issues a SAR: <code>can &lt;user&gt; use tools/&lt;tool-name&gt; in apiGroup kubernaut.ai?</code></li>
+<li>The Kubernetes API server evaluates the user's ClusterRoleBindings</li>
+<li>If denied (or if the SAR API is unreachable), the tool call is rejected — <strong>fail-closed</strong></li>
+</ol>
+<p>All 3 AF RBAC code paths (MCP bridge <code>checkRBAC()</code>, A2A agent <code>newRBACGuard()</code>, and main wiring) delegate to the <code>SARChecker</code>.</p>
+<h3 id="per-persona-clusterroles">Per-persona ClusterRoles<a class="headerlink" href="#per-persona-clusterroles" title="Permanent link">&para;</a></h3>
+<p>The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (<code>apifrontend.config.rbac.personas</code>):</p>
+<table>
+<thead>
+<tr>
+<th>ClusterRole</th>
+<th>Persona</th>
+<th>MCP Tools</th>
+<th>Tool List</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut-tool-sre</code></td>
+<td>Full investigation + remediation</td>
+<td>21</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_approve</code>, <code>kubernaut_cancel_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_list_alerts</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-ai-orchestrator</code></td>
+<td>Automated agent orchestration (no approval)</td>
+<td>15</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_investigate</code>, <code>kubernaut_discover_workflows</code>, <code>kubernaut_select_workflow</code>, <code>kubernaut_present_decision</code>, <code>kubernaut_message</code>, <code>kubernaut_complete</code>, <code>kubernaut_complete_no_action</code>, <code>kubernaut_cancel</code>, <code>kubernaut_status</code>, <code>kubernaut_reconnect</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-cicd</code></td>
+<td>CI/CD pipeline integration</td>
+<td>4</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-observability</code></td>
+<td>Read-only observability</td>
+<td>6</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_list_workflows</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-l3-audit</code></td>
+<td>Compliance and auditing</td>
+<td>6</td>
+<td><code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_list_workflows</code>, <code>kubernaut_get_remediation_history</code>, <code>kubernaut_get_effectiveness</code>, <code>kubernaut_get_audit_trail</code></td>
+</tr>
+<tr>
+<td><code>kubernaut-tool-remediation-approver</code></td>
+<td>Human approval workflows</td>
+<td>7</td>
+<td><code>kubernaut_approve</code>, <code>kubernaut_list_approval_requests</code>, <code>kubernaut_get_approval_request</code>, <code>kubernaut_list_remediations</code>, <code>kubernaut_get_remediation</code>, <code>kubernaut_watch</code>, <code>kubernaut_await_session</code></td>
+</tr>
+</tbody>
+</table>
+<div class="admonition info">
+<p class="admonition-title">Internal tools</p>
+<p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
+</div>
+<h3 id="console-access-gate">Console-access authorization gate (v1.5.6)<a class="headerlink" href="#console-access-gate" title="Permanent link">&para;</a></h3>
+<p>v1.5.6 adds a second, <strong>coarse-grained</strong> SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12). Every tool-invocation request on <code>POST /mcp</code> and <code>POST /a2a/invoke</code> must now pass <strong>both</strong>:</p>
+<ol>
+<li><code>can &lt;user&gt; use console in apiGroup kubernaut.ai?</code> — the new coarse-grained gate, checked once per request</li>
+<li><code>can &lt;user&gt; use tools/&lt;tool-name&gt; in apiGroup kubernaut.ai?</code> — the existing per-tool check described above</li>
+</ol>
+<p>Both are independent SAR calls (different <code>resource</code> values, same <code>apiGroup: kubernaut.ai</code>, <code>verb: use</code>) with independently cached results — a group can hold one without the other. The gate is <strong>fail-closed</strong>: an SAR API error is treated the same as denial.</p>
+<p><strong>Advisory pre-flight endpoint</strong> — <code>GET /a2a/access</code> lets a UI client check the console gate before opening a session, without the roundtrip cost of a real tool call:</p>
+<table>
+<thead>
+<tr>
+<th>Response</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>200 OK</code> (empty body)</td>
+<td>Authenticated user holds the console-access grant</td>
+</tr>
+<tr>
+<td><code>401 Unauthorized</code> (RFC 7807)</td>
+<td>No authenticated identity on the request</td>
+</tr>
+<tr>
+<td><code>403 Forbidden</code> (RFC 7807)</td>
+<td>Authenticated but not granted (or the SAR call itself errored); emits an <code>EventAuthAccessDenied</code> audit event with <code>endpoint: "console"</code></td>
+</tr>
+</tbody>
+</table>
+<p>This endpoint is <strong>advisory only</strong> — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every <code>/mcp</code> and <code>/a2a/invoke</code> call, identical to the per-tool gate.</p>
+<h4 id="helm-consoleaccessgroups">Helm: <code>consoleAccessGroups</code><a class="headerlink" href="#helm-consoleaccessgroups" title="Permanent link">&para;</a></h4>
+<p>The chart's <code>apifrontend.config.rbac.consoleAccessGroups</code> value controls which OIDC groups pass the console gate. It <strong>defaults to all 6 built-in persona names</strong> (<code>sre</code>, <code>ai-orchestrator</code>, <code>cicd</code>, <code>observability</code>, <code>l3-audit</code>, <code>remediation-approver</code>):</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">      </span><span class="nt">consoleAccessGroups</span><span class="p">:</span>
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cicd</span>
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l3-audit</span>
+</span><span id="__span-4-10"><a id="__codelineno-4-10" name="__codelineno-4-10" href="#__codelineno-4-10"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span></code></pre></div>
+<div class="admonition danger">
+<p class="admonition-title">Upgrade action required for custom persona groups</p>
+<p>If you deploy via Helm and configured a <strong>custom</strong> group under <code>apifrontend.config.rbac.personas</code> (renamed or added to the 6 defaults), that group's name is <strong>not</strong> automatically added to <code>consoleAccessGroups</code>. Members of that group will have <strong>every</strong> AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to <code>consoleAccessGroups</code>.</p>
+<p><code>helm install</code>/<code>helm upgrade</code> prints an <code>NOTES.txt</code> warning that lists any <code>personas</code> group missing from <code>consoleAccessGroups</code>, to catch this at deploy time rather than at first login.</p>
+</div>
+<p>Deployments using only the 6 default persona group names need no changes.</p>
+<h4 id="kubernaut-operator-specapifrontendrbacconsoleaccessgroups">Kubernaut Operator: <code>spec.apiFrontend.rbac.consoleAccessGroups</code><a class="headerlink" href="#kubernaut-operator-specapifrontendrbacconsoleaccessgroups" title="Permanent link">&para;</a></h4>
+<p>The Operator CR field behaves differently from the Helm default by design (kubernaut-operator#289): when <code>consoleAccessGroups</code> is <strong>unset</strong> (the CR field is <code>nil</code>, not an explicit empty list), the operator derives it as the deduplicated union of every group already referenced in <code>spec.apiFrontend.rbac.roleBindings</code> — not the static 6-persona list. This means an existing Operator-managed deployment upgrading to an AF version that enforces this gate is <strong>not</strong> at risk of the lockout described above: every group with an existing per-tool binding automatically retains console access.</p>
+<ul>
+<li>Leave the field unset to keep this auto-derived, upgrade-safe default.</li>
+<li>Set it to an explicit non-empty list for independent, narrower control (e.g., granting console access to a strict subset of your tool-authorized groups).</li>
+<li>Set it to an explicit empty list (<code>[]</code>) to opt out entirely (deny console access to everyone via this gate).</li>
+</ul>
+<p>See <a href="../../api-reference/operator-cr/#apifrontendrbacspec">Operator CR Reference: APIFrontendRBACSpec</a> for the field definition.</p>
+<h3 id="custom-clusterroles">Custom ClusterRoles<a class="headerlink" href="#custom-clusterroles" title="Permanent link">&para;</a></h3>
+<p>For organizations that need tool subsets not covered by the 6 built-in personas — for example, separation of duties where SREs can investigate but not approve — the operator supports <strong>user-managed ClusterRoles</strong> via the <code>clusterRoleName</code> field on <code>ToolRoleBinding</code>.</p>
+<p><strong>How it works:</strong></p>
+<ol>
+<li>You create a ClusterRole with <code>verb: use</code> on <code>resource: tools</code> in <code>apiGroup: kubernaut.ai</code>, listing the desired tool names as <code>resourceNames</code></li>
+<li>In the Kubernaut CR, add a <code>roleBindings</code> entry with <code>clusterRoleName</code> (instead of <code>role</code>) pointing to your ClusterRole</li>
+<li>The operator creates only the ClusterRoleBinding — it does <strong>not</strong> create or modify your ClusterRole</li>
+</ol>
+<p><strong>Validation:</strong> <code>role</code> and <code>clusterRoleName</code> are mutually exclusive. Entries with both or neither set are rejected by CR validation.</p>
+<details class="example">
+<summary>Custom ClusterRole: restricted investigator (investigate + read, no approval)</summary>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_list_remediations</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_watch</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_investigate</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_message</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_complete</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_cancel</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_status</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_reconnect</span>
+</span></code></pre></div>
+</details>
+<details class="example">
+<summary>Custom ClusterRole: readonly audit (history + effectiveness only)</summary>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="nt">rules</span><span class="p">:</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">apiGroups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;kubernaut.ai&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="w">    </span><span class="nt">resources</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;tools&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a><span class="w">    </span><span class="nt">verbs</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;use&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">    </span><span class="nt">resourceNames</span><span class="p">:</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_list_remediations</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_remediation_history</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_effectiveness</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut_get_audit_trail</span>
+</span></code></pre></div>
+</details>
+<details class="example">
+<summary>Mixed CR configuration (built-in + custom)</summary>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-7-10"><a id="__codelineno-7-10" name="__codelineno-7-10" href="#__codelineno-7-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;compliance-team&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+</details>
+<h4 id="available-tool-resourcenames">Available tool <code>resourceNames</code><a class="headerlink" href="#available-tool-resourcenames" title="Permanent link">&para;</a></h4>
+<p>The following tool names can be used in <code>resourceNames</code> when authoring custom ClusterRoles. The SAR check matches against these exact strings.</p>
+<p><strong>MCP bridge tools (23)</strong> — available to external MCP clients and the Kubernaut Console:</p>
+<table>
+<thead>
+<tr>
+<th><code>resourceName</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubernaut_list_remediations</code></td>
+<td>List active and recent remediations</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_remediation</code></td>
+<td>Get details of a specific remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_cancel_remediation</code></td>
+<td>Cancel an active remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_watch</code></td>
+<td>Stream live status updates for a remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_approval_requests</code></td>
+<td>List approval requests</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_approval_request</code></td>
+<td>Get full details of an approval request</td>
+</tr>
+<tr>
+<td><code>kubernaut_approve</code></td>
+<td>Approve or reject a pending approval request</td>
+</tr>
+<tr>
+<td><code>kubernaut_await_session</code></td>
+<td>Wait for an investigation session to become ready</td>
+</tr>
+<tr>
+<td><code>kubernaut_investigate</code></td>
+<td>Start or join an investigation</td>
+</tr>
+<tr>
+<td><code>kubernaut_message</code></td>
+<td>Send a message to an active investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete</code></td>
+<td>Complete an investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_complete_no_action</code></td>
+<td>Complete with no remediation (dismiss or escalate)</td>
+</tr>
+<tr>
+<td><code>kubernaut_cancel</code></td>
+<td>Cancel an active investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_status</code></td>
+<td>Get the current status of an investigation session</td>
+</tr>
+<tr>
+<td><code>kubernaut_reconnect</code></td>
+<td>Reconnect to a disconnected session</td>
+</tr>
+<tr>
+<td><code>kubernaut_discover_workflows</code></td>
+<td>Discover available workflows for a remediation</td>
+</tr>
+<tr>
+<td><code>kubernaut_select_workflow</code></td>
+<td>Select a workflow for execution</td>
+</tr>
+<tr>
+<td><code>kubernaut_present_decision</code></td>
+<td>Present investigation results for a decision</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_workflows</code></td>
+<td>List available workflows from the catalog</td>
+</tr>
+<tr>
+<td><code>kubernaut_list_alerts</code></td>
+<td>Query firing Prometheus alerts (conditional)</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_remediation_history</code></td>
+<td>Query historical remediations</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_effectiveness</code></td>
+<td>Get effectiveness scores for workflows</td>
+</tr>
+<tr>
+<td><code>kubernaut_get_audit_trail</code></td>
+<td>Retrieve the audit trail for a remediation</td>
+</tr>
+</tbody>
+</table>
+<p><strong>A2A agent internal tools (5)</strong> — used inside the A2A agent loop, SAR-gated on the A2A path:</p>
+<table>
+<thead>
+<tr>
+<th><code>resourceName</code></th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>kubectl_get</code></td>
+<td>Get any namespaced K8s resource (Secret <code>.data</code> redacted)</td>
+</tr>
+<tr>
+<td><code>kubectl_list</code></td>
+<td>List namespaced K8s resources (Secret <code>.data</code> redacted)</td>
+</tr>
+<tr>
+<td><code>kubectl_list_events</code></td>
+<td>List K8s events with reason/object filters</td>
+</tr>
+<tr>
+<td><code>kubernaut_check_existing_remediation</code></td>
+<td>Check for duplicate RemediationRequest</td>
+</tr>
+<tr>
+<td><code>kubernaut_remediate</code></td>
+<td>Create a new RemediationRequest CRD</td>
+</tr>
+</tbody>
+</table>
+<h3 id="binding-example">Binding example<a class="headerlink" href="#binding-example" title="Permanent link">&para;</a></h3>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRoleBinding</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="nt">metadata</span><span class="p">:</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team-kubernaut-tools</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="nt">subjects</span><span class="p">:</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Group</span>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="w">    </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre-team</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="w">    </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="nt">roleRef</span><span class="p">:</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="w">  </span><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterRole</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-tool-sre</span>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="w">  </span><span class="nt">apiGroup</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</span></code></pre></div>
+<h3 id="sar-caching">SAR caching<a class="headerlink" href="#sar-caching" title="Permanent link">&para;</a></h3>
+<p>Authorization results are cached with a SHA256-keyed TTL cache (default 30s) to avoid per-call SAR overhead:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</span></code></pre></div>
+<h3 id="migration-from-rbac_rolesyaml">Migration from rbac_roles.yaml<a class="headerlink" href="#migration-from-rbac_rolesyaml" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Breaking change</p>
+<p>The <code>rbac_roles.yaml</code> ConfigMap and <code>RBACConfig.GroupMapping</code> are removed in v1.5. Customers who customized file-based RBAC must create equivalent ClusterRoleBindings.</p>
+</div>
+<ol>
+<li>Identify which tools each role had access to</li>
+<li>Map those to the closest per-persona ClusterRole (or create a custom one with <code>verb: use</code> on <code>resource: tools</code> in <code>apiGroup: kubernaut.ai</code>)</li>
+<li>Create ClusterRoleBindings for your OIDC groups</li>
+<li>The <code>rbac_roles.yaml</code> ConfigMap is no longer read</li>
+</ol>
+<h3 id="unified-sa-model">Unified ServiceAccount model (v1.5, ADR-022)<a class="headerlink" href="#unified-sa-model" title="Permanent link">&para;</a></h3>
+<p>All AF Kubernetes API calls use the <strong>AF pod's own ServiceAccount</strong> — there is no per-user impersonation or OIDC-direct token forwarding. This simplifies the security model: the AF SA has a fixed, auditable set of permissions, and application-level authorization is enforced entirely through SAR-based tool gating (see <a href="#per-persona-clusterroles">Per-persona ClusterRoles</a>).</p>
+<p><strong>User attribution</strong> is preserved in the application audit trail (<code>tool.executed</code> events include <code>UserID</code>, <code>actor_ip</code>, <code>target_namespace</code>, <code>target_kind</code>) rather than in Kubernetes audit logs.</p>
+<p><strong>Accepted risks</strong> (documented in ADR-022):</p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SEC-01</td>
+<td>AF SA has broad kubernaut CRD access</td>
+<td>Namespace-scoped where possible; SAR gates each tool call</td>
+</tr>
+<tr>
+<td>SEC-02</td>
+<td>K8s audit logs attribute actions to AF SA, not the end user</td>
+<td>Application audit trail carries user identity; correlate via <code>actor_ip</code></td>
+</tr>
+<tr>
+<td>SEC-04</td>
+<td>AF SA privilege aggregation</td>
+<td>ClusterRole is explicit and minimal; reviewed per release</td>
+</tr>
+<tr>
+<td>SEC-09</td>
+<td>Persona misconfiguration could over-grant</td>
+<td>Helm values are the source of truth; <code>kubernaut-tool-*</code> roles are data-driven</td>
+</tr>
+</tbody>
+</table>
+<h3 id="approval-consent-guard">Approval Consent Guard (DD-AF-006, v1.5.1)<a class="headerlink" href="#approval-consent-guard" title="Permanent link">&para;</a></h3>
+<p><code>kubernaut_approve</code> is <strong>structurally absent</strong> from the A2A agent's <code>buildToolList()</code> as of v1.5.1. It remains registered on the MCP bridge for the Kubernaut Console's Approve/Reject buttons and direct MCP client access.</p>
+<p><strong>Rationale</strong>: An LLM with access to <code>kubernaut_approve</code> could autonomously approve RARs via prompt injection, bypassing the human consent gate that RARs exist to enforce.</p>
+<p><strong>Defense-in-depth layers</strong>:</p>
+<ol>
+<li>Tool absent from <code>buildToolList()</code> -- structurally impossible for the A2A agent to call</li>
+<li>Explicit prompt instruction telling the agent the tool is unavailable</li>
+<li>SAR RBAC on the MCP bridge path</li>
+<li>Audit trail attributing every approval to the human user</li>
+</ol>
+<p>Similarly, <code>kubernaut_complete_no_action</code> is MCP-only (DD-AF-007) -- it is not available to the A2A agent.</p>
+<h3 id="trusted-intermediary">Trusted Intermediary Delegation (#1287)<a class="headerlink" href="#trusted-intermediary" title="Permanent link">&para;</a></h3>
+<p>When a human operator approves or rejects a <code>RemediationApprovalRequest</code> (RAR) via the MCP bridge, the API Frontend acts as a <strong>trusted intermediary</strong>:</p>
+<ol>
+<li>The operator's OIDC token is validated and a <code>TokenReview</code> resolves the human identity (username + groups).</li>
+<li>The AF ServiceAccount patches the RAR's <code>status.decision</code> on behalf of the human user.</li>
+<li>The <code>decidedVia</code> field on the RAR status records the trusted intermediary's SA identity (e.g. <code>system:serviceaccount:kubernaut-system:kubernaut-apifrontend</code>). The auth webhook sets this field; it is blank when the RAR is decided directly (e.g., by the operator CRD controller).</li>
+</ol>
+<p>This allows the AF to record <strong>who</strong> made the decision (the human) while executing the Kubernetes API call with its own SA token — consistent with the unified SA model above.</p>
+<h3 id="tokenreview">TokenReview Identity Enrichment<a class="headerlink" href="#tokenreview" title="Permanent link">&para;</a></h3>
+<p>When a client connects via OIDC, the AF performs a Kubernetes <code>TokenReview</code> to resolve the full user identity (username, UID, groups, extras). This enriched identity is:</p>
+<ul>
+<li>Used in every SAR check for tool authorization</li>
+<li>Injected into the Rego policy context as <code>input.identity</code> (see <a href="../../user-guide/rego-reference/">Rego Reference</a>)</li>
+<li>Recorded in application audit trail events</li>
+</ul>
+<h3 id="oidc-ca-trust">OIDC CA Trust (#1245)<a class="headerlink" href="#oidc-ca-trust" title="Permanent link">&para;</a></h3>
+<p>For environments using a private OIDC provider (non-public CA), the AF supports a custom CA certificate via the <code>oidcCaFile</code> configuration field:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://idp.internal.corp.com</span>
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">      </span><span class="nt">oidcCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/certs/oidc-ca.pem</span>
+</span></code></pre></div>
+<p>Mount the CA certificate as a Kubernetes Secret or ConfigMap volume. The AF uses this CA when fetching the OIDC discovery document and JWKS keys.</p>
+<h3 id="auth-auto-detect">Auth Mode Auto-Detection (#1309)<a class="headerlink" href="#auth-auto-detect" title="Permanent link">&para;</a></h3>
+<p>The AF auto-detects its authentication mode from the configuration:</p>
+<table>
+<thead>
+<tr>
+<th>Condition</th>
+<th>Mode</th>
+<th>Behavior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>JWT providers configured</td>
+<td><strong>OIDC/JWKS</strong></td>
+<td>Validates bearer tokens against configured issuers and JWKS endpoints</td>
+</tr>
+<tr>
+<td>No JWT providers + TokenReview wired</td>
+<td><strong>K8s TokenReview</strong></td>
+<td>Validates tokens via the Kubernetes API server's TokenReview endpoint</td>
+</tr>
+</tbody>
+</table>
+<p>This removes the need for an explicit <code>authMode</code> toggle — the AF infers the correct strategy from which providers are present in the configuration.</p>
+<h2 id="keycloak-oidc">Keycloak OIDC Configuration<a class="headerlink" href="#keycloak-oidc" title="Permanent link">&para;</a></h2>
+<p>When using Keycloak as the OIDC provider (common with kagenti deployments), additional configuration is needed to ensure the API Frontend can authorize tool calls via SAR.</p>
+<h3 id="keycloak-groups-scope">Groups Client Scope<a class="headerlink" href="#keycloak-groups-scope" title="Permanent link">&para;</a></h3>
+<p>The AF uses Kubernetes SubjectAccessReview (SAR) to authorize tool access based on OIDC group claims in the user's JWT. Keycloak must include group membership in issued tokens.</p>
+<ol>
+<li>In the Keycloak admin console, navigate to the target realm (e.g., <code>kagenti</code>)</li>
+<li>Go to <strong>Client scopes</strong> &gt; <strong>Create client scope</strong>: name <code>groups</code>, protocol <code>openid-connect</code></li>
+<li>Under the new scope, go to <strong>Mappers</strong> &gt; <strong>Create mapper</strong>:</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Name</td>
+<td><code>groups</code></td>
+</tr>
+<tr>
+<td>Mapper type</td>
+<td><code>Group Membership</code></td>
+</tr>
+<tr>
+<td>Token claim name</td>
+<td><code>groups</code></td>
+</tr>
+<tr>
+<td>Full group path</td>
+<td><code>off</code></td>
+</tr>
+<tr>
+<td>Add to ID token</td>
+<td><code>on</code></td>
+</tr>
+<tr>
+<td>Add to access token</td>
+<td><code>on</code></td>
+</tr>
+<tr>
+<td>Add to userinfo</td>
+<td><code>on</code></td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>Go to <strong>Clients</strong> &gt; <code>kagenti</code> &gt; <strong>Client scopes</strong> &gt; <strong>Add client scope</strong> &gt; add <code>groups</code> as a <strong>Default</strong> scope</li>
+</ol>
+<p>The group names in the token must match the <code>groups</code> array in <code>spec.apiFrontend.rbac.roleBindings</code> (Operator CR) or <code>apifrontend.config.rbac.roleBindings</code> (Helm values).</p>
+<h3 id="keycloak-audience-mapper">Audience Mapper<a class="headerlink" href="#keycloak-audience-mapper" title="Permanent link">&para;</a></h3>
+<p>For kagenti to successfully authenticate with the API Frontend via SPIFFE identity, add an <code>oidc-audience-mapper</code> protocol mapper to the <code>kagenti</code> client:</p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>included.custom.audience</code></td>
+<td><code>spiffe://&lt;trust-domain&gt;/ns/kubernaut-system/sa/apifrontend</code></td>
+</tr>
+<tr>
+<td><code>access.token.claim</code></td>
+<td><code>true</code></td>
+</tr>
+<tr>
+<td><code>id.token.claim</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Assign this scope as a default scope to the <code>kagenti</code> client. The trust domain must match your SPIRE deployment.</p>
+<h3 id="keycloak-stale-tokens">Stale Token Warning<a class="headerlink" href="#keycloak-stale-tokens" title="Permanent link">&para;</a></h3>
+<div class="admonition warning">
+<p class="admonition-title">Users must re-authenticate after scope changes</p>
+<p>Users must log out and log back in after being added to a group (or after the <code>groups</code> scope is first created) to receive a fresh token with the <code>groups</code> claim. Stale tokens issued before the scope was added will have an empty or missing <code>groups</code> array. SAR checks will fail with <code>403 Forbidden</code> for all tool calls, even if the user's group has a valid <code>roleBinding</code>.</p>
+<p>To verify a token contains the expected groups:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$TOKEN</span><span class="s2">&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>cut<span class="w"> </span>-d.<span class="w"> </span>-f2<span class="w"> </span><span class="p">|</span><span class="w"> </span>base64<span class="w"> </span>-d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.groups&#39;</span>
+</span></code></pre></div>
+<p>If <code>groups</code> is <code>null</code> or empty, the user must re-authenticate.</p>
+</div>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<ul>
+<li><a href="../../user-guide/configuration/#signal-source-authentication">Configuration Reference</a> -- Configure AlertManager and other signal sources</li>
+<li><a href="../../user-guide/configuration/">Configuration Reference</a> -- Helm values for all services</li>
+<li><a href="../../operations/disconnected-install/">Disconnected Installation</a> -- Air-gapped installation with Keycloak integration</li>
+<li><a href="../../operations/troubleshooting/">Troubleshooting</a> -- Diagnose RBAC-related issues</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../apifrontend/" class="md-footer__link md-footer__link--prev" aria-label="Previous: API Frontend">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                API Frontend
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../api-reference/" class="md-footer__link md-footer__link--next" aria-label="Next: API Reference">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                API Reference
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2026 Kubernaut Contributors
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/jordigilh/kubernaut" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.expand", "navigation.top", "navigation.indexes", "navigation.footer", "search.suggest", "search.highlight", "content.code.copy", "content.code.annotate", "toc.follow", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"default": "latest", "provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+        <script src="../../assets/extra.js"></script>
+      
+    
+  </body>
+</html>

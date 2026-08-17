@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="130 230 1680 540" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <filter id="sh" x="-2%" y="-4%" width="104%" height="112%">
+      <feDropShadow dx="0" dy="3" stdDeviation="8" flood-color="#000" flood-opacity="0.08"/>
+    </filter>
+  </defs>
+
+  <rect x="130" y="230" width="1680" height="540" fill="white"/>
+
+  <!-- ====== PIPELINE BAR ====== -->
+  <rect x="160" y="260" width="1600" height="52" rx="26" fill="#F5F5F5" stroke="#A3A6A9" stroke-width="1"/>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" font-weight="600" fill="#151515">
+    <text x="280" y="292" text-anchor="middle">Alert</text>
+    <text x="520" y="292" text-anchor="middle">Investigate</text>
+    <text x="760" y="292" text-anchor="middle">RCA</text>
+    <text x="1000" y="292" text-anchor="middle">Select Workflow</text>
+    <text x="1280" y="292" text-anchor="middle">Execute</text>
+    <text x="1580" y="292" text-anchor="middle">Assess</text>
+  </g>
+  <g stroke="#A3A6A9" stroke-width="2">
+    <line x1="350" y1="286" x2="440" y2="286"/>
+    <polygon points="448,286 440,282 440,290" fill="#A3A6A9"/>
+    <line x1="600" y1="286" x2="680" y2="286"/>
+    <polygon points="688,286 680,282 680,290" fill="#A3A6A9"/>
+    <line x1="820" y1="286" x2="910" y2="286"/>
+    <polygon points="918,286 910,282 910,290" fill="#A3A6A9"/>
+    <line x1="1100" y1="286" x2="1190" y2="286"/>
+    <polygon points="1198,286 1190,282 1190,290" fill="#A3A6A9"/>
+    <line x1="1370" y1="286" x2="1480" y2="286"/>
+    <polygon points="1488,286 1480,282 1480,290" fill="#A3A6A9"/>
+  </g>
+
+  <!-- ===== Injection Point 1 ===== -->
+  <line x1="400" y1="312" x2="400" y2="380" stroke="#0891B2" stroke-width="2" stroke-dasharray="6,4"/>
+  <circle cx="400" cy="312" r="6" fill="#0891B2"/>
+
+  <g filter="url(#sh)">
+    <rect x="160" y="390" width="480" height="280" rx="14" fill="white"/>
+  </g>
+  <rect x="160" y="390" width="480" height="8" rx="4" fill="#0891B2"/>
+  <text x="400" y="432" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18px" font-weight="700" fill="#0891B2">Pre-Investigation</text>
+  <text x="400" y="458" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Context injected into LLM prompt before analysis</text>
+
+  <line x1="200" y1="478" x2="600" y2="478" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="200" y="510" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15px" font-weight="600" fill="#151515">Example: check-maintenance-window</text>
+  <text x="200" y="536" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Calls CMDB MCP server to check if resource</text>
+  <text x="200" y="558" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">is in a maintenance window</text>
+
+  <line x1="200" y1="580" x2="600" y2="580" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="200" y="610" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; If under maintenance: skip alerting</text>
+  <text x="200" y="634" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; Annotate RCA as expected downtime</text>
+
+  <!-- ===== Injection Point 2 ===== -->
+  <line x1="880" y1="312" x2="880" y2="380" stroke="#0891B2" stroke-width="2" stroke-dasharray="6,4"/>
+  <circle cx="880" cy="312" r="6" fill="#0891B2"/>
+
+  <g filter="url(#sh)">
+    <rect x="720" y="390" width="480" height="280" rx="14" fill="white"/>
+  </g>
+  <rect x="720" y="390" width="480" height="8" rx="4" fill="#0891B2"/>
+  <text x="960" y="432" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18px" font-weight="700" fill="#0891B2">Pre-Workflow Selection</text>
+  <text x="960" y="458" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Constraints injected to bias workflow choice</text>
+
+  <line x1="760" y1="478" x2="1160" y2="478" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="760" y="510" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15px" font-weight="600" fill="#151515">Example: enforce-cost-guardrails</text>
+  <text x="760" y="536" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Calls Cost/Resource MCP for budget utilization</text>
+  <text x="760" y="558" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">and scaling limits for the namespace</text>
+
+  <line x1="760" y1="580" x2="1160" y2="580" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="760" y="610" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; "Do not select scale-up workflows"</text>
+  <text x="760" y="634" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; Nudges LLM toward restart/rollback</text>
+
+  <!-- ===== Injection Point 3 ===== -->
+  <line x1="1560" y1="312" x2="1560" y2="380" stroke="#151515" stroke-width="2"/>
+  <circle cx="1560" cy="312" r="6" fill="#151515"/>
+
+  <g filter="url(#sh)">
+    <rect x="1280" y="390" width="480" height="280" rx="14" fill="white"/>
+  </g>
+  <rect x="1280" y="390" width="480" height="8" rx="4" fill="#151515"/>
+  <text x="1520" y="432" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="18px" font-weight="700" fill="#151515">EM Direct Execution</text>
+  <text x="1520" y="458" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Recipe runs via Kubernaut endpoint at assessment</text>
+
+  <line x1="1320" y1="478" x2="1720" y2="478" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="1320" y="510" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="15px" font-weight="600" fill="#151515">Example: verify-business-slo</text>
+  <text x="1320" y="536" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">Calls SLO/Business Metrics MCP to check</text>
+  <text x="1320" y="558" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73">p95 latency, error rate against SLO budget</text>
+
+  <line x1="1320" y1="580" x2="1720" y2="580" stroke="#F0F0F0" stroke-width="1"/>
+
+  <text x="1320" y="610" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; Returns pass/fail + business impact</text>
+  <text x="1320" y="634" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">&#x2192; Replaces default K8s health check</text>
+
+  <!-- Bottom legend -->
+  <rect x="160" y="710" width="1600" height="46" rx="10" fill="#F5F5F5"/>
+  <text x="960" y="740" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#6A6E73"><tspan font-weight="600" fill="#151515">Recipes</tspan> = declarative Goose runbooks  |  <tspan font-weight="600" fill="#151515">SREs</tspan> author them  |  <tspan font-weight="600" fill="#0891B2">Multiple stacked recipes</tspan> per injection point  |  All external via MCP</text>
+
+</svg>

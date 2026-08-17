@@ -1,0 +1,334 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="120 125 1680 875">
+  <rect x="120" y="125" width="1680" height="875" fill="#FFFFFF"/>
+  <defs>
+    <filter id="ws" x="-2%" y="-1%" width="104%" height="104%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#000" flood-opacity="0.15"/>
+    </filter>
+    <linearGradient id="rhH" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#0891B2"/><stop offset="100%" stop-color="#06B6D4"/>
+    </linearGradient>
+  </defs>
+
+
+  <!-- Backstage Window -->
+  <g filter="url(#ws)">
+    <rect x="139" y="140" width="1642" height="820" rx="8" fill="#222427"/>
+  </g>
+  <rect x="139" y="140" width="1642" height="44" rx="8" fill="url(#rhH)"/>
+  <rect x="139" y="170" width="1642" height="14" fill="url(#rhH)"/>
+  <text x="180" y="169" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="15px" fill="#FFFFFF">Backstage</text>
+
+  <!-- Sidebar -->
+  <rect x="139" y="184" width="220" height="776" fill="#222427"/>
+
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#FFFFFF" fill-opacity="0.65">
+    <text x="178" y="224">Home</text>
+    <text x="178" y="256">Catalog</text>
+    <text x="178" y="288">APIs</text>
+    <text x="178" y="320">Docs</text>
+  </g>
+  <line x1="160" y1="340" x2="340" y2="340" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="1"/>
+  <rect x="139" y="355" width="4" height="30" fill="#0891B2"/>
+  <rect x="143" y="355" width="216" height="30" fill="#3C3F42"/>
+  <text x="178" y="376" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="600" font-size="13px" fill="#FFFFFF">Kubernaut</text>
+
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" fill="#FFFFFF" fill-opacity="0.45">
+    <text x="194" y="408" fill="#FFFFFF" fill-opacity="1" font-weight="600">Fleet Overview</text>
+    <text x="194" y="432">Investigations</text>
+    <text x="194" y="456">Workflows</text>
+    <text x="194" y="480">Clusters</text>
+    <text x="194" y="504">Policies</text>
+  </g>
+
+  <!-- Content area -->
+  <rect x="359" y="184" width="1422" height="776" fill="#F8F8F8"/>
+
+  <!-- Breadcrumb -->
+  <rect x="359" y="184" width="1422" height="42" fill="#FFFFFF"/>
+  <line x1="359" y1="226" x2="1781" y2="226" stroke="#C7C7C7" stroke-width="1"/>
+  <text x="390" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#757575">Kubernaut</text>
+  <text x="468" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#757575">/</text>
+  <text x="482" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" fill="#151515">Fleet Overview</text>
+  <text x="1690" y="211" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#757575" text-anchor="end">100 clusters  &#xb7;  synced 12s ago</text>
+
+  <!-- ═══ NL COMMAND BAR (PRIMARY) ═══ -->
+  <rect x="400" y="246" width="1340" height="52" rx="26" fill="#FFFFFF" stroke="#0891B2" stroke-width="2"/>
+  <circle cx="430" cy="272" r="12" fill="#0891B2" opacity="0.1"/>
+  <text x="430" y="277" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#0891B2">&#x2728;</text>
+  <text x="454" y="278" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="14px" fill="#151515">show me all critical alerts across production clusters</text>
+  <rect x="1660" y="258" width="60" height="28" rx="14" fill="#0891B2"/>
+  <text x="1690" y="277" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="600" font-size="11px" fill="#FFFFFF">Ask</text>
+
+  <!-- ═══ RESPONSE AREA: conversational response + live data ═══ -->
+
+  <!-- Kubernaut response bubble -->
+  <rect x="400" y="308" width="1340" height="68" rx="10" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <circle cx="428" cy="330" r="14" fill="#0891B2" opacity="0.1"/>
+  <text x="428" y="335" text-anchor="middle" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" font-weight="700" fill="#0891B2">K</text>
+  <!-- Severity dot -->
+  <circle cx="446" cy="328" r="4" fill="#E22134"/>
+  <text x="456" y="332" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="13px" font-weight="600" fill="#151515">Found 7 critical alerts across 5 production clusters.</text>
+  <text x="456" y="352" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" fill="#757575">3 active investigations  &#xb7;  2 auto-resolved  &#xb7;  1 escalated  &#xb7;  1 pending approval</text>
+  <text x="456" y="368" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#0891B2">View full RCA for escalated &#x2192;</text>
+
+  <!-- Contextual follow-up suggestions (after response) -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px">
+    <text x="400" y="398" fill="#757575">Follow up:</text>
+    <rect x="462" y="386" width="260" height="20" rx="10" fill="#0891B2" opacity="0.06"/>
+    <text x="592" y="400" text-anchor="middle" fill="#0891B2">"investigate the pvc failure in prod-west-11"</text>
+    <rect x="732" y="386" width="180" height="20" rx="10" fill="#0891B2" opacity="0.06"/>
+    <text x="822" y="400" text-anchor="middle" fill="#0891B2">"approve the cert rotation"</text>
+    <rect x="922" y="386" width="210" height="20" rx="10" fill="#0891B2" opacity="0.06"/>
+    <text x="1027" y="400" text-anchor="middle" fill="#0891B2">"show me SLA trend this week"</text>
+  </g>
+
+  <!-- ═══ INTENT-DRIVEN NAVIGATION ANNOTATION ═══ -->
+  <defs>
+    <marker id="arrowNL" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="none" stroke="#0891B2" stroke-width="1.2"/>
+    </marker>
+  </defs>
+  <!-- Pending-active highlight on "Investigations" sidebar item -->
+  <rect x="143" y="419" width="216" height="22" rx="3" fill="#0891B2" opacity="0.12"/>
+  <!-- Dashed connector: follow-up pill → sidebar nav -->
+  <path d="M 462,396 C 420,396 395,410 378,420 C 368,428 360,430 340,430"
+        fill="none" stroke="#0891B2" stroke-width="1.2" stroke-dasharray="5,3" opacity="0.65"
+        marker-end="url(#arrowNL)"/>
+
+  <!-- ═══ SPLIT VIEW: metrics left, cluster grid right ═══ -->
+
+  <!-- Left: compact metrics -->
+  <g transform="translate(400, 424)">
+    <rect x="0" y="0" width="180" height="66" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+    <rect x="0" y="0" width="180" height="3" rx="1" fill="#1F5493"/>
+    <text x="14" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Active</text>
+    <text x="14" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="24px" fill="#1F5493">8</text>
+    <text x="46" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#757575">investigations</text>
+
+    <rect x="196" y="0" width="180" height="66" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+    <rect x="196" y="0" width="180" height="3" rx="1" fill="#1DB954"/>
+    <text x="210" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Resolved (24h)</text>
+    <text x="210" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="24px" fill="#1DB954">247</text>
+
+    <rect x="392" y="0" width="180" height="66" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+    <rect x="392" y="0" width="180" height="3" rx="1" fill="#E22134"/>
+    <text x="406" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Critical</text>
+    <text x="406" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="24px" fill="#E22134">7</text>
+    <text x="432" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#757575">across 5 clusters</text>
+
+    <rect x="588" y="0" width="180" height="66" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+    <text x="602" y="22" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">Avg Resolution</text>
+    <text x="602" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-weight="700" font-size="24px" fill="#151515">2:41</text>
+    <text x="656" y="50" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#757575">94% auto</text>
+  </g>
+
+  <!-- Right: cluster grid -->
+  <rect x="1180" y="424" width="560" height="66" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+  <text x="1196" y="442" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">100 Clusters</text>
+  <g>
+    <rect x="1196" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1205" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1214" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1223" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1232" y="448" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1241" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1250" y="448" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+    <rect x="1259" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1268" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1277" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1286" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1295" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1304" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1313" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1322" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1331" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1340" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1349" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1358" y="448" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1367" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1376" y="448" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1385" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1394" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1403" y="448" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1412" y="448" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1196" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1205" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1214" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1223" y="457" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1232" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1241" y="457" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1250" y="457" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1259" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1268" y="457" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1277" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1286" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1295" y="457" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1304" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1313" y="457" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+    <rect x="1322" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1331" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1340" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1349" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1358" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1367" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1376" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1385" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1394" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1403" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1412" y="457" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1196" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1205" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1214" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1223" y="466" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1232" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1241" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1250" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1259" y="466" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1268" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1277" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1286" y="466" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1295" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1304" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1313" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1322" y="466" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1331" y="466" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1340" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1349" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1358" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1367" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1376" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1385" y="466" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1394" y="466" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+    <rect x="1403" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1412" y="466" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1196" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1205" y="475" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+    <rect x="1214" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1223" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1232" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1241" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1250" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1259" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1268" y="475" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+    <rect x="1277" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1286" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1295" y="475" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1304" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1313" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1322" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1331" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1340" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1349" y="475" width="7" height="7" rx="2" fill="#FF9800" opacity="0.85"/>
+    <rect x="1358" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1367" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1376" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1385" y="475" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1394" y="475" width="7" height="7" rx="2" fill="#1DB954" opacity="0.85"/>
+    <rect x="1403" y="475" width="7" height="7" rx="2" fill="#E22134" opacity="0.85"/>
+    <rect x="1412" y="475" width="7" height="7" rx="2" fill="#1F5493" opacity="0.85"/>
+  </g>
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="7px" transform="translate(1430, 448)">
+    <rect x="0" y="0" width="7" height="7" rx="1" fill="#1DB954"/>
+    <text x="10" y="6" fill="#757575">OK</text>
+    <rect x="32" y="0" width="7" height="7" rx="1" fill="#FF9800"/>
+    <text x="42" y="6" fill="#757575">Warn</text>
+    <rect x="66" y="0" width="7" height="7" rx="1" fill="#1F5493"/>
+    <text x="76" y="6" fill="#757575">Inv.</text>
+    <rect x="98" y="0" width="7" height="7" rx="1" fill="#E22134"/>
+    <text x="108" y="6" fill="#757575">Crit</text>
+  </g>
+
+  <!-- ═══ CRITICAL ALERTS TABLE (filtered by NL query) ═══ -->
+  <rect x="400" y="504" width="1340" height="404" rx="6" fill="#FFFFFF" stroke="#C7C7C7" stroke-width="1"/>
+
+  <!-- Table title bar -->
+  <rect x="400" y="504" width="1340" height="32" rx="6" fill="#FAFAFA"/>
+  <rect x="400" y="530" width="1340" height="6" fill="#FAFAFA"/>
+  <text x="420" y="526" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px" font-weight="600" fill="#151515">Critical Alerts &#x2014; Production Clusters</text>
+  <text x="1700" y="526" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="11px" fill="#757575" text-anchor="end">filtered by query</text>
+
+  <!-- Table header -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" font-weight="600" fill="#757575">
+    <text x="420" y="556">ALERT</text>
+    <text x="640" y="556">CLUSTER</text>
+    <text x="790" y="556">STATUS</text>
+    <text x="910" y="556">DURATION</text>
+    <text x="1020" y="556">WORKFLOW</text>
+    <text x="1200" y="556">ROOT CAUSE (AI)</text>
+    <text x="1530" y="556">ACTION</text>
+  </g>
+  <line x1="400" y1="566" x2="1740" y2="566" stroke="#E0E0E0" stroke-width="1"/>
+
+  <!-- Row 1 -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px">
+    <rect x="414" y="572" width="8" height="28" rx="2" fill="#E22134"/>
+    <text x="430" y="591" fill="#0891B2">payments-oom-crash</text>
+    <text x="640" y="591" fill="#151515">prod-east-14</text>
+    <rect x="790" y="577" width="68" height="20" rx="10" fill="#1F5493" fill-opacity="0.1"/>
+    <text x="824" y="592" fill="#1F5493" font-size="10px" font-weight="600" text-anchor="middle">Running</text>
+    <text x="910" y="591" fill="#151515">1m 48s</text>
+    <text x="1020" y="591" fill="#151515">rollback-deploy</text>
+    <text x="1200" y="591" fill="#475569">OOM from unbounded cache</text>
+    <rect x="1530" y="577" width="70" height="20" rx="4" fill="#0891B2" opacity="0.08"/>
+    <text x="1565" y="592" fill="#0891B2" font-size="10px" font-weight="600" text-anchor="middle">Watch &#x25B6;</text>
+  </g>
+  <line x1="420" y1="606" x2="1720" y2="606" stroke="#F0F0F0" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px">
+    <rect x="414" y="612" width="8" height="28" rx="2" fill="#E22134"/>
+    <text x="430" y="631" fill="#0891B2">etcd-leader-election</text>
+    <text x="640" y="631" fill="#151515">prod-west-03</text>
+    <rect x="790" y="617" width="68" height="20" rx="10" fill="#1F5493" fill-opacity="0.1"/>
+    <text x="824" y="632" fill="#1F5493" font-size="10px" font-weight="600" text-anchor="middle">Running</text>
+    <text x="910" y="631" fill="#151515">3m 22s</text>
+    <text x="1020" y="631" fill="#151515">etcd-recovery</text>
+    <text x="1200" y="631" fill="#475569">Network partition resolved</text>
+    <rect x="1530" y="617" width="70" height="20" rx="4" fill="#0891B2" opacity="0.08"/>
+    <text x="1565" y="632" fill="#0891B2" font-size="10px" font-weight="600" text-anchor="middle">Watch &#x25B6;</text>
+  </g>
+  <line x1="420" y1="646" x2="1720" y2="646" stroke="#F0F0F0" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px">
+    <rect x="414" y="652" width="8" height="28" rx="2" fill="#E22134"/>
+    <text x="430" y="671" fill="#0891B2">pvc-capacity-95pct</text>
+    <text x="640" y="671" fill="#151515">prod-west-11</text>
+    <rect x="790" y="657" width="68" height="20" rx="10" fill="#E22134" fill-opacity="0.1"/>
+    <text x="824" y="672" fill="#E22134" font-size="10px" font-weight="600" text-anchor="middle">Failed</text>
+    <text x="910" y="671" fill="#151515">6m 12s</text>
+    <text x="1020" y="671" fill="#151515">expand-pvc</text>
+    <text x="1200" y="671" fill="#475569">Quota limit, needs override</text>
+    <rect x="1530" y="657" width="70" height="20" rx="4" fill="#E22134" opacity="0.08"/>
+    <text x="1565" y="672" fill="#E22134" font-size="10px" font-weight="600" text-anchor="middle">Escalated</text>
+  </g>
+  <line x1="420" y1="686" x2="1720" y2="686" stroke="#F0F0F0" stroke-width="1"/>
+
+  <!-- Row 4 -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="12px">
+    <rect x="414" y="692" width="8" height="28" rx="2" fill="#E22134"/>
+    <text x="430" y="711" fill="#0891B2">ingress-5xx-sustained</text>
+    <text x="640" y="711" fill="#151515">prod-east-07</text>
+    <rect x="790" y="697" width="68" height="20" rx="10" fill="#1F5493" fill-opacity="0.1"/>
+    <text x="824" y="712" fill="#1F5493" font-size="10px" font-weight="600" text-anchor="middle">Running</text>
+    <text x="910" y="711" fill="#151515">0m 34s</text>
+    <text x="1020" y="711" fill="#757575">&#x2014;</text>
+    <text x="1200" y="711" fill="#475569">Investigating...</text>
+    <rect x="1530" y="697" width="70" height="20" rx="4" fill="#0891B2" opacity="0.08"/>
+    <text x="1565" y="712" fill="#0891B2" font-size="10px" font-weight="600" text-anchor="middle">Watch &#x25B6;</text>
+  </g>
+  <line x1="420" y1="726" x2="1720" y2="726" stroke="#F0F0F0" stroke-width="1"/>
+
+  <!-- Pagination -->
+  <rect x="400" y="732" width="1340" height="28" fill="#FAFAFA"/>
+  <text x="420" y="751" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" font-size="10px" fill="#757575">4 critical alerts shown  &#xb7;  247 total investigations (24h)  &#xb7;  SLA 99.2%</text>
+
+  <!-- ═══ EXTERNAL LEGEND (below Backstage window) ═══ -->
+  <g font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+    <text x="139" y="982" font-size="11px" fill="#6A6E73">
+      <tspan font-weight="600" fill="#0891B2">&#x2500;&#x2500; &#x25B8;</tspan>
+      <tspan dx="4" fill="#6A6E73">NL follow-up suggestions drive contextual navigation &#x2014; selecting a suggestion updates the active view automatically.</tspan>
+    </text>
+  </g>
+
+</svg>

@@ -41,6 +41,10 @@ flowchart TB
         EM -.->|read| GWY
         FMC -.->|read: cluster registry| GWY
         WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
+
+        IdP["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"]
+        GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
+        GWY -.->|validates token| IdP
     end
 
     GWY --> MCPa["K8s MCP Server<br/>Cluster A"]
@@ -64,6 +68,7 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
 | **FederatedScopeChecker** | Routes scope checks: `ClusterID == ""` -> local `scope.Manager`; `ClusterID != ""` -> the configured remote backend adapter |
 | **GatewayDiscoverer** | Cluster/tool discovery interface, implemented once per supported gateway (Kuadrant, EAIGW). Called **server-side only** -- never LLM-facing (see below) |
 | **CRDWatcher** | Discovers clusters from the gateway's own native CRDs (`MCPRoute`/`Backend` for EAIGW, `MCPServerRegistration` for Kuadrant); Kubernaut is a read-only consumer, never creates or modifies these |
+| **OAuth2 Provider** | External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (`pkg/fleet/mcpclient`). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own. |
 
 Signal Processing, API Frontend, and Effectiveness Monitor also participate as read-only MCP Gateway callers (remote enrichment, `list_clusters`/resource reads, and remote target reads respectively).
 
@@ -89,6 +94,15 @@ fleet:
   acm:
     endpoint: "https://search-search-api.open-cluster-management.svc:4010"
     # Auth: mounted ServiceAccount token by default
+
+  mcpGatewayEndpoint: "https://mcp-gateway.example.com"
+  mcpGatewayType: "eaigw"  # "eaigw" (default) | "kuadrant"
+
+  oauth2:
+    enabled: true
+    tokenURL: "https://keycloak.example.com/realms/kubernaut-fleet/protocol/openid-connect/token"
+    credentialsSecretRef: "fleet-oauth2-credentials"  # Secret with client_id/client_secret keys
+    scopes: ["openid", "groups"]  # DefaultFleetScopes if omitted
 ```
 
 ## MCP Gateway Technology

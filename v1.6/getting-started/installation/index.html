@@ -3901,6 +3901,10 @@
 </span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubectl_list_events</span>
 </span></code></pre></div>
 <p><strong>Console access specifically</strong> is gated by a second, separate field, <code>spec.apiFrontend.rbac.consoleAccessGroups</code> — but you do <strong>not</strong> need to set it explicitly in the common case: when left unset, the operator automatically derives it as the deduplicated union of every group already listed in <code>roleBindings</code> above, so any persona group you configure here also gets Console access automatically. Only set <code>consoleAccessGroups</code> explicitly if you need it to differ from your tool-persona groups (e.g. a narrower or entirely separate set).</p>
+<div class="admonition note">
+<p class="admonition-title">This gate is off by default (<code>consoleAccessAuthorizationCheckEnabled</code>)</p>
+<p><code>consoleAccessGroups</code> (and its auto-derivation above) only take effect once <code>spec.apiFrontend.rbac.consoleAccessAuthorizationCheckEnabled</code> is set to <code>true</code>. It defaults to <code>false</code>, so a fresh install's console is authentication-only regardless of <code>consoleAccessGroups</code> — set it to <code>true</code> once you're ready to enforce group-based console access. See <a href="../../architecture/security-rbac/#console-access-authorization-check-enabled">Security &amp; RBAC: <code>consoleAccessAuthorizationCheckEnabled</code></a>.</p>
+</div>
 <h4 id="kagenti-integration">kagenti Integration (A2A)<a class="headerlink" href="#kagenti-integration" title="Permanent link">&para;</a></h4>
 <div class="admonition info">
 <p class="admonition-title">A2A agent integration only — not required for Console or AF's own OIDC auth</p>
@@ -4178,6 +4182,10 @@
 <h3 id="console-access-denied">Console shows "Access Denied" — missing <code>consoleAccessGroups</code> RBAC<a class="headerlink" href="#console-access-denied" title="Permanent link">&para;</a></h3>
 <p><strong>Symptom</strong>: the Console loads and immediately shows "Access Denied — You don't have permission to use Kubernaut. Contact your administrator to request access", for some or all users.</p>
 <p><strong>Root cause</strong>: the Console performs a coarse-grained pre-flight check (<code>GET /a2a/access</code>) before rendering the chat UI — advisory/UX-only, but fail-closed. AF answers it with a <code>SubjectAccessReview</code> against a synthetic <code>kubernaut.ai/console</code> resource (<code>verb=use</code>), scoped to the caller's OIDC groups. A <code>403</code> from that SAR is exactly this screen (kubernaut#1919). See <a href="../../architecture/security-rbac/#console-access-gate">Security &amp; RBAC: Console-access authorization gate</a> for the full model.</p>
+<div class="admonition note">
+<p class="admonition-title">This SAR only runs when <code>consoleAccessAuthorizationCheckEnabled: true</code></p>
+<p>The check described in this section is opt-in and <strong>off by default</strong> (<code>spec.apiFrontend.rbac.consoleAccessAuthorizationCheckEnabled</code>, v1alpha2 only). If you haven't explicitly set it to <code>true</code>, "Access Denied" is <strong>not</strong> a <code>consoleAccessGroups</code> problem — the gate is authentication-only in that state, so look at authentication instead (expired/invalid token, wrong OIDC audience — see <a href="#401-unauthorized-invalid-token-audience">401 Unauthorized</a>). Everything below assumes the check is enabled.</p>
+</div>
 <p>For that SAR to succeed, the operator must have created a <code>ClusterRoleBinding</code> named <code>&lt;namespace&gt;-console-access-binding</code> — which it only does when the <em>effective</em> <code>consoleAccessGroups</code> (<code>spec.apiFrontend.rbac.consoleAccessGroups</code>, or the union of <code>roleBindings</code> groups if unset — see <a href="../../api-reference/operator-cr/#apifrontendrbacspec">Operator CR: APIFrontendRBACSpec</a>) is non-empty.</p>
 <div class="admonition danger">
 <p class="admonition-title">Known gap: fresh CRs with <code>spec.apiFrontend.rbac</code> entirely unset (operator v1.5.8–v1.5.10)</p>

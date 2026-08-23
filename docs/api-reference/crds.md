@@ -1336,7 +1336,7 @@ _Appears in:_
 
 ### DetectedLabels
 
-Cluster infrastructure characteristics detected by the Kubernaut Agent's `LabelDetector` during investigation. Stored in `AIAnalysis.status.postRCAContext.detectedLabels` and propagated to DataStorage for workflow scoring.
+Cluster infrastructure characteristics detected by the Kubernaut Agent's `LabelDetector` during investigation. Stored in `AIAnalysis.status.postRCAContext.detectedLabels` and used by Kubernaut Agent's in-memory workflow catalog for scoring (v1.6; DataStorage performed this scoring through v1.5).
 
 | Field | Type | Description |
 |---|---|---|

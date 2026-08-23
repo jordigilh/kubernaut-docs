@@ -6,7 +6,7 @@ This page documents the full investigation pipeline from the LLM's perspective -
 
 !!! tip "Related pages"
     - [AI Analysis](ai-analysis.md) covers the **AA controller** (session management, phase transitions, Rego evaluation)
-    - [Workflow Selection](workflow-selection.md) covers the **DataStorage scoring algorithm** (label filtering, semantic scoring)
+    - [Workflow Selection](workflow-selection.md) covers the **scoring algorithm** (label filtering, semantic scoring -- run by Kubernaut Agent's in-memory catalog as of v1.6, DataStorage through v1.5)
     - This page covers the **KA internals** (prompt construction, LLM investigation, resource context, decision outcomes)
 
 ## Service Configuration
@@ -230,7 +230,7 @@ The detection pipeline is: `Investigator.Investigate` → `resolveEnrichmentCach
 
 These labels are stored in `session_state` and automatically injected into all subsequent workflow discovery queries. They serve two purposes:
 
-1. **Workflow scoring** -- DataStorage uses detected labels for semantic scoring (see [Workflow Selection](workflow-selection.md))
+1. **Workflow scoring** -- Kubernaut Agent's in-memory catalog uses detected labels for semantic scoring (v1.6; DataStorage through v1.5 -- see [Workflow Selection](workflow-selection.md))
 2. **LLM context** -- The `list_available_actions` tool response includes a `cluster_context` section (e.g., "target is GitOps-managed with ArgoCD") so the LLM can factor infrastructure into its decision
 
 Detection runs once per investigation. If it fails, an empty label set is used (graceful degradation).
@@ -722,7 +722,7 @@ Kubernaut Agent and the Kubernaut Agent SDK cap tool and audit text so the model
 ## Next Steps
 
 - [AI Analysis](ai-analysis.md) -- The AA controller that orchestrates KA sessions
-- [Workflow Selection](workflow-selection.md) -- DataStorage scoring algorithm details
+- [Workflow Selection](workflow-selection.md) -- Scoring algorithm details (Kubernaut Agent's in-memory catalog as of v1.6)
 - [Effectiveness Assessment](effectiveness.md) -- How remediations are evaluated after execution
 - [Remediation Workflows](../user-guide/workflows.md) -- How to author workflows that the LLM can discover
 - [Rego Policies](../user-guide/policies.md) -- Customizing the approval policy

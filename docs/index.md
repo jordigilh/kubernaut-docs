@@ -64,11 +64,11 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     [:octicons-arrow-right-24: API Reference](api-reference/index.md)
 
--   :material-new-box:{ .lg .middle } **What's New in v1.5**
+-   :material-new-box:{ .lg .middle } **What's New in v1.6**
 
     ---
 
-    API Frontend, interactive MCP sessions, SAR-based tool authorization, unified SA model, and more.
+    Fleet Management for multi-cluster remediation, `AgentSession` CRD-based investigation, and a 98% cut in Helm chart mandatory fields.
 
     [:octicons-arrow-right-24: Release Highlights](whats-new/index.md)
 
@@ -209,7 +209,7 @@ Click a phase card above, or select a tab:
 
     The interactive path is a **parallel entry point**, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:
 
-    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
+    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's MCP connection (Streamable HTTP `text/event-stream`) and relays investigation events in real-time as the LLM works.
     2. **Discover** — After RCA, AF calls `kubernaut_discover_workflows` to present workflow options with LLM-populated parameters.
     3. **Select** — Operator picks a workflow via `kubernaut_select_workflow`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
     4. **Watch** — AF monitors CRD status transitions and reports progress to the user until a terminal phase.
@@ -237,7 +237,7 @@ Click a phase card above, or select a tab:
 |---|---|
 | **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix: investigation, workflow selection, and execution without operator involvement. **Interactive** — operators start an investigation on demand or join one already in progress via MCP or A2A to guide the agent, steer workflow selection, and review remediations in real time. Both modes enforce the same approval gates and OPA policies. |
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
-| **AI-Powered Root Cause Analysis** | Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
+| **AI-Powered Root Cause Analysis** | Kubernaut Agent with native LLM clients (OpenAI, Anthropic, Gemini, Vertex AI, and any OpenAI-compatible endpoint -- covering Azure OpenAI, Ollama, vLLM, and more), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
 | **Workflow Catalog** | Searchable declarative `RemediationWorkflow` CRDs with category and label-based matching plus confidence scoring |
 | **Flexible Execution** | Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP) |
 | **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |

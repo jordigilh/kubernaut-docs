@@ -210,23 +210,29 @@ policies were used:
     With the `has_warnings` rule added to the policy, the warning triggered approval
     in a staging namespace where the default policy would have auto-approved.
 
-### The Gap in the Default Policy
+### The Gap That Was Fixed
 
-The default `approval.rego` defines a `has_warnings` helper but **never uses it** in
-any `require_approval` rule. This means:
+At the time of this validation, the reference `approval.rego` defined a `has_warnings`
+helper but **never used it** in any `require_approval` rule. This meant:
 
-| Environment | Default Policy | LLM Warning Effect |
+| Environment | Policy (at the time) | LLM Warning Effect |
 |---|---|---|
 | Production | Approval required | Warning visible but irrelevant (caught by environment rule) |
 | Staging / Dev | **Auto-approved** | **Warning ignored** — workflow executes silently |
 
-!!! warning "Silent execution in non-production"
-    Without a policy fix, Path B in a staging or development namespace would
-    **auto-execute** the `CleanupPVC` workflow. The LLM's "no remediation warranted"
-    warning would only appear in the audit trail after the PVCs are already deleted.
+!!! warning "Silent execution in non-production (fixed)"
+    Without the `has_warnings` rule wired into `require_approval`, Path B in a staging
+    or development namespace would **auto-execute** the `CleanupPVC` workflow. The
+    LLM's "no remediation warranted" warning would only appear in the audit trail
+    after the PVCs were already deleted.
 
-This gap is tracked in [kubernaut#439](https://github.com/jordigilh/kubernaut/issues/439)
-for inclusion in the default Helm chart policy.
+This gap was fixed in [kubernaut#439](https://github.com/jordigilh/kubernaut/issues/439):
+Kubernaut's reference approval-policy examples now wire `has_warnings` into
+`require_approval` (see [AIAnalysis Approval Policy](../user-guide/configmap-approval.md)),
+matching the "Patched policy (staging)" behavior shown in Run 3 above. Note that
+Kubernaut ships **no built-in default** approval policy at all — `aianalysis.policies.content`
+(or `existingConfigMap`) is a required Helm value — so this fix applies to the reference
+examples operators are expected to start from, not an automatic chart default.
 
 ### Making the Warning Trigger Approval
 
@@ -272,7 +278,7 @@ The complete lifecycle, confirmed on a live OCP cluster:
 
 ```mermaid
 graph LR
-    A["Alert fires"] --> B["LLM investigates<br/>(91 s, 6 poll cycles)"]
+    A["Alert fires"] --> B["LLM investigates<br/>(91 s via AgentSession)"]
     B --> C["CleanupPVC selected<br/>+ warning emitted"]
     C --> D["Approval gate<br/>triggers"]
     D --> E["Operator rejects"]
@@ -288,9 +294,9 @@ total).
 
 ### 2. LLM investigates
 
-Over 91 seconds (6 poll cycles), the LLM identifies low-severity housekeeping.
-Contributing factors: "completed batch jobs without automatic PVC cleanup", "missing
-storage lifecycle management."
+Over 91 seconds, dispatched and tracked via the `AgentSession` CRD (create → watch →
+status), the LLM identifies low-severity housekeeping. Contributing factors: "completed
+batch jobs without automatic PVC cleanup", "missing storage lifecycle management."
 
 ### 3. Workflow matched with warning
 

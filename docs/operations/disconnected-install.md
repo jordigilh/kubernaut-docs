@@ -939,9 +939,9 @@ spec:
   # provider is openai.
   llmProfiles:
     primary:
-      provider: "<llm-provider>"          # e.g. openai, vertex_ai, ollama, anthropic
+      provider: "<llm-provider>"          # e.g. openai, anthropic, gemini, vertex_ai, openai_compatible (Ollama, vLLM, etc.)
       model: "<model-name>"               # e.g. llama3, gpt-4o, claude-sonnet-4-6
-      endpoint: "<llm-endpoint>"          # e.g. http://ollama.internal.svc:11434 (required only for provider: openai)
+      endpoint: "<llm-endpoint>"          # e.g. http://ollama.internal.svc:11434 (schema-required only for provider: openai; set it for openai_compatible too -- e.g. Ollama -- since there's no other way to point at a self-hosted server)
       credentialsSecretName: llm-credentials
       maxRetries: 3
       timeoutSeconds: 120

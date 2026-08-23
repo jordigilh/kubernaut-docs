@@ -257,12 +257,12 @@ Both paths can be enabled simultaneously.
         port: 6379
         secretName: valkey-secret
       # claude-sonnet-4-6 is the model validated against this operator's KA/AF
-      # integration -- swap in openai/vertex_ai/bedrock/azure once your own
-      # provider is validated. anthropic needs no `endpoint` field (only
-      # `openai` does).
+      # integration -- swap in openai/gemini/vertex_ai/openai_compatible once
+      # your own provider is validated. anthropic needs no `endpoint` field
+      # (only `openai`/`openai_compatible` do).
       llmProfiles:
         primary:
-          provider: anthropic           # or: openai, vertex_ai, bedrock, azure
+          provider: anthropic           # or: openai, gemini, vertex_ai, openai_compatible
           model: claude-sonnet-4-6
           credentialsSecretName: llm-credentials
       kubernautAgent: {}
@@ -301,12 +301,12 @@ Both paths can be enabled simultaneously.
         port: 6379
         secretName: valkey-secret
       # claude-sonnet-4-6 is the model validated against this operator's KA/AF
-      # integration -- swap in openai/vertex_ai/bedrock/azure once your own
-      # provider is validated. anthropic needs no `endpoint` field (only
-      # `openai` does).
+      # integration -- swap in openai/gemini/vertex_ai/openai_compatible once
+      # your own provider is validated. anthropic needs no `endpoint` field
+      # (only `openai`/`openai_compatible` do).
       llmProfiles:
         primary:
-          provider: anthropic           # or: openai, vertex_ai, bedrock, azure
+          provider: anthropic           # or: openai, gemini, vertex_ai, openai_compatible
           model: claude-sonnet-4-6
           credentialsSecretName: llm-credentials
       kubernautAgent:

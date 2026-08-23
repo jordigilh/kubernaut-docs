@@ -129,7 +129,7 @@ Used by `kubernautAgent.fleet`, `signalProcessing.fleet`, `remediationOrchestrat
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `provider` | string | **yes** | — | LLM provider (e.g. `openai`, `vertexai`, `bedrock`, `azure`, `anthropic`) |
+| `provider` | string | **yes** | — | LLM provider. No CRD-level enum (free-form string, `MinLength=1` only) — validated downstream by Kubernaut Agent/API Frontend, which as of v1.6 (DD-PLATFORM-007) accept `openai`, `anthropic`, `gemini`, `vertex_ai`, `openai_compatible` only. `vertexai`/`bedrock`/`azure`/`ollama`/`huggingface`/`mistral` are rejected at startup -- Azure OpenAI and other OpenAI-compatible servers use `openai_compatible` with `endpoint` set accordingly. |
 | `model` | string | **yes** | — | Model name (e.g. `gpt-4o`, `claude-sonnet-5`) |
 | `credentialsSecretName` | string | **yes** | — | Secret containing API key |
 | `endpoint` | string | required for `openai` | provider default | Custom endpoint |

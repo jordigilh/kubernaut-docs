@@ -1,6 +1,6 @@
 # API Reference
 
-- **[Custom Resources (CRDs)](crds.md)** — Spec, status, and phase definitions for all 10 CRD types (v1.5+). Documents the full spec and status schema for each CRD in the remediation pipeline.
+- **[Custom Resources (CRDs)](crds.md)** — Spec, status, and phase definitions for all 11 CRD types (v1.6+ -- adds `AgentSession`). Documents the full spec and status schema for each CRD in the remediation pipeline.
 - **[Operator CR](operator-cr.md)** — API reference for the `Kubernaut` CR (`kubernaut.ai/v1alpha2`, v1.6+) used by the Kubernaut Operator. Documents all spec fields, type definitions, status, and RBAC resources.
 - **[DataStorage API](datastorage-api.md)** — REST API for audit events, compliance operations, and RemediationRequest reconstruction.
 - **[Kubernaut Agent](kubernaut-agent-api.md)** — Session-based async API for LLM-powered root cause analysis. Documents endpoints for LLM-driven investigation, infrastructure label detection, and workflow discovery.

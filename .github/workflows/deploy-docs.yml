@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  KUBERNAUT_RELEASE: v1.5.1
+  KUBERNAUT_RELEASE: v1.5.7
 
 jobs:
   deploy:
@@ -55,7 +55,7 @@ jobs:
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [ -z "$VERSION" ]; then
-            VERSION="v1.5"
+            VERSION="v1.6"
           fi
 
           if [ "$VERSION" = "v1.5" ]; then

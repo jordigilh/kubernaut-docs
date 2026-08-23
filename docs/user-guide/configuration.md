@@ -69,7 +69,7 @@ Key differences from Helm:
 | NetworkPolicies | Enabled by default, per-service toggles | Disabled by default (`spec.networkPolicies.enabled`) |
 | Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | Controlled by `spec.monitoring.enabled` (default: `true`) |
 | Database | In-chart PostgreSQL option | BYO only — `spec.postgresql.host` + `spec.postgresql.secretName` |
-| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.llm.runtimeConfigMapName` for BYO hot-reloadable config |
+| KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.runtimeConfigMapName` for BYO hot-reloadable config |
 | Image references | Standard Helm `image.repository`/`image.tag` | `RELATED_IMAGE_*` env vars for disconnected installs |
 | Agent RBAC extension | Manual ClusterRoleBinding creation | `spec.kubernautAgent.additionalClusterRoleBindings` (max 64) |
 
@@ -295,6 +295,10 @@ When deploying via the **Kubernaut Operator**, severity triage is auto-derived f
 | `apifrontend.config.auth.jwtProviders[].claimMappings.username` | CEL expression to extract username from JWT claims (e.g., `claims.email`). Falls back to `preferred_username` / `sub` when empty (#1392). | `""` |
 | `apifrontend.config.auth.jwtProviders[].claimMappings.groups` | CEL expression to extract groups from JWT claims (e.g., `claims.roles`). Falls back to `groups` claim when empty (#1392). | `""` |
 | `apifrontend.config.rbac.sarCacheTTL` | SAR result cache TTL | `30s` |
+| `apifrontend.config.rbac.consoleAccessGroups` | OIDC groups granted the coarse-grained `kubernaut.ai/console` "use" gate (v1.5.6, #1919). Checked in addition to the existing per-tool `kubernaut.ai/tools` grant on every `/mcp` and `/a2a/invoke` call. | All 6 built-in persona names: `sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver` |
+
+!!! danger "Upgrade action required for custom persona groups (v1.5.6)"
+    If you added or renamed a group under `apifrontend.config.rbac.personas` beyond the 6 defaults, that group is **not** automatically included in `consoleAccessGroups` — its members will have every AF tool call denied after upgrading, even though their per-tool grants are unchanged. Add the group name to `consoleAccessGroups` explicitly. `helm install`/`helm upgrade` prints a `NOTES.txt` warning listing any `personas` group missing from `consoleAccessGroups`. See [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model, including how the **Kubernaut Operator's** default for this field differs from the Helm chart's (auto-derived from existing `roleBindings` groups, rather than a static persona list).
 
 #### JWT Providers (v1.5.1) {: #jwt-providers-v151 }
 

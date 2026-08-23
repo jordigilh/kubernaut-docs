@@ -43,8 +43,13 @@ extra:
   # (kubernaut commit 55bd533ca) and only bump together occasionally. Verify
   # against the registry before bumping: `crane manifest quay.io/kubernaut-ai/charts/kubernaut:<version>`
   chart_version: "1.4.2"
-  image_tag: "v1.5.3"
-  operator_image_tag: "1.5.4"
+  # image_tag/operator_image_tag: both quay.io/kubernaut-ai repos tag images
+  # with the bare semver (no "v" prefix) -- verified against the live
+  # registry (`quay.io/api/v1/repository/kubernaut-ai/<repo>/tag/`) before
+  # each bump. image_tag tracks kubernaut's app release; operator_image_tag
+  # tracks kubernaut-operator's own, independently-versioned release.
+  image_tag: "1.5.7"
+  operator_image_tag: "1.5.10"
   version:
     provider: mike
     default: latest

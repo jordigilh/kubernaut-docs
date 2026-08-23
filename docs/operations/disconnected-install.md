@@ -215,34 +215,45 @@ The operator resolves images in this order:
 
 ## Operator (Direct Manifest) — Production {: #operator-direct }
 
-For environments where OLM is not available or not desired, the operator can be installed directly from a manifest file. This method has been **validated on OCP 4.18+ with operator v1.5.1** in fully air-gapped environments.
+For environments where OLM is not available or not desired, the operator can be installed directly from a manifest file. This method has been **validated on OCP 4.18+ with operator v1.5.10** in fully air-gapped environments.
 
 When using `oc mirror`, the generated `ImageDigestMirrorSet` (IDMS) instructs CRI-O to transparently redirect image pulls to your mirror registry. This means you do **not** need to manually rewrite image references in manifests or `RELATED_IMAGE_*` env vars — the original image references work as-is once IDMS is applied.
 
-### Image Inventory (v1.5.1)
+### Image Inventory (operator v1.5.10)
 
-#### Operator Image
+!!! warning "Digests rotate every release — always regenerate before mirroring"
+    Every digest below reflects the `imageset-config.yaml` asset published with [operator release v1.5.10](https://github.com/jordigilh/kubernaut-operator/releases/tag/v1.5.10) and **will be stale by the time you read this** — component images are rebuilt (and their digests change) on every release, independent of the operator's own version number. Do not copy these digests into a real mirroring run. Instead, download the current file directly from the bastion host in Step 1.1 below, which always matches the release you are installing.
 
-| Component | Source Image |
-|---|---|
-| kubernaut-operator | `quay.io/kubernaut-ai/kubernaut-operator@sha256:586e5344ec3897fa2e80bab5207f1eca1611fdc4c6db80113247a1539c7941b7` |
-
-#### Kubernaut v1.5.1 Component Images
+#### Operator Images
 
 | Component | Source Image |
 |---|---|
-| gateway | `quay.io/kubernaut-ai/gateway@sha256:8ef1d69db4508bfa0ab86e7f22100952ddae85c6e22d81293580d9defaf94004` |
-| datastorage | `quay.io/kubernaut-ai/datastorage@sha256:f10d8c98017c7df35133dc98f0e26e36054ec4584ac5c230b0252d3a5c9a0b44` |
-| aianalysis | `quay.io/kubernaut-ai/aianalysis@sha256:b31b8aaba5f4f3d5df1639213bca23c63438e257704ee0ac6d5f1d9ec82314b0` |
-| signalprocessing | `quay.io/kubernaut-ai/signalprocessing@sha256:de7393f8d0cbd07fadacf13ae0b9504cec321c09e1614c6839ccf1c65ec4d86e` |
-| remediationorchestrator | `quay.io/kubernaut-ai/remediationorchestrator@sha256:54778cdfd8e3a7fcef4cd871479c6101e566be0aa8fd0d5e37ed1a0c685eecb8` |
-| workflowexecution | `quay.io/kubernaut-ai/workflowexecution@sha256:47369cf7ab80bf398edca84ff4097028988303cfcc94a8a760cd4235faa7f008` |
-| effectivenessmonitor | `quay.io/kubernaut-ai/effectivenessmonitor@sha256:96aa70fcbd7d752632f18cd7ee57c009c99ab5667d7f070fbf33fd4e163e9752` |
-| notification | `quay.io/kubernaut-ai/notification@sha256:e1c4a270651fe05ca4c2d8e9588ebfb723584d5d0e80620af0cf7cf27ad643dd` |
-| kubernautagent | `quay.io/kubernaut-ai/kubernautagent@sha256:e4bf7bfbe1a3351266b9045ae19b4b012e12fd5a52b9f6559824918215dac184` |
-| authwebhook | `quay.io/kubernaut-ai/authwebhook@sha256:67b4093ca3d686077dd7816de88ce97ce729a32513e8e9fbe93433dae1434688` |
-| apifrontend | `quay.io/kubernaut-ai/apifrontend@sha256:54b57237ddbaa9d39cd6d7abf4fdabbc55406f1ef824fc020154ec5d20789946` |
-| db-migrate | `quay.io/kubernaut-ai/db-migrate@sha256:d94cdefac33c895524743697575425d3a458a97dc9c544deaa72b852b61637b3` |
+| kubernaut-operator | `quay.io/kubernaut-ai/kubernaut-operator@sha256:d93d632ce5d66f0d9e5ba79e14f6754252452a8b6833f6d8778db10f330ef692` |
+| kubernaut-operator-bundle | `quay.io/kubernaut-ai/kubernaut-operator-bundle@sha256:5c79c75b2fa1e610518640b871cc254a2df78165789a95d1dd071d555950d4b9` (OLM/CatalogSource path only — not needed for direct-manifest install) |
+
+#### Kubernaut Component Images
+
+| Component | Source Image |
+|---|---|
+| gateway | `quay.io/kubernaut-ai/gateway@sha256:1694c28ad2ef118ffaeba1fd9652234f8998fdfd06da2d412cc92bcf111c01d2` |
+| datastorage | `quay.io/kubernaut-ai/datastorage@sha256:4a2756b37fcfd122b9635058ee2d617b710706e7e5c2b52718a46f58c8fd6c52` |
+| aianalysis | `quay.io/kubernaut-ai/aianalysis@sha256:dc7643a7c39bd451f7e83ca1f853a15eaf6beb942a79867e2ad37e88276edd05` |
+| signalprocessing | `quay.io/kubernaut-ai/signalprocessing@sha256:df2d4dc75492f190517c71df5e0dccdbf54470ede5333a3c191d4027dbfa2367` |
+| remediationorchestrator | `quay.io/kubernaut-ai/remediationorchestrator@sha256:6dd491a467b412b2ad8492c074d15f4ba7306c3a097b543c1f24b117d0169567` |
+| workflowexecution | `quay.io/kubernaut-ai/workflowexecution@sha256:3d799c36d30ddb822edeb57ffc6bd81fb3b9bc4ff5cdf1ec90d5fbe7c0dfcd26` |
+| effectivenessmonitor | `quay.io/kubernaut-ai/effectivenessmonitor@sha256:87e263681209b115e61a2a4d3948a0e20367ac9ae0be1f4da9e967a240d90d8b` |
+| notification | `quay.io/kubernaut-ai/notification@sha256:098b8e2a8e32693f043957562c7236a7f7f741386cb74ab1ffb63fa8e71dfb87` |
+| kubernautagent | `quay.io/kubernaut-ai/kubernautagent@sha256:e722d66d97d5fd2b74850b78cc11c175674490cc3df2ef2abea6a3afb190ec19` |
+| authwebhook | `quay.io/kubernaut-ai/authwebhook@sha256:cdde1af3e5180300b9c25c49d55973b6182bf73fd5ea1740016991d5118bb830` |
+| apifrontend | `quay.io/kubernaut-ai/apifrontend@sha256:3dc9059c26ed65c88d98b422baf544a36630cdcc4068abd6f8cefd05fa0bbf53` |
+| db-migrate | `quay.io/kubernaut-ai/db-migrate@sha256:86cdd9c8d1269046e2eee9a9c09b7919ac6e4e91c29a48b525ae07870ef93215` |
+| kubernaut-console | `quay.io/kubernaut-ai/kubernaut-console@sha256:44fb41010769a26d9c8820758c3bb0f2d979c5c98738b67b0c269405733f66b0` |
+
+#### Console Sidecar
+
+| Component | Source Image |
+|---|---|
+| oauth2-proxy | `quay.io/oauth2-proxy/oauth2-proxy@sha256:37c1570c0427e02fc7c947ef2c04e8995b8347b7abc9fcf1dbb4e376a4b221a7` |
 
 #### Infrastructure Dependencies (BYO PostgreSQL & Valkey)
 
@@ -263,34 +274,47 @@ When using `oc mirror`, the generated `ImageDigestMirrorSet` (IDMS) instructs CR
 
 #### 1.1 Create the ImageSetConfiguration
 
-Save the following as `imageset-config.yaml`:
+The operator repository publishes a ready-to-use `imageset-config.yaml` as a release asset, generated from the exact image digests shipped in that release. Download the one matching your target release directly on the bastion host, rather than copying the example below (which will not match the digests you actually mirror):
 
-```yaml
-kind: ImageSetConfiguration
-apiVersion: mirror.openshift.io/v2alpha1
-mirror:
-  additionalImages:
-    # Operator
-    - name: quay.io/kubernaut-ai/kubernaut-operator@sha256:586e5344ec3897fa2e80bab5207f1eca1611fdc4c6db80113247a1539c7941b7
-    # Kubernaut v1.5.1 components
-    - name: quay.io/kubernaut-ai/gateway@sha256:8ef1d69db4508bfa0ab86e7f22100952ddae85c6e22d81293580d9defaf94004
-    - name: quay.io/kubernaut-ai/datastorage@sha256:f10d8c98017c7df35133dc98f0e26e36054ec4584ac5c230b0252d3a5c9a0b44
-    - name: quay.io/kubernaut-ai/aianalysis@sha256:b31b8aaba5f4f3d5df1639213bca23c63438e257704ee0ac6d5f1d9ec82314b0
-    - name: quay.io/kubernaut-ai/signalprocessing@sha256:de7393f8d0cbd07fadacf13ae0b9504cec321c09e1614c6839ccf1c65ec4d86e
-    - name: quay.io/kubernaut-ai/remediationorchestrator@sha256:54778cdfd8e3a7fcef4cd871479c6101e566be0aa8fd0d5e37ed1a0c685eecb8
-    - name: quay.io/kubernaut-ai/workflowexecution@sha256:47369cf7ab80bf398edca84ff4097028988303cfcc94a8a760cd4235faa7f008
-    - name: quay.io/kubernaut-ai/effectivenessmonitor@sha256:96aa70fcbd7d752632f18cd7ee57c009c99ab5667d7f070fbf33fd4e163e9752
-    - name: quay.io/kubernaut-ai/notification@sha256:e1c4a270651fe05ca4c2d8e9588ebfb723584d5d0e80620af0cf7cf27ad643dd
-    - name: quay.io/kubernaut-ai/kubernautagent@sha256:e4bf7bfbe1a3351266b9045ae19b4b012e12fd5a52b9f6559824918215dac184
-    - name: quay.io/kubernaut-ai/authwebhook@sha256:67b4093ca3d686077dd7816de88ce97ce729a32513e8e9fbe93433dae1434688
-    - name: quay.io/kubernaut-ai/apifrontend@sha256:54b57237ddbaa9d39cd6d7abf4fdabbc55406f1ef824fc020154ec5d20789946
-    - name: quay.io/kubernaut-ai/db-migrate@sha256:d94cdefac33c895524743697575425d3a458a97dc9c544deaa72b852b61637b3
-    # Infrastructure dependencies (PostgreSQL, Valkey)
-    - name: registry.redhat.io/rhel10/postgresql-16@sha256:877ac0f8207ada1559ef73b70e92616255b95d3b6ef6a1af314c0f67edfde96e
-    - name: registry.redhat.io/rhel10/valkey-8@sha256:7b478930b2d186a61c3af408c3228f3da5104c759b8bd52d62c683e33bdb9ee2
-    # Init containers
-    - name: registry.access.redhat.com/ubi10/ubi-minimal@sha256:7dc60d7777e010c50f5e041ff069112b379c3d5eef2823d20871c67cf663f10c
+```bash
+curl -fsSL \
+  https://github.com/jordigilh/kubernaut-operator/releases/latest/download/imageset-config.yaml \
+  -o imageset-config.yaml
 ```
+
+Or, to pin to a specific release, replace `latest` with a tag, e.g. `.../releases/download/v1.5.10/imageset-config.yaml`.
+
+??? example "imageset-config.yaml shape (operator v1.5.10 — illustrative only, do not copy digests)"
+    ```yaml
+    kind: ImageSetConfiguration
+    apiVersion: mirror.openshift.io/v2alpha1
+    mirror:
+      additionalImages:
+        # Operator
+        - name: quay.io/kubernaut-ai/kubernaut-operator@sha256:d93d632ce5d66f0d9e5ba79e14f6754252452a8b6833f6d8778db10f330ef692
+        # Operator bundle
+        - name: quay.io/kubernaut-ai/kubernaut-operator-bundle@sha256:5c79c75b2fa1e610518640b871cc254a2df78165789a95d1dd071d555950d4b9
+        # Operand and infrastructure images
+        - name: quay.io/kubernaut-ai/aianalysis@sha256:dc7643a7c39bd451f7e83ca1f853a15eaf6beb942a79867e2ad37e88276edd05
+        - name: quay.io/kubernaut-ai/apifrontend@sha256:3dc9059c26ed65c88d98b422baf544a36630cdcc4068abd6f8cefd05fa0bbf53
+        - name: quay.io/kubernaut-ai/authwebhook@sha256:cdde1af3e5180300b9c25c49d55973b6182bf73fd5ea1740016991d5118bb830
+        - name: quay.io/kubernaut-ai/datastorage@sha256:4a2756b37fcfd122b9635058ee2d617b710706e7e5c2b52718a46f58c8fd6c52
+        - name: quay.io/kubernaut-ai/db-migrate@sha256:86cdd9c8d1269046e2eee9a9c09b7919ac6e4e91c29a48b525ae07870ef93215
+        - name: quay.io/kubernaut-ai/effectivenessmonitor@sha256:87e263681209b115e61a2a4d3948a0e20367ac9ae0be1f4da9e967a240d90d8b
+        - name: quay.io/kubernaut-ai/gateway@sha256:1694c28ad2ef118ffaeba1fd9652234f8998fdfd06da2d412cc92bcf111c01d2
+        - name: quay.io/kubernaut-ai/kubernaut-console@sha256:44fb41010769a26d9c8820758c3bb0f2d979c5c98738b67b0c269405733f66b0
+        - name: quay.io/kubernaut-ai/kubernautagent@sha256:e722d66d97d5fd2b74850b78cc11c175674490cc3df2ef2abea6a3afb190ec19
+        - name: quay.io/kubernaut-ai/notification@sha256:098b8e2a8e32693f043957562c7236a7f7f741386cb74ab1ffb63fa8e71dfb87
+        - name: quay.io/kubernaut-ai/remediationorchestrator@sha256:6dd491a467b412b2ad8492c074d15f4ba7306c3a097b543c1f24b117d0169567
+        - name: quay.io/kubernaut-ai/signalprocessing@sha256:df2d4dc75492f190517c71df5e0dccdbf54470ede5333a3c191d4027dbfa2367
+        - name: quay.io/kubernaut-ai/workflowexecution@sha256:3d799c36d30ddb822edeb57ffc6bd81fb3b9bc4ff5cdf1ec90d5fbe7c0dfcd26
+        # Console oauth2-proxy sidecar
+        - name: quay.io/oauth2-proxy/oauth2-proxy@sha256:37c1570c0427e02fc7c947ef2c04e8995b8347b7abc9fcf1dbb4e376a4b221a7
+        - name: registry.access.redhat.com/ubi10/ubi-minimal@sha256:7dc60d7777e010c50f5e041ff069112b379c3d5eef2823d20871c67cf663f10c
+        - name: registry.redhat.io/rhel10/postgresql-16@sha256:877ac0f8207ada1559ef73b70e92616255b95d3b6ef6a1af314c0f67edfde96e
+        # Infrastructure dependencies (PostgreSQL, Valkey)
+        - name: registry.redhat.io/rhel10/valkey-8@sha256:7b478930b2d186a61c3af408c3228f3da5104c759b8bd52d62c683e33bdb9ee2
+    ```
 
 #### 1.2 Configure Registry Authentication
 
@@ -365,9 +389,11 @@ From the bastion host, download the operator install manifest:
 
 ```bash
 curl -fsSL \
-  https://raw.githubusercontent.com/jordigilh/kubernaut-operator/v1.5.1/dist/install.yaml \
+  https://github.com/jordigilh/kubernaut-operator/releases/latest/download/install.yaml \
   -o install.yaml
 ```
+
+To pin to a specific operator release instead of the latest, replace `latest` with a tag, e.g. `.../releases/download/v1.5.10/install.yaml`.
 
 #### 2.2 Apply the Manifest
 
@@ -1302,7 +1328,7 @@ Kubernaut has two components that consume LLM configuration:
 - **Kubernaut Agent (KA)** — the investigation/analysis engine. Supports 9 providers.
 - **API Frontend (AF)** — the MCP/A2A gateway. Supports 4 providers (subset of KA).
 
-The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` CR fields. There is no separate AF LLM section in the CR.
+By default, AF's LLM config resolves from the same profile as KA (`spec.kubernautAgent.llmProfileRef`). Set `spec.apiFrontend.llmProfileRef` to point AF at a different profile in `spec.llmProfiles` when it needs distinct credentials or a different provider than KA.
 
 ### Supported Providers
 
@@ -1322,7 +1348,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 !!! note "`vertex` vs `vertex_ai`"
     `vertex` = Gemini models on Vertex AI (LangChainGo); `vertex_ai` = Claude models on Vertex AI (Anthropic SDK). These are different code paths.
 
-### CR Fields (`spec.kubernautAgent.llm`)
+### CR Fields (`spec.llmProfiles[<name>]`, referenced by `spec.kubernautAgent.llmProfileRef`)
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -1339,7 +1365,8 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 | `azureApiVersion` | string | Azure | — | Azure OpenAI API version (e.g. `2024-02-01`) |
 | `tlsCaFile` | string | No | — | Path to CA cert for TLS to LLM endpoint |
 | `oauth2` | object | No | disabled | OAuth2 client credentials auth (see below) |
-| `runtimeConfigMapName` | string | No | — | Name of a pre-existing ConfigMap for hot-reloadable runtime config |
+
+`spec.kubernautAgent.runtimeConfigMapName` (a sibling of `llmProfileRef`, not a profile field) names a pre-existing ConfigMap for hot-reloadable runtime config.
 
 ### Credential Secret Format
 
@@ -1354,7 +1381,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 | `mistral` | `MISTRAL_API_KEY` | API key string |
 | `huggingface` | `HUGGINGFACEHUB_API_TOKEN` | HuggingFace token |
 
-### OAuth2 Configuration (`spec.kubernautAgent.llm.oauth2`)
+### OAuth2 Configuration (`spec.llmProfiles[<name>].oauth2`)
 
 For LLM endpoints behind OAuth2 (client credentials grant):
 

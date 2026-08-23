@@ -17,7 +17,7 @@ The interactive flow has four phases:
 
 ## Connecting via MCP
 
-Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 21 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via DataStorage.
+Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 23 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle and workflow-discovery tools to the Kubernaut Agent's MCP server (v1.6: `kubernaut_list_workflows` is KA-backed, not DataStorage-backed, per DD-WORKFLOW-019); other tools are handled locally or via DataStorage.
 
 ### Prerequisites
 
@@ -27,7 +27,7 @@ Any MCP-compatible client can connect to Kubernaut's interactive sessions. The A
 
 ## MCP Tools
 
-The API Frontend exposes **21 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
+The API Frontend exposes **23 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
 
 ### Interactive session lifecycle
 
@@ -132,13 +132,7 @@ Only `rr_id` and `workflow_id` are required. When `kind` is provided, enrichment
 
 ## SSE Streaming
 
-Real-time investigation output is available via the Kubernaut Agent's SSE endpoint:
-
-```
-GET /api/v1/incident/session/{session_id}/stream
-```
-
-The API Frontend subscribes to this stream and relays events to MCP clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.
+Real-time investigation output streams over the **MCP connection itself**, using the Streamable HTTP transport's `text/event-stream` response mode (`Accept: text/event-stream`) on Kubernaut Agent's `/api/v1/mcp` endpoint — there is no separate REST SSE endpoint (a pre-v1.6 `GET /api/v1/incident/session/{id}/stream` REST endpoint is no longer part of the API). The API Frontend subscribes to the same MCP stream and relays events to its own clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.
 
 ## Session Management
 

@@ -91,7 +91,7 @@ Kubernaut is a microservices platform with 11 services (v1.5+; 10 in v1.4) that 
 </svg>
 </div>
 
-The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history. The **API Frontend** (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. `InvestigationSession` CRDs are created with **deferred materialization** — the CRD only appears in the cluster after a RemediationRequest is successfully created via `kubernaut_remediate`, so sessions that never produce an RR leave no cluster footprint.
+The **Gateway** receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The **Remediation Orchestrator** coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The **DataStorage** foundation layer persists audit events and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation via the `AgentSession` CRD (v1.6+) rather than an HTTP call; Kubernaut Agent serves the workflow catalog itself from an in-memory, informer-cache CRD watch (no DataStorage round trip) and queries DataStorage only for audit/remediation history. The **API Frontend** (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. `InvestigationSession` CRDs are created with **deferred materialization** — the CRD only appears in the cluster after a RemediationRequest is successfully created via `kubernaut_remediate`, so sessions that never produce an RR leave no cluster footprint.
 
 ## Remediation Pipeline
 
@@ -110,7 +110,7 @@ For a detailed breakdown of all sub-phases and tools, see the [Architecture: Inv
 
 ## Services
 
-Kubernaut runs **11 services** (v1.5+): 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, 1 Go API service, and the API Frontend.
+Kubernaut runs **11 services** (v1.5+): 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 2 hybrid API/CRD-reconciling services (Kubernaut Agent, API Frontend).
 
 ### CRD Controllers
 
@@ -118,7 +118,11 @@ Each CRD is owned by a dedicated controller. See [System Overview](../architectu
 
 ### Stateless Services
 
-See [System Overview](../architecture/overview.md) for the complete service topology including Gateway, DataStorage, Auth Webhook, and Kubernaut Agent.
+**Gateway** and **DataStorage** are pure stateless HTTP services — no in-process controller-runtime `Manager`, no CRD watches of their own; horizontally scalable behind a Service with no leader election. **Auth Webhook** (the admission webhook) is likewise stateless — it validates admission requests only, with no persistent state. See [System Overview](../architecture/overview.md) for the complete service topology.
+
+### Kubernaut Agent (v1.6+: no longer stateless)
+
+As of v1.6, **Kubernaut Agent is not a stateless service**: alongside its MCP/HTTP API, it runs its own internal controller-runtime `Manager` reconciling the `AgentSession` CRD (DD-AA-KA-001) — watching for investigation dispatch and acting as the exclusive writer of `AgentSession.status` (session ID, phase, curated result). Multiple KA replicas each run this reconciler concurrently; a per-object Kubernetes `Lease` (not a single elected leader) arbitrates exactly-once dispatch per session, so KA still scales operationally like a stateless service, but is architecturally a CRD-reconciling controller. KA also serves the workflow catalog itself from an in-memory, informer-cache CRD watch rather than a DataStorage REST call. See [System Overview](../architecture/overview.md#crds-as-the-communication-backbone) and [AgentSession](../api-reference/crds.md#agentsession) for details.
 
 ## Pipeline Modes (v1.5+)
 
@@ -135,7 +139,7 @@ Both modes use the same CRDs, audit events, and effectiveness assessments. Opera
 
 ## Communication Pattern
 
-All inter-service communication in the remediation pipeline uses **Kubernetes CRDs**. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its 14 MCP tools to multiple backends (K8s API, Kubernaut Agent REST/MCP, DataStorage).
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs** -- including, as of v1.6, AI Analysis's dispatch to Kubernaut Agent, which moved from an HTTP submit/poll channel onto the `AgentSession` CRD (AA creates it once with an immutable spec; Kubernaut Agent is the exclusive writer of its status). The remaining HTTP exceptions are: all controllers emit audit events to DataStorage, WFE reads workflow/dependency details from the immutable `spec.workflowRef` snapshot rather than querying a catalog at all (v1.6), RO queries DataStorage for remediation history, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its MCP tools to multiple backends (K8s API, Kubernaut Agent MCP, DataStorage).
 
 This architecture provides:
 
@@ -146,7 +150,7 @@ This architecture provides:
 
 ## Custom Resources
 
-Kubernaut defines 10 CRD types (v1.5+; 9 in v1.4), all in API group `kubernaut.ai/v1alpha1` and namespaced. The six pipeline CRDs are each owned by a dedicated controller. `RemediationWorkflow` and `ActionType` are catalog resources managed by the AuthWebhook. `RemediationRequest` is the top-level orchestration CRD. `InvestigationSession` (v1.5+) is created and managed by the API Frontend for interactive MCP/A2A sessions. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
+Kubernaut defines 11 CRD types (v1.6+; 10 in v1.5, 9 in v1.4), all in API group `kubernaut.ai/v1alpha1` and namespaced. The six pipeline CRDs are each owned by a dedicated controller. `RemediationWorkflow` and `ActionType` are catalog resources managed by the AuthWebhook. `RemediationRequest` is the top-level orchestration CRD. `InvestigationSession` (v1.5+) is created and managed by the API Frontend for interactive MCP/A2A sessions. `AgentSession` (v1.6+) is created by the AI Analysis controller and exclusively written by Kubernaut Agent as the dispatch/result channel for LLM-driven investigation. See [System Overview](../architecture/overview.md) for the complete service topology and CRD ownership model.
 
 ## Remediation Lifecycle
 

@@ -2,7 +2,7 @@
 
 Kubernaut validates remediation end to end against a catalog of real-world **OpenShift Container Platform (OCP)** incident scenarios. Each scenario is mapped to an ITIL-style support tier (L0–L3) reflecting how OCP operations teams typically triage and escalate platform issues — from autonomous detection through known-error resolution, specialist investigation, and deep root-cause analysis.
 
-Coverage as of v1.4: **39 validated scenarios** with E2E golden transcript testing, plus **7 planned** for future releases (OpenShift Virtualization, interactive forensic post-mortems, and TSM incident record creation).
+Coverage as of v1.6: **40 validated scenarios** with E2E golden transcript testing, plus **7 planned** for future releases (OpenShift Virtualization, interactive forensic post-mortems, and TSM incident record creation).
 
 ## L0 — Automated Detection & Triage
 
@@ -33,7 +33,7 @@ Standard workflow from catalog — first-line OCP support applies a documented f
 | SCC Violation | Validated |
 | Operator Health (OLM) | Validated |
 | RBAC Failure | Validated |
-| VM Boot Failure | Planned (v1.5) |
+| VM Boot Failure | Planned -- scaffolding exists (`scenarios/vm-boot-failure`), not yet validated end-to-end |
 
 ## L2 — Specialist Remediation
 
@@ -66,13 +66,14 @@ Deep investigation with targeted remediation — OCP resolver group level.
 | Severity Misdirection | Validated |
 | Red-Herring Noise | Validated |
 | Alert Misdirection | Validated |
+| Operator OOMKill (Informer Cache Flood) | Validated |
 
 ### OpenShift Virtualization
 
 | Scenario | Status |
 |----------|--------|
-| VM Migration Failure | Planned (v1.5) |
-| VM Network Post-Migration | Planned (v1.5) |
+| VM Migration Failure | Planned |
+| VM Network Post-Migration | Planned |
 
 ## L3 — Problem Management / Root-Cause Analysis
 
@@ -107,15 +108,15 @@ Deep RCA, capacity planning, and cascading failure analysis across the OCP platf
 | Scenario | Status |
 |----------|--------|
 | Post Incident Review | Validated |
-| Interactive forensic post-mortem | Planned (v1.5) |
-| Incident record creation (TSM) | Planned (v1.6+) |
+| Interactive forensic post-mortem | Planned |
+| Incident record creation (TSM) | Planned |
 
 ### OpenShift Virtualization
 
 | Scenario | Status |
 |----------|--------|
-| VM Storage Degradation | Planned (v1.5) |
-| VM Cascading Migration Drain | Planned (v1.5) |
+| VM Storage Degradation | Planned |
+| VM Cascading Migration Drain | Planned |
 
 ---
 
@@ -123,4 +124,4 @@ Deep RCA, capacity planning, and cascading failure analysis across the OCP platf
     DiskPressure Migration spans multiple L3 sub-categories (storage, infrastructure, proactive, GitOps-aware) with OCP and Ansible Automation Platform (AAP) integration.
 
 !!! info "Validation methodology"
-    All validated scenarios are E2E tested with **golden transcripts** from the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository — recorded investigation and remediation sessions that serve as regression baselines. Planned scenarios for v1.5 focus on OpenShift Virtualization workloads and interactive forensic post-mortems. Incident record creation via TSM integration is targeted for v1.6+.
+    All validated scenarios are E2E tested with **golden transcripts** from the [kubernaut-demo-scenarios](https://github.com/jordigilh/kubernaut-demo-scenarios) repository — recorded investigation and remediation sessions that serve as regression baselines. Remaining planned scenarios focus on OpenShift Virtualization workloads, interactive forensic post-mortems, and TSM incident record integration; none carry a committed release target.

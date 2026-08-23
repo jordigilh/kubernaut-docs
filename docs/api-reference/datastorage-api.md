@@ -1,15 +1,15 @@
 # DataStorage API
 
-The DataStorage service provides a REST API for audit events, workflow catalog management, and RemediationRequest reconstruction. All Kubernaut services access PostgreSQL exclusively through this API.
+The DataStorage service provides a REST API for audit events, compliance operations, and RemediationRequest reconstruction. All Kubernaut services access PostgreSQL exclusively through this API.
+
+!!! warning "v1.6: Workflow Catalog and Action Type Taxonomy REST endpoints retired"
+    Through v1.5, this page also documented a Workflow Catalog (`/api/v1/workflows*`) and Action Type Taxonomy (`/api/v1/action-types*`) REST surface. **As of v1.6** (DD-WORKFLOW-018/019), neither exists anymore — confirmed against the DataStorage route table, which has no remaining registration for either path. The `RemediationWorkflow`/`ActionType` CRDs (etcd) are the sole source of truth now: the Auth Webhook admits them directly, and Kubernaut Agent serves discovery/scoring from its own in-memory, informer-cache-backed catalog. See [Workflow Catalog Migration](../architecture/data-persistence.md#workflow-catalog-migration-v16), [Registration Model](../user-guide/workflows.md#registration-model), and [Kubernaut Agent API](kubernaut-agent-api.md) for the current architecture.
 
 !!! note "OpenAPI Spec"
     The full OpenAPI specification is available at [`api/openapi/data-storage-v1.yaml`](https://github.com/jordigilh/kubernaut/blob/main/api/openapi/data-storage-v1.yaml) in the main repository.
 
 !!! note "OpenAPI enum values"
-    Catalog status enums align with the CRD typed-enum convention and use **PascalCase** (for example, `active` → `Active`, `deprecated` → `Deprecated`). Other fields (such as severity filters) may remain lowercase depending on the schema. API clients should follow each endpoint's declared enum values.
-
-!!! note "Deterministic catalog IDs"
-    Workflow catalog IDs (`workflowId`) are **deterministic UUIDs** (UUIDv5) and remain stable across PVC wipes for unchanged workflow specifications. Action types are keyed by their `actionType` identifier string.
+    Enum values in the OpenAPI schema follow each endpoint's declared casing convention — API clients should follow each endpoint's declared enum values rather than assume a single global convention.
 
 ## Base URL
 
@@ -50,42 +50,6 @@ https://data-storage-service.kubernaut-system.svc.cluster.local:8080
 |---|---|---|
 | `GET` | `/api/v1/effectiveness/{correlation_id}` | Get effectiveness score for a remediation |
 | `GET` | `/api/v1/remediation-history/context` | Get remediation history for a target resource (called internally by Kubernaut Agent resource-context tools during investigation; not LLM-callable directly) |
-
-### Workflow Catalog
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v1/workflows` | Register a workflow (called by Auth Webhook on `RemediationWorkflow` CRD admission) |
-| `GET` | `/api/v1/workflows` | List workflows (filter by `status`, `environment`, `priority`, `component`, `workflow_name`) |
-| `GET` | `/api/v1/workflows/{workflow_id}` | Get a specific workflow |
-| `PATCH` | `/api/v1/workflows/{workflow_id}` | Update a workflow |
-| `GET` | `/api/v1/workflows/actions` | List available action types (Step 1 of discovery protocol) |
-| `GET` | `/api/v1/workflows/actions/{action_type}` | Get workflows by action type (Step 2 of discovery protocol) |
-| `PATCH` | `/api/v1/workflows/{workflow_id}/disable` | Disable a workflow |
-| `PATCH` | `/api/v1/workflows/{workflow_id}/enable` | Enable a workflow |
-| `PATCH` | `/api/v1/workflows/{workflow_id}/deprecate` | Deprecate a workflow |
-
-#### Workflow registration: content integrity and idempotency
-
-`POST /api/v1/workflows` (Auth Webhook on `RemediationWorkflow` admission) is **idempotent** when the same `(name, version)` is submitted with the **same content hash** — the API returns **200 OK** and does not create duplicate rows.
-
-If the client registers a workflow with the same `(name, version)` but a **different** content hash, the request **conflicts** with the existing row: the API returns **HTTP 409 Conflict** with an [RFC 7807](https://www.rfc-editor.org/rfc/rfc9457) problem body:
-
-| Field | Value |
-|-------|--------|
-| `type` | `content-integrity-violation` |
-| `title` | `Content Changed Without Version Bump` |
-
-Bump the workflow **version** (or reconcile with the stored definition) so catalog identity matches the new content.
-
-### Action Type Taxonomy
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v1/action-types` | Register an action type |
-| `PATCH` | `/api/v1/action-types/{name}` | Update an action type description |
-| `PATCH` | `/api/v1/action-types/{name}/disable` | Disable an action type |
-| `GET` | `/api/v1/action-types/{name}/workflow-count` | Get the number of active workflows for an action type |
 
 ### Health and metrics (v1.3+)
 

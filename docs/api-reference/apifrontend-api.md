@@ -81,9 +81,9 @@ The A2A agent uses **23 SAR-gated `kubernaut_*` MCP tools** exposed on the MCP b
 |---|---|---|
 | **CRD operations** | `kubernaut_list_remediations`, `kubernaut_get_remediation`, `kubernaut_approve`, `kubernaut_cancel_remediation`, `kubernaut_watch`, `kubernaut_list_approval_requests`, `kubernaut_get_approval_request`, `kubernaut_await_session` | K8s API (AF SA) |
 | **Investigation & session lifecycle** | `kubernaut_investigate`, `kubernaut_message`, `kubernaut_complete`, `kubernaut_complete_no_action`, `kubernaut_cancel`, `kubernaut_status`, `kubernaut_reconnect` | KA MCP |
-| **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow` | KA MCP |
+| **Workflow** | `kubernaut_discover_workflows`, `kubernaut_select_workflow`, `kubernaut_list_workflows` | KA MCP |
 | **Alerts** | `kubernaut_list_alerts` (conditional on Prometheus) | Prometheus |
-| **Data & history** | `kubernaut_list_workflows`, `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
+| **Data & history** | `kubernaut_get_remediation_history`, `kubernaut_get_effectiveness`, `kubernaut_get_audit_trail` | DataStorage REST |
 | **Presentation** | `kubernaut_present_decision` | Local |
 
 !!! note "Upstream Helm gap ([#1239](https://github.com/jordigilh/kubernaut/issues/1239))"

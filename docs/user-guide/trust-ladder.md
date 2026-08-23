@@ -293,10 +293,10 @@ See the [Helm values reference](../user-guide/configuration.md#api-frontend-v15)
 
 ---
 
-## Suggestions: Always-On Safety Net (Planned — v1.5) {: #suggestions }
+## Suggestions: Always-On Safety Net (Planned) {: #suggestions }
 
 !!! note "Not yet available"
-    The Suggestions feature depends on [kubernaut#115](https://github.com/jordigilh/kubernaut/issues/115), planned for v1.5.
+    The Suggestions feature depends on [kubernaut#115](https://github.com/jordigilh/kubernaut/issues/115), which remains open and unscheduled as of v1.6 -- it did not land in v1.5 as this page previously anticipated.
 
 When no workflow matches an alert — at **any** trust stage — Kubernaut will suggest step-by-step remediation actions via an LLM-generated Suggestion RAR. This is orthogonal to the trust ladder and operates as a permanent safety net for unknown scenarios.
 
@@ -334,7 +334,7 @@ v1.5 introduced agentic integration features that enhance every trust stage:
 | **MCP Interactive Mode** ([#703](https://github.com/jordigilh/kubernaut/issues/703)) | **Shipped (v1.5)** | Operators investigate and review remediations through any MCP-compatible chat interface |
 | **A2A Protocol** | **Shipped (v1.5)** | External AI agents can delegate remediation to Kubernaut via `POST /a2a/invoke` |
 | **SAR Tool Authorization** (PR #1222) | **Shipped (v1.5)** | Kubernetes-native per-persona tool authorization with 6 ClusterRoles |
-| **Kubernaut Console** | **Planned** | Web dashboard with chat UI, live remediation streaming, and workflow management |
+| **Kubernaut Console** | **Shipped (v1.5.1)** | Web dashboard with chat UI, live remediation streaming, and workflow management. See [What's New: v1.5.1](../whats-new/index.md#v151). |
 | **Natural Language Investigation** | **Planned** | Trigger investigations by describing the problem in plain text |
 
 These features are **complementary** to the Trust Ladder — they enhance how operators interact at each stage (e.g., MCP chat during dry-run review at Stage 1, Console dashboards for monitoring at Stage 4) without changing the fundamental graduation model.

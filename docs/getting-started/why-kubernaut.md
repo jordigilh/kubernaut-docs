@@ -170,13 +170,13 @@ Kubernaut handles long-tail alerts with the same investigation quality as high-f
 
 ### Agentic Injection Points (v1.7)
 
-The strongest argument for skills is **institutional knowledge** — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three **agentic workflow injection points** (planned for [v1.7, Q3 2026](../whats-next/index.md#custom-agent-injection)) where operators will contribute domain-specific context without constraining the LLM's reasoning:
+The strongest argument for skills is **institutional knowledge** — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three **agentic workflow injection points** (planned for [v1.7, Q3 2026](../whats-next/index.md#pluggable-investigation-agent-harness)) where operators will contribute domain-specific context without constraining the LLM's reasoning:
 
-1. **Pre-Investigation** — Agent workflows that execute before investigation begins, contributing **context** (not instructions) such as environment-specific diagnostics, SOP knowledge, or data from external systems (CMDB, change management)
-2. **Pre-Workflow Selection** — Agent workflows that influence which remediation workflows are surfaced as candidates, enabling **policy-aware remediation** (e.g., FinOps cost constraints) without hardcoding policies into workflow definitions
-3. **Custom Effectiveness Probes** — Custom validation workflows to confirm whether a remediation succeeded for resources outside Kubernetes' native observability (databases, cloud services, external infrastructure)
+1. **Pre-Investigation** — A pluggable custom investigation agent (see [Pluggable Investigation Agent Harness](../whats-next/index.md#pluggable-investigation-agent-harness)) contributing **context** (not instructions) such as environment-specific diagnostics, SOP knowledge, or data from external systems (CMDB, change management) — or, once [signal-type-to-agent dispatch](https://github.com/jordigilh/kubernaut/issues/2266) lands, an entirely domain-specific investigation agent for a given signal type
+2. **Pre-Workflow Selection** — A pluggable custom workflow-discovery agent that influences which remediation workflows are surfaced as candidates, enabling **policy-aware remediation** (e.g., FinOps cost constraints) without hardcoding policies into workflow definitions
+3. **Custom Effectiveness Probes** — Goose-recipe-based validation workflows to confirm whether a remediation succeeded for resources outside Kubernetes' native observability (databases, cloud services, external infrastructure)
 
-These injection points are **multiplicative** — one pre-investigation agent for etcd diagnostics benefits all etcd alert types; one cost-optimization agent at workflow discovery applies to every remediation across the platform. Building 3 injection point workflows provides equivalent contextual enrichment to dozens of per-alert skills.
+These injection points are **multiplicative** — one pre-investigation agent for etcd diagnostics benefits all etcd alert types; one cost-optimization agent at workflow discovery applies to every remediation across the platform. Building agents/recipes for these 3 injection points provides equivalent contextual enrichment to dozens of per-alert skills.
 
 ### Skills vs Kubernaut: Trade-Offs
 

@@ -180,7 +180,7 @@ The routing engine evaluates blocking conditions at two points. Checks are evalu
 
 | Order | Check | Block Reason | Requeue After |
 |---|---|---|---|
-| 1 | Target not managed (`kubernaut.ai/managed`) | `UnmanagedResource` | 5s–5m (exponential) |
+| 1 | Target not managed (`kubernaut.ai/managed`) — cluster-aware: routes to the **remote/federated** scope checker when `RemediationRequest.Spec.ClusterID` is non-empty (Fleet), local check otherwise | `UnmanagedResource` | 5s–5m (exponential) |
 | 2 | 3+ consecutive failures for same fingerprint | `ConsecutiveFailures` | 1 hour |
 | 3 | Active RR with same fingerprint exists | `DuplicateInProgress` | 30s |
 | 4 | `NextAllowedExecution` in the future | `ExponentialBackoff` | Until expiry |
@@ -194,6 +194,9 @@ Includes all pre-analysis checks plus:
 | 5 | Active WFE on same target resource | `ResourceBusy` | 30s |
 | 6 | Same workflow+target executed in last 5m | `RecentlyRemediated` | Remaining cooldown |
 | 7 | 3+ consecutive ineffective remediations | `IneffectiveChain` | 4 hours |
+
+!!! note "Fleet: cluster-scoped ineffective-chain check (v1.6+, Issue #1802)"
+    When `RemediationRequest.Spec.ClusterID` is set, the `IneffectiveChain` query is scoped to that cluster, so two clusters with identically-specced resources (e.g. the same Helm-templated Deployment) don't cross-contaminate each other's ineffective-remediation counts. Empty `ClusterID` (local hub cluster, or fleet disabled) leaves the query unscoped -- unchanged from pre-v1.6 behavior.
 
 ### Routing Configuration
 
@@ -299,6 +302,10 @@ The Orchestrator creates child CRDs at specific phase transitions:
 ### Owner References
 
 All child CRDs have a `controllerReference` pointing to the parent RR via `controllerutil.SetControllerReference`. This enables cascade deletion -- when the parent RR is garbage collected, all children are automatically cleaned up.
+
+### ClusterID Propagation (v1.6+, BR-FLEET-054)
+
+The Orchestrator propagates `RemediationRequest.Spec.ClusterID` onto **every** child CRD it creates -- SignalProcessing, AIAnalysis, WorkflowExecution, EffectivenessAssessment, NotificationRequest, and RemediationApprovalRequest -- as well as into its own audit events. Empty `ClusterID` (local hub cluster, or fleet disabled) means every child inherits an empty `ClusterID` too, identical to pre-v1.6 behavior. See [Fleet Management](fleet.md) for how `ClusterID` first enters the pipeline via the Gateway.
 
 EffectivenessAssessment is created with `BlockOwnerDeletion: false` to allow audit data to persist independently.
 

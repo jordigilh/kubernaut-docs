@@ -1,9 +1,12 @@
 # Workflow Selection
 
-Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where Kubernaut Agent queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
+Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) that applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.
 
 !!! abstract "CRD Reference"
     For the complete CRD specifications, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the API Reference.
+
+!!! info "v1.6: discovery moved in-process to Kubernaut Agent"
+    Through v1.5, all three discovery steps were served by DataStorage over REST, with KA acting as a thin proxy. **As of v1.6** (DD-WORKFLOW-018/019), KA serves this protocol entirely from its own in-memory workflow catalog (`internal/kubernautagent/workflowcatalog`) -- an informer-cache-backed watch over the `RemediationWorkflow` and `ActionType` CRDs, no DataStorage round trip involved. KA's Go implementation is a faithful, verified port of DataStorage's Layer 1 filtering and Layer 2 `final_score` formula (same weights, same tie-break order), so filtering and ranking behavior described below is unchanged -- only where it executes changed. DataStorage's REST discovery endpoints (documented at the bottom of this page for historical reference) are **retired outright**, not merely bypassed -- there is no REST path left for this protocol at all, for KA or any other caller. The SQL shown in this page reflects DataStorage's pre-v1.6 implementation, which KA's catalog logic reproduces in Go.
 
 ## Three-Step Discovery Protocol
 
@@ -11,30 +14,31 @@ Workflow selection is the process of finding the best remediation workflow for a
 sequenceDiagram
     participant LLM as LLM
     participant KA as Kubernaut Agent
-    participant DS as DataStorage
+    participant Cache as KA workflow catalog<br/>(informer cache)
 
     LLM->>KA: list_available_actions()
-    KA->>DS: GET /api/v1/workflows/actions
-    DS-->>KA: Action types with workflow counts
+    KA->>Cache: filter action types (Layer 1)
+    Cache-->>KA: Action types with workflow counts
     KA-->>LLM: Available action types
 
     LLM->>KA: list_workflows(action_type)
-    KA->>DS: GET /api/v1/workflows/actions/{action_type}
-    DS->>DS: Layer 1 filter + Layer 2 scoring
-    DS-->>KA: Scored candidates (scores stripped)
+    KA->>Cache: Layer 1 filter + Layer 2 scoring
+    Cache-->>KA: Scored candidates (scores stripped)
     KA-->>LLM: Workflow summaries
 
     LLM->>KA: get_workflow(workflow_id)
-    KA->>DS: GET /api/v1/workflows/{workflow_id}
-    DS-->>KA: Full workflow schema
+    KA->>Cache: lookup by workflow_id
+    Cache-->>KA: Full workflow schema
     KA-->>LLM: Full schema for evaluation
 ```
 
 ### Step 1: List Action Types
 
-The LLM calls `list_available_actions()` to discover what types of remediations are available. DataStorage returns action types from the `action_type_taxonomy` table, filtered to only include types that have at least one active workflow matching the signal context.
+The LLM calls `list_available_actions()` to discover what types of remediations are available. KA filters its in-memory catalog (mirroring the `action_type_taxonomy` semantics below) to only include types that have at least one active workflow matching the signal context.
 
 ```sql
+-- DataStorage's pre-v1.6 REST equivalent of the same query (GET /api/v1/workflows/actions,
+-- now retired), reproduced in Go against KA's own cache as of v1.6:
 SELECT t.action_type, t.description, COUNT(w.workflow_id) AS workflow_count
 FROM action_type_taxonomy t
 INNER JOIN remediation_workflow_catalog w ON w.action_type = t.action_type
@@ -49,7 +53,7 @@ Each action type includes a structured description (`what`, `whenToUse`, `whenNo
 
 ### Step 2: List Workflows by Action Type
 
-The LLM calls `list_workflows(action_type)` to get candidate workflows. DataStorage applies **Layer 1** mandatory filtering and **Layer 2** semantic scoring, returning results ordered by score. Scores are stripped before reaching the LLM -- they are used only for ordering.
+The LLM calls `list_workflows(action_type)` to get candidate workflows. KA applies **Layer 1** mandatory filtering and **Layer 2** semantic scoring against its own cache, returning results ordered by score. Scores are stripped before reaching the LLM -- they are used only for ordering.
 
 ### Step 3: Get Full Workflow Schema
 
@@ -57,7 +61,7 @@ The LLM calls `get_workflow(workflow_id)` to retrieve the full schema for detail
 
 ## Signal Context Propagation
 
-KA propagates signal context from the investigation session to all DataStorage queries:
+KA propagates signal context from the investigation session to its in-memory catalog filters (through v1.5, this was propagated to DataStorage queries instead):
 
 | Parameter | Source | Purpose |
 |---|---|---|
@@ -69,11 +73,11 @@ KA propagates signal context from the investigation session to all DataStorage q
 | `detected_labels` | KA `LabelDetector` (post-RCA) | Layer 2 scoring boost + penalty |
 | `remediation_id` | Parent RR name | Audit correlation |
 
-Detected labels are computed by KA for the RCA target resource (ADR-056). Labels with `failedDetections` entries are stripped before propagation to DataStorage.
+Detected labels are computed by KA for the RCA target resource (ADR-056). Labels with `failedDetections` entries are stripped before filtering.
 
 ## Layer 1: Mandatory Filtering
 
-Every workflow declares four mandatory labels. DataStorage applies these as hard filters -- a workflow must match all four to be a candidate.
+Every workflow declares four mandatory labels. These are applied as hard filters -- a workflow must match all four to be a candidate. (DataStorage's SQL below and KA's in-memory Go filter implement identical semantics; see the v1.6 callout above.)
 
 | Label | Type | Values | SQL Pattern |
 |---|---|---|---|
@@ -111,7 +115,7 @@ Business classification labels (`businessUnit`, `serviceOwner`, `criticality`, `
 
 ## Layer 2: Semantic Scoring
 
-DataStorage computes a `final_score` for each candidate to **order** results (DD-WORKFLOW-004 v1.5). Scores are used only for ordering and are stripped before reaching the LLM.
+A `final_score` is computed for each candidate to **order** results (DD-WORKFLOW-004 v1.5) -- by DataStorage's SQL for non-KA callers, and by KA's own Go port of the identical formula for the investigation pipeline (v1.6+). Scores are used only for ordering and are stripped before reaching the LLM.
 
 ### Scoring Formula
 
@@ -231,16 +235,19 @@ After selection, the confidence score determines the next step:
 
 ## API Endpoints
 
-| Endpoint | Method | Purpose |
+!!! warning "v1.6: these DataStorage REST endpoints are retired, not just unused by KA"
+    Through v1.5, the endpoints below were served by DataStorage for both Kubernaut Agent and other callers (e.g. the console). **As of v1.6** (DD-WORKFLOW-018/019), they are gone entirely -- confirmed against DataStorage's route table, which has no registration for any `/api/v1/workflows*` or `/api/v1/action-types*` path. There is no REST equivalent of Steps 1-3 anymore for any caller: Kubernaut Agent serves discovery from its in-memory catalog (as described above), and any other caller (including the console) must read the `RemediationWorkflow`/`ActionType` CRDs directly via the Kubernetes API.
+
+| Endpoint (retired in v1.6) | Method | Purpose (pre-v1.6) |
 |---|---|---|
-| `GET /api/v1/workflows/actions` | GET | Step 1: List action types with counts |
-| `GET /api/v1/workflows/actions/{action_type}` | GET | Step 2: Scored candidates for action type |
-| `GET /api/v1/workflows/{workflow_id}` | GET | Step 3: Full schema with security gate |
-| `GET /api/v1/workflows` | GET | Catalog listing (no scoring) |
-| `POST /api/v1/workflows` | POST | Register workflow catalog entry (Auth Webhook/CRD admission path) |
-| `PATCH /api/v1/workflows/{id}/disable` | PATCH | Disable workflow |
-| `PATCH /api/v1/workflows/{id}/enable` | PATCH | Enable workflow |
-| `PATCH /api/v1/workflows/{id}/deprecate` | PATCH | Deprecate workflow |
+| `/api/v1/workflows/actions` | GET | Step 1: List action types with counts |
+| `/api/v1/workflows/actions/{action_type}` | GET | Step 2: Scored candidates for action type |
+| `/api/v1/workflows/{workflow_id}` | GET | Step 3: Full schema with security gate |
+| `/api/v1/workflows` | GET | Catalog listing (no scoring) |
+| `/api/v1/workflows` | POST | Register workflow catalog entry |
+| `/api/v1/workflows/{id}/disable` | PATCH | Disable workflow |
+| `/api/v1/workflows/{id}/enable` | PATCH | Enable workflow |
+| `/api/v1/workflows/{id}/deprecate` | PATCH | Deprecate workflow |
 
 ## Next Steps
 

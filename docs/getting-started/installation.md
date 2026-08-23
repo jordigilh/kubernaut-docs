@@ -241,7 +241,7 @@ Both paths can be enabled simultaneously.
 === "Gateway (alert-driven)"
 
     ```yaml
-    apiVersion: kubernaut.ai/v1alpha1
+    apiVersion: kubernaut.ai/v1alpha2
     kind: Kubernaut
     metadata:
       name: kubernaut
@@ -256,19 +256,22 @@ Both paths can be enabled simultaneously.
         host: valkey.kubernaut-system.svc.cluster.local
         port: 6379
         secretName: valkey-secret
+      # claude-sonnet-4-6 is the model validated against this operator's KA/AF
+      # integration -- swap in openai/gemini/vertex_ai/openai_compatible once
+      # your own provider is validated. anthropic needs no `endpoint` field
+      # (only `openai`/`openai_compatible` do).
       llmProfiles:
         primary:
-          provider: openai
-          model: gpt-4o
+          provider: anthropic           # or: openai, gemini, vertex_ai, openai_compatible
+          model: claude-sonnet-4-6
           credentialsSecretName: llm-credentials
-      kubernautAgent:
-        llmProfileRef: primary
+      kubernautAgent: {}
       signalProcessing:
         policy:
           configMapName: signalprocessing-policy
       aiAnalysis:
         policy:
-          configMapName: aianalysis-policies
+          configMapName: aianalysis-policy
       gateway:
         enabled: true
       apiFrontend:
@@ -282,7 +285,7 @@ Both paths can be enabled simultaneously.
     Requires an OIDC provider (e.g. Keycloak) for `apiFrontend.auth` and `console.auth`. The `spire` block below is optional and only needed for A2A agent integration via kagenti — see [kagenti Integration](#kagenti-integration) below. Omit `spire` (or set `enabled: false`) to run AF/Console with plain OIDC and no kagenti dependency at all.
 
     ```yaml
-    apiVersion: kubernaut.ai/v1alpha1
+    apiVersion: kubernaut.ai/v1alpha2
     kind: Kubernaut
     metadata:
       name: kubernaut
@@ -297,10 +300,14 @@ Both paths can be enabled simultaneously.
         host: valkey.kubernaut-system.svc.cluster.local
         port: 6379
         secretName: valkey-secret
+      # claude-sonnet-4-6 is the model validated against this operator's KA/AF
+      # integration -- swap in openai/gemini/vertex_ai/openai_compatible once
+      # your own provider is validated. anthropic needs no `endpoint` field
+      # (only `openai`/`openai_compatible` do).
       llmProfiles:
         primary:
-          provider: openai
-          model: gpt-4o
+          provider: anthropic           # or: openai, gemini, vertex_ai, openai_compatible
+          model: claude-sonnet-4-6
           credentialsSecretName: llm-credentials
       kubernautAgent:
         llmProfileRef: primary
@@ -314,7 +321,7 @@ Both paths can be enabled simultaneously.
           configMapName: signalprocessing-policy
       aiAnalysis:
         policy:
-          configMapName: aianalysis-policies
+          configMapName: aianalysis-policy
       gateway:
         enabled: false
       apiFrontend:

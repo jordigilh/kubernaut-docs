@@ -64,11 +64,11 @@ Kubernaut is an open-source AIOps platform that closes the loop from Kubernetes 
 
     [:octicons-arrow-right-24: API Reference](api-reference/index.md)
 
--   :material-new-box:{ .lg .middle } **What's New in v1.5**
+-   :material-new-box:{ .lg .middle } **What's New in v1.6**
 
     ---
 
-    API Frontend, interactive MCP sessions, SAR-based tool authorization, unified SA model, and more.
+    Fleet Management for multi-cluster remediation, `AgentSession` CRD-based investigation, and a 98% cut in Helm chart mandatory fields.
 
     [:octicons-arrow-right-24: Release Highlights](whats-new/index.md)
 
@@ -108,8 +108,9 @@ Click a phase card above, or select a tab:
 
     The entry point for all signals into Kubernaut. Accepts alerts from Prometheus AlertManager and Kubernetes Event Exporter, authenticates the source, and validates resource scope before a signal is allowed into the pipeline.
 
-    - **Deduplication** — Signals are fingerprinted (`SHA256(namespace:kind:name)` of the top-level owning resource); a duplicate increments the existing RR's occurrence count instead of creating a new one.
+    - **Deduplication** — Signals are fingerprinted (`SHA256(namespace:kind:name)` of the top-level owning resource, or `SHA256(clusterID:namespace:kind:name)` for [Fleet-managed](architecture/fleet.md) remote clusters); a duplicate increments the existing RR's occurrence count instead of creating a new one.
     - **Concurrency safety** — A Kubernetes Lease lock prevents race conditions between the dedup check and RR creation across multiple Gateway replicas.
+    - **Fleet scope checking (v1.6)** — For remote-cluster signals, the Gateway's `FederatedScopeChecker` gates admission via a pluggable backend — the **Fleet Metadata Cache (FMC)** by default (polls the MCP Gateway, caches `kubernaut.ai/managed=true` metadata in Valkey, sub-millisecond lookups), or Red Hat ACM Search.
     - Creates the `RemediationRequest` CRD that the Remediation Orchestrator picks up to start the pipeline.
 
     See [Gateway](architecture/gateway.md) for the full webhook contract and API reference.
@@ -144,18 +145,20 @@ Click a phase card above, or select a tab:
 
 === "2 · AI Analysis"
 
-    **CRD:** `AIAnalysis`
+    **CRD:** `AIAnalysis` (creates `AgentSession`, v1.6+)
 
     Three-phased pipeline:
 
-    - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
+    - **Investigate** — The LLM investigates the incident and produces a root cause analysis (RCA). On the hub cluster this uses 36 built-in tools; for [Fleet-managed](architecture/fleet.md) remote clusters, the same tools are instead served, under identical generic names, by a K8s MCP Server registered behind the MCP Gateway — platform teams choose and deploy their own MCP Gateway and K8s MCP Server backends, since Kubernaut doesn't ship either.
     - **Enrich** — Server-side enrichment adds historical context, detectable labels, and prior remediation outcomes.
     - **Select** — Using the RCA and enrichment data, the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
 
+    **AgentSession dispatch (v1.6)** — AI Analysis creates one `AgentSession` CRD per investigation (autonomous or interactive) with an owner reference back to itself. Kubernaut Agent watches for Create/Update events, dispatches exactly once via a per-object `Lease`, and is the exclusive writer of `status` — this CRD watch replaced the prior HTTP submit/poll/result channel entirely. See [API Reference: AgentSession](api-reference/crds.md#agentsession).
+
     **Kubernaut Agent** — The AI Analysis phase is powered by the Kubernaut Agent (KA), which drives both autonomous and interactive investigations:
 
-    - **Autonomous** — KA runs LLM-driven investigation with 36 native Go tools, performs server-side enrichment, and selects the best-matching workflow without operator involvement.
-    - **Interactive (v1.5)** — Operators start investigations on demand or join autonomous ones mid-flight via the API Frontend. KA manages Lease-based sessions with SSE streaming of investigation events. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
+    - **Autonomous** — KA runs LLM-driven investigation — 36 native Go tools on the hub cluster, or the byte-identical tool schema via a fleet-registered K8s MCP Server for remote clusters — performs server-side enrichment, and selects the best-matching workflow without operator involvement.
+    - **Interactive (v1.5)** — Operators start investigations on demand or join autonomous ones mid-flight via the API Frontend. AF subscribes to KA's MCP connection (Streamable HTTP `text/event-stream`) for real-time event relay, while dispatch itself flows through the same `AgentSession` CRD as the autonomous path. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
 
 === "3 · Approval"
 
@@ -203,13 +206,13 @@ Click a phase card above, or select a tab:
     - **Reliability:** Circuit-breaker retry with exponential backoff per channel.
     - **Audit:** Every delivery attempt (success or failure) is recorded with correlation IDs linking back to the originating `RemediationRequest`.
 
-=== "API Frontend (v1.5)"
+=== "API Frontend"
 
     **CRD:** `InvestigationSession` &nbsp; **Services:** API Frontend ↔ Kubernaut Agent
 
     The interactive path is a **parallel entry point**, not a pipeline phase. The API Frontend connects to the Kubernaut Agent for a 4-phase interactive journey:
 
-    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's SSE stream and relays investigation events in real-time as the LLM works.
+    1. **Investigate** — `kubernaut_investigate` creates the `RemediationRequest` (via AF's own ServiceAccount) and co-creates the `InvestigationSession`, then AF subscribes to KA's MCP connection (Streamable HTTP `text/event-stream`) and relays investigation events in real-time as the LLM works.
     2. **Discover** — After RCA, AF calls `kubernaut_discover_workflows` to present workflow options with LLM-populated parameters.
     3. **Select** — Operator picks a workflow via `kubernaut_select_workflow`, entering the same autonomous pipeline (Approval → Execution → Effectiveness → Notification).
     4. **Watch** — AF monitors CRD status transitions and reports progress to the user until a terminal phase.
@@ -237,10 +240,10 @@ Click a phase card above, or select a tab:
 |---|---|
 | **Dual-Mode Operation** | **Autonomous** — end-to-end from alert to fix: investigation, workflow selection, and execution without operator involvement. **Interactive** — operators start an investigation on demand or join one already in progress via MCP or A2A to guide the agent, steer workflow selection, and review remediations in real time. Both modes enforce the same approval gates and OPA policies. |
 | **Multi-Source Signal Ingestion** | Prometheus alerts (reactive and proactive), Kubernetes events, fingerprint-based deduplication at the Gateway, signal mode classification |
-| **AI-Powered Root Cause Analysis** | Kubernaut Agent with LLM providers (Vertex AI, OpenAI, Anthropic, Bedrock, Ollama, and more via LangChainGo), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
+| **AI-Powered Root Cause Analysis** | Kubernaut Agent with native LLM clients (OpenAI, Anthropic, Gemini, Vertex AI, and any OpenAI-compatible endpoint -- covering Azure OpenAI, Ollama, vLLM, and more), Kubernetes inspection tools, and Prometheus metrics (when enabled) |
 | **Workflow Catalog** | Searchable declarative `RemediationWorkflow` CRDs with category and label-based matching plus confidence scoring |
 | **Flexible Execution** | Kubernetes Jobs, Tekton Pipelines, or Ansible (AWX/AAP) |
-| **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages |
+| **Resource Scope Management** | Label-based opt-in (`kubernaut.ai/managed=true`) controls which resources Kubernaut manages. For [Fleet](architecture/fleet.md) remote clusters (v1.6), scope is checked via a pluggable federated backend -- the Fleet Metadata Cache (FMC) by default, or Red Hat ACM Search |
 | **Safety-First Design** | Admission webhooks, human approval gates, configurable confidence thresholds, effectiveness tracking |
 | **SOC2 Alignment** | Full audit trails with 7-year retention, CRD reconstruction from audit events, operator attribution |
 | **Effectiveness Tracking** | Four-dimensional assessment (health, alert resolution, metrics, spec drift) with weighted scoring; remediation history feeds into the Kubernaut Agent so the LLM avoids repeating failed remediations |

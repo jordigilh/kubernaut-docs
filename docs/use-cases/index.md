@@ -52,6 +52,7 @@ All scenarios are available in the [kubernaut-demo-scenarios](https://github.com
 | Scenario | Signal | Remediation | Description |
 |----------|--------|-------------|-------------|
 | [cert-failure](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/cert-failure) | `CertManagerCertNotReady` | `FixCertificate` | CA Secret deleted, workflow recreates it to restore certificate issuance |
+| [operator-oomkill-informer](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/operator-oomkill-informer) | `KubePodCrashLooping` | Operator remediation | Unfiltered `controller-runtime` informer cache lets a namespace-scoped `edit` user flood the operator's memory via ConfigMaps, causing OOMKill |
 | [hpa-maxed](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/hpa-maxed) | `KubeHpaMaxedOut` | `ScaleHPA` | HPA at max replicas under sustained load |
 | [resource-contention](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/resource-contention) | `OOMKilled` | `IncreaseMemoryLimits` | Memory contention causes OOM kills across competing workloads |
 | [resource-quota-exhaustion](https://github.com/jordigilh/kubernaut-demo-scenarios/tree/main/scenarios/resource-quota-exhaustion) | `KubeResourceQuotaExhausted` | `AdjustResourceQuota` | Namespace quota prevents scaling ([details](remediation-history-feedback.md)) |

@@ -1,27 +1,28 @@
 # Remediation Workflows
 
-Kubernaut remediates issues by running **workflows** -- containerized actions that fix known problems. Workflows are registered as `RemediationWorkflow` CRDs, synced to a searchable catalog by the Auth Webhook, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.
+Kubernaut remediates issues by running **workflows** -- containerized actions that fix known problems. Workflows are registered as `RemediationWorkflow` CRDs, admitted directly by the Auth Webhook, and matched to incidents by the LLM based on labels, infrastructure context, and remediation history.
 
 This page covers everything you need to author, build, register, and manage workflows.
 
 ## Registration Model
 
-Workflows are registered by applying a `RemediationWorkflow` CRD. The Auth Webhook intercepts the admission request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and computes a content hash for deduplication.
+Workflows are registered by applying a `RemediationWorkflow` CRD. As of v1.6 (DD-WORKFLOW-018), the Auth Webhook owns the entire CRD lifecycle **locally** -- it intercepts the admission request, validates the schema, captures the operator identity for audit attribution, and computes a content hash for deduplication, all without a DataStorage round-trip. The CRD itself (persisted in etcd) is the sole source of truth; there is no separate DataStorage-side catalog table anymore.
 
 ```mermaid
 flowchart LR
-    Op["Operator<br/><small>kubectl apply</small>"] --> AW["Auth Webhook<br/><small>admission</small>"]
-    AW --> DS["DataStorage<br/><small>Catalog</small>"]
+    Op["Operator<br/><small>kubectl apply</small>"] --> AW["Auth Webhook<br/><small>admission, local validation</small>"]
+    AW --> ETCD["RemediationWorkflow CRD<br/><small>etcd, source of truth</small>"]
+    KA["Kubernaut Agent<br/><small>informer cache</small>"] -.->|"watch"| ETCD
     Bundle["Execution Bundle<br/><small>OCI image / Git repo</small>"] --> WFE["WFE<br/><small>Job / Tekton / Ansible</small>"]
-    DS -.->|"bundle ref"| WFE
+    ETCD -.->|"bundle ref"| WFE
 ```
 
 | Component | Contents | Purpose |
 |---|---|---|
-| **RemediationWorkflow CRD** | Workflow schema (version, description, labels, parameters, execution config) | Registered in DataStorage catalog for discovery and LLM selection |
+| **RemediationWorkflow CRD** | Workflow schema (version, description, labels, parameters, execution config) | Source of truth for discovery and LLM selection, watched by Kubernaut Agent's in-memory catalog (v1.6, DD-WORKFLOW-019) |
 | **Execution bundle** | The container or playbook that runs the remediation | Referenced in the CRD; pulled by WFE at execution time |
 
-The CRD approach replaces the previous OCI schema image model. Workflow schemas are now native Kubernetes resources, enabling `kubectl` management, GitOps workflows, and admission webhook integration for audit attribution.
+The CRD approach replaces the previous OCI schema image model. Workflow schemas are native Kubernetes resources, enabling `kubectl` management, GitOps workflows, and admission webhook integration for audit attribution -- with no external database dependency for registration or discovery.
 
 !!! important "Namespace placement"
     - **`RemediationWorkflow`** and **`ActionType`** CRDs must be applied in `kubernaut-system` (or your configured platform namespace).
@@ -197,7 +198,7 @@ Note the image digest from the push output -- update the `execution.bundle` fiel
 kubectl apply -f restart-deployment.yaml
 ```
 
-The Auth Webhook intercepts the CREATE request, registers the workflow in the DataStorage catalog, captures the operator identity for audit attribution, and updates the CRD status with the assigned `workflowId` and `catalogStatus`.
+The Auth Webhook intercepts the CREATE request, validates and admits the workflow locally, captures the operator identity for audit attribution, and updates the CRD status with the assigned `workflowId` and `catalogStatus`.
 
 Verify registration:
 
@@ -405,6 +406,7 @@ Mandatory labels control when a workflow is eligible during discovery:
 | `environment` | string[] | Yes | Environments: `production`, `staging`, `development`, `test`, or `"*"` (array, `minItems: 1`) |
 | `component` | string[] | Yes | Resource kind(s): `pod`, `deployment`, `node`, or `"*"` (array, `minItems: 1`) |
 | `priority` | string | Yes | Priority: `P0`, `P1`, `P2`, `P3`, or `"*"` (single value) |
+| `cluster` | string[] | No (v1.6, Fleet only) | Cluster classification(s) this workflow applies to (e.g., `production`, `staging-eu`), or `"*"`. See [Fleet: Cluster Label](#fleet-cluster-label-v16) below. |
 
 Labels support:
 
@@ -415,9 +417,19 @@ Labels support:
 !!! warning "Labels determine discoverability"
     Workflows that don't match the mandatory label filters are excluded entirely -- they never reach the LLM. A misconfigured severity or environment can silently hide a workflow from the candidate set. See [Workflow Search and Scoring](#workflow-search-and-scoring) for details.
 
+#### Fleet: Cluster Label (v1.6)
+
+`cluster` (BR-FLEET-003, Issue #1511) restricts a workflow to signals originating from specific clusters, based on the cluster's business classification (e.g., `production`, `staging-eu`) rather than its cluster name. It behaves differently depending on whether Fleet is enabled:
+
+- **Non-fleet deployments** (no cluster classification is ever produced) -- this dimension is **never evaluated**, regardless of whether a workflow declares `cluster`. Existing workflows with no `cluster` field are completely unaffected by upgrading to v1.6.
+- **Fleet-enabled deployments** -- once Signal Processing resolves a concrete cluster classification for the incoming signal, matching works exactly like `component`/`environment`: case-insensitive exact match, or `"*"` to match any cluster.
+
+!!! warning "Omitting `cluster` excludes the workflow once Fleet is enabled"
+    In a fleet-enabled deployment, a workflow with **no `cluster` entries is excluded** the moment a signal carries a concrete cluster classification -- this is an active exclusion, not a pass-through default. If you enable Fleet on a cluster fleet with pre-existing workflows that never declared `cluster`, those workflows will stop being discoverable for any classified cluster unless you add `cluster: ["*"]` (match any cluster) or an explicit list of classifications. See [Troubleshooting: A workflow doesn't appear for a specific cluster](workflow-authoring.md#a-workflow-doesnt-appear-for-a-specific-cluster-fleet) for diagnosis steps.
+
 ### Workflow display name
 
-`FormatWorkflowDisplay(actionType, workflowName)` returns `ActionType:WorkflowName` for user-visible strings. The runtime looks up a friendly label through **DataStorage** via `ResolveWorkflowDisplay` (catalog lookup by workflow identity). If the resolver is nil or DataStorage returns no row, the fallback is the **raw workflow UUID** (no `ActionType:` prefix).
+`FormatWorkflowDisplay(actionType, workflowName)` returns `ActionType:WorkflowName` for user-visible strings. It is a pure string formatter -- no DataStorage lookup, no failure mode. The Remediation Orchestrator calls it once, at workflow-selection time (never LLM-suppliable), and persists the result as `workflowDisplayName` on the RemediationRequest; consumers such as Notification read this precomputed field directly rather than resolving it at display time. If `workflowName` is empty, it returns an empty string regardless of `actionType`; if only `actionType` is empty, it returns `workflowName` alone (no `:` prefix).
 
 ### Detected Labels
 
@@ -726,7 +738,7 @@ spec:
 kubectl apply -f restart-sidecar-actiontype.yaml
 ```
 
-The Auth Webhook intercepts the CREATE, registers the action type in the DataStorage taxonomy, and captures the operator identity for audit attribution. Deleting the CRD disables the action type (soft delete). Re-applying a previously deleted CRD re-enables the existing entry.
+The Auth Webhook intercepts the CREATE, validates and admits the action type locally, and captures the operator identity for audit attribution. Deleting the CRD disables the action type; re-applying a previously deleted name re-creates it as a fresh entry (there is no distinct "re-enable" semantics as of v1.6 -- deletion and re-creation are plain CRD CREATE/DELETE admission events).
 
 !!! note "`whenNotToUse` and `preconditions` are optional but strongly recommended"
     The `whenNotToUse` and `preconditions` fields are optional on both `ActionType` and `RemediationWorkflow` descriptions. However, providing them significantly improves LLM selection quality by giving the model explicit exclusion criteria and validation requirements.
@@ -766,13 +778,8 @@ kubectl delete remediationworkflow my-workflow
 kubectl apply -f my-workflow.yaml
 ```
 
-State transitions via the DataStorage API (for advanced lifecycle management):
-
-```bash
-curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/disable
-curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/enable
-curl -X PATCH https://data-storage:8080/api/v1/workflows/{workflow_id}/deprecate
-```
+!!! note "kubectl is the only lifecycle management path (v1.6)"
+    Through v1.5, DataStorage also exposed a REST API (`PATCH /api/v1/workflows/{workflow_id}/disable|enable|deprecate`) for advanced lifecycle management. As of v1.6 (DD-WORKFLOW-018), this REST surface and its backing handlers were deleted outright -- the Auth Webhook owns the `RemediationWorkflow` CRD lifecycle entirely locally now. `kubectl apply`/`kubectl delete` (above) is the only supported way to transition workflow state.
 
 ### Content Integrity and Supersede
 
@@ -793,22 +800,26 @@ This means you can register a new version and the old one is automatically exclu
 
 ## Workflow Search and Scoring
 
-Understanding how DataStorage filters and scores workflows is critical for authoring effective schemas. Your label and detected label choices directly affect whether the LLM ever sees your workflow.
+Understanding how workflows are filtered and scored is critical for authoring effective schemas. Your label and detected label choices directly affect whether the LLM ever sees your workflow.
 
-### Layer 1: Mandatory Label Filtering (WHERE clause)
+!!! info "v1.6: discovery, filtering, and scoring moved in-process to Kubernaut Agent"
+    Through v1.5, DataStorage's PostgreSQL/JSONB queries performed this filtering and scoring. **As of v1.6** (DD-WORKFLOW-018, DD-WORKFLOW-019), Kubernaut Agent performs the exact same filtering and scoring logic in-process, over its own informer-cache-backed watch of the `RemediationWorkflow`/`ActionType` CRDs -- there is no DataStorage round trip and no PostgreSQL query on the investigation path. The formula, boost weights, and matching semantics documented below are unchanged; only where they execute changed. See [Registration Model](#registration-model) for the underlying CRD-native architecture.
 
-Before scoring, DataStorage filters candidates using the mandatory labels from the schema. Workflows that fail any filter are **excluded entirely** -- they never reach the LLM.
+### Layer 1: Mandatory Label Filtering (hard filter)
+
+Before scoring, Kubernaut Agent filters candidates using the mandatory labels from the schema. Workflows that fail any filter are **excluded entirely** -- they never reach the LLM.
 
 | Filter | Matching Rule |
 |---|---|
-| **Severity** | JSONB array `?` operator: workflow's `severity` array must contain the query value, or contain `"*"` |
+| **Severity** | Workflow's `severity` array must contain the query value, or contain `"*"` |
 | **Component** | Case-insensitive comparison: Kubernetes Kind is PascalCase (e.g., `Deployment`), workflow labels store lowercase (e.g., `deployment`) |
-| **Environment** | JSONB array `?` operator with `"*"` wildcard fallback |
+| **Environment** | Workflow's `environment` array must contain the query value, or contain `"*"` |
 | **Priority** | String match (single value) with `"*"` wildcard |
+| **Cluster** (v1.6, Fleet only) | Workflow's `cluster` array must contain the query value (case-insensitive) or `"*"`; dimension is skipped entirely when no cluster classification is present (non-fleet). See [Fleet: Cluster Label](#fleet-cluster-label-v16). |
 
-Additionally, only `active` + `is_latest_version = true` workflows pass.
+Additionally, only `Active` + latest-version workflows pass (see [Workflow Lifecycle](#workflow-lifecycle)).
 
-### Layer 2: Semantic Scoring (ORDER BY)
+### Layer 2: Semantic Scoring (ranking)
 
 Surviving candidates are scored by infrastructure label overlap. The formula:
 
@@ -867,9 +878,10 @@ All classification rules live in a single `policy.rego` file under `package sign
 - The `severity` and `priority` rules produce values for **Layer 1 filtering** -- a misconfigured rule can silently exclude correct workflows
 - The `environment` rules produce the environment value for **Layer 1 filtering**
 - The `labels` rules (`kubernaut.ai/label-*`) produce values for **Layer 2 scoring** at +0.15 per match
+- (Fleet only, v1.6) A separate `cluster` classification rule produces the value for the **Layer 1 `cluster` filter** -- see [Fleet: Cluster Label](#fleet-cluster-label-v16)
 
-!!! note "Why business classification is not used for discovery"
-    Workflows are reusable across organizational boundaries -- a `RollbackDeployment` works for any team, business unit, or SLA tier. Mandatory labels describe the **technical remediation context** (severity, resource type, environment). Business classification describes **who owns the resource**, which is orthogonal to what fix is needed. Operators who want organizational matching can use custom labels (e.g., `kubernaut.ai/label-team=payments` on the namespace + `customLabels: {team: ["payments"]}` in the schema).
+!!! note "Why business classification is generally not used for discovery"
+    Workflows are reusable across organizational boundaries -- a `RollbackDeployment` works for any team, business unit, or SLA tier. Mandatory labels describe the **technical remediation context** (severity, resource type, environment). Business classification generally describes **who owns the resource**, which is orthogonal to what fix is needed. Operators who want organizational matching can use custom labels (e.g., `kubernaut.ai/label-team=payments` on the namespace + `customLabels: {team: ["payments"]}` in the schema). The `cluster` classification (v1.6, Fleet-only) is a deliberate, narrow exception to this principle: it exists specifically to let a shared workflow catalog restrict certain workflows to certain clusters in a multi-cluster fleet, not to model organizational ownership.
 
 ### Scoring Is Internal Ordering, Not Selection
 

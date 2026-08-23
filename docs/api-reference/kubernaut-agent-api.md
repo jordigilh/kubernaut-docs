@@ -1,12 +1,12 @@
 # Kubernaut Agent API
 
-The Kubernaut Agent is a **Go** service that wraps LLM calls with live Kubernetes access for root cause analysis. The AI Analysis controller communicates with it using a **session-based asynchronous** pattern.
+The Kubernaut Agent is a **Go** service that wraps LLM calls with live Kubernetes access for root cause analysis.
+
+!!! warning "v1.6: the REST session API described here through v1.5 is retired"
+    Through v1.5, this page documented a submit-poll-result REST API (`POST /api/v1/incident/analyze`, `GET /api/v1/incident/session/{id}`, `GET .../result`). **As of v1.6** (DD-AA-KA-001), none of these endpoints exist anymore — confirmed directly against the route table (`registerAPIRoutes` in `cmd/kubernautagent/routes.go`), which mounts only `/api/v1/mcp` on the primary port (when interactive mode is enabled). The AI Analysis controller and Kubernaut Agent now communicate exclusively through the **`AgentSession` CRD** — see below.
 
 !!! note "OpenAPI Spec"
-    The full OpenAPI 3.1.0 specification is available at [`internal/kubernautagent/api/openapi.json`](https://github.com/jordigilh/kubernaut/blob/main/internal/kubernautagent/api/openapi.json) in the main repository. The Go client (`pkg/kubernautagent/client/`) uses the generated ogen client for all endpoints, including session management (DD-HAPI-003).
-
-!!! note "OpenAPI enum values"
-    Kubernaut Agent API enums are defined per schema and include lowercase and snake_case values. Always follow the enum values declared in the OpenAPI spec for each field.
+    The retired REST session API's OpenAPI 3.1.0 spec (`internal/kubernautagent/api/openapi.json`) and its generated ogen client (`pkg/kubernautagent/client/`) are no longer the AA↔KA channel. What remains of the primary port's OpenAPI surface is the interactive MCP endpoint's tool schemas — see [MCP Tool Reference](mcp-tools.md).
 
 ## Base URL
 
@@ -14,118 +14,89 @@ The Kubernaut Agent is a **Go** service that wraps LLM calls with live Kubernete
 https://kubernaut-agent.kubernaut-system.svc.cluster.local:8443
 ```
 
-Internal services use the short form `https://kubernaut-agent:8443` when communicating within the same namespace.
+Internal services use the short form `https://kubernaut-agent:8443` when communicating within the same namespace. **As of v1.6, the only route on this port is `/api/v1/mcp`** (mounted when [`interactive.enabled`](../user-guide/configuration.md) is `true`) — there is no other REST endpoint here. Health, readiness, and metrics are on separate ports (see below).
 
-## Session-Based Async Pattern
+## AgentSession CRD Channel (v1.6) {: #agentsession-crd-channel-v16 }
 
-The API uses a submit-poll-result pattern to handle long-running LLM investigations:
+The AI Analysis controller and Kubernaut Agent communicate through the **`AgentSession`** custom resource — a Kubernetes-native create/watch/status channel, not HTTP:
+
+1. **Create** — The AI Analysis controller creates an `AgentSession` CRD (owned by the `AIAnalysis` CR) with the investigation request in `spec` — a 1:1, lossless translation of the fields the retired HTTP request body carried.
+2. **Dispatch** — Kubernaut Agent runs its own internal `controller-runtime` Manager + Reconciler watching for `AgentSession` Create/Update events. On first observation, it acquires a per-object coordination `Lease` and dispatches the investigation exactly once.
+3. **Investigate** — Kubernaut Agent uses live `kubectl` access and (optionally) Prometheus to run the investigation with the LLM.
+4. **Write status** — Kubernaut Agent is the **exclusive writer** of `AgentSession.status`: phase (`Pending`/`Investigating`/`Completed`/`Failed`/`Cancelled`), and on `Completed`, the full curated `AgentSessionResult`.
+5. **Watch** — The AI Analysis controller watches the `AgentSession` for status changes (a Kubernetes watch, not polling), backstopped by a deadline-driven requeue that catches a hung Kubernaut Agent even if the watch itself is missed.
 
 ```mermaid
 sequenceDiagram
-    participant Client as AI Analysis Controller
+    participant AA as AI Analysis Controller
+    participant AS as AgentSession (etcd)
     participant KA as Kubernaut Agent
     participant LLM as LLM Provider
 
-    Client->>KA: POST /api/v1/incident/analyze
-    KA-->>Client: 202 {session_id}
-
-    KA->>LLM: Run investigation
-    Note over KA,LLM: kubectl access, log analysis
-
-    Client->>KA: GET /api/v1/incident/session/{id}
-    KA-->>Client: {status: "investigating"}
-
-    LLM-->>KA: Analysis complete
-
-    Client->>KA: GET /api/v1/incident/session/{id}
-    KA-->>Client: {status: "completed"}
-
-    Client->>KA: GET /api/v1/incident/session/{id}/result
-    KA-->>Client: IncidentResponse
+    AA->>AS: Create AgentSession (spec = investigation request)
+    KA->>AS: Watch Create event
+    KA->>AS: Acquire per-object Lease, dispatch once
+    KA->>LLM: Run investigation (kubectl access)
+    LLM-->>KA: Analysis result
+    KA->>AS: Write status.phase = Completed, status.result
+    AA->>AS: Watch (+ deadline backstop requeue)
+    AS-->>AA: status.phase = Completed
 ```
 
-## Endpoints
+**Cancellation** is a **delete** of the `AgentSession` object, not a status write — Kubernaut Agent's `Dispatcher.cancelOnDelete` stops the in-flight investigation goroutine when it observes the delete.
 
-### Incident Analysis
+**Crash recovery** — If a Kubernaut Agent replica crashes mid-dispatch, its per-object Lease expires and is reclaimed by another (or the restarted) replica, which redispatches the `Pending` `AgentSession`. This replaces the pre-v1.6 model, where the AI Analysis controller itself regenerated lost sessions (up to 5 attempts) because sessions lived only in Kubernaut Agent's process memory.
 
-#### Submit Investigation
+See [AgentSession CRD Reference](crds.md#agentsession) for the full spec/status schema, and [AI Analysis Architecture](../architecture/ai-analysis.md#agentsession-based-async-pattern) for the controller-side flow.
 
-```
-POST /api/v1/incident/analyze
-```
+## Interactive MCP Mode (v1.5+)
 
-Starts an asynchronous investigation session.
+v1.5 adds interactive MCP session support to the Kubernaut Agent, layered on top of the same `AgentSession` channel above. Interactive tools are **not exposed as separate REST endpoints** — they are registered on the go-sdk MCP server (`internal/kubernautagent/mcp/`) and accessed via MCP Streamable HTTP, either directly at `POST /api/v1/mcp` or (for external MCP/A2A clients) proxied through the API Frontend's `POST /mcp` endpoint.
 
-**Request**: `IncidentRequest` — enriched signal data, target resource, analysis parameters
+Kubernaut Agent's own MCP server registers **4 tools**:
 
-**Response**: `202 Accepted`
+| MCP Tool | Description |
+|---|---|
+| `kubernaut_investigate` | 8-action tool: start, message, complete, cancel, takeover, status, reconnect, discover_workflows |
+| `kubernaut_select_workflow` | Select a workflow from discovery results; triggers enrichment and catalog lookup |
+| `kubernaut_complete_no_action` | Close investigation without selecting a workflow |
+| `kubernaut_list_workflows` | List the workflow catalog directly, without an active investigation session (v1.6, DD-WORKFLOW-019 — added when the catalog moved from DataStorage to Kubernaut Agent's own in-memory cache) |
 
-```json
-{
-  "session_id": "550e8400-e29b-41d4-a716-446655440000"
-}
-```
+See [Interactive Sessions](../user-guide/interactive-sessions.md) for the full tool schemas and operator guide, and [MCP Tool Reference](mcp-tools.md) for how the API Frontend exposes these to external MCP/A2A clients.
 
-#### Poll Session Status
+### Real-time streaming
 
-```
-GET /api/v1/incident/session/{session_id}
-```
+Interactive investigation output streams over the **MCP connection itself**, using the Streamable HTTP transport's `text/event-stream` response mode (`Accept: text/event-stream`) — there is no separate REST SSE endpoint. `SSEHeadersMiddleware` sets the proxy anti-buffering headers (`Cache-Control`, `Connection`, `X-Accel-Buffering`) needed for this to work through ingress/reverse proxies. The API Frontend subscribes to the same MCP stream and relays events to its own clients.
 
-Returns the current status of an investigation session.
+## Session Management
 
-**Response**: `200 OK`
+- **Both autonomous and interactive investigations are backed by the `AgentSession` CRD** (etcd-durable) plus a Kubernetes **Lease** for dispatch coordination — a crashing Kubernaut Agent replica no longer loses an in-flight investigation the way the pre-v1.6 in-memory session model did (see [Crash recovery](#agentsession-crd-channel-v16) above).
+- **Interactive sessions** additionally use a **second** Lease (prefix: `kubernaut-interactive-`) for distributed locking of the human-driver seat. The `LeaseSessionManager` handles session creation, takeover (SEC-TAKEOVER-001), and TTL enforcement. Orphaned Leases are reclaimed on startup. The `SessionDrainer` gracefully drains active sessions on pod shutdown (BR-OPS-013).
+- Session results live on the `AgentSession` object until it is garbage-collected (cascades from the owning `AIAnalysis`/`RemediationRequest`).
 
-```json
-{
-  "status": "investigating",
-  "progress": "Analyzing pod logs..."
-}
-```
+## LLM Providers
 
-Session statuses: `pending`, `investigating`, `completed`, `failed`
+**As of v1.6** (DD-PLATFORM-007), LangChainGo has been removed. Kubernaut Agent uses native SDKs per provider family:
 
-**Response**: `404 Not Found` — Session does not exist (e.g., after pod restart). The AI Analysis controller handles this by regenerating the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).
-
-#### Get Session Result
-
-```
-GET /api/v1/incident/session/{session_id}/result
-```
-
-Returns the analysis result when the session is complete.
-
-**Response**: `200 OK` — `IncidentResponse` with RCA, selected workflow, confidence score, and `actionable` flag
-
-Key response fields:
-
-| Field | Type | Description |
+| Provider | Config `llm.provider` | Implementation |
 |---|---|---|
-| `root_cause` | string | Natural language root cause explanation |
-| `confidence` | float | Investigation confidence (0.0--1.0) |
-| `investigation_outcome` | string | Outcome classification (e.g., `resolved`, `workflow_selected`) |
-| `selected_workflow` | object | Workflow recommendation (name, action type, parameters) |
-| `actionable` | boolean | Whether the investigation identified a concrete remediation action |
-| `remediation_target` | object | Target resource (kind, name, namespace) — constructed by the AA controller from KA's `root_owner` tool result, not a direct KA response field |
-| `detected_labels` | object | Infrastructure labels detected during investigation |
+| Anthropic (direct) | `anthropic` | `anthropic-sdk-go` (native) |
+| Gemini (direct) | `gemini` | `google.golang.org/genai` (native) |
+| Vertex AI | `vertex_ai` | Auto-disambiguated by model name — Claude models (`claude-*`) route to the native Anthropic client configured for Vertex; Gemini models (`gemini-*`) route to the native Gemini client configured for Vertex |
+| OpenAI | `openai` | OpenAI-compatible client |
+| OpenAI-compatible | `openai_compatible` | Same client as `openai` — works for vLLM, Ollama, LlamaStack, DeepSeek, TGI, and any OpenAI-compatible server |
 
-**Response**: `409 Conflict` — Session not yet complete
+!!! warning "Provider set reduced in v1.6"
+    `ollama`, `azure`, `bedrock`, `huggingface`, and `mistral` are **no longer separate provider values**. Ollama, Azure OpenAI, and other OpenAI-compatible servers now use `provider: "openai_compatible"` with `endpoint` set to the server origin. Bedrock, Hugging Face, and Mistral have no v1.6 native equivalent. See [Configuration Reference](../user-guide/configuration.md) for the current `llmProfiles` shape (DD-PLATFORM-007).
 
-#### Runtime Configuration
+!!! warning "Vertex AI model disambiguation"
+    `vertex_ai` can host either Claude or Gemini models. Kubernaut Agent inspects the configured `model` to route to the right native client, and fails fast at startup if the model matches neither the `claude-*` nor `gemini-*` family.
 
-```
-GET /config
-```
+**OpenAI-compatible endpoints**: Use `provider: "openai_compatible"` with `endpoint` set to the server origin **without** `/v1` (the agent appends `/v1` automatically).
 
-Returns the current runtime configuration snapshot (available on the API port).
+## Health and metrics (v1.3+)
 
-### Audit: investigation completion
-
-Audit events of type `aiagent.response.complete` include LLM token totals on the payload: **`total_prompt_tokens`** and **`total_completion_tokens`**, for cost and usage tracking in the audit trail.
-
-### Health and metrics (v1.3+)
-
-Liveness and readiness are on **port 8081** (plain HTTP): `GET /healthz`, `GET /readyz` (readiness checks SDK, context API, and Prometheus client). **Prometheus** metrics are on **port 9090** (`GET /metrics`, plain HTTP). The primary REST API is on **port 8443** (HTTPS).
+Liveness and readiness are on **port 8081** (plain HTTP): `GET /healthz`, `GET /readyz` (readiness checks SDK, context API, and Prometheus client). **Prometheus** metrics are on **port 9090** (`GET /metrics`, plain HTTP). The primary port (8443, HTTPS) serves only `/api/v1/mcp` (when enabled) and `/config`.
 
 | Method | Port | Path | Description |
 |---|---|---|---|
@@ -134,82 +105,14 @@ Liveness and readiness are on **port 8081** (plain HTTP): `GET /healthz`, `GET /
 | `GET` | 8443 | `/config` | Configuration snapshot (dev mode only) |
 | `GET` | 9090 | `/metrics` | Prometheus metrics |
 
-## Error Responses
+## Audit: investigation completion
 
-All error responses (4xx, 5xx) use [RFC 7807 Problem Details](index.md#error-responses-rfc-7807) format with `Content-Type: application/problem+json`. See the [error type catalog](index.md#error-type-catalog) for the full list of error types.
-
-**Example** (session not ready):
-
-```json
-{
-  "type": "https://kubernaut.ai/problems/conflict",
-  "title": "Conflict",
-  "detail": "Session is still investigating, result not yet available",
-  "status": 409
-}
-```
-
-## Interactive MCP Mode (v1.5+)
-
-v1.5 adds interactive MCP session support to the Kubernaut Agent. Interactive tools are **not exposed as REST endpoints** — they are registered on the go-sdk MCP server (`internal/kubernautagent/mcp/`) and accessed via MCP Streamable HTTP through the API Frontend's `POST /mcp` endpoint.
-
-The existing REST API is unchanged. The MCP server runs alongside it, registering 3 tools:
-
-| MCP Tool | Description |
-|---|---|
-| `kubernaut_investigate` | 8-action tool: start, message, complete, cancel, takeover, status, reconnect, discover_workflows |
-| `kubernaut_select_workflow` | Select a workflow from discovery results; triggers enrichment and catalog lookup |
-| `kubernaut_complete_no_action` | Close investigation without selecting a workflow |
-
-See [Interactive Sessions](../user-guide/interactive-sessions.md) for the full tool schemas and operator guide.
-
-### SSE Streaming
-
-The existing REST endpoint supports real-time streaming for interactive sessions:
-
-```
-GET /api/v1/incident/session/{session_id}/stream
-```
-
-The API Frontend subscribes to this SSE stream and relays events to MCP clients.
-
-### Additional REST Endpoints (v1.5)
-
-| Method | Path | Description |
-|---|---|---|
-| `POST` | `/api/v1/incident/session/{session_id}/cancel` | Cancel an investigation session |
-| `GET` | `/api/v1/incident/session/{session_id}/snapshot` | Get a point-in-time session snapshot |
-
-## Session Management
-
-- **Autonomous sessions** are stored **in-memory** in the Kubernaut Agent pod. If the pod restarts, sessions are lost — the AI Analysis controller handles this by regenerating sessions (up to 5 attempts).
-- **Interactive sessions** (v1.5+) use **Kubernetes Leases** (prefix: `kubernaut-interactive-`) for distributed locking. The `LeaseSessionManager` handles session creation, takeover (SEC-TAKEOVER-001), and TTL enforcement. Orphaned Leases are reclaimed on startup. The `SessionDrainer` gracefully drains active sessions on pod shutdown (BR-OPS-013).
-- Session results are available until the pod restarts or the session is garbage-collected
-
-## LLM Providers
-
-The Kubernaut Agent uses **LangChainGo** for LLM integration, supporting the following providers:
-
-| Provider | Config `llm.provider` | Implementation |
-|---|---|---|
-| OpenAI (or compatible) | `openai` | LangChainGo `llms/openai` |
-| Ollama | `ollama` | LangChainGo `llms/ollama` |
-| Azure OpenAI | `azure` | LangChainGo `llms/openai` (Azure API type) |
-| Vertex AI (Gemini) | `vertex` | LangChainGo `llms/googleai/vertex` |
-| Claude on Vertex AI | `vertex_ai` | Anthropic Go SDK (not LangChainGo) |
-| Anthropic (direct) | `anthropic` | LangChainGo `llms/anthropic` |
-| Amazon Bedrock | `bedrock` | LangChainGo `llms/bedrock` |
-| Hugging Face | `huggingface` | LangChainGo `llms/huggingface` |
-| Mistral | `mistral` | LangChainGo `llms/mistral` |
-
-!!! warning "Vertex AI provider distinction"
-    `vertex` = Gemini models on Vertex AI. `vertex_ai` = Anthropic Claude models on Vertex AI. These use separate code paths and different authentication methods.
-
-**OpenAI-compatible endpoints**: Use `provider: "openai"` with `endpoint` set to the server origin **without** `/v1` (the agent appends `/v1` automatically). Works for vLLM, LocalAI, TGI, and any OpenAI-compatible server.
+Audit events of type `aiagent.response.complete` include LLM token totals on the payload: **`total_prompt_tokens`** and **`total_completion_tokens`**, for cost and usage tracking in the audit trail.
 
 ## Next Steps
 
-- [AI Analysis Architecture](../architecture/ai-analysis.md) — How the controller uses this API
-- [DataStorage API](datastorage-api.md) — Audit and workflow APIs
+- [AI Analysis Architecture](../architecture/ai-analysis.md) — How the controller uses the `AgentSession` channel
+- [AgentSession CRD Reference](crds.md#agentsession) — Full spec/status schema
+- [DataStorage API](datastorage-api.md) — Audit API (the workflow catalog REST surface described here through v1.5 is retired — see that page)
 - [Kubernaut Agent SDK Config](../user-guide/configmap-kubernaut-agent.md) — SDK configuration reference
 - [Configuration Reference](../user-guide/configuration.md) — LLM provider settings

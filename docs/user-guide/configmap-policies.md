@@ -1,6 +1,6 @@
 # SignalProcessing Rego Policies
 
-The SignalProcessing controller uses a single Rego policy file (`policy.rego`) for all signal classification: environment, priority, severity, and custom labels. Proactive signal mappings are separate YAML configuration.
+The SignalProcessing controller uses a single Rego policy file (`policy.rego`) for all signal classification: environment, priority, severity, cluster (Fleet only, v1.6+), and custom labels. Proactive signal mappings are separate YAML configuration.
 
 ## Overview
 
@@ -38,7 +38,7 @@ helm install kubernaut charts/kubernaut/ \
 
 ## Policy Structure
 
-The policy file must use `package signalprocessing` and export 4 named rules:
+The policy file must use `package signalprocessing` and export 5 named rules:
 
 ```rego
 package signalprocessing
@@ -71,6 +71,14 @@ priority := {"priority": "P0", "policy_name": "production-critical"} if {
 # ========== Custom Labels ==========
 # Returns: map[string][]string
 default labels := {}
+
+# ========== Cluster (Fleet only, v1.6+) ==========
+# Returns: string, or no output at all -- optional, unlike the rules above.
+# No `cluster` rule (or no match) is a valid "no classification" outcome,
+# not a policy error. Irrelevant outside Fleet deployments.
+cluster := "production" if {
+    input.cluster.labels["environment"] == "production"
+}
 ```
 
 ### Input Schema
@@ -89,6 +97,7 @@ The Go controller sends a typed struct as Rego input:
 | `input.workload.kind` | string | Target resource kind (e.g., `Deployment`) |
 | `input.workload.name` | string | Target resource name |
 | `input.workload.labels` | map | Target resource labels |
+| `input.cluster.labels` | map | Fleet only (v1.6+): cluster-registration labels for the signal's originating cluster. Empty (but defined) in non-fleet deployments. |
 
 ### Cross-rule References
 

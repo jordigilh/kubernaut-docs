@@ -151,6 +151,17 @@ Unmanaged resources are **not rejected with an error**. The Gateway returns HTTP
 }
 ```
 
+### Fleet Mode Scope Checking (v1.6+)
+
+When `global.fleet.enabled=true`, the Gateway performs a **federated** scope check instead of (or in addition to) the local label check above, delegating to a pluggable backend (FMC or ACM Search -- see [Fleet Management](fleet.md)) to determine whether a remote-cluster resource is managed.
+
+Fleet mode requires **both** of the following to be configured, or the Gateway fails closed at startup:
+
+- **`Backend`/`Endpoint`** -- the federated scope-check backend (answers "is this resource fleet-managed?")
+- **`MCPGatewayEndpoint`** (+ `MCPGatewayType`, e.g. Kuadrant or Envoy AI Gateway) -- used for remote reads (owner-chain metadata resolution)
+
+Configuring only one leaves the Gateway silently degraded to local-only behavior for fleet-routed signals, which is why both are validated together rather than allowed independently.
+
 ## Phase-Based Deduplication
 
 The Gateway prevents duplicate remediations using a phase-based deduplication system backed by Kubernetes RR status (no Valkey dependency).
@@ -158,6 +169,8 @@ The Gateway prevents duplicate remediations using a phase-based deduplication sy
 ### Fingerprint
 
 The deduplication key is the signal fingerprint: `SHA256(namespace:kind:name)` of the top-level owning resource. The alert name is **not** part of the fingerprint, so multiple alerts about the same Deployment (e.g., `KubePodCrashLooping` and `KubePodNotReady`) are treated as duplicates.
+
+**Fleet mode (v1.6+)**: when the signal carries a non-empty `ClusterID` (populated from the Thanos/AlertManager `commonLabels["cluster"]` external label, or a Kubernetes Event source annotation), the fingerprint becomes `SHA256(clusterID:namespace:kind:name)` (`CalculateClusterAwareFingerprint`, BR-INTEGRATION-065) so the same-named resource on two different clusters never collides into one RR. When `ClusterID` is empty (local hub cluster, or fleet disabled), the formula is unchanged from pre-v1.6 behavior. See [Fleet Management](fleet.md).
 
 ### Phase-Based Logic
 
@@ -204,6 +217,7 @@ The fingerprint prefix enables field-selector queries for deduplication lookups.
 | `FiringTime`, `ReceivedTime` | Timestamps |
 | `ProviderData` | Source-specific metadata |
 | `OriginalPayload` | Raw payload for audit reconstruction |
+| `ClusterID` | (v1.6+, Fleet only) Source cluster identity; empty for the local/hub cluster. Propagated by the Orchestrator onto every child CRD -- see [Remediation Routing](remediation-routing.md). |
 
 ### Retry and Circuit Breaker
 

@@ -25,9 +25,9 @@ The LLM calls `list_available_actions` and receives every active action type wit
 
 ### Step 2: Workflow Ranking
 
-The LLM calls `list_workflows` for the chosen action type. DataStorage returns all active, latest-version workflows under that action type, **ordered by `final_score`**.
+The LLM calls `list_workflows` for the chosen action type. Kubernaut Agent (v1.6+; DataStorage through v1.5) returns all active, latest-version workflows under that action type, **ordered by `final_score`**.
 
-The DataStorage scoring algorithm combines detected label boosts, custom label boosts, and penalties. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for the complete formula and boost values.
+The scoring algorithm combines detected label boosts, custom label boosts, and penalties. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) for the complete formula and boost values.
 
 **What matters here:**
 
@@ -42,12 +42,12 @@ The LLM receives the ranked list and picks the workflow whose `description.whenT
 **What matters here:**
 
 - The workflow `description.whenToUse` and `description.whenNotToUse`
-- The DataStorage ranking (LLM tends to prefer higher-ranked workflows when descriptions are similar)
+- The catalog ranking (LLM tends to prefer higher-ranked workflows when descriptions are similar)
 - Remediation history
 
 ### Key Insight
 
-Steps 2 and 3 work together: DataStorage provides the **ordering** via scoring, and the LLM makes the **final decision** via descriptions. For reliable selection, **both the ranking (via labels) and the description guidance must align**.
+Steps 2 and 3 work together: the catalog provides the **ordering** via scoring, and the LLM makes the **final decision** via descriptions. For reliable selection, **both the ranking (via labels) and the description guidance must align**.
 
 ## Planning Your Workflow Catalog
 
@@ -127,7 +127,7 @@ spec:
     whenNotToUse: "When the environment is not GitOps-managed. When the OOMKill is caused by a memory leak."
 ```
 
-The LLM reads both descriptions and, combined with the DataStorage ranking (which boosts the GitOps workflow when `gitOpsManaged: "true"` is detected), reliably picks the right one.
+The LLM reads both descriptions and, combined with the catalog ranking (which boosts the GitOps workflow when `gitOpsManaged: "true"` is detected), reliably picks the right one.
 
 ### Description Engineering Checklist
 
@@ -139,7 +139,7 @@ The LLM reads both descriptions and, combined with the DataStorage ranking (whic
 
 ## Using CustomLabels for Condition-Based Selection
 
-CustomLabels are operator-defined key-value pairs that influence DataStorage scoring. They're the mechanism for steering selection based on organizational or operational conditions that aren't captured by infrastructure detection.
+CustomLabels are operator-defined key-value pairs that influence catalog scoring. They're the mechanism for steering selection based on organizational or operational conditions that aren't captured by infrastructure detection.
 
 ### How CustomLabels Flow Through the System
 
@@ -147,14 +147,14 @@ CustomLabels are operator-defined key-value pairs that influence DataStorage sco
 flowchart LR
     NS["Namespace label<br/><small>kubernaut.ai/label-team=payments</small>"] --> Rego["policy.rego labels rules<br/><small>extracts team=payments</small>"]
     Rego --> SP["SignalProcessing<br/><small>CustomLabels field</small>"]
-    SP --> DS["DataStorage scoring<br/><small>custom label boost</small>"]
-    DS --> LLM["LLM sees ranked list"]
+    SP --> KA["Kubernaut Agent catalog<br/><small>custom label boost</small>"]
+    KA --> LLM["LLM sees ranked list"]
 ```
 
 1. **Namespace labels**: The operator labels namespaces with `kubernaut.ai/label-{key}={value}`
 2. **Rego policy**: The `labels` rules in `policy.rego` extract labels with the `kubernaut.ai/label-` prefix
 3. **Signal Processing**: Stores them in the `CustomLabels` field on the SP CRD
-4. **DataStorage**: During `list_workflows`, matches SP's custom labels against each workflow's `customLabels` and boosts the score
+4. **Kubernaut Agent** (v1.6+; DataStorage through v1.5): During `list_workflows`, matches SP's custom labels against each workflow's `customLabels` and boosts the score
 5. **LLM**: Sees the ranked list and makes the final selection, guided by descriptions
 
 ### Declaring CustomLabels on Workflow Schemas
@@ -170,7 +170,7 @@ spec:
 - **Exact match**: The workflow's value must equal the incident's value.
 - **Wildcard** (`"*"`): The workflow matches any non-empty value for that key (half credit).
 
-CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Authors always declare `customLabels` as a flat `map[string]string`. DataStorage internally wraps each single-string value into a JSON array for JSONB scoring queries (e.g., `"high"` becomes `["high"]`), but this is transparent to workflow authors.
+CustomLabels are `map[string]string` on the CRD -- each key maps to a single string value. Authors always declare `customLabels` as a flat `map[string]string`. Internally, the catalog wraps each single-string value into an array for scoring (e.g., `"high"` becomes `["high"]`) -- through v1.5 this was a JSONB containment query in DataStorage; as of v1.6 it's the same wrapping applied in Kubernaut Agent's in-memory representation -- but this is transparent to workflow authors either way.
 
 ### Labeling Namespaces
 
@@ -426,7 +426,7 @@ spec:
 **Incident in `alpha-prod`** (risk_tolerance=high):
 
 1. **Step 1**: LLM picks `GracefulRestart` based on the CrashLoopBackOff root cause
-2. **Step 2**: DataStorage scores both workflows:
+2. **Step 2**: The catalog scores both workflows:
     - `restart-pods-v1`: base 0.50 + customLabel match (`risk_tolerance: high` == `high`) = **0.515**
     - `crashloop-rollback-v1`: base 0.50 + no match (`risk_tolerance: low` != `high`) = **0.50**
 3. **Step 3**: LLM sees `restart-pods-v1` ranked first, reads its `whenToUse` ("high risk tolerance"), confirms it fits. Selected.
@@ -434,7 +434,7 @@ spec:
 **Incident in `beta-prod`** (risk_tolerance=low):
 
 1. **Step 1**: LLM picks `GracefulRestart` (same action type)
-2. **Step 2**: DataStorage scores:
+2. **Step 2**: The catalog scores:
     - `crashloop-rollback-v1`: base 0.50 + customLabel match = **0.515**
     - `restart-pods-v1`: base 0.50 + no match = **0.50**
 3. **Step 3**: LLM sees `crashloop-rollback-v1` ranked first, reads its `whenToUse` ("low risk tolerance"), confirms it fits. Selected.
@@ -443,7 +443,7 @@ spec:
 
 The ranking and the descriptions **reinforce each other**:
 
-- DataStorage puts the correct workflow first via the customLabel score boost
+- The catalog puts the correct workflow first via the customLabel score boost
 - The LLM confirms the choice by reading the `whenToUse` description, which explicitly references risk tolerance
 - If the descriptions were generic (no mention of risk tolerance), the LLM would have no basis to differentiate and might ignore the ranking
 
@@ -461,11 +461,13 @@ The ranking and the descriptions **reinforce each other**:
     kubectl get remediationworkflows -o custom-columns=NAME:.metadata.name,ACTION:.spec.actionType
     ```
 
-2. **Check DataStorage ranking**: Query the DataStorage API directly to see how workflows are scored:
+2. **Check the ranking manually**: As of v1.6 (DD-WORKFLOW-019), discovery and scoring run in-process inside Kubernaut Agent -- there is no REST endpoint to query the ranking directly. Instead, inspect each candidate workflow's declared labels and manually apply the [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring) formula:
 
     ```bash
-    curl -s "https://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&environment=production&component=deployment&priority=P1" | jq '.[] | {name: .name, score: .confidence}'
+    kubectl get remediationworkflow -o yaml -l "spec.actionType=GracefulRestart"
     ```
+
+    Compare the `spec.labels` (mandatory filters) and `spec.detectedLabels`/`spec.customLabels` (scoring inputs) of each candidate against the incident's own detected/custom labels (visible on the `SignalProcessing` CRD's `status`) to work out which one should rank higher. You can also check the `workflow.catalog.workflows_listed` audit event (`total_count` and the filter values actually used) via the DataStorage audit query API to confirm what Kubernaut Agent's catalog was asked for during the real investigation -- see [Audit and Observability](audit-and-observability.md).
 
     If the wrong workflow is ranked higher, check label matching.
 
@@ -487,6 +489,40 @@ The ranking and the descriptions **reinforce each other**:
     kubectl get remediationworkflow restart-pods-v1 -o jsonpath='{.spec.customLabels}'
     ```
 
+### A workflow doesn't appear for a specific cluster (Fleet)
+
+**Symptom**: A workflow is discoverable in some clusters but not others, and Fleet is enabled.
+
+**Cause**: The `cluster` label (BR-FLEET-003, v1.6) is a mandatory-label filter dimension, same family as `severity`/`environment`/`component`. Once Fleet is enabled and Signal Processing resolves a concrete cluster classification for the incoming signal (e.g. `production`), a workflow with **no `cluster` entries is excluded** for that signal -- an empty/omitted `cluster` field is not a wildcard pass-through, it's an active exclusion. This most commonly bites teams that had working workflows *before* enabling Fleet: those workflows never declared `cluster` because the field didn't matter yet, and they silently drop out of discovery the moment Fleet starts classifying clusters.
+
+**Diagnostic steps:**
+
+1. **Confirm the workflow's `cluster` field:**
+
+    ```bash
+    kubectl get remediationworkflow <name> -o jsonpath='{.spec.labels.cluster}'
+    ```
+
+    An empty result means the workflow has no `cluster` declared -- it will be excluded once any signal carries a classification.
+
+2. **Confirm the signal's resolved cluster classification:**
+
+    ```bash
+    kubectl get signalprocessing -n kubernaut-system <sp-name> -o jsonpath='{.status.signalClassification.clusterClassification}'
+    ```
+
+    An empty value means Fleet did not produce a classification for this signal (e.g., the cluster isn't registered) -- in that case `cluster` filtering is not evaluated and this isn't the cause.
+
+3. **Fix**: add `cluster: ["*"]` to match any cluster, or list the specific classifications the workflow should apply to (e.g., `cluster: [production, staging-eu]`), matching case-insensitively:
+
+    ```yaml
+    spec:
+      labels:
+        cluster: ["*"]   # or: [production, staging-eu]
+    ```
+
+See [Fleet: Cluster Label](workflows.md#fleet-cluster-label-v16) for the full matching semantics.
+
 ### No workflows found for the action type
 
 **Symptom**: The LLM reports no workflows available after selecting an action type.
@@ -494,12 +530,11 @@ The ranking and the descriptions **reinforce each other**:
 **Causes:**
 
 - **Mandatory label mismatch**: The workflow's `severity`, `environment`, `component`, or `priority` don't match the incident. Check that labels include the incident's values or use `"*"` wildcards.
-- **Workflow not active**: The workflow might be `disabled` or `superseded`. Check: `kubectl get remediationworkflow <name> -o jsonpath='{.status.catalogStatus}'`
-- **Not latest version**: If a newer version was registered, the old one has `is_latest_version = false` and is excluded.
+- **Workflow not active**: The workflow's `catalogStatus` might be `Disabled` or `Superseded` (e.g. because a newer version of the same `metadata.name` was registered). Check: `kubectl get remediationworkflow <name> -o jsonpath='{.status.catalogStatus}'` -- only `Active` workflows are discoverable.
 
 ### CustomLabels have no effect
 
-**Symptom**: Both workflows have the same DataStorage score despite different customLabels.
+**Symptom**: Both workflows have the same catalog score despite different customLabels.
 
 **Causes:**
 
@@ -508,7 +543,7 @@ The ranking and the descriptions **reinforce each other**:
 - **Workflow not declaring customLabels**: The workflow schema must have a `customLabels` section. Without it, there's nothing to match against.
 - **Key mismatch**: The Rego output key must exactly match the workflow's customLabel key (e.g., `risk_tolerance` in both).
 
-### The LLM ignores the DataStorage ranking
+### The LLM ignores the catalog ranking
 
 **Symptom**: The higher-ranked workflow is not selected.
 

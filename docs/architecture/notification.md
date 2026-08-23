@@ -264,22 +264,21 @@ The credential resolver reads secrets from a mounted directory (projected volume
 
 ## Notification Enrichment
 
-Before delivery, the controller enriches notification bodies by resolving workflow UUIDs to human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.
+Before delivery, the controller enriches notification bodies by replacing workflow UUIDs with human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.
+
+!!! info "v1.6: no live lookup -- name is already known (Issue #1677 Phase 1, DD-WORKFLOW-018 v1.1)"
+    Through v1.5, enrichment called a live `WorkflowNameResolver` backed by DataStorage's `GET /api/v1/workflows/{id}` (now-retired). As of v1.6, that resolver and its fallback branch were **deleted outright**: the Remediation Orchestrator already knows the catalog-authoritative workflow name at notification-creation time -- `AIAnalysis.Status.SelectedWorkflow.WorkflowName`, always equal to `RemediationWorkflow.metadata.name` -- and populates it directly on `NotificationRequest.Spec.Context.Workflow.WorkflowName`. Enrichment is now a pure in-memory string substitution with **no external call and no failure mode of its own**.
 
 ### Enrichment Flow
 
-1. Extract the workflow UUID from `spec.metadata["workflowId"]` with fallback to `spec.metadata["selectedWorkflow"]` (the former is set for completion notifications, the latter for approval notifications)
-2. Call the DataStorage catalog API (`GET /api/v1/workflows/{id}`) to resolve the UUID to a workflow name
-3. Replace every occurrence of the UUID in `spec.Body` with the resolved name
+1. Extract the workflow UUID from `Spec.Context.Workflow.WorkflowID` (completion notifications) with fallback to `Spec.Context.Workflow.SelectedWorkflow` (approval notifications)
+2. Read `Spec.Context.Workflow.WorkflowName`, already populated by the Remediation Orchestrator when it created the notification
+3. Replace every occurrence of the UUID in `spec.Body` with that name
 4. Pass the enriched notification to the delivery orchestrator
 
 ### Graceful Degradation
 
-If the workflow UUID is absent from the workflow context, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.
-
-### Extensibility
-
-The enrichment layer uses a `WorkflowNameResolver` interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.
+If the workflow UUID or the pre-populated `WorkflowName` is absent from the notification context, the notification is delivered unchanged with the original UUID preserved. `WorkflowName` is `+kubebuilder:validation:Required` on the underlying `WorkflowSnapshot` type, so in practice it is always populated whenever a workflow ID is present at all -- this path exists for defense-in-depth, not because it is expected to trigger.
 
 ## Completion and status notification content
 

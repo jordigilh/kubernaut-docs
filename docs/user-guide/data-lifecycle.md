@@ -15,6 +15,7 @@ This means:
 - **Completed remediations** are retained for 24 hours, then cleaned up automatically
 - **No data is lost** because every stage is persisted as audit events in PostgreSQL before CRD cleanup
 - The retention period is configurable via `retention.period` in Helm values
+- **`AgentSession` (v1.6+)** has no independent retention timer -- it's owned by `AIAnalysis` (owner reference), so it cascades deletion transitively through the same `RemediationRequest` -> `AIAnalysis` -> `AgentSession` chain when the parent RR expires. See [API Reference: AgentSession](../api-reference/crds.md#agentsession).
 
 ## PostgreSQL as the System of Record
 
@@ -44,6 +45,7 @@ graph TB
         RR[RemediationRequest CRD]
         SP[SignalProcessing CRD]
         AA[AIAnalysis CRD]
+        AS["AgentSession CRD (v1.6+)"]
         WE[WorkflowExecution CRD]
         NR[NotificationRequest CRD]
         EA[EffectivenessAssessment CRD]

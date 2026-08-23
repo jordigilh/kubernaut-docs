@@ -69,20 +69,23 @@ Re-read the **v1.4** upgrade warning at the top of this page before touching liv
 
 ## Provisioning
 
-Three options are available, with the following precedence: `existingSdkConfigMap` > `sdkConfigContent` > `llm.provider` + `llm.model`.
+Three options are available, with the following precedence: `existingSdkConfigMap` > `sdkConfigContent` > `global.llmProfiles` (v1.6, DD-PLATFORM-007 — replaces the old `kubernautAgent.llm.provider`/`.model`).
 
 ### Option A: Quickstart (recommended for getting started)
 
-Set the provider and model directly in Helm values. The chart generates a minimal SDK config ConfigMap automatically.
+Set the provider and model directly in Helm values, as a named LLM profile under `global.llmProfiles`. The chart generates a minimal SDK config ConfigMap automatically.
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set kubernautAgent.llm.provider=openai \
-  --set kubernautAgent.llm.model=gpt-4o \
+  --set global.llmProfiles.primary.provider=openai \
+  --set global.llmProfiles.primary.model=gpt-4o \
+  --set global.llmProfiles.primary.credentialsSecretName=llm-credentials \
   ...
 ```
 
-Supported quickstart providers: `openai`, `anthropic` (any provider needing only an API key). For Vertex AI, Azure, or advanced setups, use Option B or C.
+`kubernautAgent.llmProfileRef` is optional when exactly one profile is defined -- it's inferred automatically (Issue #1987); set it explicitly if you define multiple named profiles for other consumers (e.g. AI Analysis severity triage).
+
+Supported quickstart providers: `openai`, `anthropic`, `gemini` (any provider needing only an API key). For Vertex AI, Azure, or advanced setups, use Option B or C.
 
 ### Option B: Inline content
 
@@ -120,15 +123,21 @@ runtime:
 
 ai:
   llm:
-    provider: ""              # Required. One of: openai, ollama, azure, vertex,
-                              #   vertexAi, anthropic, bedrock, huggingface, mistral
-    model: ""                 # Required. e.g., "gpt-4o", "gemini-2.5-pro"
-    endpoint: ""              # Server origin without /v1 (required for ollama, azure, mistral)
+    provider: ""              # Required. One of: openai, openai_compatible, anthropic,
+                              #   vertex_ai, gemini (v1.6+ -- langchaingo removed, see
+                              #   "Supported Providers" below for the full mapping)
+    model: ""                 # Required. e.g., "gpt-4o", "claude-sonnet-4-6", "gemini-2.5-pro"
+    endpoint: ""              # Server origin without /v1 (required for openai, openai_compatible)
     apiKey: ""                # Provider API key
-    azureApiVersion: ""       # Azure-specific
-    vertexProject: ""         # Vertex-specific (vertex and vertexAi)
-    vertexLocation: ""        # Vertex-specific
-    bedrockRegion: ""         # Bedrock-specific
+    azureApiVersion: ""       # Set together with provider: openai/openai_compatible for Azure OpenAI (v1.6+, #1600) -- there is no separate "azure" provider string
+    vertexProject: ""         # Required for provider: vertex_ai
+    vertexLocation: ""        # Required for provider: vertex_ai
+    bedrockRegion: ""         # Parsed but NOT YET consumed by any client (#1582) -- do not configure "bedrock" as a provider, it is rejected at startup
+    reasoning:                # v1.6+ (BR-AI-086/BR-AI-087). Off by default. See "Reasoning Configuration" below.
+      enabled: false
+      effort: ""              # "", none, minimal, low, medium, high, xhigh (unified across all providers)
+      budgetTokens: 0         # Anthropic-family only; overrides effort with an exact token budget when set
+      capabilityOverride: ""  # openai_compatible only: "auto" (default), "force_on", "force_off"
     structuredOutput: false   # Reserved; KA always enables JSON mode internally (see note below)
     temperature: 0.7          # Creativity vs determinism (0.0--1.0). Omit this key entirely to
                               #   send no temperature parameter at all (v1.5.5+, #1749) -- required
@@ -193,8 +202,9 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
 | `azureApiVersion` | Azure API version override |
 | `vertexProject` | GCP project override |
 | `vertexLocation` | GCP region override |
-| `bedrockRegion` | AWS Bedrock region override |
+| `bedrockRegion` | Parsed for forward-compatibility; not consumed (#1582) |
 | `temperature` | Override base/phase temperature (v1.5.5+, #1749). `nil`/omitted means inherit the base value unchanged. |
+| `reasoning` | Override base/phase reasoning config (v1.6+). Identity fields (`provider`, `model`) are frozen at boot per phase (#1599) — only tuning fields like `reasoning.effort` are hot-reloadable. |
 
 `maxRetries` and `timeoutSeconds` are always inherited from the base `LLMRuntimeConfig` and cannot be overridden per phase.
 
@@ -231,20 +241,19 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
 
 ## Supported Providers
 
-| Config `ai.llm.provider` | Backend | Implementation |
-|---|---|---|
-| `openai` | OpenAI or OpenAI-compatible API | LangChainGo `llms/openai` |
-| `ollama` | Ollama | LangChainGo `llms/ollama` |
-| `azure` | Azure OpenAI | LangChainGo `llms/openai` (Azure API type) |
-| `vertex` | Google Vertex AI (Gemini models) | LangChainGo `llms/googleai/vertex` |
-| `vertex_ai` | Claude on Google Vertex AI | Anthropic Go SDK (not LangChainGo) |
-| `anthropic` | Anthropic API (direct) | LangChainGo `llms/anthropic` |
-| `bedrock` | Amazon Bedrock | LangChainGo `llms/bedrock` |
-| `huggingface` | Hugging Face | LangChainGo `llms/huggingface` |
-| `mistral` | Mistral | LangChainGo `llms/mistral` |
+!!! info "v1.6: LangChainGo removed (#1580, #1581, #1600, #1778)"
+    The Kubernaut Agent no longer depends on LangChainGo. LLM access now goes through a small set of first-party clients, each shared with the API Frontend via `pkg/shared/types.LLMConfig`. This dropped the number of distinct `provider` strings from nine to five — several older values (`ollama`, `azure`, `vertex`, `huggingface`, `mistral`) no longer exist as their own provider identity. Endpoint-compatible backends are now reached through `openai`/`openai_compatible` instead (see the table below), and `vertex` (bare) was folded into `vertex_ai`, which now auto-detects Claude vs. Gemini from the model name.
 
-!!! warning "Vertex AI provider distinction"
-    `vertex` = Gemini models on Vertex AI. `vertex_ai` = Anthropic Claude models on Vertex AI. These use separate code paths and different SDKs.
+| Config `ai.llm.provider` | Backend | Implementation | Notes |
+|---|---|---|---|
+| `anthropic` | Anthropic API (direct, `api.anthropic.com`) | Native Anthropic Go SDK | |
+| `gemini` | Google Gemini Developer API (`generativelanguage.googleapis.com`) | Native `google.golang.org/genai` client (BR-AI-087, #1778) | New in v1.6. Distinct from `vertex_ai`: no GCP project/location. |
+| `vertex_ai` | Google Vertex AI — hosts **either** Claude **or** Gemini models | Native Anthropic or `genai` client, auto-selected by model name prefix (`claude-*` vs. `gemini-*`) (#1778, #1792) | A model matching neither prefix fails fast at client construction rather than silently defaulting. |
+| `openai` | OpenAI (`api.openai.com`) | Shared `openaicompat` client (DD-LLM-005) | |
+| `openai_compatible` | Any OpenAI-Chat-Completions-compatible endpoint: Azure OpenAI, Ollama, vLLM, LlamaStack, Mistral, Hugging Face TGI, DeepSeek | Shared `openaicompat` client (#1581, DD-LLM-005) | Azure OpenAI is selected by setting `azureApiVersion` alongside this provider — there is no separate `azure` value (#1600). |
+
+!!! warning "`bedrock` is not a supported provider value"
+    `bedrockRegion` remains a parseable config field for forward compatibility, but no client currently consumes it (#1582) — configuring `provider: bedrock` is rejected at LLM client construction.
 
 !!! warning "Mandatory JSON structured output"
     KA internally sets `JSONMode: true` on every LLM request. This is **not configurable** — the `structured_output` field in the config is reserved and has no effect at runtime. Your LLM provider/model **must** support schema-constrained JSON responses (equivalent to `response_format: {"type": "json_object"}` in the OpenAI API). All listed providers support this natively. For self-hosted or air-gapped deployments using Ollama or OpenAI-compatible servers, ensure the model supports JSON mode (most instruction-tuned models do).
@@ -307,25 +316,25 @@ ai:
 
 Secret: `kubectl create secret generic llm-credentials --from-literal=OPENAI_API_KEY=sk-...`
 
-### OpenAI-Compatible (vLLM, LocalAI, TGI)
+### OpenAI-Compatible (vLLM, Ollama, LlamaStack, DeepSeek)
 
 ```yaml
 ai:
   llm:
-    provider: openai
+    provider: openai_compatible
     model: gpt-4o
     endpoint: http://vllm.internal.svc:8000
 ```
 
-Set the `endpoint` to the server origin **without** `/v1` — the agent appends `/v1` automatically.
+Set the `endpoint` to the server origin **without** `/v1` — the agent appends `/v1` automatically. Use `openai_compatible` for any Chat-Completions-compatible backend (vLLM, Ollama, LlamaStack, Mistral, Hugging Face TGI, DeepSeek); `openai` is reserved for `api.openai.com` itself, but both are served by the same client.
 
 ### Azure OpenAI
 
 ```yaml
 ai:
   llm:
-    provider: azure
-    model: gpt-4o
+    provider: openai_compatible
+    model: gpt-4o          # doubles as the Azure deployment ID
     endpoint: https://my-resource.openai.azure.com/
     azureApiVersion: "2024-02-15-preview"
     timeoutSeconds: 120
@@ -333,13 +342,29 @@ ai:
 
 Secret: `kubectl create secret generic llm-credentials --from-literal=AZURE_API_KEY=...`
 
-### Google Vertex AI (Gemini)
+!!! info "No separate `azure` provider (v1.6, #1600)"
+    Azure OpenAI is not its own `provider` value — it is `openai` or `openai_compatible` with `azureApiVersion` set, which switches the shared client into Azure's deployment-scoped URL shape and `api-key` header auth instead of `Authorization: Bearer`. `model` doubles as the Azure deployment ID, matching Azure's own convention.
+
+### Google Gemini (Native API)
 
 ```yaml
 ai:
   llm:
-    provider: vertex
+    provider: gemini
     model: gemini-2.5-pro
+    apiKey: ""              # or apiKeyFile / credentials secret
+    timeoutSeconds: 120
+```
+
+New in v1.6 (BR-AI-087, #1778). Talks directly to the Gemini Developer API (`generativelanguage.googleapis.com`) via the native `google.golang.org/genai` client — no GCP project or location required. Secret: `kubectl create secret generic llm-credentials --from-literal=GEMINI_API_KEY=...`
+
+### Google Vertex AI (Gemini or Claude)
+
+```yaml
+ai:
+  llm:
+    provider: vertex_ai
+    model: gemini-2.5-pro    # or a claude-* model -- auto-detected by prefix
     vertexProject: my-project-id
     vertexLocation: us-central1
     timeoutSeconds: 180
@@ -347,21 +372,7 @@ ai:
 
 Secret: `kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system`
 
-The agent auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` at runtime. GCP Workload Identity is also supported — the secret can be omitted when authentication is handled by the node metadata service.
-
-### Claude on Vertex AI
-
-```yaml
-ai:
-  llm:
-    provider: vertex_ai
-    model: claude-sonnet-4-20250514
-    vertexProject: my-project-id
-    vertexLocation: us-east5
-    timeoutSeconds: 180
-```
-
-Uses the Anthropic Go SDK directly (not LangChainGo). Requires Vertex AI Model Garden access.
+The agent auto-detects `application_default_credentials.json` in the mounted secret and sets `GOOGLE_APPLICATION_CREDENTIALS` at runtime. GCP Workload Identity is also supported — the secret can be omitted when authentication is handled by the node metadata service. `vertex_ai` hosts both model families: `model` values matching `claude-*` route to the native Anthropic client, `gemini-*` to the native `genai` client (#1778, #1792) — a model matching neither prefix fails fast at startup rather than defaulting silently.
 
 ### Anthropic (Direct)
 
@@ -369,7 +380,7 @@ Uses the Anthropic Go SDK directly (not LangChainGo). Requires Vertex AI Model G
 ai:
   llm:
     provider: anthropic
-    model: claude-sonnet-4-20250514
+    model: claude-sonnet-4-6
     timeoutSeconds: 180
 ```
 
@@ -380,7 +391,7 @@ Secret: `kubectl create secret generic llm-credentials --from-literal=ANTHROPIC_
 ```yaml
 ai:
   llm:
-    provider: ollama
+    provider: openai_compatible
     model: llama3
     endpoint: http://ollama.internal.svc:11434
 ```
@@ -389,7 +400,7 @@ Recommended for disconnected/air-gapped environments. See [Disconnected Installa
 
 ## Secrets Pairing
 
-LLM API credentials are stored in a separate Kubernetes Secret (default name: `llm-credentials`). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured via `kubernautAgent.llm.credentialsSecretName`.
+LLM API credentials are stored in a separate Kubernetes Secret (example name: `llm-credentials` -- there is no default, since `global.llmProfiles` has no default profile). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured per-profile via `global.llmProfiles.<name>.credentialsSecretName` (v1.6, DD-PLATFORM-007).
 
 The Secret is marked `optional: true` — the agent starts without it but all LLM calls fail until it is created.
 
@@ -405,6 +416,52 @@ When you do set it explicitly:
 - **0.8--1.0**: More creative. May discover non-obvious root causes but less consistent.
 
 `phaseModels.<phase>.temperature` can override the base value per phase (v1.5.5+) — see [Per-phase LLM routing](#per-phase-llm-routing-v151).
+
+## Reasoning Configuration (v1.6+)
+
+!!! info "BR-AI-086 / BR-AI-087, #1604"
+    Reasoning/thinking-token support is **disabled by default** for every provider and model — it requires an explicit opt-in via `ai.llm.reasoning.enabled: true`.
+
+`ai.llm.reasoning` opts a model into extended "thinking" before it answers, for providers/models that support it. `effort` is a single, **provider-agnostic** knob — the same value means the same thing regardless of which provider you switch to, so tuning a `phaseModels` override or migrating providers never requires re-deriving a different vendor-specific number:
+
+| Field | Description |
+|---|---|
+| `enabled` | Must be `true` for any of the fields below to take effect. Default `false`. |
+| `effort` | One of `""` (unset — vendor default applies), `none`, `minimal`, `low`, `medium`, `high`, `xhigh`. |
+| `budgetTokens` | Anthropic-family only (`anthropic`, `vertex_ai` hosting a `claude-*` model). When set, wins over `effort` as an exact token-budget override. |
+| `capabilityOverride` | `openai_compatible` only. One of `auto` (default), `force_on`, `force_off` — short-circuits vendor/model-name auto-detection for self-hosted/custom models that cannot be reliably identified by name alone. |
+
+**Per-provider wire mapping** (same `effort` value, different dialect):
+
+| Provider | Mapping |
+|---|---|
+| `anthropic`, `vertex_ai` (Claude) | Maps onto Anthropic's `ThinkingLevel` tiers. `xhigh` clamps to `high` (Anthropic's ceiling — a range clamp, not an error). `effort: none` while `enabled: true` is rejected at validation: Anthropic has no "thinking enabled with zero effort" wire state. |
+| `gemini`, `vertex_ai` (Gemini) | Maps onto the same `ThinkingLevel` tiers as Anthropic (shared mapping code) — `xhigh` also clamps to `high`. |
+| `openai`, `openai_compatible` (real OpenAI o-series / gpt-5 models) | Passed through verbatim as the wire `reasoning_effort` parameter. |
+| `openai_compatible` (DeepSeek-class models) | Downscaled to DeepSeek's own two-tier dialect (`high`/`max` plus a separate thinking-enabled toggle). |
+
+```yaml
+ai:
+  llm:
+    provider: anthropic
+    model: claude-sonnet-4-6
+    reasoning:
+      enabled: true
+      effort: high
+```
+
+```yaml
+ai:
+  llm:
+    provider: openai
+    model: gpt-5
+    endpoint: https://api.openai.com/v1
+    reasoning:
+      enabled: true
+      effort: medium
+```
+
+`phaseModels.<phase>.reasoning` can override the base value per phase — see [Per-phase LLM routing](#per-phase-llm-routing-v151). LLM **identity** (provider + model, at both base and per-phase level) is frozen at process start (#1599); a hot-reload that only changes `reasoning.effort` (a tuning field, not identity) takes effect without a restart.
 
 ## mTLS for LLM Proxy (#1342)
 

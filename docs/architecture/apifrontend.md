@@ -153,7 +153,7 @@ When an operator calls `kubernaut_investigate` for an RR that already has a runn
 
 1. KA sets an `interactiveUpgrade` atomic flag on the session
 2. The running investigation goroutine sees the flag at its next `InteractiveHold` check and pauses for operator input
-3. The AA controller detects the IS CRD and sets `Interactive=true` + `SetActivePhase` (no cancel)
+3. KA's `UpgradeToInteractive` acquires the per-RR interactive-driver Lease and writes `AgentSession.Status.Interactive=true` (v1.6, DD-AA-KA-001) -- the AA controller and the API Frontend both watch this field rather than inferring interactivity from `InvestigationSession` existence
 4. Session ID and correlation ID are preserved throughout
 
 If the autonomous session has already completed (`ErrSessionTerminal`), the system falls back to `ForceTransitionToUserDriving` to start a fresh interactive session.
@@ -171,6 +171,18 @@ When a KA pod receives SIGTERM (BR-OPS-013):
 3. All active session Leases are released
 4. Pod terminates only after all sessions are drained
 
+### Session closure via AgentSession watch (v1.6, #2214)
+
+The AF owns closing `InvestigationSession` to a terminal phase -- the AIAnalysis controller has zero IS interaction as of v1.6. A dedicated `AgentSessionTerminalCloseReconciler` (`internal/controller/apifrontend/agentsession_close.go`) watches the correlated [`AgentSession`](../api-reference/crds.md#agentsession) and closes the IS via the same `CRDSessionService.FinalizeSessionByRR` primitive the AF's own MCP complete/cancel tools use:
+
+| `AgentSession` transition | `InvestigationSession` phase |
+|---|---|
+| `Status.Phase = Completed` | `Completed` |
+| `Status.Phase = Failed` | `Failed` |
+| Object deleted (e.g. AA's cascade-cancel on `ParentCancelled`) | `Cancelled` |
+
+A `TerminalCloseFinalizer` on the `AgentSession` guarantees the close happens before the object is actually removed, regardless of who deletes it.
+
 ## SSE Streaming
 
 The AF streams investigation output to clients via **Server-Sent Events**:
@@ -184,7 +196,8 @@ The AF streams investigation output to clients via **Server-Sent Events**:
 | Target | Protocol | Purpose |
 |---|---|---|
 | **Kubernaut Agent** | MCP JSON-RPC + HTTP/REST | MCP tool proxying, SSE streaming |
-| **DataStorage** | HTTP/REST | Workflow catalog, remediation history, audit events |
+| **AgentSession CRD** (v1.6+) | Kubernetes watch | `Status.Interactive` ack (replaces the retired `AwaitISPhaseActive` poll-loop); terminal-phase/deletion signal for closing `InvestigationSession` |
+| **DataStorage** | HTTP/REST | Remediation history, audit events |
 | **LLM Provider** | HTTP/REST (via KA) | Severity triage with configurable confidence threshold |
 | **OIDC Provider** | OAuth2/OIDC | User authentication via JWKS |
 | **Kubernetes API** | SubjectAccessReview | SAR-based tool authorization (verb `use`, group `kubernaut.ai`, resource `tools`) |

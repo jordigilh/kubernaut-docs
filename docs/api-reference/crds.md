@@ -105,7 +105,7 @@ _Appears in:_
 | `degradedMode`| _boolean_| DegradedMode indicates if the analysis ran with degraded capabilities<br />(e.g., Rego policy evaluation failed, using safe defaults)|
 | `totalAnalysisTime`| _integer_| TotalAnalysisTime is the total duration of the analysis in seconds|
 | `consecutiveFailures`| _integer_| ConsecutiveFailures tracks retry attempts for exponential backoff<br /> Reset to 0 on success, increment on transient failure<br />Used with for retry logic with jitter|
-| `investigationSession`| _[InvestigationSession](#investigationsession)_| Tracks the async submit/poll session with Kubernaut Agent<br />InvestigationSession tracks the async KA session for submit/poll pattern|
+| `investigationSession`| _KASession_| **Legacy status field (v1.6: vestigial).** Historically tracked the async HTTP submit/poll session with Kubernaut Agent. As of v1.6, dispatch and results flow through the `AgentSession` CRD (watch + per-object Lease) instead; this field's `id`/`generation`/poll-count sub-fields are retained for backward-compatible status shape but no longer drive reconciliation.|
 | `postRCAContext`| _[PostRCAContext](#postrcacontext)_| Runtime-computed cluster characteristics from Kubernaut Agent<br />PostRCAContext holds data computed by Kubernaut Agent after RCA (e.g., DetectedLabels).<br />Immutable once set — use CEL validation on the PostRCAContext type.|
 | `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Conditions|
 
@@ -598,6 +598,170 @@ _Appears in:_
 | `alertCheckDelay`| _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_| AlertCheckDelay is an additional duration to defer alert resolution checks<br />beyond the StabilizationWindow. Set by the RO for proactive (predictive) alerts<br />where the underlying Prometheus alert (e.g. predict_linear) requires extra time<br />to resolve after remediation.<br />The EM computes AlertManagerCheckAfter as:<br /> creation + StabilizationWindow + AlertCheckDelay<br />Nil means no additional delay (AlertManagerCheckAfter = PrometheusCheckAfter).|
 
 
+## AgentSession
+
+_Introduced in v1.6 (DD-AA-KA-001, BR-AA-KA-065)._
+
+AgentSession is the single AA↔KA dispatch/result channel, replacing the retired HTTP submit/poll/result channel. AI Analysis creates one AgentSession per investigation (autonomous or interactive) with an owner reference to the `AIAnalysis` that creates it (cascade deletion reaches the parent `RemediationRequest` transitively, via `AIAnalysis`). Kubernaut Agent watches for Create/Update events, dispatches exactly once via a per-object coordination `Lease`, and is the **exclusive writer of `status`** — AI Analysis and the API Frontend only ever watch it, never write to it; a cancel from AA is a *delete* of the object, not a status write. Short name: `asess`.
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `apiVersion`| _string_| `kubernaut.ai/v1alpha1`|
+| `kind`| _string_| `AgentSession`|
+| `metadata`| _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_| Refer to the Kubernetes API documentation for fields of `metadata`.|
+| `spec`| _[AgentSessionSpec](#agentsessionspec)_||
+| `status`| _[AgentSessionStatus](#agentsessionstatus)_||
+
+
+### AgentSessionSpec
+
+AgentSessionSpec defines the desired state and is **immutable** after creation (CEL validation: `self == oldSelf`). Beyond `remediationRequestRef`, the incident-payload fields are a 1:1, lossless translation of the retired HTTP request body — AA populates them at Create time from the same `AIAnalysis.Spec.AnalysisRequest` source it always used, so removing the HTTP channel loses no content Kubernaut Agent previously received.
+
+_Appears in:_
+- [AgentSession](#agentsession)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `remediationRequestRef`| _[ObjectRef](#objectref)_| Reference to the RR this session investigates. Must be created in the same namespace as the RR.|
+| `incidentID`| _string_| Unique incident identifier (AIAnalysis CR name).|
+| `remediationID`| _string_| For audit correlation ONLY — never used for RCA or workflow matching (DD-WORKFLOW-002 v2.2).|
+| `signalName`| _string_| Canonical signal name (e.g. `OOMKilled`).|
+| `severity`| _string_| Signal severity. Enum: `critical`, `high`, `warning`, `info`, `unknown`.|
+| `signalSource`| _string_| Monitoring system that produced the signal.|
+| `resourceNamespace`| _string_| Target resource's Kubernetes namespace.|
+| `resourceKind`| _string_| Target resource's Kubernetes kind.|
+| `resourceName`| _string_| Target resource's name.|
+| `resourceAPIVersion`| _string_| Disambiguates the target resource's API group.|
+| `errorMessage`| _string_| Optional error message associated with the signal.|
+| `description`| _string_| Optional additional description.|
+| `environment`| _string_| Deployment environment.|
+| `priority`| _string_| Business priority.|
+| `riskTolerance`| _string_| Configured risk tolerance.|
+| `businessCategory`| _string_| Configured business category.|
+| `clusterName`| _string_| Kubernetes cluster name.|
+| `cluster`| _string_| Optional fleet business classification (BR-FLEET-003).|
+| `isDuplicate`| _boolean_| Whether this is a duplicate signal.|
+| `occurrenceCount`| _integer_| Number of times this signal has occurred.|
+| `deduplicationWindowMinutes`| _integer_| Dedup window used by SignalProcessing.|
+| `firingTime`| _string_| ISO timestamp the signal started firing.|
+| `receivedTime`| _string_| ISO timestamp Kubernaut received the signal.|
+| `firstSeen`| _string_| ISO timestamp of the first occurrence.|
+| `lastSeen`| _string_| ISO timestamp of the most recent occurrence.|
+| `signalLabels`| _object (keys:string, values:string)_| Signal's Kubernetes-style labels.|
+| `signalAnnotations`| _object (keys:string, values:string)_| Alert-author annotations from the original signal (e.g. AlertManager description/summary).|
+| `enrichmentResults`| _JSON_| Enriched context from SignalProcessing (free-form, schema evolves independently).|
+| `signalMode`| _string_| Controls KA's prompt strategy. Enum: `reactive`, `proactive` (ADR-054).|
+| `timesOutAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Absolute investigation deadline, propagated from `AIAnalysis.Spec.TimesOutAt`. KA independently self-enforces this deadline so a partitioned or crashed AA replica can never leave an investigation running forever. Nil means no KA-side self-enforced deadline (AA's own fallback timeout still applies).|
+
+Note: whether an investigation is **interactive** is deliberately *not* a spec field — `Spec` is immutable, but interactivity can start after AA's Create (an operator can join via the API Frontend at any time). Kubernaut Agent is the sole owner of this determination and records it on `status.interactive`, checked at the actual dispatch decision point.
+
+#### ObjectRef
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `name`| _string_| Name of the referenced object.|
+| `namespace`| _string_| Namespace of the referenced object.|
+
+
+### AgentSessionStatus
+
+AgentSessionStatus defines the observed state. **Mutable by Kubernaut Agent only** — AI Analysis and the API Frontend watch this status but never write to it.
+
+_Appears in:_
+- [AgentSession](#agentsession)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `phase`| _string_| Current lifecycle state, exclusively written by KA. One of `Pending` (AA created it, no KA replica has won dispatch yet), `Investigating` (a KA replica won the dispatch Lease), `Completed` (`status.result` carries the curated outcome), `Failed` (`status.error` carries a curated, user-facing message), `Cancelled` (the interactive session ended, e.g. the driving user disconnected without a takeover).|
+| `sessionID`| _string_| KA's internal investigation session identifier, for audit correlation. Set the instant a KA replica wins the dispatch Lease.|
+| `interactive`| _boolean_| True once a human driver has taken over this investigation via KA's upgrade-to-interactive path. Written atomically with the interactive-driver Lease actually being held; AA and AF must read this field rather than infer interactivity from `InvestigationSession` existence.|
+| `actingUser`| _string_| Authenticated identity currently driving an interactive session, if any.|
+| `actingUserGroups`| _string array_| RBAC-relevant groups of `actingUser`.|
+| `result`| _[AgentSessionResult](#agentsessionresult)_| Curated investigation outcome, set on the `Completed` transition. Never carries internal workflow/validation/alignment state.|
+| `error`| _string_| Curated, user-facing failure message, set on the `Failed` transition.|
+| `reason`| _string_| Curated, machine-readable failure classification set alongside `error`. Currently the sole defined value is `CapacityExceeded` (KA rejected dispatch due to per-process concurrency limits) — a transient, retryable condition AA distinguishes from all other failure causes (BR-AI-009).|
+| `dispatchedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Timestamp when a KA replica won the dispatch Lease and began investigating.|
+| `completedAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Timestamp when the session reached a terminal phase (`Completed`, `Failed`, or `Cancelled`).|
+| `conditions`| _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_| Standard Kubernetes conditions.|
+
+#### Print columns
+
+| Name | JSON Path | Type |
+|------|-----------|------|
+| Phase | `.status.phase` | string |
+| Interactive | `.status.interactive` | boolean |
+| Session ID | `.status.sessionID` | string |
+| Age | `.metadata.creationTimestamp` | date |
+
+
+### AgentSessionResult
+
+AgentSessionResult carries the completed investigation's curated output, written by KA to `status.result` on the `Completed` transition. This MUST exclude internal workflow/validation/alignment state (same curation boundary the retired HTTP channel enforced).
+
+_Appears in:_
+- [AgentSessionStatus](#agentsessionstatus)
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `incidentID`| _string_| KA's investigation identifier for correlation.|
+| `analysis`| _string_| Natural-language analysis produced by the LLM.|
+| `rootCauseAnalysis`| _JSON_| Structured RCA (summary, severity, contributing factors, remediation target); free-form per KA's evolving schema.|
+| `selectedWorkflow`| _JSON_| Workflow KA selected (workflow ID, execution bundle, confidence, parameters); free-form per KA's schema. Absent means no workflow was selected.|
+| `confidence`| _float_| KA's overall confidence in the analysis (0.0–1.0).|
+| `timestamp`| _string_| ISO timestamp of analysis completion.|
+| `needsHumanReview`| _boolean_| True when KA could not produce a reliable result. When true, AA must not create a `WorkflowExecution`.|
+| `humanReviewReason`| _string_| Structured reason when `needsHumanReview=true`.|
+| `isActionable`| _boolean_| LLM's assessment of whether the alert warrants action. Nil means not explicitly assessed.|
+| `warnings`| _string array_| Non-fatal warnings from the investigation.|
+| `alternativeWorkflows`| _[AgentSessionAlternativeWorkflow](#agentsessionalternativeworkflow) array_| Workflows considered but not selected (context/audit trail only, never automatic fallback).|
+| `validationAttemptsHistory`| _[AgentSessionValidationAttempt](#agentsessionvalidationattempt) array_| LLM self-correction attempts.|
+| `detectedLabels`| _JSON_| Cluster characteristics detected at runtime by KA (ADR-056); free-form per KA's schema.|
+| `alignmentVerdict`| _[AgentSessionAlignmentVerdict](#agentsessionalignmentverdict)_| Shadow-agent alignment verdict, present when KA's alignment check is enabled.|
+
+
+### AgentSessionAlternativeWorkflow
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `workflowID`| _string_||
+| `executionBundle`| _string_||
+| `confidence`| _float_||
+| `rationale`| _string_||
+
+
+### AgentSessionValidationAttempt
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `attempt`| _integer_||
+| `workflowID`| _string_||
+| `isValid`| _boolean_||
+| `errors`| _string array_||
+| `timestamp`| _string_||
+
+
+### AgentSessionAlignmentVerdict
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `result`| _string_||
+| `circuitBreakerActivated`| _boolean_| When true, the investigation was terminated early and `analysis`/`rootCauseAnalysis`/`selectedWorkflow` may be incomplete or compromised — treat shadow findings as the primary content.|
+| `summary`| _string_||
+| `flagged`| _integer_||
+| `total`| _integer_||
+| `findings`| _[AgentSessionAlignmentFinding](#agentsessionalignmentfinding) array_||
+
+
+### AgentSessionAlignmentFinding
+
+| Field| Type| Description|
+| ---| ---| ---|
+| `stepIndex`| _integer_||
+| `stepKind`| _string_||
+| `tool`| _string_||
+| `explanation`| _string_||
+
+
 ## EffectivenessAssessment
 
 
@@ -812,20 +976,21 @@ _Validation:_
 | `Deduplicated`| FailurePhaseDeduplicated indicates an RR that inherited a failure from a<br />deduplicated WorkflowExecution collision . Excluded from<br />consecutive failure counting per .|
 
 
-### InvestigationSession (embedded)
+### KASession (embedded, legacy)
 
-InvestigationSession is also embedded in [AIAnalysisStatus](#aianalysisstatus) for autonomous pipeline session tracking. See [InvestigationSession CRD](#investigationsession) for the standalone resource.
+`KASession` is embedded in [AIAnalysisStatus](#aianalysisstatus) under the `investigationSession` field name (kept for backward compatibility; unrelated to the standalone [InvestigationSession CRD](#investigationsession) despite the shared JSON key — the Go type was renamed from `InvestigationSession` to `KASession` specifically to avoid that collision). It historically tracked the async HTTP submit/poll session between AI Analysis and Kubernaut Agent. **As of v1.6**, this mechanism is retired in favor of the [`AgentSession` CRD](#agentsession) (watch + per-object Lease dispatch); the fields below are no longer the primary reconciliation driver and are retained mainly for status-shape compatibility and a deadline-driven backstop requeue.
 
 _Appears in:_
 - [AIAnalysisStatus](#aianalysisstatus)
 
 | Field| Type| Description|
 | ---| ---| ---|
-| `id`| _string_| Session ID returned by Kubernaut Agent on submit (cleared on session loss)|
-| `generation`| _integer_| Generation counter tracking session regenerations (0 = first session, incremented on 404)|
-| `lastPolled`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| LastPolled timestamp of the last poll attempt|
+| `id`| _string_| Session ID historically returned by Kubernaut Agent on HTTP submit|
+| `generation`| _integer_| Generation counter tracking session regenerations; vestigial after the HTTP-session retirement|
+| `lastPolled`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| LastPolled timestamp of the last poll attempt (legacy)|
 | `createdAt`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| CreatedAt timestamp when the current session was created|
-| `pollCount`| _integer_| PollCount tracks the number of poll attempts for observability<br /> Constant 15s poll interval (configurable 1s–5m)|
+| `pollCount`| _integer_| PollCount tracks handleSessionRunning reconciles for observability; no longer tied to a fixed poll interval — the `AgentSession` watch drives most reconciles|
+| `backoffUntil`| _[Time](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#time-v1-meta)_| Earliest time the Investigating handler may run again after a session-lost regeneration (backstop only)|
 
 
 ### LineageContext
@@ -944,7 +1109,7 @@ The spec is **immutable** after creation (CEL validation: `self == oldSelf`).
 
 ### InvestigationSessionStatus
 
-Status is mutable by the AF and the AIAnalysis controller (RBAC-restricted). The AA controller sets terminal phases (`Completed`, `Failed`) when a KA investigation ends (#1376).
+Status is mutable by the API Frontend only. **As of v1.6** (#2214), the AIAnalysis controller no longer reads or writes `InvestigationSession` at all — AF's `AgentSessionTerminalCloseReconciler` watches the correlated [`AgentSession`](#agentsession) instead and closes the IS when the `AgentSession` reaches a terminal phase (`Completed` → IS `Completed`, `Failed` → IS `Failed`) or is deleted (→ IS `Cancelled`, via a finalizer on the `AgentSession` that guarantees the close happens before the object is removed).
 
 | Field| Type| Description|
 | ---| ---| ---|
@@ -1171,7 +1336,7 @@ _Appears in:_
 
 ### DetectedLabels
 
-Cluster infrastructure characteristics detected by the Kubernaut Agent's `LabelDetector` during investigation. Stored in `AIAnalysis.status.postRCAContext.detectedLabels` and propagated to DataStorage for workflow scoring.
+Cluster infrastructure characteristics detected by the Kubernaut Agent's `LabelDetector` during investigation. Stored in `AIAnalysis.status.postRCAContext.detectedLabels` and used by Kubernaut Agent's in-memory workflow catalog for scoring (v1.6; DataStorage performed this scoring through v1.5).
 
 | Field | Type | Description |
 |---|---|---|
@@ -1425,6 +1590,7 @@ _Appears in:_
 | `signalAnnotations`| _object (keys:string, values:string)_||
 | `providerData`| _string_| Provider-specific fields in raw JSON format<br />Gateway adapter populates this based on signal source<br />Controllers parse this based on targetType/signalType<br />For Kubernetes (targetType="kubernetes"):<br /> \{"namespace": "...", "resource": \{"kind": "...", "name": "..."\}, "alertmanagerURL": "...", ...\}<br />For AWS (targetType="aws"):<br /> \{"region": "...", "accountId": "...", "instanceId": "...", "resourceType": "...", ...\}<br />For Datadog (targetType="datadog"):<br /> \{"monitorId": 123, "host": "...", "tags": [...], "metricQuery": "...", ...\}|
 | `originalPayload`| _string_| Complete original webhook payload for debugging and audit<br /> stored as string to avoid base64 encoding in CEL validation|
+| `clusterID`| _string_| _v1.6+, [Fleet Management](../architecture/fleet.md)._ Identifies the remote cluster the signal originated from (ADR-065). Empty means the local/hub cluster. Populated by Gateway from the Thanos `cluster` external label. Included in the dedup fingerprint, so the same resource on two different clusters never deduplicates into one RR. Propagated by the Remediation Orchestrator onto every child CRD (`SignalProcessing`, `AIAnalysis`, `WorkflowExecution`, `EffectivenessAssessment`, `RemediationApprovalRequest`, `NotificationRequest`) for fleet-aware routing and audit correlation.|
 
 
 ### RemediationRequestStatus

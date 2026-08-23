@@ -54,7 +54,7 @@ Kubernaut's LLM investigates each incident as an open-ended question rather than
 - **Non-deterministic**: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.
 - **Latency**: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.
 - **Hallucination risk**: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.
-- **Per-token cost**: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or a self-hosted OpenAI-compatible endpoint.
+- **Per-token cost**: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; Kubernaut Agent applies label-based ranking to its in-memory workflow catalog (v1.6; DataStorage served this through v1.5) but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or a self-hosted OpenAI-compatible endpoint.
 
 ## Predictive AI as a Knowledge-Based Agent
 

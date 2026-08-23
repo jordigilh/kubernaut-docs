@@ -6,7 +6,7 @@ This page documents the full investigation pipeline from the LLM's perspective -
 
 !!! tip "Related pages"
     - [AI Analysis](ai-analysis.md) covers the **AA controller** (session management, phase transitions, Rego evaluation)
-    - [Workflow Selection](workflow-selection.md) covers the **DataStorage scoring algorithm** (label filtering, semantic scoring)
+    - [Workflow Selection](workflow-selection.md) covers the **scoring algorithm** (label filtering, semantic scoring -- run by Kubernaut Agent's in-memory catalog as of v1.6, DataStorage through v1.5)
     - This page covers the **KA internals** (prompt construction, LLM investigation, resource context, decision outcomes)
 
 ## Service Configuration
@@ -230,7 +230,7 @@ The detection pipeline is: `Investigator.Investigate` → `resolveEnrichmentCach
 
 These labels are stored in `session_state` and automatically injected into all subsequent workflow discovery queries. They serve two purposes:
 
-1. **Workflow scoring** -- DataStorage uses detected labels for semantic scoring (see [Workflow Selection](workflow-selection.md))
+1. **Workflow scoring** -- Kubernaut Agent's in-memory catalog uses detected labels for semantic scoring (v1.6; DataStorage through v1.5 -- see [Workflow Selection](workflow-selection.md))
 2. **LLM context** -- The `list_available_actions` tool response includes a `cluster_context` section (e.g., "target is GitOps-managed with ArgoCD") so the LLM can factor infrastructure into its decision
 
 Detection runs once per investigation. If it fails, an empty label set is used (graceful degradation).
@@ -258,6 +258,10 @@ The response contains two tiers of history with different query strategies, time
 - **Tier 2** queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
+
+### Fleet: cluster-scoped history isolation (v1.6+, Issue #1802)
+
+When the request carries a non-empty `ClusterID` (propagated from `RemediationRequest.Spec.ClusterID` -- see [Remediation Routing: ClusterID Propagation](remediation-routing.md#clusterid-propagation-v16-br-fleet-054)), the Orchestrator threads it into the history query as a `clusterId` parameter, scoping both tiers to that cluster only. This prevents cross-cluster history leakage between resources that share an identical spec hash across clusters -- for example, the same Helm-templated Deployment deployed identically to two fleet member clusters would otherwise be indistinguishable by spec hash alone, letting one cluster's failed remediation wrongly suppress a workflow on another. Empty `ClusterID` (local hub cluster, or fleet disabled) leaves the query unscoped, identical to pre-v1.6/pre-Fleet behavior.
 
 ## How Remediation History Influences the LLM
 
@@ -432,9 +436,11 @@ When either threshold is exceeded, the Orchestrator blocks the RemediationReques
 
 ## Workflow Selection: Three-Step Discovery
 
-**Invocation 2 (Workflow selection)** is a **separate** session that runs the three-step DataStorage protocol with **no tool transcript from Invocation 1** — it relies on the **structured RCA fields** injected at session start, plus the usual workflow tools.
+**Invocation 2 (Workflow selection)** is a **separate** session that runs the three-step discovery protocol with **no tool transcript from Invocation 1** — it relies on the **structured RCA fields** injected at session start, plus the usual workflow tools.
 
-Labels and other signal context that were **detected or resolved in Invocation 1** (e.g. `session_state["detected_labels"]` and enriched signal metadata) are available to the workflow step and are **automatically applied** to DataStorage queries (e.g. as context filters in `list_available_actions`).
+**v1.6 change:** this discovery protocol is now served entirely from KA's own in-memory workflow catalog (`internal/kubernautagent/workflowcatalog`, an informer-cache-backed watch over the `RemediationWorkflow` and `ActionType` CRDs), not a DataStorage REST call. KA replicates DataStorage's scoring algorithm in-process (same `final_score` boost/penalty formula and `ORDER BY final_score DESC, workflow_id ASC` tie-break) against its own cache, so ranking behavior is unchanged, but the query no longer leaves the KA process. DataStorage's REST discovery handlers are **retired outright** (DD-WORKFLOW-018/019) -- there is no REST path left for this protocol at all, for KA or any other caller.
+
+Labels and other signal context that were **detected or resolved in Invocation 1** (e.g. `session_state["detected_labels"]` and enriched signal metadata) are available to the workflow step and are **automatically applied** to catalog queries (e.g. as context filters in `list_available_actions`).
 
 ### Step 1: List Available Actions
 
@@ -442,7 +448,7 @@ Labels and other signal context that were **detected or resolved in Invocation 1
 list_available_actions(offset=0, limit=20)
 ```
 
-KA sends signal context filters (`severity`, `component`, `environment`, `priority`, `custom_labels`) and `detected_labels` as query parameters to DataStorage. DataStorage uses these to **filter and rank** the action types -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:
+KA filters its in-memory catalog using the signal context (`severity`, `component`, `environment`, `priority`, `custom_labels`) and `detected_labels` -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:
 
 - `what` -- What the action does
 - `whenToUse` -- When this action is appropriate
@@ -457,7 +463,7 @@ When detected labels are available, the response also includes a `cluster_contex
 list_workflows(action_type="RollbackDeployment", offset=0, limit=10)
 ```
 
-For the chosen action type, the LLM sees workflow summaries ordered by DataStorage's internal label-match score. The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.
+For the chosen action type, the LLM sees workflow summaries ordered by KA's internal label-match score (computed against its own cache, mirroring DataStorage's algorithm -- see the v1.6 note above). The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.
 
 Pagination is supported (`hasMore` flag) for action types with many workflows.
 
@@ -478,7 +484,7 @@ The LLM makes the final selection based on:
 3. **Detected infrastructure context** -- GitOps-managed resources need git-based workflows, not direct kubectl rollbacks
 4. **Parameter fit** -- Whether the investigation findings provide the data needed for the workflow's parameters
 
-DataStorage's scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.
+KA's in-catalog scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.
 
 ## Investigation Outcomes
 
@@ -720,7 +726,7 @@ Kubernaut Agent and the Kubernaut Agent SDK cap tool and audit text so the model
 ## Next Steps
 
 - [AI Analysis](ai-analysis.md) -- The AA controller that orchestrates KA sessions
-- [Workflow Selection](workflow-selection.md) -- DataStorage scoring algorithm details
+- [Workflow Selection](workflow-selection.md) -- Scoring algorithm details (Kubernaut Agent's in-memory catalog as of v1.6)
 - [Effectiveness Assessment](effectiveness.md) -- How remediations are evaluated after execution
 - [Remediation Workflows](../user-guide/workflows.md) -- How to author workflows that the LLM can discover
 - [Rego Policies](../user-guide/policies.md) -- Customizing the approval policy

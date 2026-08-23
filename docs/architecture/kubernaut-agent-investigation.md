@@ -259,6 +259,10 @@ The response contains two tiers of history with different query strategies, time
 
 **How the chain is visible:** Every entry in both tiers carries `preRemediationSpecHash` and `postRemediationSpecHash`. DataStorage annotates each entry with a `hashMatch` field by comparing the caller's `currentSpecHash` against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.
 
+### Fleet: cluster-scoped history isolation (v1.6+, Issue #1802)
+
+When the request carries a non-empty `ClusterID` (propagated from `RemediationRequest.Spec.ClusterID` -- see [Remediation Routing: ClusterID Propagation](remediation-routing.md#clusterid-propagation-v16-br-fleet-054)), the Orchestrator threads it into the history query as a `clusterId` parameter, scoping both tiers to that cluster only. This prevents cross-cluster history leakage between resources that share an identical spec hash across clusters -- for example, the same Helm-templated Deployment deployed identically to two fleet member clusters would otherwise be indistinguishable by spec hash alone, letting one cluster's failed remediation wrongly suppress a workflow on another. Empty `ClusterID` (local hub cluster, or fleet disabled) leaves the query unscoped, identical to pre-v1.6/pre-Fleet behavior.
+
 ## How Remediation History Influences the LLM
 
 The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full `RemediationHistoryContext` as part of the tool result, and the **Invocation 1 (RCA)** resource-context framing instructs: *"Use this to avoid repeating recently failed workflows."*

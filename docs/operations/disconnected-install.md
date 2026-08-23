@@ -628,7 +628,7 @@ oc apply -f - <<'POLICYEOF'
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: aianalysis-policies
+  name: aianalysis-policy
   namespace: kubernaut-system
 data:
   approval.rego: |
@@ -914,7 +914,7 @@ oc create secret tls postgresql-tls \
 Apply the Kubernaut custom resource. Replace `<KEYCLOAK_HOST>` and `<llm-*>` placeholders:
 
 ```yaml
-apiVersion: kubernaut.ai/v1alpha1
+apiVersion: kubernaut.ai/v1alpha2
 kind: Kubernaut
 metadata:
   name: kubernaut
@@ -934,16 +934,22 @@ spec:
     port: 6379
     secretName: valkey-secret
 
-  kubernautAgent:
-    llm:
+  # At least one named LLM profile is schema-required (spec.llmProfiles
+  # itself is a mandatory key). endpoint is additionally required when
+  # provider is openai.
+  llmProfiles:
+    primary:
       provider: "<llm-provider>"          # e.g. openai, vertex_ai, ollama, anthropic
       model: "<model-name>"               # e.g. llama3, gpt-4o, claude-sonnet-4-6
-      endpoint: "<llm-endpoint>"          # e.g. http://ollama.internal.svc:11434
+      endpoint: "<llm-endpoint>"          # e.g. http://ollama.internal.svc:11434 (required only for provider: openai)
       credentialsSecretName: llm-credentials
       maxRetries: 3
       timeoutSeconds: 120
+
+  kubernautAgent:
+    llmProfileRef: primary
     logging:
-      level: debug
+      level: DEBUG
     maxTurns: 40
     audit:
       enabled: true
@@ -978,7 +984,7 @@ spec:
       audience: "https://<KEYCLOAK_HOST>/realms/kagenti"
       jwksURL: "http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs"
     logging:
-      level: debug
+      level: DEBUG
     rateLimit:
       ipRequestsPerSec: 50
       userRequestsPerSec: 20
@@ -1010,7 +1016,7 @@ spec:
   gateway:
     enabled: true
     logging:
-      level: info
+      level: INFO
     route:
       enabled: true
     config:
@@ -1023,17 +1029,17 @@ spec:
   dataStorage:
     endpointPropagationDelay: 10s
     logging:
-      level: info
+      level: INFO
 
   aiAnalysis:
     logging:
-      level: info
+      level: INFO
     policy:
-      configMapName: aianalysis-policies
+      configMapName: aianalysis-policy
 
   signalProcessing:
     logging:
-      level: info
+      level: INFO
     policy:
       configMapName: signalprocessing-policy
 
@@ -1041,7 +1047,7 @@ spec:
     dryRun: false
     dryRunHoldPeriod: 1h
     logging:
-      level: info
+      level: INFO
     retention:
       period: 24h
     effectivenessAssessment:
@@ -1059,35 +1065,39 @@ spec:
   workflowExecution:
     cooldownPeriod: 1m
     logging:
-      level: info
+      level: INFO
     workflowNamespace: kubernaut-workflows
+    # Moved here from top-level spec.ansible in v1alpha2 (F4) -- WorkflowExecution
+    # is Ansible's only consumer.
+    ansible:
+      enabled: false
 
   effectivenessMonitor:
     logging:
-      level: info
+      level: INFO
     assessment:
       stabilizationWindow: 30s
       validityWindow: 300s
 
   notification:
     logging:
-      level: info
+      level: INFO
     slack:
       channel: "#kubernaut-alerts"
       secretName: slack-webhook
 
   authWebhook:
     logging:
-      level: info
+      level: INFO
 
-  monitoring:
-    enabled: true
-
-  networkPolicies:
-    enabled: true
-
-  ansible:
-    enabled: false
+  # spec.monitoring.enabled (v1alpha1) and spec.networkPolicies.enabled
+  # (v1alpha1) are both removed in v1alpha2: NetworkPolicies are now always
+  # created (F3), and monitoring RBAC/endpoint auto-detection is on by
+  # default (spec.monitoring.prometheus.enabled / .alertManager.enabled
+  # both default true) -- no explicit block is needed to get this example's
+  # equivalent behavior. See the Operator CR Reference for the new
+  # spec.monitoring.{prometheus,alertManager} shape if you need to override
+  # the auto-detected endpoint URLs.
 ```
 
 Apply:
@@ -1097,6 +1107,8 @@ oc apply -f kubernaut-cr.yaml
 ```
 
 The operator will reconcile the CR and create all component deployments, services, ConfigMaps, RBAC, and the `kubernaut-workflows` namespace automatically.
+
+See the [Operator CR Reference](../api-reference/operator-cr.md) for the full field-by-field schema, defaults, and the v1alpha1 → v1alpha2 upgrade notes.
 
 ---
 

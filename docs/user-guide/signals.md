@@ -158,6 +158,7 @@ Rego policies evaluate the enriched signal to determine:
 - **Severity** — `critical`, `high`, `warning`, `info`, or `unknown`
 - **Priority** — Business impact and urgency
 - **Environment** — Production, staging, development
+- **Cluster** (Fleet only, v1.6+) — Business classification of the signal's originating cluster, from its registration labels
 - **Signal mode** — Reactive or proactive
 
 ### Signal Mode

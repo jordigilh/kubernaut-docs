@@ -15,6 +15,7 @@ graph LR
         GW[Gateway]
         SP[Signal Processing]
         AA[AI Analysis]
+        KA[Kubernaut Agent]
         RO[Orchestrator]
         WE[Workflow Execution]
         NF[Notification]
@@ -41,13 +42,13 @@ Every stage of the remediation lifecycle emits audit events:
 | **Gateway** | Signal received, scope validated | `gateway.signal.received` |
 | **Signal Processing** | Enrichment completed, classification results | `signalprocessing.enrichment.completed` |
 | **AI Analysis** | Investigation submitted, analysis completed/failed, Rego evaluation, approval decision | `aianalysis.analysis.completed`, `aianalysis.rego.evaluation`, `aianalysis.approval.decision` |
-| **Kubernaut Agent** | Enrichment and investigation; LLM completion and max-token handling (v1.3) | `aiagent.enrichment.completed`, `aiagent.enrichment.failed`, `aiagent.response.complete`, `truncation_detected` |
+| **Kubernaut Agent** | Enrichment and investigation; LLM completion and max-token handling (v1.3); workflow discovery (v1.6, DD-WORKFLOW-019) | `aiagent.enrichment.completed`, `aiagent.enrichment.failed`, `aiagent.response.complete`, `truncation_detected`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
 | **Orchestrator** | Lifecycle transitions, child CRD creation, routing blocks | `orchestrator.lifecycle.created`, `orchestrator.lifecycle.transitioned`, `orchestrator.routing.blocked` |
 | **Workflow Execution** | Workflow selected, execution started/completed, block clearance | `workflowexecution.selection.completed`, `workflowexecution.execution.started`, `workflowexecution.block.cleared` |
 | **Notification** | Message sent, delivery failure, acknowledgement, escalation | `notification.message.sent`, `notification.message.failed`, `notification.message.acknowledged`, `notification.message.escalated` |
 | **Effectiveness Monitor** | Component assessments (health, hash, alerts, metrics), scheduling, completion | `effectiveness.health.assessed`, `effectiveness.hash.computed`, `effectiveness.alert.assessed`, `effectiveness.metrics.assessed`, `effectiveness.assessment.scheduled`, `effectiveness.assessment.completed` |
 | **Auth Webhook** | Operator approval decisions, notification actions, timeout modifications, RemediationWorkflow and ActionType CRD lifecycle | `webhook.remediationapprovalrequest.decided`, `webhook.notification.cancelled`, `webhook.remediationrequest.timeout_modified`, `remediationworkflow.admitted.create`, `remediationworkflow.admitted.delete`, `remediationworkflow.admitted.denied`, `actiontype.admitted.create`, `actiontype.admitted.update`, `actiontype.admitted.delete`, `actiontype.denied.*` |
-| **DataStorage** | Workflow catalog operations, action type taxonomy, workflow discovery | `datastorage.workflow.created`, `datastorage.workflow.updated`, `datastorage.actiontype.created`, `datastorage.actiontype.updated`, `datastorage.actiontype.disabled`, `datastorage.actiontype.reenabled`, `datastorage.actiontype.disable_denied`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
+| **DataStorage** | Per-IP HTTP rate limiting (pre-auth) | `datastorage.ratelimit.denied` |
 
 ## Audit Event Structure
 

@@ -6,6 +6,101 @@ Review the changes below to understand what differs from the version you are cur
 
 ---
 
+## v1.6
+
+### Fleet Management — multi-cluster investigation and remediation (ADR-068)
+
+Kubernaut v1.6 introduces **Fleet Management**, enabling a single management-cluster Kubernaut deployment to investigate and remediate signals originating from remote/spoke clusters, transparently to the LLM's tool-calling surface. This supersedes the earlier ACM/OCM hub-and-spoke design that was previously outlined for v1.6 — see [What's Next](../whats-next/index.md) for the current forward-looking roadmap.
+
+- **Pluggable scope backend** — `spec.fleet.backend` selects how cluster/namespace ownership is resolved fleet-wide: the operator-managed **Fleet Metadata Cache (FMC)** (`fmc`) or **Red Hat Advanced Cluster Management Search** (`acm`). Rancher/Clusterpedia backends are on the roadmap.
+- **MCP Gateway** — Remote-cluster tool calls are routed through an MCP Gateway (Kuadrant or Envoy AI Gateway), which pre-scopes tool results server-side per cluster before they ever reach the LLM context, and enforces OAuth2 client-credentials auth between the Kubernaut Agent and each remote cluster's MCP endpoint.
+- **`ClusterID` propagation** — `RemediationRequestSpec.clusterID` threads the originating cluster identity through the full pipeline (Gateway → Signal Processing → AI Analysis → Workflow Execution), and participates in deduplication so identical signals from different clusters are not conflated.
+- **Fail-closed readiness gate** — Fleet-mode investigations refuse to proceed if the configured scope backend is unreachable or stale, rather than silently falling back to local-cluster-only behavior.
+- **Ansible/AWX is not supported for remote execution** — remote fleet workflows are restricted to Tekton/Job-based execution engines.
+
+See the new [Fleet Management architecture page](../architecture/fleet.md) for the full design, backend comparison matrix, and [Configuration: Fleet](../user-guide/configuration.md#fleet) / [Operator CR: FleetSpec](../api-reference/operator-cr.md#fleetspec) for configuration.
+
+### Breaking: `AgentSession` CRD replaces HTTP polling between AIAnalysis and Kubernaut Agent (DD-AA-KA-001)
+
+The AIAnalysis controller no longer submits investigations to the Kubernaut Agent via a direct HTTP submit/poll API. Instead, AA creates an **`AgentSession`** CRD, which KA watches and reconciles, writing progress and results back to `AgentSession.status`. This moves investigation dispatch onto the same CRD-based reconciliation model used everywhere else in Kubernaut, instead of a bespoke HTTP client/poll loop.
+
+- **`AgentSession`** is a new top-level CRD: owned by Kubernaut Agent, created by AIAnalysis, and watched by the API Frontend. See the [`AgentSession` CRD reference](../api-reference/crds.md#agentsession) for the full spec/status schema.
+- **`InvestigationSession` ownership moved to API Frontend.** AF's new `AgentSessionTerminalCloseReconciler` closes `InvestigationSession` CRDs when the correlated `AgentSession` reaches a terminal phase or is deleted — this responsibility no longer lives in AIAnalysis.
+- **`AIAnalysisStatus.investigationSession` (`KASession`) is now legacy** — retained for backward-compatible reads, but no longer drives reconciliation. `AgentSession.Status.Interactive` is now the source of truth for whether a session has been upgraded to interactive (Jump-In), replacing AA's direct `InvestigationSession` CRD inspection.
+
+See [API Frontend Architecture: Session closure via AgentSession watch](../architecture/apifrontend.md) and the updated [main architecture diagram](../architecture/overview.md) for the new CRD relationships.
+
+### Workflow catalog moved from DataStorage to Kubernaut Agent's in-memory cache
+
+The Kubernaut Agent's workflow-discovery tools (`list_workflows`, `list_available_actions`) no longer call DataStorage's REST catalog endpoints at investigation time. KA now maintains its own **informer-cache-backed, in-memory workflow catalog**, replicating DataStorage's mandatory-filtering and semantic-scoring algorithm in Go. DataStorage's REST discovery endpoints remain available for non-KA callers, but are no longer on KA's investigation hot path — removing a network round-trip per discovery step.
+
+See [Workflow Selection](../architecture/workflow-selection.md) and [Kubernaut Agent Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the updated discovery flow.
+
+### Breaking: Kubernaut Operator CRD v1alpha2 (ADR-CRD-001)
+
+The Kubernaut Operator's CRD moves from `v1alpha1` to **`v1alpha2`**, with a conversion webhook bridging existing `v1alpha1` CRs. This is the most invasive operator-facing change in v1.6 — review the [full upgrade guide](../api-reference/operator-cr.md#upgrading-from-v1alpha1) before converting production CRs.
+
+Highlights:
+
+- **`llmProfiles`** replaces the previous inline `llm` blocks scattered across `kubernautAgent`, `aiAnalysis.alignmentCheck`, and `apiFrontend.severityTriage` — each now references a named profile via `llmProfileRef`.
+- **`spec.monitoring` changed meaning, not just shape.** v1alpha1's `monitoring.enabled` was a single RBAC on/off toggle. v1alpha2's `monitoring.{prometheus,alertManager}` is a differently-purposed pair of endpoint-override blocks — see the callout in [Operator CR: Optional fields](../api-reference/operator-cr.md#optional-fields).
+- **`networkPolicies.enabled` is removed** — NetworkPolicies are now always on, matching the Helm chart's own v1.4+ behavior.
+- **`additionalClusterRoles` generalized and promoted to top-level** (from `kubernautAgent.additionalClusterRoleBindings`), now applied to every component that resolves ecosystem-CRD owner chains.
+- **Ansible/AWX configuration relocated** from top-level `spec.ansible` to `spec.workflowExecution.ansible`.
+- **New `spec.fleet` / `spec.fleetMetadataCache`** for Fleet Management (see above).
+- **`aiAnalysis` and `signalProcessing` parent keys are now required**, even though most of their child fields remain optional — see the required-fields table for why.
+
+### Helm chart: mandatory-field count cut from ~404 to 7 (DD-PLATFORM-006)
+
+A field-by-field audit of `charts/kubernaut/values.schema.json` found ~404 leaf fields, of which only ~7 have no safe default and are genuinely required to install. v1.6 trims the shipped `values.yaml` down to those **7 mandatory fields** plus ~7–12 feature-enable toggles — every other field keeps working exactly as before, it just no longer has to be copied into every new install.
+
+- **NetworkPolicies are now unconditional** — the `networkPolicies.enabled` toggle and all 14 per-service opt-outs are removed (net -15 fields); a NetworkPolicy object is inert on a CNI that doesn't enforce it, so this closes a self-service compliance gap (AC-4) rather than changing behavior for anyone relying on enforcement.
+- **Shared defaults replace duplicated blocks** — e.g. `global.podDefaults.pdb` now backs every service's Pod Disruption Budget instead of 12 near-identical, hand-copied `pdb` blocks.
+- **`kubernautAgent.llmProfileRef` is now inferred** when exactly one `global.llmProfiles` entry exists, instead of a mandatory field.
+- **Every field — trimmed or not — stays documented**, via a new auto-generated `docs/generated/helm-values-reference.md` in the kubernaut repo (one table per service, sourced directly from `values.schema.json`, regenerated and drift-checked in CI on every PR and release) rather than a hand-maintained README table that couldn't scale past a few hundred fields.
+
+See [DD-PLATFORM-006](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/DD-PLATFORM-006-helm-chart-configuration-surface-reduction.md) and [PR #1790](https://github.com/jordigilh/kubernaut/pull/1790) for the full field-by-field breakdown. A remaining 234 non-zero-default fields are targeted for a follow-up materialized-defaults generator (not yet shipped).
+
+### Helm chart: native ArgoCD / GitOps deployment support
+
+The Helm chart can now be deployed and kept in sync via ArgoCD, not just `helm install`/`helm upgrade` directly. Two ordering issues that previously deadlocked or destabilized an ArgoCD-managed install were fixed:
+
+- **`argocd.argoproj.io/hook: Sync` on the `db-migration` and `interservice-ca-sync` hook Jobs** (DD-PLATFORM-002) — without this, ArgoCD maps Helm's `post-install,post-upgrade` hook to its own `PostSync` phase, which waits for the **entire Application** to be `Healthy` before running either Job. Since DataStorage can't become healthy without the migration Job's schema, and Gateway can't become healthy without the CA-sync Job's trust bundle, this was a hard deadlock under ArgoCD specifically (`helm install` was never affected).
+- **Infra-first `sync-wave: "-1"`** on PostgreSQL, Valkey, DataStorage, the inter-service mTLS `Certificate`/`Issuer` resources, and both hook Jobs (DD-PLATFORM-003) — these now sync and reach `Healthy` before the remaining ~12 application controllers are even created, closing a resource-contention/TLS-secret-mount race that a plain `helm install` doesn't hit (Helm has no equivalent "apply everything in one wave" concentration point).
+
+Both fixes are ArgoCD-only annotations (`helm.sh/hook`-based Helm CLI behavior is completely unaffected) and are validated in CI by the `Helm Smoke Tests` job's `tls_mode=cert-manager` leg (`.github/workflows/ci-pipeline.yml`), which installs a real ArgoCD instance, creates a `kubernaut-gitops-smoke` `Application` against the chart, and asserts it reaches `Synced`/`Healthy`.
+
+### LLM provider layer rewritten — LangChainGo removed, native Gemini added, unified reasoning effort
+
+The Kubernaut Agent's LLM client layer no longer depends on LangChainGo. Provider count drops from nine distinct `provider` strings to five first-party clients:
+
+| Provider | Notes |
+|---|---|
+| `anthropic` | Native Anthropic Go SDK (unchanged) |
+| `gemini` | **New.** Native `google.golang.org/genai` client against the Gemini Developer API — no GCP project/location required |
+| `vertex_ai` | Now hosts **either** Claude or Gemini models on Vertex AI, auto-detected from the model name prefix |
+| `openai` | Shared `openaicompat` client |
+| `openai_compatible` | Shared `openaicompat` client — covers Ollama, vLLM, LlamaStack, Mistral, Hugging Face TGI, DeepSeek, **and Azure OpenAI** (via `azureApiVersion`, no separate `azure` provider value) |
+
+A new **unified `reasoning.effort`** knob (`none`/`minimal`/`low`/`medium`/`high`/`xhigh`) replaces provider-specific thinking-token configuration — the same value maps consistently across every provider's own dialect, so switching providers or tuning a `phaseModels` override never requires re-deriving vendor-specific numbers.
+
+!!! warning "`bedrock`, `ollama`, `azure`, `huggingface`, `mistral` are no longer provider values"
+    `bedrockRegion` is retained as a parseable field for forward compatibility but is not yet consumed by any client. The other four are reached through `openai`/`openai_compatible` with the appropriate `endpoint`/`azureApiVersion` instead of their own provider string.
+
+See [Kubernaut Agent SDK Config: Supported Providers](../user-guide/configmap-kubernaut-agent.md#supported-providers) and [Reasoning Configuration](../user-guide/configmap-kubernaut-agent.md#reasoning-configuration-v16) for the full reference.
+
+### OpenTelemetry distributed tracing (opt-in)
+
+Gateway, DataStorage, and Kubernaut Agent can now export distributed traces via OTLP, or mirror spans into structured logs with no collector at all. Off by default — zero overhead until `telemetry.endpoint` is configured. Every outbound Kubernaut Agent LLM call is traced unconditionally once enabled, independent of other transport configuration (TLS, OAuth2, circuit breaker).
+
+See [Configuration: OpenTelemetry Tracing](../user-guide/configuration.md#opentelemetry-tracing) and [Monitoring: OpenTelemetry Tracing](../operations/monitoring.md#opentelemetry-tracing-v16).
+
+### Supply-chain security: SLSA Build Level 3 and arm64 images
+
+Release images now ship with **SLSA v1.0 Build Level 3 provenance attestation**, **Cosign-signed** manifests and SBOMs (CycloneDX), and native **arm64** builds alongside amd64 for all 13 services — arm64 Go services cross-compile natively (no QEMU); non-Go services build under QEMU emulation.
+
+---
+
 ## v1.5.6
 
 ### Security: Console-access authorization gate
@@ -73,7 +168,7 @@ The severity model was collapsed from a free-form scheme to 4 canonical values: 
 
 ### Added: OpenAI-compatible LLM adapter
 
-A new `openai_compatible` provider lets the **Kubernaut Agent** connect to OpenAI-compatible endpoints (LlamaStack, vLLM, Ollama, Azure OpenAI) over plain `net/http` with `http.Client` injection for mTLS transport chains — supporting streaming (SSE), tool-call accumulation, and generation-config forwarding (#1487, BR-INTEGRATION-1254). Configure via `ai.llm.provider: openai` and an `endpoint` pointing at the server origin. See [Kubernaut Agent Config: OpenAI-Compatible](../user-guide/configmap-kubernaut-agent.md#openai-compatible-vllm-localai-tgi).
+A new `openai_compatible` provider lets the **Kubernaut Agent** connect to OpenAI-compatible endpoints (LlamaStack, vLLM, Ollama, Azure OpenAI) over plain `net/http` with `http.Client` injection for mTLS transport chains — supporting streaming (SSE), tool-call accumulation, and generation-config forwarding (#1487, BR-INTEGRATION-1254). Configure via `ai.llm.provider: openai` and an `endpoint` pointing at the server origin. See [Kubernaut Agent Config: OpenAI-Compatible](../user-guide/configmap-kubernaut-agent.md#openai-compatible-vllm-ollama-llamastack-deepseek).
 
 !!! warning "Not available for severity triage"
     The API Frontend's `severityTriage.llm` block does **not** go through this adapter — it only supports `vertex_ai`, `gemini`, and `anthropic`. Setting `severityTriage.llm.provider: openai` or `openai_compatible` passes config validation but fails at runtime with `unsupported triage LLM provider`. See [Configuration: Severity Triage](../user-guide/configuration.md#severity-triage-v151).

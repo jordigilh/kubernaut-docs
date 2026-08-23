@@ -45,12 +45,12 @@ Created after a RemediationRequest is accepted. The Signal Processing controller
 
 Created after signal enrichment completes. The AI Analysis controller:
 
-1. Submits the enriched signal to **Kubernaut Agent** for a **two-invocation** LLM investigation (v1.3+):
+1. Dispatches the enriched signal to **Kubernaut Agent** via an **`AgentSession` CRD** (v1.6+, DD-AA-KA-001) for a **two-invocation** LLM investigation (v1.3+):
     - **Invocation 1 (RCA)** — Root cause analysis using live cluster data (logs, events, resource state, metrics) via tools; also resolves the target resource's owner chain, spec hash, **remediation history** (DataStorage), and **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB) when resource-context tools are used
-    - **Invocation 2 (Workflow selection)** — A **new** model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`); DataStorage applies label-based ranking but the LLM drives the final selection, then KA **merges** the two invocations' results
+    - **Invocation 2 (Workflow selection)** — A **new** model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (`list_available_actions` → `list_workflows` → `get_workflow`), served from **Kubernaut Agent's own in-memory workflow catalog** (v1.6+; an informer-cache-backed watch over the `RemediationWorkflow`/`ActionType` CRDs, no DataStorage round trip) which applies label-based ranking, though the LLM drives the final selection; KA then **merges** the two invocations' results
 2. Evaluates whether auto-approval is safe via a **Rego policy** (configurable confidence threshold)
 
-See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the full two-invocation architecture.
+KA owns the `AgentSession`, writing session ID, phase, and the curated result to its status; AA watches for completion. See [Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the full two-invocation architecture and [AgentSession](../api-reference/crds.md#agentsession) for the CRD reference.
 
 ### RemediationApprovalRequest
 
@@ -58,9 +58,9 @@ Created when the AI Analysis confidence is below the approval threshold, or when
 
 ### WorkflowExecution
 
-Created after approval (auto or human). The Workflow Execution controller:
+Created after approval (auto or human), with the selected workflow's full definition already embedded by the **Remediation Orchestrator** as an immutable `WorkflowRef` snapshot on `spec` — WorkflowExecution itself never queries the catalog at runtime. The Workflow Execution controller:
 
-1. Resolves the workflow from the catalog (via DataStorage)
+1. Reads the workflow definition from its own `spec.workflowRef` snapshot (no DataStorage or catalog lookup)
 2. Validates dependencies (required Secrets, ConfigMaps)
 3. Runs the remediation via **Tekton Pipelines** (multi-step), **Kubernetes Jobs** (single-step), or **Ansible (AWX/AAP)** (playbook-based)
 4. Injects parameters (namespace, deployment name, etc.)
@@ -137,7 +137,7 @@ kubectl label namespace my-app kubernaut.ai/managed=true
 
 ## Workflow Catalog
 
-Remediation workflows are defined as declarative **`RemediationWorkflow` CRDs** and registered in **DataStorage** as a searchable catalog via the Auth Webhook admission path. Each workflow has:
+Remediation workflows are defined as declarative **`RemediationWorkflow` CRDs**. The Auth Webhook's admission handler forwards every create/update/delete to **DataStorage**, which keeps the durable, queryable record used for audit and by other callers (e.g. the console). Each workflow has:
 
 - **Identity** — Name (`metadata.name`), version, and structured description (what, whenToUse, whenNotToUse, preconditions) under `spec`
 - **Action type** — Taxonomy type (e.g., `RestartPod`, `RollbackDeployment`, `IncreaseMemoryLimits`)
@@ -145,13 +145,16 @@ Remediation workflows are defined as declarative **`RemediationWorkflow` CRDs** 
 - **Parameters** — Typed inputs injected at runtime as environment variables (`UPPER_SNAKE_CASE`)
 - **Execution config** — Engine (`job`, `tekton`, or `ansible`) plus engine-specific execution settings. Tekton workflows may reference OCI bundles for pipeline execution artifacts
 
+!!! info "v1.6: discovery moved in-process to Kubernaut Agent"
+    Through v1.5, all three discovery steps below were served by DataStorage over REST, with Kubernaut Agent acting as a thin proxy. **As of v1.6** (DD-WORKFLOW-019), Kubernaut Agent serves this protocol entirely from its own in-memory workflow catalog — an informer-cache-backed watch over the `RemediationWorkflow`/`ActionType` CRDs — with no DataStorage round trip on the investigation path. Filtering and label-match scoring behavior is unchanged; only where it executes changed. See [Workflow Selection](../architecture/workflow-selection.md) for the full detail.
+
 During investigation, the LLM selects a workflow through a three-step discovery protocol:
 
-1. **List action types** — Kubernaut Agent calls DataStorage to retrieve available action types (e.g., `RestartPod`, `RollbackDeployment`), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)
-2. **List workflows for action type** — The LLM picks an action type and retrieves matching workflows, which DataStorage returns ordered by label-match scoring (though scores are not exposed to the LLM)
+1. **List action types** — Kubernaut Agent's own catalog returns available action types (e.g., `RestartPod`, `RollbackDeployment`), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)
+2. **List workflows for action type** — The LLM picks an action type and retrieves matching workflows, which the catalog returns ordered by label-match scoring (though scores are not exposed to the LLM)
 3. **Get workflow details** — The LLM selects a specific workflow and retrieves its full parameter schema to fill in values from the root cause analysis
 
-The LLM makes the final selection decision based on workflow descriptions (`what`, `whenToUse`, `whenNotToUse`), detected infrastructure context (e.g., prefer git-based workflows when `gitOpsManaged=true`), and remediation history (avoid workflows that recently failed on the same target). See [Remediation Workflows](workflows.md) for the full schema reference.
+The LLM makes the final selection decision based on workflow descriptions (`what`, `whenToUse`, `whenNotToUse`), detected infrastructure context (e.g., prefer git-based workflows when `gitOpsManaged=true`), and remediation history (avoid workflows that recently failed on the same target). See [Remediation Workflows](workflows.md) for the full schema reference and [Workflow Selection](../architecture/workflow-selection.md) for the discovery protocol's filtering/scoring internals.
 
 ## Next Steps
 

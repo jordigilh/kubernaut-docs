@@ -15,8 +15,8 @@ Every inter-service interaction in the remediation pipeline uses Kubernetes CRDs
 
 The only exceptions are:
 
-- **DataStorage** -- Called via REST API for audit events, workflow catalog, remediation history, and effectiveness data
-- **Kubernaut Agent** -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery
+- **DataStorage** -- Called via REST API for audit events, remediation history, and effectiveness data
+- **Kubernaut Agent** -- Dispatched via the `AgentSession` CRD (v1.6+; replaces the retired HTTP submit/poll channel). AI Analysis creates one `AgentSession` per investigation with an immutable spec; Kubernaut Agent watches for it, dispatches exactly once via a per-object Lease, and is the exclusive writer of its status (session ID, phase, curated result). The workflow catalog itself is served in-memory by Kubernaut Agent from an informer-cache CRD watch, not a DataStorage REST call.
 
 ### Orchestrator Pattern
 
@@ -31,10 +31,11 @@ RemediationRequest (Gateway)
   └─ EffectivenessAssessment (Orchestrator → EM Controller)
   └─ NotificationRequest (Orchestrator → Notification Controller)
 
+AgentSession (AI Analysis → Kubernaut Agent, v1.6+, AA↔KA dispatch/result channel)
 InvestigationSession (API Frontend — v1.5+, interactive MCP/A2A sessions)
 ```
 
-Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. `InvestigationSession` CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
+Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. `AgentSession` (v1.6+) is created by the AIAnalysis controller with an owner reference to the AIAnalysis CR (not the RR directly) — cascade deletion still reaches the RR transitively, since the Orchestrator already sets the RR as AIAnalysis's own owner. `InvestigationSession` CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its [phase state machine](remediation-routing.md#phase-state-machine).
 
 ??? note "Detailed sub-phase breakdown"
 
@@ -101,14 +102,18 @@ graph TB
         LLM[LLM Provider]
     end
 
+    subgraph SessionCRDs["AA / KA / AF Coordination — v1.6+"]
+        AS[AgentSession CRD]
+        IS[InvestigationSession CRD]
+    end
+
     subgraph Infra["Infrastructure"]
         PG[(PostgreSQL)]
         RD[(Valkey)]
     end
 
     AF -.->|MCP tools| KA
-    AF -.->|history, catalog| DS
-    AF -->|InvestigationSession| AF
+    AF -.->|history| DS
 
     GW -->|RemediationRequest| RO
     RO -->|SignalProcessing| SP
@@ -117,9 +122,13 @@ graph TB
     RO -->|NotificationRequest| NF
     RO -->|EffectivenessAssessment| EM
 
-    AA -.->|session async| KA
+    AA -->|Create, ownerRef=AIAnalysis| AS
+    AS -.->|watch, dispatch via Lease| KA
+    KA -->|write Status: phase, result| AS
+    AS -.->|watch: close on terminal/delete| AF
+    AF -->|writes: task id, user identity| IS
     KA -.-> LLM
-    KA -.-> DS
+    KA -.->|audit, history| DS
 
     SP -.-> DS
     AA -.-> DS
@@ -146,9 +155,10 @@ The complete CRD lifecycle for a single remediation follows the natural flow:
 | 5 | `WorkflowExecution` | Orchestrator | WE Controller | Run remediation workflow |
 | 6 | `EffectivenessAssessment` | Orchestrator | EM Controller | Post-execution verification |
 | 7 | `NotificationRequest` | Orchestrator | NT Controller | Outcome notification |
-| — | `InvestigationSession` | API Frontend | AF (SessionCleanup) | Interactive MCP/A2A session state (v1.5+); deferred — materialized only after RR creation |
+| — | `AgentSession` | AI Analysis (AA) | Kubernaut Agent (KA) | AA↔KA dispatch/result channel (v1.6+); replaces the retired HTTP submit/poll channel. AA creates once (immutable spec, ownerRef → AIAnalysis); KA is the exclusive writer of `status` (session ID, phase, curated result) |
+| — | `InvestigationSession` | API Frontend | AF (SessionCleanup, AgentSessionTerminalCloseReconciler) | Interactive MCP/A2A session state (v1.5+); deferred — materialized only after RR creation |
 
-Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. The `InvestigationSession` CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut) managed by the API Frontend's session cleanup reconciler.
+Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. `AgentSession` follows its own lifecycle (`Pending` → `Investigating` → `Completed`/`Failed`/`Cancelled`) driven entirely by KA. The `InvestigationSession` CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut); as of v1.6, AF's `AgentSessionTerminalCloseReconciler` closes it (to `Cancelled`) by watching the correlated `AgentSession` for a terminal phase or deletion — AA no longer reads or writes `InvestigationSession` at all.
 
 ## Namespace Model
 

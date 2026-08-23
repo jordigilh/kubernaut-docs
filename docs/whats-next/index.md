@@ -6,34 +6,20 @@ hide:
 
 # What's Next
 
-The features below are planned for future Kubernaut releases. For features that shipped in v1.5, see [What's New: v1.5](../whats-new/index.md#v15). For features that shipped in v1.5.1 (Kubernaut Console, per-phase LLM routing, multi-provider JWT, severity triage LLM, SSE status endpoint), see [What's New: v1.5.1](../whats-new/index.md#v151).
+The features below are planned for future Kubernaut releases. For features that shipped in v1.5, see [What's New: v1.5](../whats-new/index.md#v15). For features that shipped in v1.5.1 (Kubernaut Console, per-phase LLM routing, multi-provider JWT, severity triage LLM, SSE status endpoint), see [What's New: v1.5.1](../whats-new/index.md#v151). For Fleet Management, the `AgentSession` CRD, the v1alpha2 Operator CRD, and the LLM provider rewrite shipped in v1.6, see [What's New: v1.6](../whats-new/index.md#v16).
 
-## v1.6 — Fleet Remediation & ITSM (next)
+!!! info "Fleet's shipped design differs from the earlier ACM/OCM plan below"
+    The Fleet Operations concept previously outlined here (hub-and-spoke via raw ACM/OCM, direct AWX playbook dispatch, per-hop Keycloak JWTs) was **superseded** by the [Fleet Management architecture](../architecture/fleet.md) that actually shipped in v1.6: a pluggable scope backend (FMC or ACM Search) plus an MCP Gateway (Kuadrant/Envoy AI Gateway) for cluster-transparent tool access, with OAuth2 client-credentials auth and no remote Ansible/AWX support. See [What's New: v1.6](../whats-new/index.md#v16) for what shipped.
 
-### Fleet Operations
-
-Hub-and-spoke deployment using [ACM/OCM](https://open-cluster-management.io/) (Open Cluster Management) — policy-driven remediation across fleet-scale Kubernetes environments, 7 steps from alert to remediation, zero remote footprint ([#54](https://github.com/jordigilh/kubernaut/issues/54)).
-
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/fleet-operations.svg" alt="Fleet Operations — Hub-and-spoke remediation flow" style="width:100%">
-</div>
-
-#### Remediation flow
-
-1. Remote Prometheus forwards metrics to Thanos on hub
-2. Alertmanager fires alert → Kubernaut Engine triggers pipeline
-3. KE obtains JWT from Keycloak for MCP investigation
-4. KE calls MCP on target remote cluster for RCA investigation
-5. KE obtains JWT from Keycloak for remediation execution
-6. KE dispatches remediation playbook to AWX
-7. AWX executes fix on target remote cluster via ephemeral SA
-
-!!! tip "Zero persistent credentials"
-    Remediation uses ephemeral ServiceAccounts with OCM-managed lifecycle — no long-lived secrets stored on remote clusters.
+## Next up
 
 ### ServiceNow Incident Triage
 
-Consume ServiceNow incidents as signals through the API Frontend, enabling Kubernaut to investigate and remediate ITSM tickets alongside Kubernetes alerts ([#1338](https://github.com/jordigilh/kubernaut/issues/1338)).
+Consume ServiceNow incidents as signals through the API Frontend, enabling Kubernaut to investigate and remediate ITSM tickets alongside Kubernetes alerts ([#1338](https://github.com/jordigilh/kubernaut/issues/1338)). Design work is underway ([ADR-063](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-063-servicenow-signal-integration.md), [DD-INT-020](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/DD-INT-020-servicenow-signal-target-type.md)); no implementation has landed as of v1.6.
+
+### Fleet backend expansion
+
+Rancher and Clusterpedia as additional pluggable scope backends alongside the FMC and ACM Search backends that shipped in v1.6 — see [Fleet Management: Pluggable scope backend](../architecture/fleet.md).
 
 ---
 
@@ -68,6 +54,9 @@ Recipe runs via Kubernaut Agent endpoint at effectiveness assessment time.
 **Example: `verify-business-slo`** — Calls an SLO/Business Metrics MCP to check p95 latency, error rate, and order throughput against SLO budget. Returns a structured pass/fail verdict with business impact data, replacing the default Kubernetes health check with SRE-defined assessment SOPs.
 
 ---
+
+!!! success "Shipped in v1.6"
+    **Fleet Management** — multi-cluster investigation and remediation via a pluggable scope backend (FMC/ACM Search) and MCP Gateway. See [What's New: v1.6](../whats-new/index.md#v16).
 
 !!! success "Shipped in v1.5.1"
     **Kubernaut Console** — Web UI for interactive investigation and remediation. See [What's New: v1.5.1](../whats-new/index.md#v151).

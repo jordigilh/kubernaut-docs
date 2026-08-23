@@ -2,6 +2,12 @@
 
 Kubernaut is configured via **Helm values** (for Helm deployments) or the **Kubernaut CR** (for Operator deployments), plus per-service **ConfigMaps**. This page documents the configuration surfaces — from deployment-specific values to namespace labels, signal sources, LLM providers, and operational tuning.
 
+!!! note "v1.6 configuration highlights"
+    - **Operator CR is now `kubernaut.ai/v1alpha2`.** LLM configuration moved to named `spec.llmProfiles` (replacing the single inline `spec.kubernautAgent.llm` block), `spec.monitoring` was reshaped from an RBAC on/off toggle into Prometheus/AlertManager endpoint overrides, `spec.networkPolicies.enabled` was removed (NetworkPolicies are now always on, matching Helm), and `spec.fleet`/`spec.fleetMetadataCache` were added for [Fleet Management](../architecture/fleet.md). See the [Operator CR API Reference](../api-reference/operator-cr.md#upgrading-from-v1alpha1) for the full v1alpha1→v1alpha2 migration table.
+    - **Fleet Management (Helm and Operator).** Multi-cluster federation via a pluggable scope-check backend (FMC or ACM) and an external MCP Gateway (Kuadrant or Envoy AI Gateway). See [Fleet](#fleet) below and [Fleet Management architecture](../architecture/fleet.md).
+    - **OpenTelemetry tracing (opt-in).** Gateway, DataStorage, and Kubernaut Agent can export distributed traces via OTLP/HTTP, or mirror spans into structured logs with no collector at all. See [OpenTelemetry Tracing](#opentelemetry-tracing) below.
+    - **Helm chart configuration surface reduced.** The shipped `values.yaml` now carries ~7 mandatory fields instead of hundreds — NetworkPolicies are always on, PDB defaults are shared, and every field (trimmed or not) is documented in an auto-generated, CI-drift-checked reference. The chart is also now deployable via ArgoCD/GitOps, not just `helm install`. See [What's New: v1.6](../whats-new/index.md#helm-chart-mandatory-field-count-cut-from-404-to-7-dd-platform-006).
+
 !!! note "v1.4 configuration highlights"
     - **Effectiveness Monitor — unified `monitoring` block.** Prometheus and AlertManager connection settings (`url`, enable flags, TLS CA, timeouts, scrape/lookback tuning, OpenShift RBAC bridges, and related options) are **grouped under a single `effectivenessmonitor.monitoring` YAML block**. Values that lived under legacy `effectivenessmonitor.external.*` paths **must migrate** when you upgrade Helm values files.
     - **Standardized log levels (#875).** Verbosity/logging configuration now uses **the same YAML key naming pattern across services**, so Helm values and bundled ConfigMaps line up consistently when adjusting log noise during install or runtime.
@@ -58,7 +64,7 @@ See [Rego Policies](policies.md) for how each label feeds into enrichment, and [
 
 ## Operator CR Configuration {: #operator-cr }
 
-When deploying via the Kubernaut Operator, all configuration is expressed through the `Kubernaut` CR (`kubernaut.ai/v1alpha1`). The operator maps CR fields to the underlying ConfigMaps, Deployments, and RBAC resources.
+When deploying via the Kubernaut Operator, all configuration is expressed through the `Kubernaut` CR (**`kubernaut.ai/v1alpha2`**, v1.6+ -- see the [Operator CR API Reference](../api-reference/operator-cr.md#upgrading-from-v1alpha1) if migrating from `v1alpha1`). The operator maps CR fields to the underlying ConfigMaps, Deployments, and RBAC resources.
 
 For the complete CR field reference, see the [Operator CR API Reference](../api-reference/operator-cr.md).
 
@@ -66,16 +72,116 @@ Key differences from Helm:
 
 | Concern | Helm | Operator CR |
 |---|---|---|
-| NetworkPolicies | Enabled by default, per-service toggles | Disabled by default (`spec.networkPolicies.enabled`) |
-| Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | Controlled by `spec.monitoring.enabled` (default: `true`) |
+| NetworkPolicies | Always on, no opt-out | Always on as of v1alpha2 (the earlier `spec.networkPolicies.enabled` opt-out is removed); remaining fields only tune the always-on policy set |
+| Monitoring RBAC | Automatic when `kube-prometheus-stack` is installed | The RBAC-toggle `spec.monitoring.enabled` from v1alpha1 is gone. The two monitoring-only ClusterRoles are now gated on `spec.monitoring.prometheus.enabled`/`alertManager.enabled` (both default `true`) |
+| LLM configuration | Single SDK config file (`kubernautAgent.sdkConfigContent`) | Named `spec.llmProfiles` map; components reference a profile by name via `llmProfileRef` |
 | Database | In-chart PostgreSQL option | BYO only — `spec.postgresql.host` + `spec.postgresql.secretName` |
 | KA runtime config | Direct ConfigMap editing | `spec.kubernautAgent.runtimeConfigMapName` for BYO hot-reloadable config |
 | Image references | Standard Helm `image.repository`/`image.tag` | `RELATED_IMAGE_*` env vars for disconnected installs |
-| Agent RBAC extension | Manual ClusterRoleBinding creation | `spec.kubernautAgent.additionalClusterRoleBindings` (max 64) |
+| Agent/Gateway/EM RBAC extension | Manual ClusterRoleBinding creation | `spec.additionalClusterRoles` (top-level as of v1alpha2, max 64) |
+| Fleet Management | `global.fleet.*` (see [Fleet](#fleet) below) | `spec.fleet` / `spec.fleetMetadataCache` (see [Fleet Management architecture](../architecture/fleet.md)) |
 
 ## Helm Values
 
 All values are validated against `values.schema.json`. Run `helm lint` to check your overrides before installing.
+
+!!! tip "~400 leaf fields, but only 7 are mandatory"
+    `values.schema.json` defines roughly 400 leaf fields, but the vast majority already have a working default — you never need to touch them. Only **7 fields have no safe default** (see [What's New: v1.6](../whats-new/index.md#helm-chart-mandatory-field-count-cut-from-404-to-7-dd-platform-006)). The minimal `values.yaml` below is everything a fresh install actually requires; every other value in this page's tables is an optional override.
+
+    For the exhaustive, every-leaf-field version of these tables (including defaults for fields not called out below), see the [Helm Values Reference](helm-values-reference.md).
+
+### Minimal `values.yaml`
+
+This is the complete set of fields with no working default — an LLM profile, and one Rego policy each for AIAnalysis (approval) and SignalProcessing (classification). Every other Helm value already has a default and can be layered in later, only where you need to change behavior.
+
+```yaml
+# values.yaml — minimum required to install.
+global:
+  llmProfiles:
+    primary:
+      provider: openai                       # openai | anthropic | gemini | vertex_ai | openai_compatible
+      model: gpt-4o
+      endpoint: https://api.openai.com/v1    # required for provider: openai; not used by every provider
+      credentialsSecretName: llm-credentials  # Secret must exist first — see below; key "api_key"
+
+# kubernautAgent.llmProfileRef is intentionally omitted: with exactly one
+# profile defined above, "primary" is inferred automatically (Issue #1987).
+
+aianalysis:
+  policies:
+    # Safest possible starting policy: always require a human to approve
+    # before any remediation executes. Loosen once you trust the pipeline —
+    # see configmap-approval.md for environment-aware / risk-based examples.
+    content: |
+      package aianalysis.approval
+      import rego.v1
+      default require_approval := true
+      default reason := "All remediations require manual approval"
+
+signalprocessing:
+  policies:
+    # Minimal severity/environment/priority classification. See policies.md
+    # for the full rule reference, and the chart's own
+    # charts/kubernaut/examples/signalprocessing-policy.rego for a complete,
+    # production-ready starting point (custom-labels and fleet cluster rules).
+    content: |
+      package signalprocessing
+      import rego.v1
+
+      default environment := {"environment": "Unknown", "source": "default"}
+      environment := {"environment": env, "source": "namespace-label"} if {
+          env := input.namespace.labels["kubernaut.ai/environment"]
+          env != ""
+      }
+
+      default severity := "unknown"
+      severity := "critical" if { lower(input.signal.severity) in {"critical", "sev1", "p0"} }
+      severity := "high" if { lower(input.signal.severity) in {"high", "sev2", "p2"} }
+      severity := "warning" if { lower(input.signal.severity) in {"warning", "medium", "sev3"} }
+      severity := "info" if { lower(input.signal.severity) in {"info", "low", "sev4"} }
+
+      default priority := {"priority": "P3", "policy_name": "default"}
+      priority := {"priority": "P0", "policy_name": "production-critical"} if {
+          environment.environment == "Production"
+          severity == "critical"
+      }
+```
+
+!!! warning "Secrets are not values.yaml fields — create them first"
+    The chart never auto-generates credentials (prevents leaking them into rendered Helm templates) and validates at install time that referenced secrets already exist. Before installing with the file above:
+
+    ```bash
+    kubectl create namespace kubernaut-system
+
+    # LLM credentials — key must be "api_key" (vertex_ai profiles use "credentials.json" instead)
+    kubectl create secret generic llm-credentials \
+      --from-literal=api_key=sk-... \
+      -n kubernaut-system
+
+    # Only needed if postgresql.enabled/valkey.enabled stay at their default (true) --
+    # i.e. you're using the chart's bundled single-replica Postgres/Valkey, not BYO.
+    PG_PASSWORD=$(openssl rand -base64 24)
+    kubectl create secret generic postgresql-secret \
+      --from-literal=POSTGRES_USER=slm_user \
+      --from-literal=POSTGRES_PASSWORD="$PG_PASSWORD" \
+      --from-literal=POSTGRES_DB=action_history \
+      --from-literal=db-secrets.yaml="$(printf 'username: slm_user\npassword: %s' "$PG_PASSWORD")" \
+      -n kubernaut-system
+
+    kubectl create secret generic valkey-secret \
+      --from-literal=valkey-secrets.yaml="$(printf 'password: %s' "$(openssl rand -base64 24)")" \
+      -n kubernaut-system
+    ```
+
+    Then install:
+
+    ```bash
+    helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
+      --namespace kubernaut-system \
+      -f values.yaml
+    ```
+
+    See the chart's [Quick Start](https://github.com/jordigilh/kubernaut/tree/main/charts/kubernaut#quick-start) for the `--set`/`--set-file` equivalent, Slack notifications, and monitoring integration.
 
 ### Global Settings
 
@@ -239,7 +345,7 @@ The severity triage pipeline can use a **dedicated LLM** for LLM-based severity 
 
 The Helm chart exposes only `cacheTTLSeconds` and `llmConfidence` (see table above). All other severity triage fields require a ConfigMap overlay or direct patch.
 
-When deploying via the **Kubernaut Operator**, severity triage is auto-derived from `spec.monitoring.enabled` — there is no CRD field for `severityTriage`.
+When deploying via the **Kubernaut Operator**, severity triage is configured through `spec.apiFrontend.severityTriage` (LLM profile, cache TTL, confidence threshold) plus `spec.monitoring.prometheus` (endpoint) -- see [APIFrontendSeverityTriageSpec](../api-reference/operator-cr.md#apifrontendseveritytriagespec) in the CR reference.
 
 **ConfigMap fields** (in addition to the Helm-managed values above):
 
@@ -575,6 +681,71 @@ To use an external Valkey instance, set `valkey.enabled=false` and provide:
 |---|---|---|
 | `valkey.host` | External Valkey hostname (required when `enabled=false`) | `""` |
 | `valkey.port` | External Valkey port | `6379` |
+
+### Fleet {: #fleet }
+
+**New in v1.6 (ADR-068).** Fleet mode federates scope-checking and remote-cluster access across multiple managed clusters through an external MCP Gateway. See [Fleet Management](../architecture/fleet.md) for the full architecture. Disabled by default -- zero regression, zero new dependencies for single-cluster deployments.
+
+Most Fleet settings are consolidated under **`global.fleet.*`** and shared by every fleet-aware service (Gateway, Remediation Orchestrator, Signal Processing, API Frontend, Effectiveness Monitor, Kubernaut Agent, FleetMetadataCache); only `oauth2.credentialsSecretRef` is overridable per-service.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `global.fleet.enabled` | Master on/off switch for federated scope-checking | `false` |
+| `global.fleet.backend` | Scope-check backend: `fleetmetadatacache` or `acm` | `""` |
+| `global.fleet.endpoint` | Backend endpoint. Auto-derived for `fleetmetadatacache`; required for `acm` | `""` |
+| `global.fleet.mcpGatewayEndpoint` | Shared MCP Gateway endpoint URL (Kuadrant or Envoy AI Gateway), used by every fleet-integration-capable service | `""` |
+| `global.fleet.mcpGatewayType` | MCP Gateway implementation: `eaigw` or `kuadrant` | `""` |
+| `global.fleet.tlsCAFile` | CA bundle path to verify the backend/gateway TLS certificate | `""` |
+| `global.fleet.tokenSecretRef` | Secret with a bearer token for `acm` backend auth | `""` |
+| `global.fleet.oauth2.enabled` | Enable OAuth2 for the MCP Gateway. **Mandatory when `mcpGatewayEndpoint` is set** -- there is no unauthenticated MCP Gateway mode for any of the 7 fleet-capable services except FleetMetadataCache | `false` |
+| `global.fleet.oauth2.tokenURL` | OAuth2 token endpoint | `""` |
+| `global.fleet.oauth2.scopes` | OAuth2 scopes | `[]` |
+| `global.fleet.oauth2.tlsCAFile` | CA bundle for the OAuth2 token endpoint | `""` |
+| `<service>.fleet.oauth2.credentialsSecretRef` | Per-service override for the OAuth2 client credentials Secret (falls back to a shared default when unset) | `""` |
+| `workflowexecution.fleet.oauth2.credentialsSecretRef` | **WE-owned, no fallback.** WorkflowExecution is the only fleet-integration service that calls MCP *write* tools, so its credential is never shared with the read-only services above (least-privilege) | **required** when `global.fleet.mcpGatewayEndpoint` is set |
+
+```yaml
+global:
+  fleet:
+    enabled: true
+    backend: "fleetmetadatacache"   # or "acm"
+    mcpGatewayEndpoint: "https://mcp-gateway.example.com"
+    mcpGatewayType: "kuadrant"      # or "eaigw"
+    oauth2:
+      enabled: true
+      tokenURL: "https://idp.example.com/oauth2/token"
+      scopes: ["mcp-gateway.read"]
+
+workflowexecution:
+  fleet:
+    oauth2:
+      credentialsSecretRef: "we-fleet-oauth2-write"   # WE's own write-scoped client
+```
+
+`Backend Comparison Matrix`, the `Rancher`/`Clusterpedia` roadmap, and the fail-closed readiness-gate behavior are documented in [Fleet Management](../architecture/fleet.md).
+
+### OpenTelemetry Tracing {: #opentelemetry-tracing }
+
+**New in v1.6.** Opt-in, BYO-collector distributed tracing. Off by default -- zero overhead until `endpoint` is set. A single top-level `telemetry` block is consumed by **Gateway, DataStorage, and Kubernaut Agent**; other services do not yet export traces.
+
+| Parameter | Description | Default |
+|---|---|---|
+| `telemetry.endpoint` | OTLP/HTTP collector endpoint (`host:port`, no scheme). Empty disables OTLP export entirely. | `""` |
+| `telemetry.logSink` | Emit one structured log line per completed span via the service's existing logger, in addition to (or instead of) OTLP export -- no collector needed, lands in the same log stream must-gather/CI already captures | `false` |
+| `telemetry.tls.enabled` | Use HTTPS for the OTLP/HTTP connection. `false` (default) uses plain HTTP, matching most in-cluster collectors. | `false` |
+| `telemetry.tls.caFile` | CA certificate for a self-signed/privately-issued collector cert | `""` |
+| `telemetry.tls.certFile` / `telemetry.tls.keyFile` | Client certificate/key for mTLS to the collector (must be set together) | `""` |
+
+```yaml
+telemetry:
+  endpoint: "otel-collector.observability.svc:4317"
+  logSink: false
+  tls:
+    enabled: true
+    caFile: /etc/otel-ca/ca.crt
+```
+
+On the Operator CR path, the equivalent fields are `spec.dataStorage.telemetry` and `spec.kubernautAgent.telemetry` (see [Operator CR Reference](../api-reference/operator-cr.md#telemetryspec)) -- there is no shared top-level block; each service is configured independently.
 
 ## Signal Source Authentication
 
@@ -951,6 +1122,8 @@ This means `helm upgrade` and rolling updates do not disrupt in-flight remediati
 
 ## Next Steps
 
+- [Helm Values Reference](helm-values-reference.md) -- every leaf field in `values.schema.json`, with defaults
+- [Operator CR Reference](../api-reference/operator-cr.md) -- equivalent field-by-field reference for the Operator install path
 - [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) -- LLM provider, toolsets, and MCP server configuration
 - [SignalProcessing Rego Policies](configmap-policies.md) -- Policy bundle format and customization
 - [AIAnalysis Approval Policy](configmap-approval.md) -- Approval gates and risk factors

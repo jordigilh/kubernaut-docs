@@ -277,25 +277,65 @@ This gathers CRDs, logs, Tekton resources, DataStorage state, events, and metric
 
 ## Operator Monitoring Configuration
 
-When deploying via the Kubernaut Operator, monitoring integration is controlled by `spec.monitoring.enabled` (default: `true`). When enabled, the operator:
+!!! warning "v1alpha2 (v1.6): `spec.monitoring` changed shape and meaning"
+    v1alpha1's `spec.monitoring.enabled` was a single, all-or-nothing bool that both provisioned RBAC and toggled URL auto-detection. **That field no longer exists in v1alpha2.** `spec.monitoring` is now a `{prometheus, alertManager}` pair, each independently toggleable and each carrying its own optional URL/CA overrides. Converting a v1alpha1 CR drops any explicit `monitoring.enabled` value — there is no direct v1alpha2 equivalent to carry it to. See [Upgrading from v1alpha1](../api-reference/operator-cr.md#upgrading-from-v1alpha1) for the full migration table.
 
-1. **Auto-derives** Prometheus and AlertManager URLs from the OCP monitoring stack
-2. **Creates 2 additional ClusterRoles**: `{namespace}-alertmanager-view` and `{namespace}-gateway-signal-source`
+When deploying via the Kubernaut Operator, `spec.monitoring.prometheus.enabled` and `spec.monitoring.alertManager.enabled` (both default `true`) control whether Prometheus/AlertManager-backed features (EffectivenessMonitor assessment, Kubernaut Agent alert correlation, API Frontend severity-triage) are active, and gate the associated RBAC:
+
+1. **Auto-derives** Prometheus and AlertManager URLs from the OCP monitoring stack, unless `prometheus.url` / `alertManager.url` overrides are set
+2. **Creates** the `{namespace}-alertmanager-view` ClusterRole when `alertManager.enabled: true`, and `{namespace}-gateway-signal-source` when either `prometheus.enabled` or `alertManager.enabled` is `true`
 3. **Binds** the Effectiveness Monitor and Kubernaut Agent ServiceAccounts to `cluster-monitoring-view` for Prometheus query access
 4. **Binds** the OCP AlertManager ServiceAccount to `gateway-signal-source` for signal ingestion
 
 ```yaml
-apiVersion: kubernaut.ai/v1alpha1
+apiVersion: kubernaut.ai/v1alpha2
 kind: Kubernaut
 spec:
   monitoring:
-    enabled: true   # default; set to false to disable monitoring RBAC
+    prometheus:
+      enabled: true    # default; set to false to disable Prometheus-backed features + RBAC
+    alertManager:
+      enabled: true    # default; set to false to disable AlertManager-backed features + RBAC
 ```
 
 !!! warning "Disabling monitoring"
-    Setting `spec.monitoring.enabled: false` removes the 2 monitoring ClusterRoles and their bindings. The Effectiveness Monitor will not be able to query Prometheus for post-remediation health checks, and AlertManager will not have RBAC to send alerts to the Gateway.
+    Setting `prometheus.enabled: false` or `alertManager.enabled: false` removes the corresponding monitoring ClusterRole(s) and bindings. With AlertManager disabled, the Effectiveness Monitor loses post-remediation health-check RBAC and AlertManager loses RBAC to send signals to the Gateway.
 
 See the [Operator CR API Reference](../api-reference/operator-cr.md#monitoringspec) for all monitoring-related fields.
+
+## OpenTelemetry Tracing (v1.6+)
+
+!!! info "New in v1.6"
+    Kubernaut adds optional distributed tracing via OpenTelemetry (OTel), complementing the existing Prometheus metrics and structured logs. As of v1.6, tracing instruments the **Gateway**, **DataStorage**, and **Kubernaut Agent** — other services do not yet emit spans.
+
+### What gets traced
+
+| Service | Instrumented spans |
+|---|---|
+| Gateway | Inbound signal ingestion HTTP handlers |
+| DataStorage | REST API handlers and PostgreSQL write operations |
+| Kubernaut Agent | Outbound LLM HTTP calls (always wrapped, regardless of other transport config — the single most valuable hop to time in an AI agent) |
+
+Every outbound LLM HTTP call from the Kubernaut Agent is wrapped in an OTel span unconditionally, independent of whether TLS, OAuth2, custom headers, or a circuit breaker are also configured on that transport — the span exists even on the vanilla default-config path, and is a no-op when no `TracerProvider` is registered (i.e. `telemetry.endpoint` unset).
+
+### Configuration
+
+Tracing is off by default (no `TracerProvider` registered, zero overhead) and is enabled by setting an OTLP endpoint. Helm exposes it as a shared `telemetry` values block:
+
+```yaml
+telemetry:
+  endpoint: "otel-collector.observability.svc:4317"   # OTLP/HTTP endpoint; unset = tracing disabled
+  logSink: false                                       # true: also emit one structured log line per completed span
+  tls:
+    enabled: false
+    caFile: ""
+    certFile: ""
+    keyFile: ""
+```
+
+Via the Operator CR (v1alpha2), the equivalent lives under each instrumented service's own spec, e.g. `spec.dataStorage.telemetry` and `spec.kubernautAgent.telemetry` — see [TelemetrySpec](../api-reference/operator-cr.md#telemetryspec).
+
+See [Helm Values: OpenTelemetry Tracing](../user-guide/configuration.md#opentelemetry-tracing) for the full parameter reference and additional examples.
 
 ## Next Steps
 

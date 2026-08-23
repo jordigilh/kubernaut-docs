@@ -121,6 +121,7 @@ nav:
       - Data Lifecycle: user-guide/data-lifecycle.md
       - Interactive Sessions: user-guide/interactive-sessions.md
       - Configuration Reference: user-guide/configuration.md
+      - Helm Values Reference: user-guide/helm-values-reference.md
       - ConfigMap References:
           - Kubernaut Agent SDK Config: user-guide/configmap-kubernaut-agent.md
           - SignalProcessing Rego Policies: user-guide/configmap-policies.md
@@ -142,6 +143,7 @@ nav:
       - Audit Pipeline: architecture/audit-pipeline.md
       - Data Persistence: architecture/data-persistence.md
       - API Frontend: architecture/apifrontend.md
+      - Fleet Management: architecture/fleet.md
       - Security & RBAC: architecture/security-rbac.md
   - API Reference:
       - api-reference/index.md

@@ -148,13 +148,13 @@ Click a phase card above, or select a tab:
 
     Three-phased pipeline:
 
-    - **Investigate** — The LLM investigates the incident using 36 built-in tools and produces a root cause analysis (RCA).
+    - **Investigate** — The LLM investigates the incident and produces a root cause analysis (RCA). On the hub cluster this uses 36 built-in tools; for [Fleet-managed](architecture/fleet.md) remote clusters, the same tools are instead served, under identical generic names, by a K8s MCP Server registered behind the MCP Gateway — platform teams choose and deploy their own MCP Gateway and K8s MCP Server backends, since Kubernaut doesn't ship either.
     - **Enrich** — Server-side enrichment adds historical context, detectable labels, and prior remediation outcomes.
     - **Select** — Using the RCA and enrichment data, the LLM selects a workflow from the existing user-created `RemediationWorkflow` catalog.
 
     **Kubernaut Agent** — The AI Analysis phase is powered by the Kubernaut Agent (KA), which drives both autonomous and interactive investigations:
 
-    - **Autonomous** — KA runs LLM-driven investigation with 36 native Go tools, performs server-side enrichment, and selects the best-matching workflow without operator involvement.
+    - **Autonomous** — KA runs LLM-driven investigation — 36 native Go tools on the hub cluster, or the byte-identical tool schema via a fleet-registered K8s MCP Server for remote clusters — performs server-side enrichment, and selects the best-matching workflow without operator involvement.
     - **Interactive (v1.5)** — Operators start investigations on demand or join autonomous ones mid-flight via the API Frontend. KA manages Lease-based sessions with SSE streaming of investigation events. The operator guides workflow selection through the AF's MCP/A2A tools while KA handles the underlying investigation and enrichment.
 
 === "3 · Approval"

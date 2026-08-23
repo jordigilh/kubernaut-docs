@@ -432,9 +432,11 @@ When either threshold is exceeded, the Orchestrator blocks the RemediationReques
 
 ## Workflow Selection: Three-Step Discovery
 
-**Invocation 2 (Workflow selection)** is a **separate** session that runs the three-step DataStorage protocol with **no tool transcript from Invocation 1** — it relies on the **structured RCA fields** injected at session start, plus the usual workflow tools.
+**Invocation 2 (Workflow selection)** is a **separate** session that runs the three-step discovery protocol with **no tool transcript from Invocation 1** — it relies on the **structured RCA fields** injected at session start, plus the usual workflow tools.
 
-Labels and other signal context that were **detected or resolved in Invocation 1** (e.g. `session_state["detected_labels"]` and enriched signal metadata) are available to the workflow step and are **automatically applied** to DataStorage queries (e.g. as context filters in `list_available_actions`).
+**v1.6 change:** this discovery protocol is now served entirely from KA's own in-memory workflow catalog (`internal/kubernautagent/workflowcatalog`, an informer-cache-backed watch over the `RemediationWorkflow` and `ActionType` CRDs), not a DataStorage REST call. KA replicates DataStorage's scoring algorithm in-process (same `final_score` boost/penalty formula and `ORDER BY final_score DESC, workflow_id ASC` tie-break) against its own cache, so ranking behavior is unchanged, but the query no longer leaves the KA process. DataStorage's REST discovery handlers (`pkg/datastorage/server/workflow_discovery_handlers.go`) remain in place for other callers but are no longer on KA's investigation critical path.
+
+Labels and other signal context that were **detected or resolved in Invocation 1** (e.g. `session_state["detected_labels"]` and enriched signal metadata) are available to the workflow step and are **automatically applied** to catalog queries (e.g. as context filters in `list_available_actions`).
 
 ### Step 1: List Available Actions
 
@@ -442,7 +444,7 @@ Labels and other signal context that were **detected or resolved in Invocation 1
 list_available_actions(offset=0, limit=20)
 ```
 
-KA sends signal context filters (`severity`, `component`, `environment`, `priority`, `custom_labels`) and `detected_labels` as query parameters to DataStorage. DataStorage uses these to **filter and rank** the action types -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:
+KA filters its in-memory catalog using the signal context (`severity`, `component`, `environment`, `priority`, `custom_labels`) and `detected_labels` -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:
 
 - `what` -- What the action does
 - `whenToUse` -- When this action is appropriate
@@ -457,7 +459,7 @@ When detected labels are available, the response also includes a `cluster_contex
 list_workflows(action_type="RollbackDeployment", offset=0, limit=10)
 ```
 
-For the chosen action type, the LLM sees workflow summaries ordered by DataStorage's internal label-match score. The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.
+For the chosen action type, the LLM sees workflow summaries ordered by KA's internal label-match score (computed against its own cache, mirroring DataStorage's algorithm -- see the v1.6 note above). The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.
 
 Pagination is supported (`hasMore` flag) for action types with many workflows.
 
@@ -478,7 +480,7 @@ The LLM makes the final selection based on:
 3. **Detected infrastructure context** -- GitOps-managed resources need git-based workflows, not direct kubectl rollbacks
 4. **Parameter fit** -- Whether the investigation findings provide the data needed for the workflow's parameters
 
-DataStorage's scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.
+KA's in-catalog scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.
 
 ## Investigation Outcomes
 

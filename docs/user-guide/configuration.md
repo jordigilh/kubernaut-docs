@@ -263,7 +263,8 @@ Image paths are constructed as `{registry}{separator}{namespace}{separator}{serv
 | Parameter | Description | Default |
 |---|---|---|
 | `kubernautAgent.replicas` | Number of replicas | `1` |
-| `kubernautAgent.llm.credentialsSecretName` | Name of pre-existing Secret with LLM API keys | `llm-credentials` |
+| `global.llmProfiles.<name>.credentialsSecretName` | Name of pre-existing Secret with LLM API keys, per named profile (v1.6, DD-PLATFORM-007 — replaces the old `kubernautAgent.llm.credentialsSecretName`). At least one profile is required; there is no default. | none (required) |
+| `kubernautAgent.llmProfileRef` | Which `global.llmProfiles` entry Kubernaut Agent uses. Omit when exactly one profile is defined -- it's inferred automatically (Issue #1987). | `""` (auto-inferred with a single profile) |
 | `kubernautAgent.sdkConfigContent` | SDK config YAML content (via `--set-file`). The chart derives the Kubernetes ConfigMap objects that back the Agent SDK volumes from this file (**v1.4+**: split static + reloadable bundles). | `""` |
 | `kubernautAgent.existingSdkConfigMap` | Pre-existing ConfigMap name for SDK config. Takes priority over `sdkConfigContent`. | `""` |
 

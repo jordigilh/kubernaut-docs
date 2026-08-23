@@ -69,18 +69,21 @@ Re-read the **v1.4** upgrade warning at the top of this page before touching liv
 
 ## Provisioning
 
-Three options are available, with the following precedence: `existingSdkConfigMap` > `sdkConfigContent` > `llm.provider` + `llm.model`.
+Three options are available, with the following precedence: `existingSdkConfigMap` > `sdkConfigContent` > `global.llmProfiles` (v1.6, DD-PLATFORM-007 — replaces the old `kubernautAgent.llm.provider`/`.model`).
 
 ### Option A: Quickstart (recommended for getting started)
 
-Set the provider and model directly in Helm values. The chart generates a minimal SDK config ConfigMap automatically.
+Set the provider and model directly in Helm values, as a named LLM profile under `global.llmProfiles`. The chart generates a minimal SDK config ConfigMap automatically.
 
 ```bash
 helm install kubernaut charts/kubernaut/ \
-  --set kubernautAgent.llm.provider=openai \
-  --set kubernautAgent.llm.model=gpt-4o \
+  --set global.llmProfiles.primary.provider=openai \
+  --set global.llmProfiles.primary.model=gpt-4o \
+  --set global.llmProfiles.primary.credentialsSecretName=llm-credentials \
   ...
 ```
+
+`kubernautAgent.llmProfileRef` is optional when exactly one profile is defined -- it's inferred automatically (Issue #1987); set it explicitly if you define multiple named profiles for other consumers (e.g. AI Analysis severity triage).
 
 Supported quickstart providers: `openai`, `anthropic`, `gemini` (any provider needing only an API key). For Vertex AI, Azure, or advanced setups, use Option B or C.
 
@@ -397,7 +400,7 @@ Recommended for disconnected/air-gapped environments. See [Disconnected Installa
 
 ## Secrets Pairing
 
-LLM API credentials are stored in a separate Kubernetes Secret (default name: `llm-credentials`). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured via `kubernautAgent.llm.credentialsSecretName`.
+LLM API credentials are stored in a separate Kubernetes Secret (example name: `llm-credentials` -- there is no default, since `global.llmProfiles` has no default profile). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured per-profile via `global.llmProfiles.<name>.credentialsSecretName` (v1.6, DD-PLATFORM-007).
 
 The Secret is marked `optional: true` — the agent starts without it but all LLM calls fail until it is created.
 

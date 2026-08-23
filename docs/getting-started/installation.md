@@ -434,6 +434,9 @@ rules:
 
 **Console access specifically** is gated by a second, separate field, `spec.apiFrontend.rbac.consoleAccessGroups` — but you do **not** need to set it explicitly in the common case: when left unset, the operator automatically derives it as the deduplicated union of every group already listed in `roleBindings` above, so any persona group you configure here also gets Console access automatically. Only set `consoleAccessGroups` explicitly if you need it to differ from your tool-persona groups (e.g. a narrower or entirely separate set).
 
+!!! note "This gate is off by default (`consoleAccessAuthorizationCheckEnabled`)"
+    `consoleAccessGroups` (and its auto-derivation above) only take effect once `spec.apiFrontend.rbac.consoleAccessAuthorizationCheckEnabled` is set to `true`. It defaults to `false`, so a fresh install's console is authentication-only regardless of `consoleAccessGroups` — set it to `true` once you're ready to enforce group-based console access. See [Security & RBAC: `consoleAccessAuthorizationCheckEnabled`](../architecture/security-rbac.md#console-access-authorization-check-enabled).
+
 #### kagenti Integration (A2A) {: #kagenti-integration }
 
 !!! info "A2A agent integration only — not required for Console or AF's own OIDC auth"
@@ -730,6 +733,9 @@ If empty, add `roleBindings` to the CR — see [Required: API Frontend & Console
 **Symptom**: the Console loads and immediately shows "Access Denied — You don't have permission to use Kubernaut. Contact your administrator to request access", for some or all users.
 
 **Root cause**: the Console performs a coarse-grained pre-flight check (`GET /a2a/access`) before rendering the chat UI — advisory/UX-only, but fail-closed. AF answers it with a `SubjectAccessReview` against a synthetic `kubernaut.ai/console` resource (`verb=use`), scoped to the caller's OIDC groups. A `403` from that SAR is exactly this screen (kubernaut#1919). See [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model.
+
+!!! note "This SAR only runs when `consoleAccessAuthorizationCheckEnabled: true`"
+    The check described in this section is opt-in and **off by default** (`spec.apiFrontend.rbac.consoleAccessAuthorizationCheckEnabled`, v1alpha2 only). If you haven't explicitly set it to `true`, "Access Denied" is **not** a `consoleAccessGroups` problem — the gate is authentication-only in that state, so look at authentication instead (expired/invalid token, wrong OIDC audience — see [401 Unauthorized](#401-unauthorized-invalid-token-audience)). Everything below assumes the check is enabled.
 
 For that SAR to succeed, the operator must have created a `ClusterRoleBinding` named `<namespace>-console-access-binding` — which it only does when the *effective* `consoleAccessGroups` (`spec.apiFrontend.rbac.consoleAccessGroups`, or the union of `roleBindings` groups if unset — see [Operator CR: APIFrontendRBACSpec](../api-reference/operator-cr.md#apifrontendrbacspec)) is non-empty.
 

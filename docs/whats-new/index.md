@@ -112,6 +112,9 @@ v1.5.6 adds a **coarse-grained console-access SAR check** in front of every AF t
 
     Deployments via the **Kubernaut Operator** are not at risk of this: when `spec.apiFrontend.rbac.consoleAccessGroups` is left unset, the operator auto-derives it as the union of groups already present in `roleBindings`, so every group with existing tool access keeps console access automatically.
 
+!!! info "Later made opt-in by default (v1.5.7 / v1.6)"
+    As shipped in v1.5.6, the check above is unconditional. `apifrontend.config.rbac.consoleAccessAuthorizationCheckEnabled` (#2148/#2150, backported to v1.5.7 via #2152) subsequently made it default to **off** -- a fresh install is authentication-only until this is explicitly set to `true`, so `consoleAccessGroups`'s defaults only matter once you opt in. See [Security & RBAC: `consoleAccessAuthorizationCheckEnabled`](../architecture/security-rbac.md#console-access-authorization-check-enabled).
+
 See [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate) for the full model, and [Configuration: RBAC](../user-guide/configuration.md) for the Helm value.
 
 ### Platform hardening

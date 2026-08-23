@@ -66,8 +66,6 @@
     <rect x="1550" y="16" width="270" height="40" rx="12" fill="#64748B"/>
     <rect x="1550" y="44" width="270" height="12" fill="#64748B"/>
     <text x="1570" y="41" font-size="16px" font-weight="700" fill="white">API Frontend</text>
-    <rect x="1746" y="26" width="44" height="20" rx="4" fill="#0891B2"/>
-    <text x="1768" y="40" text-anchor="middle" font-size="11px" font-weight="700" fill="white">v1.5</text>
     <text x="1570" y="74" font-size="13px" font-weight="600" fill="#64748B">Interactive entry</text>
     <text x="1570" y="94" font-size="13px" fill="#374151">MCP Streamable HTTP · A2A</text>
     <text x="1570" y="112" font-size="13px" fill="#374151">Creates RemediationRequest</text>

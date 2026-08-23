@@ -206,7 +206,7 @@ Click a phase card above, or select a tab:
     - **Reliability:** Circuit-breaker retry with exponential backoff per channel.
     - **Audit:** Every delivery attempt (success or failure) is recorded with correlation IDs linking back to the originating `RemediationRequest`.
 
-=== "API Frontend (v1.5)"
+=== "API Frontend"
 
     **CRD:** `InvestigationSession` &nbsp; **Services:** API Frontend ↔ Kubernaut Agent
 

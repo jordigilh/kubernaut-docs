@@ -407,12 +407,14 @@ The Helm chart ships 6 per-persona ClusterRoles via a data-driven template (`api
 
 ### Console-access authorization gate (v1.5.6) {: #console-access-gate }
 
-v1.5.6 adds a second, **coarse-grained** SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12). Every tool-invocation request on `POST /mcp` and `POST /a2a/invoke` must now pass **both**:
+v1.5.6 adds a second, **coarse-grained** SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12) -- a deliberately separate, independently-auditable authorization step from per-tool access (least privilege, AC-6). Operators grant "console access" and "tool access" as two explicit steps rather than one implying the other. Every tool-invocation request on `POST /mcp` and `POST /a2a/invoke` must now pass **both**:
 
 1. `can <user> use console in apiGroup kubernaut.ai?` — the new coarse-grained gate, checked once per request
 2. `can <user> use tools/<tool-name> in apiGroup kubernaut.ai?` — the existing per-tool check described above
 
 Both are independent SAR calls (different `resource` values, same `apiGroup: kubernaut.ai`, `verb: use`) with independently cached results — a group can hold one without the other. The gate is **fail-closed**: an SAR API error is treated the same as denial.
+
+**Enforcement is server-side, at both existing tool-invocation paths** -- `checkRBAC()` for `/mcp` and `newRBACGuard()` for `/a2a/invoke` -- identical code paths to the per-tool gate above, not merely at a UI-advisory endpoint. A client that calls `/mcp` or `/a2a/invoke` directly, without ever hitting the pre-flight endpoint below, still cannot bypass the gate.
 
 **Advisory pre-flight endpoint** — `GET /a2a/access` lets a UI client check the console gate before opening a session, without the roundtrip cost of a real tool call:
 
@@ -420,9 +422,9 @@ Both are independent SAR calls (different `resource` values, same `apiGroup: kub
 |---|---|
 | `200 OK` (empty body) | Authenticated user holds the console-access grant |
 | `401 Unauthorized` (RFC 7807) | No authenticated identity on the request |
-| `403 Forbidden` (RFC 7807) | Authenticated but not granted (or the SAR call itself errored); emits an `EventAuthAccessDenied` audit event with `endpoint: "console"` |
+| `403 Forbidden` (RFC 7807) | Authenticated but not granted (or the SAR call itself errored) |
 
-This endpoint is **advisory only** — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every `/mcp` and `/a2a/invoke` call, identical to the per-tool gate.
+This endpoint is **advisory only** — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every `/mcp` and `/a2a/invoke` call, identical to the per-tool gate. Denials at either the pre-flight endpoint or the two enforcement points emit an `EventAuthAccessDenied` audit event (the endpoint sets `Detail.endpoint: "console"`).
 
 #### Helm: `consoleAccessGroups`
 
@@ -442,7 +444,7 @@ apifrontend:
 ```
 
 !!! danger "Upgrade action required for custom persona groups"
-    If you deploy via Helm and configured a **custom** group under `apifrontend.config.rbac.personas` (renamed or added to the 6 defaults), that group's name is **not** automatically added to `consoleAccessGroups`. Members of that group will have **every** AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to `consoleAccessGroups`.
+    `consoleAccessGroups` is a separate, independently-maintained list -- it is **not** derived from `apifrontend.config.rbac.personas`'s keys. If you deploy via Helm and configured a **custom** group under `apifrontend.config.rbac.personas` (renamed or added to the 6 defaults), that group's name is **not** automatically added to `consoleAccessGroups`. Members of that group will have **every** AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to `consoleAccessGroups`.
 
     `helm install`/`helm upgrade` prints an `NOTES.txt` warning that lists any `personas` group missing from `consoleAccessGroups`, to catch this at deploy time rather than at first login.
 

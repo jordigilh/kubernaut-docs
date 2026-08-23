@@ -144,7 +144,16 @@ The classification phase evaluates four classifiers in sequence. A failure in se
 - **Values**: `critical`, `high`, `warning`, `info`, `unknown`
 - **Fatal on failure**: A severity policy error transitions the CRD to `Failed` with `RegoEvaluationError`
 
-### 4. Signal Mode Classifier (YAML)
+### 4. Cluster Classifier (Rego, Fleet only, v1.6+)
+
+- **Query**: `data.signalprocessing.cluster`
+- **Input**: `{cluster: {labels}, namespace: {...}, signal: {...}, workload: {...}}` -- `cluster.labels` are the Kubernetes `metadata.labels` on the MCP Gateway's cluster-registration object (EAIGW Backend / Kuadrant `MCPServerRegistration`), set by the fleet operator at cluster-onboarding time, looked up via `ClusterRegistry.Get(signal.ClusterID)`
+- **Output**: A single classification string (e.g. `"production"`), or empty
+- **Non-fatal by design** (BR-FLEET-003, #1511): unlike Severity, an undefined result -- no `cluster` rule in the policy at all, or a rule that doesn't match this input (e.g. unregistered cluster, non-fleet deployment) -- is a valid "no classification" outcome, not an error. Only a genuine Rego evaluation failure (runtime error, malformed non-string output) is treated as an error, and even that does not fail the phase.
+- Stored on `SignalProcessing.status.signalClassification.clusterClassification`, propagated to `AIAnalysis.Spec.AnalysisRequest.SignalContext.Cluster`, and from there to Kubernaut Agent as the `cluster` param on workflow discovery -- see [Fleet Management](fleet.md) and [Authoring Workflows: Fleet troubleshooting](../user-guide/workflow-authoring.md) for how this drives the mandatory `spec.labels.cluster` filter on `RemediationWorkflow` CRDs.
+- In non-fleet deployments (no `ClusterRegistry` configured), `cluster.labels` is always an empty (but defined) object, so the classifier consistently yields an empty classification -- this phase is a no-op outside Fleet.
+
+### 5. Signal Mode Classifier (YAML)
 
 Signal mode is determined by a YAML configuration (`proactive-signal-mappings.yaml`, per BR-SP-106), not a Rego policy:
 
@@ -166,6 +175,7 @@ On success, the status is updated with:
 - `EnvironmentClassification` (environment + source + timestamp)
 - `PriorityAssignment` (priority + source + policy name + timestamp)
 - `Severity` (normalized)
+- `ClusterClassification` (Fleet only; empty string when unregistered, non-fleet, or no matching Rego rule -- see [Cluster Classifier](#4-cluster-classifier-rego-fleet-only-v16))
 - `PolicyHash` (SHA256 of the Rego policy for audit traceability)
 - `SignalMode` and `SignalName` / `SourceSignalName`
 

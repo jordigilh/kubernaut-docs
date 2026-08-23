@@ -8,17 +8,17 @@ When Kubernaut can't confidently remediate an issue, it escalates to a human wit
 
 ## What LLMs does it support?
 
-The Kubernaut Agent uses **LangChainGo** and supports 9 providers:
+**As of v1.6** (DD-PLATFORM-007), the Kubernaut Agent no longer depends on LangChainGo -- it uses a small set of native, first-party clients and supports 5 provider values:
 
-- **OpenAI** (GPT-4, GPT-4o) and any **OpenAI-compatible endpoint** (vLLM, LocalAI, TGI)
-- **Google Vertex AI** — Gemini models (`vertex`) and Claude via Model Garden (`vertex_ai`)
-- **Anthropic** (direct API)
-- **Azure OpenAI**
-- **Amazon Bedrock**
-- **Ollama** — recommended for local/air-gapped deployments
-- **Hugging Face**, **Mistral**
+- **OpenAI** (`openai`) — `api.openai.com`
+- **Anthropic** (`anthropic`) — direct API
+- **Google Gemini** (`gemini`) — Gemini Developer API, no GCP project required (new in v1.6)
+- **Google Vertex AI** (`vertex_ai`) — hosts either Claude or Gemini models, auto-detected by model name prefix
+- **OpenAI-compatible** (`openai_compatible`) — any Chat-Completions-compatible endpoint: **Azure OpenAI**, **Ollama**, vLLM, LlamaStack, Mistral, Hugging Face TGI, DeepSeek
 
-Configure the provider in the Kubernaut Agent SDK config. See [Configuration Reference](user-guide/configuration.md) for details.
+`ollama`, `azure`, `bedrock`, `huggingface`, and `mistral` are **not** separate provider values -- Azure OpenAI, Ollama, and other OpenAI-compatible servers use `openai_compatible` with `endpoint` set to the server origin. Native AWS Bedrock support has not shipped yet (tracked in [#1582](https://github.com/jordigilh/kubernaut/issues/1582)).
+
+Configure the provider via `global.llmProfiles` in Helm values (recommended quickstart) or the full Kubernaut Agent SDK config for advanced tuning. See [Kubernaut Agent SDK config](user-guide/configmap-kubernaut-agent.md) for the complete provider reference and [Configuration Reference](user-guide/configuration.md#llm-provider-setup) for the Helm quickstart.
 
 ## Is it safe for production?
 
@@ -36,7 +36,7 @@ See [Why Kubernaut — Safety and Trust](getting-started/why-kubernaut.md#safety
 
 ## What about token cost?
 
-LLM tokens are consumed only during the investigation phase (root cause analysis via the Kubernaut Agent). Workflow selection from the catalog is entirely label-based — it uses weighted SQL scoring against mandatory and detected labels with no LLM invocation.
+LLM tokens are consumed only during the investigation phase (root cause analysis via the Kubernaut Agent). Workflow selection from the catalog is entirely label-based — Kubernaut Agent scores candidates against its own in-memory workflow catalog (v1.6; DataStorage's SQL scoring served this through v1.5) using mandatory and detected labels, with no additional LLM invocation.
 
 Cost depends on the LLM provider and model. A typical investigation with Gemini 2.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via Ollama or any OpenAI-compatible server.
 

@@ -42,14 +42,19 @@ extra:
   # the app release below — the two are intentionally decoupled upstream
   # (kubernaut commit 55bd533ca) and only bump together occasionally. Verify
   # against the registry before bumping: `crane manifest quay.io/kubernaut-ai/charts/kubernaut:<version>`
-  chart_version: "1.4.2"
+  chart_version: "1.6.0"
   # image_tag/operator_image_tag: both quay.io/kubernaut-ai repos tag images
   # with the bare semver (no "v" prefix) -- verified against the live
   # registry (`quay.io/api/v1/repository/kubernaut-ai/<repo>/tag/`) before
   # each bump. image_tag tracks kubernaut's app release; operator_image_tag
   # tracks kubernaut-operator's own, independently-versioned release.
-  image_tag: "1.5.7"
-  operator_image_tag: "1.5.10"
+  # 2026-08-23: bumped for v1.6 -- both repos' `main` VERSION/Makefile
+  # default to 1.6.0 (kubernaut) / 1.6.0-rc2 (operator) with the latest
+  # tags being v1.6.0-rc5 / v1.6.0-rc2 respectively; neither has a final
+  # non-RC tag yet. Re-verify against the live registry once v1.6.0 GA
+  # images are actually published.
+  image_tag: "1.6.0"
+  operator_image_tag: "1.6.0"
   version:
     provider: mike
     default: latest

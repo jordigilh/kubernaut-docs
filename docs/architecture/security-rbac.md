@@ -427,6 +427,9 @@ Both are independent SAR calls (different `resource` values, same `apiGroup: kub
 
 This endpoint is **advisory only** — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every `/mcp` and `/a2a/invoke` call, identical to the per-tool gate. Denials at either the pre-flight endpoint or the two enforcement points emit an `EventAuthAccessDenied` audit event (the endpoint sets `Detail.endpoint: "console"`).
 
+!!! warning "The authorization check itself is opt-in and disabled by default (#2148/#2150)"
+    Everything above describes the SAR *mechanism*. Whether it actually runs is a separate toggle: `apifrontend.config.rbac.consoleAccessAuthorizationCheckEnabled` defaults to **`false`**, which makes the console gate **authentication-only** -- any non-empty authenticated user passes it, and `consoleAccessGroups` is not enforced at all. See [`consoleAccessAuthorizationCheckEnabled`](#console-access-authorization-check-enabled) below before assuming `consoleAccessGroups`'s defaults are actually restricting anything on a fresh install.
+
 #### Helm: `consoleAccessGroups`
 
 The chart's `apifrontend.config.rbac.consoleAccessGroups` value controls which OIDC groups pass the console gate. It **defaults to all 6 built-in persona names** (`sre`, `ai-orchestrator`, `cicd`, `observability`, `l3-audit`, `remediation-approver`):
@@ -460,6 +463,27 @@ The Operator CR field behaves differently from the Helm default by design (kuber
 - Set it to an explicit empty list (`[]`) to opt out entirely (deny console access to everyone via this gate).
 
 See [Operator CR Reference: APIFrontendRBACSpec](../api-reference/operator-cr.md#apifrontendrbacspec) for the field definition.
+
+#### `consoleAccessAuthorizationCheckEnabled` {: #console-access-authorization-check-enabled }
+
+The console gate's *authorization check* is itself opt-in, independent of whatever `consoleAccessGroups`/`roleBindings` are configured -- a fresh install with none of the RBAC above configured still gets a working console rather than a hard lockout:
+
+- **`apifrontend.config.rbac.consoleAccessAuthorizationCheckEnabled`** (Helm) / **`spec.apiFrontend.rbac.consoleAccessAuthorizationCheckEnabled`** (Operator, **v1alpha2 only** -- not present on v1alpha1) -- `bool`, defaults to **`false`**.
+- **`false` (default)** -- the console gate is **authentication-only**: any non-empty authenticated user is granted console access, and `consoleAccessGroups` is not consulted at all.
+- **`true`** -- the SAR authorization check actually runs and `consoleAccessGroups` takes precedence, matching the behavior described above.
+
+Per-tool authorization (`kubernaut.ai/tools`) is **unaffected either way** and remains unconditionally fail-closed regardless of this setting -- this toggle only ever touches the coarse-grained console "use" grant.
+
+`helm install`/`helm upgrade` prints an `NOTES.txt` reminder ("`RBAC NOTICE: console-access gate is authentication-only`") whenever this is left at its default, prompting production installs to configure `consoleAccessGroups` and set it to `true`.
+
+```yaml
+apifrontend:
+  config:
+    rbac:
+      consoleAccessAuthorizationCheckEnabled: true  # production: enforce consoleAccessGroups
+```
+
+Tracked via [kubernaut#2148](https://github.com/jordigilh/kubernaut/issues/2148)/[#2150](https://github.com/jordigilh/kubernaut/issues/2150) (v1.6), backported to v1.5.7 via #2152. Operator CRD parity (v1alpha2 only) via [kubernaut-operator#338](https://github.com/jordigilh/kubernaut-operator/issues/338) (v1.6) / [#346](https://github.com/jordigilh/kubernaut-operator/issues/346) (release/v1.5).
 
 ### Custom ClusterRoles {: #custom-clusterroles }
 

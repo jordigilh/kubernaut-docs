@@ -699,8 +699,8 @@ Used at `spec.apiFrontend.auth.jwtProviders[]`. (v1alpha1's `spec.kubernautAgent
 |---|---|---|---|---|
 | `sarCacheTTL` | string | no | `30s` | Cache duration for SAR results (Go duration format) |
 | `roleBindings` | [][ToolRoleBinding](#toolrolebinding) | no | — | Maps persona-based tool roles to OIDC groups |
-| `consoleAccessGroups` | []string | no | auto-derived (see below) | OIDC groups granted the coarse-grained `kubernaut.ai/console` "use" gate. Checked in addition to the per-tool `kubernaut.ai/tools` grant on every `/mcp` and `/a2a/invoke` call. |
-| `consoleAccessAuthorizationCheckEnabled` | *bool | no | `false` | Turns on AF's coarse-grained `kubernaut.ai/console` authorization check. Defaults to `false` (authentication-only) so a zero-config CR deploys with a working console; set `true` after populating `consoleAccessGroups` to enforce it. Per-tool authorization is unaffected either way and remains unconditionally fail-closed. |
+| `consoleAccessGroups` | []string | no | auto-derived (see below) | OIDC groups granted the coarse-grained `kubernaut.ai/console` "use" gate (v1.5.6, kubernaut#1919). Checked in addition to the per-tool `kubernaut.ai/tools` grant on every `/mcp` and `/a2a/invoke` call -- but only once `consoleAccessAuthorizationCheckEnabled` (below) is `true`. |
+| `consoleAccessAuthorizationCheckEnabled` | *bool | no | `false` | **v1alpha2 only** (no v1alpha1 equivalent). Turns on AF's coarse-grained `kubernaut.ai/console` authorization check, so `consoleAccessGroups` actually takes effect (kubernaut#1919, kubernaut-operator#338/#346). Defaults to `false` (authentication-only) so a zero-config CR deploys with a working console; set `true` after populating `consoleAccessGroups` to enforce it. Per-tool authorization is unaffected either way and remains unconditionally fail-closed. |
 
 !!! info "`consoleAccessGroups` default differs from the Helm chart (kubernaut-operator#289)"
     When **unset** (`nil` -- the field has no `omitempty`, so an explicit `[]` is a distinct, meaningful value from "unset"), the operator defaults `consoleAccessGroups` to the deduplicated union of every group already present in `roleBindings` above -- **not** the Helm chart's static list of the 6 built-in persona names. This makes the Operator path upgrade-safe by construction: any group with an existing per-tool binding automatically keeps console access, with no risk of the tool-call lockout described in [Security & RBAC: Console-access authorization gate](../architecture/security-rbac.md#console-access-gate).
@@ -708,6 +708,8 @@ Used at `spec.apiFrontend.auth.jwtProviders[]`. (v1alpha1's `spec.kubernautAgent
     - Omit the field to keep this auto-derived default.
     - Set an explicit non-empty list for independent, narrower control.
     - Set an explicit empty list (`consoleAccessGroups: []`) to deny console access to everyone via this gate.
+
+    Regardless of how this is set, it has no effect until `consoleAccessAuthorizationCheckEnabled` is also set to `true` -- see [Security & RBAC: `consoleAccessAuthorizationCheckEnabled`](../architecture/security-rbac.md#console-access-authorization-check-enabled).
 
 ### ToolRoleBinding {: #toolrolebinding }
 

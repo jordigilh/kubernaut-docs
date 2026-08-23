@@ -57,18 +57,19 @@ The policy must produce these outputs:
 | `require_approval` | boolean | `true` to require human approval, `false` to auto-approve |
 | `reason` | string | Human-readable explanation for the decision |
 
-## Default Behavior
+## Example Starter Policy
 
-The reference policy (`charts/kubernaut/files/defaults/approval.rego`) implements:
+Kubernaut ships **no built-in default** approval policy -- `aianalysis.policies.content` or `aianalysis.policies.existingConfigMap` is a required Helm value (see [Overview](#overview) above), and there is no `approval.rego` file bundled in the chart to fall back on. The following is an illustrative starting point operators commonly adapt, not a shipped default:
 
 - **Production environments**: Always require approval (controlled via `kubernaut.ai/environment=production` namespace label). Environment matching is **case-insensitive** — `Production`, `production`, `PRODUCTION` all match.
 - **Sensitive resources** (Node, StatefulSet): Always require approval regardless of environment
 - **Missing remediation target**: Always require approval (safety default)
-- **Non-production**: Auto-approved unless critical safety conditions are met
+- **LLM warnings** (recommended addition, [kubernaut#439](https://github.com/jordigilh/kubernaut/issues/439)): Require approval whenever the AI analysis raises a warning, even in non-production namespaces -- see the `has_warnings` pattern under [Customization](#customization) below
+- **Non-production**: Auto-approved unless one of the above conditions is met
 
 ## Risk Factors
 
-The reference policy uses scored risk factors for reason generation:
+The example starter policy above uses scored risk factors for reason generation:
 
 | Score | Condition |
 |---|---|
@@ -108,6 +109,24 @@ require_approval if {
 }
 ```
 
+### Warning-Aware Approval (`has_warnings`)
+
+Require approval whenever the AI analysis raises a warning (e.g. "Alert not actionable — no remediation warranted"), regardless of environment -- otherwise a warned-but-selected workflow can auto-execute silently in non-production namespaces ([kubernaut#439](https://github.com/jordigilh/kubernaut/issues/439)):
+
+```rego
+has_warnings if {
+  count(input.warnings) > 0
+}
+
+require_approval if {
+  has_warnings
+}
+
+risk_factors contains {"score": 75, "reason": "LLM raised warnings — human review recommended"} if {
+  has_warnings
+}
+```
+
 ### CRD Safety Gate
 
 Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:
@@ -130,4 +149,4 @@ The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). 
 
 ## Reference File
 
-A complete reference policy is available in the chart: `charts/kubernaut/files/defaults/approval.rego`
+Kubernaut does not bundle an example `approval.rego` file in the chart the way it does for [SignalProcessing policies](configmap-policies.md) (`charts/kubernaut/examples/signalprocessing-policy.rego`). Use the illustrative starter policy and customization snippets above as your starting point, or adapt the [Rego Policy Reference](rego-reference.md) examples.

@@ -70,7 +70,7 @@ Failure → `MarkFailed` with `ConfigurationError`.
 
 ### 2. Engine Resolution
 
-`resolveExecutionEngine` queries the workflow catalog in DataStorage to determine the execution engine (`tekton`, `job`, or `ansible`). This runs immediately after validation, before cooldown check.
+The execution engine (`tekton`, `job`, or `ansible`) is read directly off the immutable `spec.workflowRef.executionEngine` field -- the Remediation Orchestrator's already-validated, CRD-embedded snapshot copied verbatim from `AIAnalysis.Status.SelectedWorkflow`. There is no DataStorage catalog lookup at runtime (Issue #1661 Change 11f removed the former `resolveWorkflowCatalog` Spec→Status mirror entirely). `validateExecutionEngineResolved` runs immediately after validation, before the cooldown check, as a defensive fail-closed guard against a `workflowRef` that somehow lacks an execution engine -- this should be unreachable in practice since RO's `validateSelectedWorkflow` already enforces it before the WFE is ever created.
 
 Failure → `MarkFailed` with `ConfigurationError`.
 
@@ -90,13 +90,10 @@ Emitted after validation + engine resolution + cooldown check pass, **before** d
 
 ### 4. Dependency Resolution
 
-Fetches workflow dependencies from DataStorage and validates them in the execution namespace:
+`spec.workflowRef.dependencies` (declared Secrets/ConfigMaps) is part of the same immutable snapshot as `executionEngine`/`engineConfig` -- there is no DataStorage query at this step (Issue #1661 Change 11e consolidated the former 3-round-trip DataStorage schema fetch into RO's single upfront snapshot).
 
-1. **Query DataStorage** via `WorkflowQuerier.GetWorkflowDependencies(ctx, workflowID)` for declared Secrets and ConfigMaps
-2. **Validate** via `DependencyValidator.ValidateDependencies` that each declared dependency exists in the execution namespace
-3. **Failure modes**:
-    - DataStorage fetch failure → non-fatal, continue without dependency data
-    - Dependency validation failure → `MarkFailed` with `ConfigurationError`
+!!! info "v1.6 (Issue #1481): pre-execution dependency existence is no longer validated"
+    Earlier versions validated that each declared Secret/ConfigMap actually existed in the execution namespace before creating the Job/PipelineRun, failing the WFE with `ConfigurationError` if not. This pre-flight check was removed: a schema-declared dependency is now mounted as-is, and Kubernetes itself validates existence at runtime when the Job/PipelineRun attempts to mount the volume (`CreateContainerConfigError`/similar pod events). This is a fail-fast, not fail-closed, trade-off -- see BR-WORKFLOW-008 for the resulting observability guarantees.
 
 ### 5. Execution Creation
 
@@ -142,11 +139,9 @@ For single-step remediations:
 ```mermaid
 sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant K8s as Kubernetes API
 
-    WE->>DS: Query workflow dependencies
-    WE->>WE: Validate dependencies
+    WE->>WE: Read engine/dependencies from spec.workflowRef snapshot
     WE->>K8s: Create Job in execution namespace
     K8s-->>WE: Job status (Running → Succeeded/Failed)
     WE->>WE: Update WFE status
@@ -159,11 +154,9 @@ For multi-step remediations with step ordering, retries, and artifact passing:
 ```mermaid
 sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant Tekton as Tekton API
 
-    WE->>DS: Query workflow dependencies
-    WE->>WE: Validate dependencies
+    WE->>WE: Read engine/dependencies from spec.workflowRef snapshot
     WE->>Tekton: Create PipelineRun
     Tekton-->>WE: PipelineRun status
     WE->>WE: Update WFE status
@@ -176,11 +169,10 @@ For remediations that use Ansible playbooks managed via AWX or Ansible Automatio
 ```mermaid
 sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant K8s as Kubernetes API
     participant AWX as AWX/AAP
 
-    WE->>DS: Query workflow dependencies (Secrets, ConfigMaps)
+    WE->>WE: Read dependencies (Secrets, ConfigMaps) from spec.workflowRef snapshot
     WE->>K8s: Read dependency Secrets and ConfigMaps
     WE->>AWX: Create ephemeral credentials (from Secrets)
     WE->>AWX: Launch Job Template (extra_vars + credentials)
@@ -234,7 +226,7 @@ During cooldown cleanup, both `JobExecutor` and `TektonExecutor` verify the `kub
 
 ### Engine Configuration Resolution
 
-When a WFE spec omits `engineConfig`, the controller resolves it from the workflow catalog in DataStorage. This prevents nil-pointer panics when workflow registration did not include engine-specific configuration.
+`engineConfig` is part of the immutable `spec.workflowRef` snapshot the Remediation Orchestrator embeds at WFE-creation time -- there is no runtime resolution or DataStorage catalog lookup. A workflow that needs engine-specific configuration (e.g. an Ansible `playbookPath`) must declare it on the `RemediationWorkflow` CRD so RO can copy it into the snapshot; there is no fallback path if it's omitted.
 
 ## Execution Namespace and RBAC
 

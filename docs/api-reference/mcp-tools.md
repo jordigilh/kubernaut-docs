@@ -435,7 +435,7 @@ All interactive tools share a common response shape:
 
 - **`kubernaut_list_workflows`** — List available remediation workflows from the catalog
 
-    Backend: **DataStorage**
+    Backend: **KA MCP** — dispatches to Kubernaut Agent's own `kubernaut_list_workflows` MCP tool, backed by its in-memory, informer-cache-backed workflow catalog (v1.6, DD-WORKFLOW-019 — this was DataStorage-backed through v1.5).
 
     - `kind` (`string`) — Filter by resource kind
 
@@ -694,8 +694,8 @@ kubernaut_list_remediations()
 | Backend | Tools |
 |---------|-------|
 | **K8s API** (AF SA) | `list_remediations`, `get_remediation`, `cancel_remediation`, `watch`, `approve`, `list_approval_requests`, `get_approval_request`, `await_session` |
-| **KA MCP** | `investigate`, `message`, `complete`, `complete_no_action`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow` |
-| **DataStorage** | `list_workflows`, `get_remediation_history`, `get_effectiveness`, `get_audit_trail` |
+| **KA MCP** | `investigate`, `message`, `complete`, `complete_no_action`, `cancel`, `status`, `reconnect`, `discover_workflows`, `select_workflow`, `list_workflows` |
+| **DataStorage** | `get_remediation_history`, `get_effectiveness`, `get_audit_trail` |
 | **Prometheus** | `list_alerts` (conditional on `severityTriage.enabled`) |
 | **Local** | `present_decision` |
 

@@ -17,7 +17,7 @@ The interactive flow has four phases:
 
 ## Connecting via MCP
 
-Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 21 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via DataStorage.
+Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (`POST /mcp`) with 23 `kubernaut_*` MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle and workflow-discovery tools to the Kubernaut Agent's MCP server (v1.6: `kubernaut_list_workflows` is KA-backed, not DataStorage-backed, per DD-WORKFLOW-019); other tools are handled locally or via DataStorage.
 
 ### Prerequisites
 
@@ -27,7 +27,7 @@ Any MCP-compatible client can connect to Kubernaut's interactive sessions. The A
 
 ## MCP Tools
 
-The API Frontend exposes **21 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
+The API Frontend exposes **23 MCP tools** on `POST /mcp`. For interactive investigation, the key tools are:
 
 ### Interactive session lifecycle
 

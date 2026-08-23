@@ -32,6 +32,7 @@ All SP rules receive the same `PolicyInput` struct:
 | `input.workload.kind` | `string` | Target resource kind (e.g., `Deployment`) |
 | `input.workload.name` | `string` | Target resource name |
 | `input.workload.labels` | `map[string]string` | All labels on the workload |
+| `input.cluster.labels` | `map[string]string` | Fleet only (v1.6+): `metadata.labels` on the MCP Gateway's cluster-registration object for the cluster the signal originated from. Always a defined (if empty) object -- empty in non-fleet deployments or for an unregistered cluster. |
 
 ### Severity Rules
 
@@ -268,6 +269,35 @@ labels["escalation"] := ["immediate"] if {
 
 labels["escalation"] := ["standard"] if {
     severity != "critical"
+}
+```
+
+---
+
+### Cluster Rules (Fleet only, v1.6+)
+
+**Rego query:** `data.signalprocessing.cluster`
+
+**Expected output:** A single classification string, or no output at all (BR-FLEET-003, #1511)
+
+!!! info "Optional, unlike the other three classifiers"
+    An undefined result -- no `cluster` rule in the policy, or a rule that doesn't match this input -- is a valid "no classification" outcome, not an error. This rule is irrelevant outside Fleet deployments.
+
+#### Example: Cluster Environment from Registration Labels
+
+```rego
+package signalprocessing
+
+import rego.v1
+
+cluster := "production" if {
+    input.cluster.labels["environment"] == "production"
+}
+
+cluster := lower(region_env) if {
+    region := input.cluster.labels["region"]
+    env := input.cluster.labels["environment"]
+    region_env := sprintf("%s-%s", [env, region])
 }
 ```
 
@@ -540,6 +570,7 @@ reason := f.reason if { some f in risk_factors; f.score == max_risk_score }
 | **Severity** | `input.signal.*` | `severity`, `type`, `source` |
 | **Environment** | `input.namespace.*`, `input.signal.*` | `namespace.name`, `namespace.labels`, `signal.labels` |
 | **Priority** | `input.signal.*`, `input.namespace.*`, `input.workload.*` | `signal.severity`, `signal.source`, `namespace.labels`, `workload.labels` |
+| **Cluster** (Fleet only, v1.6+) | `input.cluster.*` | `cluster.labels` |
 | **Business** | `input.namespace.*`, `input.workload.*`, `input.*` | `namespace.name/labels/annotations`, `workload.kind/name/labels/annotations`, `environment` |
 | **Custom Labels** | `input.namespace.*`, `input.workload.*`, `input.signal.*` | `namespace.name/labels/annotations`, `workload.kind/name/labels/annotations`, `workload.ownerChain`, `signal.type/severity/source` |
 

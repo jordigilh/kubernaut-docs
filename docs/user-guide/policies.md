@@ -14,7 +14,7 @@ All policies are deployed as ConfigMaps and can be customized. See [SignalProces
 
 | Policy File | Service | Purpose | Hot-Reload |
 |---|---|---|---|
-| `policy.rego` | Signal Processing | Unified classification: environment, severity, priority, custom labels (all rules in `package signalprocessing`) | Yes |
+| `policy.rego` | Signal Processing | Unified classification: environment, severity, priority, cluster (Fleet only), custom labels (all rules in `package signalprocessing`) | Yes |
 | `approval.rego` | AI Analysis | Decide if human approval is required for a remediation | Yes |
 
 !!! tip "Complete input field reference"
@@ -22,7 +22,7 @@ All policies are deployed as ConfigMaps and can be customized. See [SignalProces
 
 ## Signal Processing Policies
 
-Signal Processing uses a single unified `policy.rego` file under `package signalprocessing` ([ADR-060](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md)). This file contains four rule groups that run during signal enrichment, before the signal reaches AI Analysis. Their output directly feeds into workflow discovery -- see [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).
+Signal Processing uses a single unified `policy.rego` file under `package signalprocessing` ([ADR-060](https://github.com/jordigilh/kubernaut/blob/main/docs/architecture/decisions/ADR-060-unified-signalprocessing-rego-policy.md)). This file contains five rule groups that run during signal enrichment, before the signal reaches AI Analysis. Their output directly feeds into workflow discovery -- see [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).
 
 **ConfigMap:** `signalprocessing-policy` (single key: `policy.rego`)
 
@@ -47,7 +47,7 @@ Normalizes the raw alert severity to one of Kubernaut's standard values.
 **Input:** `input.signal.severity` (the raw severity string from the alert source)
 
 !!! warning "Severity determines workflow discoverability"
-    The severity value produced by these rules feeds into Layer 1 mandatory label filtering in DataStorage. If this maps an alert to `"unknown"` and no workflow declares `severity: ["unknown"]` or `severity: ["*"]`, no workflows will be found. Ensure your severity mappings cover all values your alert sources produce.
+    The severity value produced by these rules feeds into Layer 1 mandatory label filtering in Kubernaut Agent's in-memory workflow catalog (v1.6+; DD-WORKFLOW-019 -- DataStorage served this filtering through v1.5). If this maps an alert to `"unknown"` and no workflow declares `severity: ["unknown"]` or `severity: ["*"]`, no workflows will be found. Ensure your severity mappings cover all values your alert sources produce.
 
 **Customization example:** To add support for a PagerDuty P0--P4 scheme, add rules in `policy.rego`:
 
@@ -141,6 +141,34 @@ labels:
 Produces: `{"team": ["payments"], "tier": ["gold"]}`
 
 These labels feed into Layer 2 scoring at +0.15 per exact match. See [Workflow Search and Scoring](workflows.md#workflow-search-and-scoring).
+
+### Cluster Rules (Fleet only, v1.6+)
+
+Classifies the signal's originating cluster for **Fleet** deployments (BR-FLEET-003, #1511). Not relevant to single-cluster deployments.
+
+**Rule name:** `cluster`
+
+**Output:** A single classification string (e.g. `"production"`), or no output at all
+
+**Input:** `input.cluster.labels` -- the Kubernetes `metadata.labels` on the MCP Gateway's cluster-registration object (EAIGW Backend / Kuadrant `MCPServerRegistration`), set by the fleet operator at cluster-onboarding time
+
+!!! info "Optional by design -- unlike the other three classifiers"
+    Unlike Severity, Priority, and Environment, this rule is **not required**. Defining no `cluster` rule at all, or a rule that doesn't match a given input (unregistered cluster, non-fleet deployment), is a normal "no classification" outcome -- not a policy error. Only a genuine Rego evaluation failure (e.g. a rule that returns a non-string value) is treated as an error, and even that does not fail the SignalProcessing phase.
+
+**Example:**
+
+```rego
+cluster := "production" if {
+    input.cluster.labels["environment"] == "production"
+}
+
+cluster := "staging-eu" if {
+    input.cluster.labels["region"] == "eu-west"
+    input.cluster.labels["environment"] == "staging"
+}
+```
+
+The result is stored on `SignalProcessing.status.signalClassification.clusterClassification` and propagates to `AIAnalysis.Spec.AnalysisRequest.SignalContext.Cluster`, then to Kubernaut Agent as the `cluster` param on workflow discovery. See [Signal Processing: Cluster Classifier](../architecture/signal-processing.md#4-cluster-classifier-rego-fleet-only-v16) and [Authoring Workflows: Fleet troubleshooting](workflow-authoring.md) for how this drives the mandatory `spec.labels.cluster` filter on `RemediationWorkflow` CRDs.
 
 ## Signal Mode Configuration
 

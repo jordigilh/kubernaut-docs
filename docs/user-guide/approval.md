@@ -316,8 +316,8 @@ kubectl patch rar <name> -n kubernaut-system \
 
 The authwebhook validates override requests at admission time:
 
-- The referenced workflow must exist in the DataStorage catalog
-- The workflow must be in `Active` status (not `Deprecated` or `Draft`)
+- The referenced workflow must exist as a `RemediationWorkflow` CRD (the Auth Webhook checks directly against the CRD, its own source of truth as of v1.6 -- no DataStorage round trip)
+- The workflow's `catalogStatus` must be `Active` (not `Deprecated`, `Disabled`, or `Superseded`)
 - Invalid overrides are rejected with a descriptive admission error
 
 ### Audit trail

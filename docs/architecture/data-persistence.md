@@ -25,7 +25,7 @@ graph TB
     DS --> PG[(PostgreSQL)]
     DS --> RD[(Valkey<br/><small>DLQ</small>)]
 
-    subgraph Tables["PostgreSQL Tables -- live (4)"]
+    subgraph Tables["PostgreSQL Tables (4)"]
         direction LR
         AE[audit_events<br/><small>partitioned</small>]
         NAU[notification_audit]
@@ -33,38 +33,16 @@ graph TB
         RO_T[retention_operations]
     end
 
-    subgraph Legacy["Legacy tables -- no live Go code path (10)<br/><small>see Legacy Schema below</small>"]
-        direction LR
-        RR_T[resource_references]
-        AH[action_histories]
-        AA[action_assessments]
-        ER[effectiveness_results]
-        ACS[action_confidence_scores]
-        AO[action_outcomes]
-        AAlt[action_alternatives]
-        AEM[action_effectiveness_metrics]
-        OP[oscillation_patterns]
-        OD[oscillation_detections]
-    end
-
-    subgraph Views["Views (3, all built on Legacy tables)"]
-        V1[effectiveness_trends]
-        V2[low_confidence_actions]
-        V5[oscillation_detection_summary]
-    end
-
     PG --- Tables
-    PG -.->|"dead weight"| Legacy
-    PG --- Views
 ```
 
-!!! warning "v1.6: `remediation_workflow_catalog`, `action_type_taxonomy`, and `resource_action_traces` were dropped"
-    These three tables (plus the 2 views built directly on `resource_action_traces`, `action_history_summary` and `incident_summary_view`) were removed by `DROP TABLE`/CASCADE, not just deprecated. See [Workflow Catalog Migration (v1.6)](#workflow-catalog-migration-v16) and [Legacy Schema](#legacy-schema-no-live-code-path) below for what replaced them and what's merely inert.
+!!! warning "v1.6: down to 4 tables -- 13 dropped"
+    Of the original 17-table, 5-view schema this page once documented, only these **4 tables** remain. `remediation_workflow_catalog`, `action_type_taxonomy`, and `resource_action_traces` were dropped by `DROP TABLE`/CASCADE earlier (see [Workflow Catalog Migration (v1.6)](#workflow-catalog-migration-v16)). The remaining 8 tables + `action_effectiveness_metrics` + all 3 surviving views are legacy ML-era schema with zero Go code path, tracked for removal in v1.6 by [kubernaut#2256](https://github.com/jordigilh/kubernaut/issues/2256) -- see [Removed in v1.6: Legacy Schema](#removed-in-v16-legacy-schema-kubernaut2256) below.
 
 ## Database Schema
 
-!!! info "Only 4 tables are on a live code path"
-    `audit_events`, `notification_audit`, `audit_retention_policies`, and `retention_operations` are the only tables with active Go readers/writers in `pkg/datastorage`. Everything else historically documented on this page (`resource_references`, `action_histories`, the ML-style effectiveness/confidence tables, oscillation detection) has **zero remaining Go code path** — see [Legacy Schema](#legacy-schema-no-live-code-path) for what's there and why. This section covers the 4 live tables in full detail.
+!!! info "Only these 4 tables remain"
+    `audit_events`, `notification_audit`, `audit_retention_policies`, and `retention_operations` are the complete DataStorage schema as of v1.6 -- the only tables with active Go readers/writers in `pkg/datastorage`, and (per [kubernaut#2256](https://github.com/jordigilh/kubernaut/issues/2256)) the only ones left standing once the legacy ML-era cluster is dropped. This section covers them in full detail.
 
 ### audit_events
 
@@ -134,7 +112,7 @@ The `RemediationWorkflow`/`ActionType` **CRDs (etcd) are now the sole source of 
 Deterministic UUIDv5 identity and content-hash supersession logic (previously implemented in Postgres) no longer apply — CRD identity is `metadata.name` + `spec.version`, and `catalogStatus` (`Active`/`Disabled`/`Superseded`) lives directly on the CRD's `status`.
 
 !!! info "resource_action_traces was also dropped, independently"
-    `resource_action_traces` (the former per-resource action trace table, used by the now-removed model-based action tracking/AI-decision-metadata pipeline) was dropped separately in `migrations/009_drop_resource_action_traces.sql` (Issue #1048, "never exposed via API, aggregation feature removed"). Its `DROP TABLE ... CASCADE` also removed the two views built directly on it (`action_history_summary`, `incident_summary_view`). This predates and is unrelated to the v1.6 workflow-catalog migration above — it's a separate legacy cleanup. See [Legacy Schema](#legacy-schema-no-live-code-path) below for the tables this leaves stranded.
+    `resource_action_traces` (the former per-resource action trace table, used by the now-removed model-based action tracking/AI-decision-metadata pipeline) was dropped separately in `migrations/009_drop_resource_action_traces.sql` (Issue #1048, "never exposed via API, aggregation feature removed"). Its `DROP TABLE ... CASCADE` also removed the two views built directly on it (`action_history_summary`, `incident_summary_view`). This predates and is unrelated to the v1.6 workflow-catalog migration above — it's a separate legacy cleanup. See [Removed in v1.6: Legacy Schema](#removed-in-v16-legacy-schema-kubernaut2256) below for the rest of the tables this once left stranded.
 
 ---
 
@@ -205,49 +183,40 @@ Retention run history for `audit_events`, written by the retention worker (`pkg/
 
 ---
 
-## Legacy Schema (no live code path)
+## Removed in v1.6: Legacy Schema (kubernaut#2256)
 
-The following tables and views still physically exist in Postgres (no migration ever dropped them) but have **zero Go code anywhere in the repository** reading or writing them, confirmed by a repo-wide search. They were part of an earlier ML-style per-action learning/effectiveness design that predates the current CRD-driven `EffectivenessAssessment` flow — the live equivalent computes scores on demand from `audit_events` (see `GetEffectivenessScore`, ADR-EM-001 Principle 5, DD-017 v2.1 formula), not from these tables. They're listed here only so anyone who encounters them in a live database isn't misled into thinking they're part of the current data path.
+The following tables and views were part of an earlier ML-style per-action learning/effectiveness design that predates the current CRD-driven `EffectivenessAssessment` flow. They had **zero Go code anywhere in the repository** reading or writing them (confirmed by a repo-wide search) — the live equivalent computes scores on demand from `audit_events` instead (see `GetEffectivenessScore`, ADR-EM-001 Principle 5, DD-017 v2.1 formula). **As of v1.6** ([kubernaut#2256](https://github.com/jordigilh/kubernaut/issues/2256)), all of them are dropped:
 
-| Table | Original purpose |
+| Table | Former purpose |
 |---|---|
 | `resource_references` | Resource identity FK target for the tables below |
 | `action_histories` | Per-resource action history/retention config |
-| `action_assessments` | Pending effectiveness assessments, auto-created by a trigger on the now-dropped `resource_action_traces` |
+| `action_assessments` | Pending effectiveness assessments, auto-created by a trigger on the (already-dropped) `resource_action_traces` |
 | `effectiveness_results` | Effectiveness assessment results for learning feedback |
 | `action_confidence_scores` | Dynamic per-action confidence scores |
 | `action_outcomes` | Historical outcomes for ML training |
 | `action_alternatives` | Alternative-action recommendations for failed patterns |
-| `action_effectiveness_metrics` | Aggregated effectiveness metrics by scope/period |
+| `action_effectiveness_metrics` | Aggregated effectiveness metrics by scope/period (flagged dead but not dropped by [kubernaut#623](https://github.com/jordigilh/kubernaut/issues/623); dropped here instead) |
 | `oscillation_patterns` | Oscillation (repeated fail/fix cycle) pattern definitions |
 | `oscillation_detections` | Detected oscillation instances |
 
-Three views are built on top of this legacy cluster and are equally inert (they return empty or stale results since nothing populates their source tables): `effectiveness_trends`, `low_confidence_actions`, `oscillation_detection_summary`. Two further views that were also built on this cluster's now-dropped `resource_action_traces` table (`action_history_summary`, `incident_summary_view`) were removed by `DROP TABLE ... CASCADE` when that table was dropped (migration 009).
+The 3 views built on top of this cluster are dropped along with their source tables: `effectiveness_trends`, `low_confidence_actions`, `oscillation_detection_summary`. (Two further views built on the earlier-dropped `resource_action_traces` -- `action_history_summary`, `incident_summary_view` -- were already removed by `DROP TABLE ... CASCADE` in migration 009.)
+
+This leaves DataStorage with **exactly 4 tables and 0 views**: [`audit_events`](#audit_events), [`notification_audit`](#notification_audit), [`audit_retention_policies`](#audit_retention_policies), and [`retention_operations`](#retention_operations).
 
 ---
 
 ## Stored Functions
 
-The database still contains a number of procedural functions from the legacy schema above; only the ones marked **(live)** are actually invoked by current Go code.
+Only 3 procedural functions remain as of v1.6 — the rest existed solely to serve the [legacy schema dropped in kubernaut#2256](#removed-in-v16-legacy-schema-kubernaut2256) and are removed along with it.
 
 | Function | Purpose |
 |---|---|
-| `create_monthly_partitions()` | **(live)** Generates monthly partitions for `audit_events` |
-| `prevent_legal_hold_deletion()` | **(live)** Blocks deletion of audit events under legal hold |
-| `audit_event_lock_id()` | **(live)** Generates advisory lock IDs for audit event deduplication |
-| `create_assessment_for_action_trace()` | Legacy trigger: auto-created `action_assessments` entries after trace updates (dead — trigger lived on the now-dropped `resource_action_traces`) |
-| `analyze_action_oscillation()` | Legacy: detected oscillation patterns in action histories |
-| `detect_cascading_failures()` | Legacy: identified cascading failure sequences |
-| `detect_ineffective_loops()` | Legacy: found repeated ineffective remediation loops |
-| `detect_resource_thrashing()` | Legacy: detected resource thrashing (rapid scale up/down) |
-| `detect_scale_oscillation()` | Legacy: detected scale oscillation patterns |
-| `analyze_cascade_effects()` | Legacy: analyzed the scope of cascading failures |
-| `store_oscillation_detection()` | Legacy: persisted a detected oscillation to `oscillation_detections` |
-| `get_action_effectiveness()` | Legacy: retrieved computed effectiveness scores |
-| `get_action_traces()` | Legacy: queried the now-dropped `resource_action_traces` with filters |
-| `get_recent_actions()` | Legacy: returned recent actions for a resource |
-| `get_resource_actions_base()` | Legacy: base query for resource action retrieval |
-| `get_resource_id()` | Legacy: resolved or created `resource_references` entries |
+| `create_monthly_partitions()` | Generates monthly partitions for `audit_events` |
+| `prevent_legal_hold_deletion()` | Blocks deletion of audit events under legal hold |
+| `audit_event_lock_id()` | Generates advisory lock IDs for audit event deduplication |
+
+Removed in v1.6 (kubernaut#2256): `create_assessment_for_action_trace()` (trigger on the already-dropped `resource_action_traces`), `analyze_action_oscillation()`, `detect_cascading_failures()`, `detect_ineffective_loops()`, `detect_resource_thrashing()`, `detect_scale_oscillation()`, `analyze_cascade_effects()`, `store_oscillation_detection()`, `get_action_effectiveness()`, `get_action_traces()`, `get_recent_actions()`, `get_resource_actions_base()`, `get_resource_id()`.
 
 ---
 
@@ -268,7 +237,7 @@ Schema changes use an **append-only** migration chain managed by [**goose**](htt
 - **Minor release squash** — development incrementals are typically **squashed per minor** at release time to keep the chain maintainable.
 - **`db-migrate` migration job** — runs via Helm hook (`post-install,post-upgrade`) and distinguishes **fresh install** vs **upgrade** using the `goose_db_version` table so the correct migration path applies.
 
-Migrations `002`–`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index. Later migrations progressively removed the legacy schema documented above: **`008`** replaced `retention_operations`'s schema (see [retention_operations](#retention_operations)), **`009`** dropped `resource_action_traces` with `CASCADE`, and **`016`** dropped `remediation_workflow_catalog`/`action_type_taxonomy` (v1.6, see [Workflow Catalog Migration](#workflow-catalog-migration-v16)).
+Migrations `002`–`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index. Later migrations progressively removed the legacy schema documented above: **`008`** replaced `retention_operations`'s schema (see [retention_operations](#retention_operations)), **`009`** dropped `resource_action_traces` with `CASCADE`, **`016`** dropped `remediation_workflow_catalog`/`action_type_taxonomy` (v1.6, see [Workflow Catalog Migration](#workflow-catalog-migration-v16)), and a further v1.6 migration drops the remaining legacy ML-era cluster (10 tables + 3 views + their stored functions, [kubernaut#2256](https://github.com/jordigilh/kubernaut/issues/2256); see [Removed in v1.6: Legacy Schema](#removed-in-v16-legacy-schema-kubernaut2256)).
 
 ## RemediationRequest Reconstruction
 

@@ -25,70 +25,46 @@ graph TB
     DS --> PG[(PostgreSQL)]
     DS --> RD[(Valkey<br/><small>DLQ</small>)]
 
-    subgraph Tables["PostgreSQL Tables (17)"]
+    subgraph Tables["PostgreSQL Tables -- live (4)"]
         direction LR
-        subgraph Core["Core Tables"]
-            AE[audit_events<br/><small>partitioned</small>]
-            RR_T[resource_references]
-            WF[remediation_workflow_catalog]
-            AT[action_type_taxonomy]
-        end
-        subgraph Tracking["Action Tracking"]
-            AH[action_histories]
-            RT[resource_action_traces<br/><small>partitioned</small>]
-            NAU[notification_audit]
-        end
-        subgraph Learning["Learning & Effectiveness"]
-            AA[action_assessments]
-            ER[effectiveness_results]
-            ACS[action_confidence_scores]
-            AO[action_outcomes]
-            AAlt[action_alternatives]
-            AEM[action_effectiveness_metrics]
-        end
-        subgraph Operations["Operations"]
-            OP[oscillation_patterns]
-            OD[oscillation_detections]
-            ARP[audit_retention_policies]
-            RO_T[retention_operations]
-        end
+        AE[audit_events<br/><small>partitioned</small>]
+        NAU[notification_audit]
+        ARP[audit_retention_policies]
+        RO_T[retention_operations]
     end
 
-    subgraph Views["Views (5)"]
+    subgraph Legacy["Legacy tables -- no live Go code path (10)<br/><small>see Legacy Schema below</small>"]
+        direction LR
+        RR_T[resource_references]
+        AH[action_histories]
+        AA[action_assessments]
+        ER[effectiveness_results]
+        ACS[action_confidence_scores]
+        AO[action_outcomes]
+        AAlt[action_alternatives]
+        AEM[action_effectiveness_metrics]
+        OP[oscillation_patterns]
+        OD[oscillation_detections]
+    end
+
+    subgraph Views["Views (3, all built on Legacy tables)"]
         V1[effectiveness_trends]
         V2[low_confidence_actions]
-        V3[action_history_summary]
-        V4[incident_summary_view]
         V5[oscillation_detection_summary]
     end
 
     PG --- Tables
+    PG -.->|"dead weight"| Legacy
     PG --- Views
 ```
 
+!!! warning "v1.6: `remediation_workflow_catalog`, `action_type_taxonomy`, and `resource_action_traces` were dropped"
+    These three tables (plus the 2 views built directly on `resource_action_traces`, `action_history_summary` and `incident_summary_view`) were removed by `DROP TABLE`/CASCADE, not just deprecated. See [Workflow Catalog Migration (v1.6)](#workflow-catalog-migration-v16) and [Legacy Schema](#legacy-schema-no-live-code-path) below for what replaced them and what's merely inert.
+
 ## Database Schema
 
-### resource_references
-
-Core resource identity table, serving as the FK target for action histories and oscillation detections.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK | Auto-incrementing primary key |
-| `resource_uid` | `VARCHAR(36)` | NOT NULL | Kubernetes resource UID |
-| `api_version` | `VARCHAR(100)` | NOT NULL | API version (e.g., `apps/v1`) |
-| `kind` | `VARCHAR(100)` | NOT NULL | Resource kind (e.g., `Deployment`) |
-| `name` | `VARCHAR(253)` | NOT NULL | Resource name |
-| `namespace` | `VARCHAR(63)` | | Kubernetes namespace (NULL for cluster-scoped) |
-| `created_at` | `TIMESTAMPTZ` | | Default: `now()` |
-| `deleted_at` | `TIMESTAMPTZ` | | Soft-delete timestamp |
-| `last_seen` | `TIMESTAMPTZ` | | Default: `now()` |
-
-**Indexes**: PK, UNIQUE on `resource_uid`, UNIQUE on `(namespace, kind, name)`, btree on `kind`, `namespace`, `last_seen`.
-
-**Referenced by**: `action_histories.resource_id`, `oscillation_detections.resource_id` (both CASCADE on delete).
-
----
+!!! info "Only 4 tables are on a live code path"
+    `audit_events`, `notification_audit`, `audit_retention_policies`, and `retention_operations` are the only tables with active Go readers/writers in `pkg/datastorage`. Everything else historically documented on this page (`resource_references`, `action_histories`, the ML-style effectiveness/confidence tables, oscillation detection) has **zero remaining Go code path** — see [Legacy Schema](#legacy-schema-no-live-code-path) for what's there and why. This section covers the 4 live tables in full detail.
 
 ### audit_events
 
@@ -144,173 +120,21 @@ The primary audit table, partitioned by month. This is the largest table in the 
 
 ---
 
-### remediation_workflow_catalog
+### Workflow Catalog Migration (v1.6)
 
-The workflow catalog table, used for workflow discovery and scoring.
+Through v1.5, the workflow catalog lived in two Postgres tables: `remediation_workflow_catalog` (workflow definitions, scoring/discovery columns, UUIDv5 deterministic IDs) and `action_type_taxonomy` (the `action_type` FK target). **As of v1.6** (DD-WORKFLOW-018/019, `migrations/016_drop_workflow_catalog_and_action_type_tables.sql`), both tables were dropped outright:
 
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `workflow_id` | `UUID` | PK | Deterministic UUIDv5 from content hash |
-| `workflow_name` | `VARCHAR(255)` | NOT NULL | CRD metadata name |
-| `version` | `VARCHAR(50)` | NOT NULL | Semantic version |
-| `name` | `VARCHAR(255)` | NOT NULL | Human-readable display name |
-| `description` | `JSONB` | NOT NULL | `{what, whenToUse, whenNotToUse, preconditions}` (camelCase keys) |
-| `owner` | `VARCHAR(255)` | | Workflow owner |
-| `maintainer` | `VARCHAR(255)` | | Workflow maintainer |
-| `content` | `TEXT` | NOT NULL | Full workflow content (YAML) |
-| `content_hash` | `VARCHAR(64)` | NOT NULL | SHA256 hash of normalized workflow content (DD-EM-002) |
-| `labels` | `JSONB` | NOT NULL | Mandatory labels (`signalName` key for semantic signal matching) |
-| `parameters` | `JSONB` | | Workflow parameters |
-| `execution_engine` | `VARCHAR(50)` | NOT NULL | Default: `tekton`. One of `tekton`, `job`, `ansible` |
-| `schema_image` | `TEXT` | | OCI image pulled at registration to extract `/workflow-schema.yaml` |
-| `schema_digest` | `VARCHAR(71)` | | SHA256 digest of the schema image |
-| `execution_bundle` | `TEXT` | | OCI execution bundle reference (digest-pinned) |
-| `execution_bundle_digest` | `VARCHAR(71)` | | SHA256 digest of execution bundle |
-| `custom_labels` | `JSONB` | NOT NULL | Custom labels from workflow schema |
-| `detected_labels` | `JSONB` | NOT NULL | Infrastructure-awareness labels |
-| `engine_config` | `JSONB` | | Engine-specific config (e.g., AWX `jobTemplateName`, `inventoryName`). NULL for Tekton/Job |
-| `action_type` | `TEXT` | NOT NULL | FK to `action_type_taxonomy` |
-| `status` | `VARCHAR(20)` | NOT NULL | `active`, `disabled`, `deprecated`, `archived`, `superseded` |
-| `status_reason` | `TEXT` | | Reason for current status |
-| `schema_version` | `VARCHAR(10)` | NOT NULL | Default: `1.0` |
-| `disabled_at` | `TIMESTAMPTZ` | | When disabled |
-| `disabled_by` | `VARCHAR(255)` | | Who disabled it |
-| `disabled_reason` | `TEXT` | | Why disabled |
-| `is_latest_version` | `BOOLEAN` | NOT NULL | Partial index for discovery queries |
-| `previous_version` | `VARCHAR(50)` | | Previous version reference |
-| `deprecation_notice` | `TEXT` | | Deprecation notice text |
-| `version_notes` | `TEXT` | | Version release notes |
-| `change_summary` | `TEXT` | | Summary of changes from previous version |
-| `approved_by` | `VARCHAR(255)` | | Approver identity |
-| `approved_at` | `TIMESTAMPTZ` | | Approval timestamp |
-| `expected_success_rate` | `NUMERIC(4,3)` | | Expected success rate [0.000–1.000] |
-| `expected_duration_seconds` | `INTEGER` | | Expected execution duration |
-| `actual_success_rate` | `NUMERIC(4,3)` | | Computed from execution history [0.000–1.000] |
-| `total_executions` | `INTEGER` | | Default: 0 |
-| `successful_executions` | `INTEGER` | | Default: 0 (constrained ≤ `total_executions`) |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `updated_at` | `TIMESTAMPTZ` | NOT NULL | Auto-updated via trigger |
-| `created_by` | `VARCHAR(255)` | | Creator identity |
-| `updated_by` | `VARCHAR(255)` | | Last updater identity |
+```sql
+DROP TABLE IF EXISTS remediation_workflow_catalog;
+DROP TABLE IF EXISTS action_type_taxonomy;
+```
 
-**Key indexes**: GIN on `labels`, `custom_labels`, `detected_labels`; composite on `(action_type, status, is_latest_version)` for discovery; partial UNIQUE on `(workflow_name, version)` WHERE `status = 'active'`; btree on `created_at DESC`, `status`, `workflow_name`, `schema_digest`, `execution_bundle_digest`, `actual_success_rate DESC` (active only).
+The `RemediationWorkflow`/`ActionType` **CRDs (etcd) are now the sole source of truth** — there are zero remaining SQL queries against either table. The Auth Webhook's admission handler validates and admits CRD changes directly (no DataStorage round trip), and **Kubernaut Agent** serves the discovery/scoring protocol (`list_available_actions` → `list_workflows` → `get_workflow`) from its own in-memory, informer-cache-backed catalog. See [Workflow Catalog](../user-guide/concepts.md#workflow-catalog) and [Workflow Search and Scoring](../user-guide/workflows.md#workflow-search-and-scoring) for the current architecture, and [Registration Model](../user-guide/workflows.md#registration-model) for how the Auth Webhook owns the CRD lifecycle locally.
 
-**Check constraints**: `status` must be one of `active`/`disabled`/`deprecated`/`archived`/`superseded`. `expected_success_rate`, `actual_success_rate` must be in [0, 1]. `successful_executions` must be ≤ `total_executions`.
+Deterministic UUIDv5 identity and content-hash supersession logic (previously implemented in Postgres) no longer apply — CRD identity is `metadata.name` + `spec.version`, and `catalogStatus` (`Active`/`Disabled`/`Superseded`) lives directly on the CRD's `status`.
 
-**Workflow supersession**: Only one workflow version per `(workflow_name, action_type)` pair can be `active` at a time. When a new version is registered (via `RemediationWorkflow` CRD creation or update), DataStorage marks the previous active entry as `superseded` and activates the new one, enforced by the `GetActiveByWorkflowName` repository method.
-
-**PK collision recovery (SupersedeAndCreate)**: Workflow primary keys are **deterministic** (UUIDv5). A rare re-registration can collide with an existing row. If the colliding row has `status = 'Superseded'`, DataStorage **re-activates** it with reason `reactivated: re-registered via CRD`. The implementation uses a **SAVEPOINT/ROLLBACK** pattern.
-
----
-
-### action_type_taxonomy
-
-The action type registry for workflow categorization.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `action_type` | `TEXT` | PK | PascalCase identifier (e.g., `ScaleReplicas`, `RestartPod`) |
-| `description` | `JSONB` | NOT NULL | `{what, whenToUse, whenNotToUse, preconditions}` (camelCase keys) |
-| `status` | `TEXT` | NOT NULL | Default: `active`. Lifecycle: `active`, `disabled`, `deprecated`, `archived`, `superseded` |
-| `disabled_at` | `TIMESTAMPTZ` | | When disabled |
-| `disabled_by` | `TEXT` | | Who disabled it |
-| `created_at` | `TIMESTAMP` | NOT NULL | |
-| `updated_at` | `TIMESTAMP` | NOT NULL | Auto-updated via trigger |
-
-**Referenced by**: `remediation_workflow_catalog.action_type` (FK).
-
-The database deploys with a clean schema — no pre-seeded rows. Action types are registered via `kubectl apply -f` on `ActionType` CRDs. The AuthWebhook intercepts the admission request and registers each action type in the DataStorage catalog via its REST API.
-
----
-
-### resource_action_traces
-
-The **major partitioned trace table** for per-resource action tracking. Stores signal data, AI decision metadata, execution tracking, and effectiveness scoring. Partitioned by month on `action_timestamp`.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK (with `action_timestamp`) | |
-| `action_history_id` | `BIGINT` | NOT NULL | FK to `action_histories.id` |
-| `action_id` | `VARCHAR(64)` | NOT NULL | UNIQUE (with `action_timestamp`) |
-| `correlation_id` | `VARCHAR(64)` | | Links to RR correlation |
-| **Timing** | | | |
-| `action_timestamp` | `TIMESTAMPTZ` | NOT NULL | Partition key |
-| `execution_start_time` | `TIMESTAMPTZ` | | |
-| `execution_end_time` | `TIMESTAMPTZ` | | |
-| `execution_duration_ms` | `INTEGER` | | |
-| **Signal context** | | | |
-| `signal_name` | `VARCHAR(200)` | NOT NULL | Alert/signal name |
-| `signal_severity` | `VARCHAR(20)` | NOT NULL | Signal severity |
-| `signal_labels` | `JSONB` | | GIN-indexed for containment queries |
-| `signal_annotations` | `JSONB` | | |
-| `signal_firing_time` | `TIMESTAMPTZ` | | |
-| `incident_type` | `VARCHAR(100)` | | |
-| `alert_name` | `VARCHAR(255)` | | |
-| `incident_severity` | `VARCHAR(20)` | | |
-| **Workflow / execution** | | | |
-| `workflow_id` | `VARCHAR(64)` | | |
-| `workflow_version` | `VARCHAR(20)` | | |
-| `workflow_step_number` | `INTEGER` | | |
-| `workflow_execution_id` | `VARCHAR(64)` | | |
-| `execution_status` | `VARCHAR(20)` | | Default: `pending`. Values: `pending`, `executing`, `completed`, `failed` |
-| `execution_error` | `TEXT` | | |
-| `kubernetes_operations` | `JSONB` | | |
-| **AI decision** | | | |
-| `ai_selected_workflow` | `BOOLEAN` | | Default: `false` |
-| `ai_chained_workflows` | `BOOLEAN` | | Default: `false` |
-| `ai_manual_escalation` | `BOOLEAN` | | Default: `false` |
-| `ai_workflow_customization` | `JSONB` | | |
-| `model_used` | `VARCHAR(100)` | NOT NULL | LLM model identifier |
-| `routing_tier` | `VARCHAR(20)` | | |
-| `model_confidence` | `NUMERIC(4,3)` | NOT NULL | [0.000–1.000] |
-| `model_reasoning` | `TEXT` | | |
-| `alternative_actions` | `JSONB` | | |
-| `action_type` | `VARCHAR(50)` | NOT NULL | |
-| `action_parameters` | `JSONB` | | GIN-indexed |
-| **Resource state** | | | |
-| `resource_state_before` | `JSONB` | | GIN-indexed |
-| `resource_state_after` | `JSONB` | | |
-| **Effectiveness** | | | |
-| `effectiveness_score` | `NUMERIC(4,3)` | | [0.000–1.000] when assessed |
-| `effectiveness_criteria` | `JSONB` | | |
-| `effectiveness_assessed_at` | `TIMESTAMPTZ` | | |
-| `effectiveness_assessment_method` | `VARCHAR(20)` | | |
-| `effectiveness_assessment_due` | `TIMESTAMPTZ` | | |
-| `effectiveness_notes` | `TEXT` | | |
-| `follow_up_actions` | `JSONB` | | |
-| `created_at` | `TIMESTAMPTZ` | | Default: `now()` |
-| `updated_at` | `TIMESTAMPTZ` | | Auto-updated via trigger |
-
-**Key indexes** (22 total): composite indexes for workflow success rates, incident type analysis, AI execution mode queries, alert-based lookups, effectiveness analysis, and multi-dimensional success correlation. Partial indexes on `execution_status IN ('pending','executing')` and `effectiveness_score IS NOT NULL` for targeted queries.
-
-**Triggers**: `create_assessment_for_action_trace` (AFTER UPDATE — auto-creates `action_assessments` entries), `update_resource_action_traces_updated_at` (BEFORE UPDATE).
-
-**Partitioning**: Monthly range on `action_timestamp` (`resource_action_traces_2026_03` through `resource_action_traces_2028_12`, plus `resource_action_traces_default`).
-
----
-
-### action_histories
-
-Per-resource action history with configurable retention and compaction.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK | |
-| `resource_id` | `BIGINT` | NOT NULL | FK to `resource_references.id` (UNIQUE, CASCADE) |
-| `max_actions` | `INTEGER` | | Default: 1000 |
-| `max_age_days` | `INTEGER` | | Default: 30 |
-| `compaction_strategy` | `VARCHAR(20)` | | Default: `pattern-aware` |
-| `oscillation_window_minutes` | `INTEGER` | | Default: 120 |
-| `effectiveness_threshold` | `NUMERIC(3,2)` | | Default: 0.70 |
-| `pattern_min_occurrences` | `INTEGER` | | Default: 3 |
-| `total_actions` | `INTEGER` | | Default: 0 |
-| `last_action_at` | `TIMESTAMPTZ` | | |
-| `last_analysis_at` | `TIMESTAMPTZ` | | |
-| `next_analysis_at` | `TIMESTAMPTZ` | | |
-| `created_at` | `TIMESTAMPTZ` | | Default: `now()` |
-| `updated_at` | `TIMESTAMPTZ` | | Auto-updated via trigger |
-
-**Referenced by**: `resource_action_traces.action_history_id`, `retention_operations.action_history_id` (both CASCADE).
+!!! info "resource_action_traces was also dropped, independently"
+    `resource_action_traces` (the former per-resource action trace table, used by the now-removed model-based action tracking/AI-decision-metadata pipeline) was dropped separately in `migrations/009_drop_resource_action_traces.sql` (Issue #1048, "never exposed via API, aggregation feature removed"). Its `DROP TABLE ... CASCADE` also removed the two views built directly on it (`action_history_summary`, `incident_summary_view`). This predates and is unrelated to the v1.6 workflow-catalog migration above — it's a separate legacy cleanup. See [Legacy Schema](#legacy-schema-no-live-code-path) below for the tables this leaves stranded.
 
 ---
 
@@ -338,210 +162,6 @@ Notification-specific audit events with delivery tracking.
 
 ---
 
-### action_assessments
-
-Pending effectiveness assessments for completed actions. Auto-created by the `create_assessment_for_action_trace` trigger.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `UUID` | PK | `gen_random_uuid()` |
-| `trace_id` | `VARCHAR(255)` | NOT NULL | |
-| `action_type` | `VARCHAR(100)` | NOT NULL | |
-| `context_hash` | `VARCHAR(64)` | NOT NULL | |
-| `alert_name` | `VARCHAR(255)` | NOT NULL | |
-| `namespace` | `VARCHAR(255)` | NOT NULL | |
-| `resource_name` | `VARCHAR(255)` | NOT NULL | |
-| `executed_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `scheduled_for` | `TIMESTAMPTZ` | NOT NULL | Default: `now() + 5 minutes` |
-| `status` | `VARCHAR(50)` | NOT NULL | Default: `pending`. Constrained: `pending`, `processing`, `completed`, `failed`, `skipped` |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `completed_at` | `TIMESTAMPTZ` | | |
-
-**Indexes**: partial index on `(status, scheduled_for)` WHERE `status = 'pending'` for scheduler queries.
-
----
-
-### effectiveness_results
-
-Results of effectiveness assessments for learning feedback.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `UUID` | PK | |
-| `trace_id` | `VARCHAR(255)` | NOT NULL | UNIQUE |
-| `action_type` | `VARCHAR(100)` | NOT NULL | |
-| `overall_score` | `FLOAT8` | NOT NULL | [0.0–1.0] |
-| `alert_resolved` | `BOOLEAN` | NOT NULL | |
-| `metric_delta` | `JSONB` | | |
-| `side_effects` | `INTEGER` | | Default: 0 |
-| `confidence` | `FLOAT8` | NOT NULL | [0.0–1.0] |
-| `assessed_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `recommended_adjustments` | `JSONB` | | |
-| `learning_contribution` | `FLOAT8` | NOT NULL | Default: 0.5. [0.0–1.0] |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-
-**Indexes**: btree on `action_type`, `assessed_at`, `overall_score`; composite on `(action_type, assessed_at DESC)` for learning queries.
-
----
-
-### action_confidence_scores
-
-Dynamic confidence scores that improve through learning.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `UUID` | PK | |
-| `action_type` | `VARCHAR(100)` | NOT NULL | |
-| `context_hash` | `VARCHAR(64)` | NOT NULL | |
-| `base_confidence` | `FLOAT8` | NOT NULL | [0.0–1.0] |
-| `adjusted_confidence` | `FLOAT8` | NOT NULL | [0.0–1.0] |
-| `adjustment_reason` | `TEXT` | | |
-| `effectiveness_samples` | `INTEGER` | | Default: 0 |
-| `last_updated` | `TIMESTAMPTZ` | NOT NULL | |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-
-**Unique constraint**: `(action_type, context_hash)`.
-
----
-
-### action_outcomes
-
-Historical outcomes for ML training.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `UUID` | PK | |
-| `trace_id` | `VARCHAR(255)` | NOT NULL | |
-| `action_type` | `VARCHAR(100)` | NOT NULL | |
-| `context_hash` | `VARCHAR(64)` | NOT NULL | |
-| `success` | `BOOLEAN` | NOT NULL | |
-| `alert_resolved` | `BOOLEAN` | NOT NULL | |
-| `side_effects` | `INTEGER` | | Default: 0 |
-| `effectiveness_score` | `FLOAT8` | NOT NULL | [0.0–1.0] |
-| `execution_time` | `BIGINT` | | Duration in ms |
-| `metrics_before` | `JSONB` | | |
-| `metrics_after` | `JSONB` | | |
-| `failure_reason` | `TEXT` | | |
-| `executed_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `assessed_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-
-**Indexes**: composite on `(action_type, context_hash, executed_at DESC)` for learning queries; btree on `effectiveness_score`, `success`, `executed_at`.
-
----
-
-### action_alternatives
-
-Alternative action recommendations for failed patterns.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `UUID` | PK | |
-| `failed_action_type` | `VARCHAR(100)` | NOT NULL | |
-| `context_hash` | `VARCHAR(64)` | NOT NULL | |
-| `alternative_action_type` | `VARCHAR(100)` | NOT NULL | |
-| `success_rate` | `FLOAT8` | NOT NULL | Default: 0.5. [0.0–1.0] |
-| `sample_size` | `INTEGER` | NOT NULL | Default: 0 |
-| `last_success_at` | `TIMESTAMPTZ` | | |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL | |
-| `updated_at` | `TIMESTAMPTZ` | NOT NULL | |
-
-**Unique constraint**: `(failed_action_type, context_hash, alternative_action_type)`.
-
----
-
-### action_effectiveness_metrics
-
-Aggregated effectiveness metrics by scope, period, and action type.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK | |
-| `scope_type` | `VARCHAR(50)` | NOT NULL | e.g., `namespace`, `cluster`, `action_type` |
-| `scope_value` | `VARCHAR(200)` | | |
-| `metric_period` | `VARCHAR(20)` | NOT NULL | e.g., `daily`, `weekly` |
-| `period_start` | `TIMESTAMPTZ` | NOT NULL | |
-| `period_end` | `TIMESTAMPTZ` | NOT NULL | |
-| `action_type` | `VARCHAR(50)` | NOT NULL | |
-| `sample_size` | `INTEGER` | NOT NULL | |
-| `average_score` | `NUMERIC(4,3)` | NOT NULL | |
-| `median_score` | `NUMERIC(4,3)` | | |
-| `std_deviation` | `NUMERIC(4,3)` | | |
-| `confidence_interval_lower` | `NUMERIC(4,3)` | | |
-| `confidence_interval_upper` | `NUMERIC(4,3)` | | |
-| `trend_direction` | `VARCHAR(20)` | | |
-| `trend_confidence` | `NUMERIC(4,3)` | | |
-| `min_sample_size_met` | `BOOLEAN` | | |
-| `statistical_significance` | `NUMERIC(4,3)` | | |
-| `created_at` | `TIMESTAMPTZ` | | |
-
-**Unique constraint**: `(scope_type, scope_value, metric_period, period_start, action_type)`.
-
----
-
-### oscillation_patterns
-
-Pattern definitions for oscillation detection (repeated fail/fix cycles).
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK | |
-| `pattern_type` | `VARCHAR(50)` | NOT NULL | |
-| `pattern_name` | `VARCHAR(200)` | NOT NULL | |
-| `description` | `TEXT` | | |
-| `min_occurrences` | `INTEGER` | NOT NULL | Default: 3 |
-| `time_window_minutes` | `INTEGER` | NOT NULL | Default: 120 |
-| `action_sequence` | `JSONB` | | |
-| `threshold_config` | `JSONB` | | |
-| `resource_types` | `TEXT[]` | | |
-| `namespaces` | `TEXT[]` | | |
-| `label_selectors` | `JSONB` | | |
-| `prevention_strategy` | `VARCHAR(50)` | NOT NULL | |
-| `prevention_parameters` | `JSONB` | | |
-| `alerting_enabled` | `BOOLEAN` | | Default: `true` |
-| `alert_severity` | `VARCHAR(20)` | | Default: `warning` |
-| `alert_channels` | `TEXT[]` | | |
-| `total_detections` | `INTEGER` | | Default: 0 |
-| `prevention_success_rate` | `NUMERIC(4,3)` | | |
-| `false_positive_rate` | `NUMERIC(4,3)` | | |
-| `last_detection_at` | `TIMESTAMPTZ` | | |
-| `active` | `BOOLEAN` | | Default: `true` |
-| `created_at` | `TIMESTAMPTZ` | | |
-| `updated_at` | `TIMESTAMPTZ` | | Auto-updated via trigger |
-
-**Referenced by**: `oscillation_detections.pattern_id` (CASCADE).
-
----
-
-### oscillation_detections
-
-Detected oscillation instances.
-
-| Column | Type | Nullable | Description |
-|---|---|---|---|
-| `id` | `BIGSERIAL` | PK | |
-| `pattern_id` | `BIGINT` | NOT NULL | FK to `oscillation_patterns.id` (CASCADE) |
-| `resource_id` | `BIGINT` | NOT NULL | FK to `resource_references.id` (CASCADE) |
-| `detected_at` | `TIMESTAMPTZ` | NOT NULL | Default: `now()` |
-| `confidence` | `NUMERIC(4,3)` | NOT NULL | |
-| `action_count` | `INTEGER` | NOT NULL | |
-| `time_span_minutes` | `INTEGER` | NOT NULL | |
-| `matching_actions` | `BIGINT[]` | | Array of `resource_action_traces.id` values |
-| `pattern_evidence` | `JSONB` | | |
-| `prevention_applied` | `BOOLEAN` | | Default: `false` |
-| `prevention_action` | `VARCHAR(50)` | | |
-| `prevention_details` | `JSONB` | | |
-| `prevention_successful` | `BOOLEAN` | | |
-| `resolved` | `BOOLEAN` | | Default: `false` |
-| `resolved_at` | `TIMESTAMPTZ` | | |
-| `resolution_method` | `VARCHAR(50)` | | |
-| `resolution_notes` | `TEXT` | | |
-| `created_at` | `TIMESTAMPTZ` | | |
-
-**Indexes**: btree on `(pattern_id, resource_id)`, `detected_at`; partial on `resolved = false` for active detections.
-
----
-
 ### audit_retention_policies
 
 Retention policy definitions per event category.
@@ -559,119 +179,85 @@ Retention policy definitions per event category.
 
 ### retention_operations
 
-Retention operation tracking and scheduling.
+Retention run history for `audit_events`, written by the retention worker (`pkg/datastorage/retention/worker.go`).
+
+!!! info "Schema replaced by migration 008"
+    The original `action_histories`-linked schema (FK, `strategy_used`, `records_*` columns) was dropped and replaced entirely by `migrations/008_retention_enforcement.sql`, which retargeted this table at `audit_events` retention instead. The columns below are the current, post-008 schema.
 
 | Column | Type | Nullable | Description |
 |---|---|---|---|
 | `id` | `BIGSERIAL` | PK | |
-| `action_history_id` | `BIGINT` | NOT NULL | FK to `action_histories.id` (CASCADE) |
-| `operation_type` | `VARCHAR(30)` | NOT NULL | |
-| `strategy_used` | `VARCHAR(30)` | NOT NULL | |
-| `records_before` | `INTEGER` | NOT NULL | |
-| `records_after` | `INTEGER` | NOT NULL | |
-| `records_deleted` | `INTEGER` | NOT NULL | |
-| `records_archived` | `INTEGER` | | |
-| `retention_criteria` | `JSONB` | | |
-| `preserved_criteria` | `JSONB` | | |
-| `operation_start` | `TIMESTAMPTZ` | NOT NULL | |
+| `run_id` | `UUID` | NOT NULL | Default: `gen_random_uuid()` |
+| `scope` | `VARCHAR(50)` | NOT NULL | Default: `audit_events` |
+| `period_start` | `DATE` | | |
+| `period_end` | `DATE` | | |
+| `rows_scanned` | `INTEGER` | NOT NULL | Default: 0 |
+| `rows_deleted` | `INTEGER` | NOT NULL | Default: 0 |
+| `partitions_dropped` | `TEXT[]` | | Default: `{}` |
+| `status` | `VARCHAR(20)` | NOT NULL | Default: `running` |
+| `error_message` | `TEXT` | | |
+| `operation_start` | `TIMESTAMPTZ` | NOT NULL | Default: `now()` |
 | `operation_end` | `TIMESTAMPTZ` | | |
 | `operation_duration_ms` | `INTEGER` | | |
-| `operation_status` | `VARCHAR(20)` | | Default: `running` |
-| `error_message` | `TEXT` | | |
-| `created_at` | `TIMESTAMPTZ` | | |
+| `created_at` | `TIMESTAMPTZ` | | Default: `now()` |
+
+**Indexes**: btree on `run_id`, `operation_start DESC`, `status`.
 
 ---
 
-## Views
+## Legacy Schema (no live code path)
 
-### effectiveness_trends
+The following tables and views still physically exist in Postgres (no migration ever dropped them) but have **zero Go code anywhere in the repository** reading or writing them, confirmed by a repo-wide search. They were part of an earlier ML-style per-action learning/effectiveness design that predates the current CRD-driven `EffectivenessAssessment` flow — the live equivalent computes scores on demand from `audit_events` (see `GetEffectivenessScore`, ADR-EM-001 Principle 5, DD-017 v2.1 formula), not from these tables. They're listed here only so anyone who encounters them in a live database isn't misled into thinking they're part of the current data path.
 
-Daily aggregation of effectiveness results by action type.
+| Table | Original purpose |
+|---|---|
+| `resource_references` | Resource identity FK target for the tables below |
+| `action_histories` | Per-resource action history/retention config |
+| `action_assessments` | Pending effectiveness assessments, auto-created by a trigger on the now-dropped `resource_action_traces` |
+| `effectiveness_results` | Effectiveness assessment results for learning feedback |
+| `action_confidence_scores` | Dynamic per-action confidence scores |
+| `action_outcomes` | Historical outcomes for ML training |
+| `action_alternatives` | Alternative-action recommendations for failed patterns |
+| `action_effectiveness_metrics` | Aggregated effectiveness metrics by scope/period |
+| `oscillation_patterns` | Oscillation (repeated fail/fix cycle) pattern definitions |
+| `oscillation_detections` | Detected oscillation instances |
 
-| Column | Type | Source |
-|---|---|---|
-| `action_type` | `VARCHAR(100)` | `effectiveness_results.action_type` |
-| `assessment_date` | `TIMESTAMPTZ` | `date_trunc('day', assessed_at)` |
-| `total_assessments` | `BIGINT` | `count(*)` |
-| `avg_effectiveness` | `FLOAT8` | `avg(overall_score)` |
-| `avg_confidence` | `FLOAT8` | `avg(confidence)` |
-| `alerts_resolved` | `BIGINT` | Count where `alert_resolved = true` |
-| `resolution_rate` | `FLOAT8` | `alerts_resolved / total_assessments` |
-
-### low_confidence_actions
-
-Actions requiring attention due to poor performance (adjusted confidence < 0.5).
-
-| Column | Type | Source |
-|---|---|---|
-| `action_type` | `VARCHAR(100)` | `action_confidence_scores` |
-| `context_hash` | `VARCHAR(64)` | `action_confidence_scores` |
-| `adjusted_confidence` | `FLOAT8` | Below 0.5 threshold |
-| `adjustment_reason` | `TEXT` | |
-| `effectiveness_samples` | `INTEGER` | |
-| `last_updated` | `TIMESTAMPTZ` | |
-| `recent_success_rate` | `NUMERIC` | From `action_outcomes` (last 7 days) |
-| `recent_samples` | `BIGINT` | From `action_outcomes` (last 7 days) |
-
-### action_history_summary
-
-Per-resource action summary joining `resource_references`, `action_histories`, and `resource_action_traces`.
-
-| Column | Type | Source |
-|---|---|---|
-| `namespace` | `VARCHAR(63)` | `resource_references` |
-| `kind` | `VARCHAR(100)` | `resource_references` |
-| `name` | `VARCHAR(253)` | `resource_references` |
-| `total_actions` | `INTEGER` | `action_histories` |
-| `last_action_at` | `TIMESTAMPTZ` | `action_histories` |
-| `recent_actions_24h` | `BIGINT` | Count from `resource_action_traces` (last 24h) |
-| `avg_effectiveness_24h` | `NUMERIC` | Avg `effectiveness_score` (last 24h) |
-| `action_types_used` | `BIGINT` | Distinct `action_type` count (last 24h) |
-
-### incident_summary_view
-
-Incident counts grouped by signal severity (ordered critical → info).
-
-### oscillation_detection_summary
-
-Oscillation detection statistics grouped by pattern type, including total detections, preventions applied/successful, average confidence, and last detection timestamp.
+Three views are built on top of this legacy cluster and are equally inert (they return empty or stale results since nothing populates their source tables): `effectiveness_trends`, `low_confidence_actions`, `oscillation_detection_summary`. Two further views that were also built on this cluster's now-dropped `resource_action_traces` table (`action_history_summary`, `incident_summary_view`) were removed by `DROP TABLE ... CASCADE` when that table was dropped (migration 009).
 
 ---
 
 ## Stored Functions
 
-The database includes procedural functions for automated analysis:
+The database still contains a number of procedural functions from the legacy schema above; only the ones marked **(live)** are actually invoked by current Go code.
 
 | Function | Purpose |
 |---|---|
-| `create_assessment_for_action_trace()` | Trigger: auto-creates `action_assessments` entries after trace updates |
-| `create_monthly_partitions()` | Generates monthly partitions for `audit_events` and `resource_action_traces` |
-| `analyze_action_oscillation()` | Detects oscillation patterns in action histories |
-| `detect_cascading_failures()` | Identifies cascading failure sequences |
-| `detect_ineffective_loops()` | Finds repeated ineffective remediation loops |
-| `detect_resource_thrashing()` | Detects resource thrashing (rapid scale up/down) |
-| `detect_scale_oscillation()` | Detects scale oscillation patterns |
-| `analyze_cascade_effects()` | Analyzes the scope of cascading failures |
-| `store_oscillation_detection()` | Persists a detected oscillation to `oscillation_detections` |
-| `prevent_legal_hold_deletion()` | Blocks deletion of audit events under legal hold |
-| `audit_event_lock_id()` | Generates advisory lock IDs for audit event deduplication |
-| `get_action_effectiveness()` | Retrieves computed effectiveness scores |
-| `get_action_traces()` | Queries `resource_action_traces` with filters |
-| `get_recent_actions()` | Returns recent actions for a resource |
-| `get_resource_actions_base()` | Base query for resource action retrieval |
-| `get_resource_id()` | Resolves or creates `resource_references` entries |
+| `create_monthly_partitions()` | **(live)** Generates monthly partitions for `audit_events` |
+| `prevent_legal_hold_deletion()` | **(live)** Blocks deletion of audit events under legal hold |
+| `audit_event_lock_id()` | **(live)** Generates advisory lock IDs for audit event deduplication |
+| `create_assessment_for_action_trace()` | Legacy trigger: auto-created `action_assessments` entries after trace updates (dead — trigger lived on the now-dropped `resource_action_traces`) |
+| `analyze_action_oscillation()` | Legacy: detected oscillation patterns in action histories |
+| `detect_cascading_failures()` | Legacy: identified cascading failure sequences |
+| `detect_ineffective_loops()` | Legacy: found repeated ineffective remediation loops |
+| `detect_resource_thrashing()` | Legacy: detected resource thrashing (rapid scale up/down) |
+| `detect_scale_oscillation()` | Legacy: detected scale oscillation patterns |
+| `analyze_cascade_effects()` | Legacy: analyzed the scope of cascading failures |
+| `store_oscillation_detection()` | Legacy: persisted a detected oscillation to `oscillation_detections` |
+| `get_action_effectiveness()` | Legacy: retrieved computed effectiveness scores |
+| `get_action_traces()` | Legacy: queried the now-dropped `resource_action_traces` with filters |
+| `get_recent_actions()` | Legacy: returned recent actions for a resource |
+| `get_resource_actions_base()` | Legacy: base query for resource action retrieval |
+| `get_resource_id()` | Legacy: resolved or created `resource_references` entries |
 
 ---
 
-## Deterministic catalog IDs (UUIDv5)
+## Auth Webhook: local CRD admission (v1.6)
 
-`RemediationWorkflow` resources use **deterministic UUIDs** (UUIDv5 derived from a content hash of the spec). The same workflow specification always yields the same UUID, so workflow catalog rows and cross-references stay stable across **PVC wipes** and database replays as long as the spec is unchanged. `ActionType` entries are keyed by their `actionType` identifier string.
+Through v1.5, the Auth Webhook ran a startup **Runnable** that reconciled cluster `ActionType`/`RemediationWorkflow` objects into DataStorage's `remediation_workflow_catalog`/`action_type_taxonomy` tables via idempotent creates, using **deterministic UUIDv5** identity (derived from a content hash of the spec) so catalog rows stayed stable across PVC wipes and database replays.
 
-## Auth Webhook startup reconciliation
+**As of v1.6** (DD-WORKFLOW-018/019), this entire reconciliation-with-DataStorage step is gone: the `RemediationWorkflow`/`ActionType` CRDs in etcd are the sole source of truth, admitted directly by the webhook at `kubectl apply` time — there's no separate catalog to reconcile into or keep in sync. Identity is `metadata.name` + `spec.version` (CRD-native), and etcd's own backup/restore model replaces the old "stable across PVC wipes" concern.
 
-On startup, the Auth Webhook runs a **Runnable** that lists cluster `ActionType` objects, then `RemediationWorkflow` objects, and **reconciles** them with DataStorage through **idempotent creates**. This repopulates the catalog after storage loss or drift without duplicating rows.
-
-**Graceful degradation** (#1246) — Individual `RemediationWorkflow` registration failures do not crash the pod. The reconciler logs the error, emits a `authwebhook.workflow.registration_failed` audit event, and continues with the remaining workflows. The webhook starts serving admission requests as soon as the reconciler completes, regardless of individual failures.
+**Graceful degradation** (#1246) — Individual `RemediationWorkflow` admission failures do not crash the pod. The webhook logs the error, emits a `authwebhook.workflow.registration_failed` audit event, and continues processing. See [Registration Model](../user-guide/workflows.md#registration-model) for the current admission flow.
 
 ## Database migrations
 
@@ -682,7 +268,7 @@ Schema changes use an **append-only** migration chain managed by [**goose**](htt
 - **Minor release squash** — development incrementals are typically **squashed per minor** at release time to keep the chain maintainable.
 - **`db-migrate` migration job** — runs via Helm hook (`post-install,post-upgrade`) and distinguishes **fresh install** vs **upgrade** using the `goose_db_version` table so the correct migration path applies.
 
-Migrations `002`–`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index.
+Migrations `002`–`005` are part of this chain; **`004` adds** an index on `post_remediation_spec_hash` in `event_data` for audit queries, and **`005` adds** an effectiveness correlation index. Later migrations progressively removed the legacy schema documented above: **`008`** replaced `retention_operations`'s schema (see [retention_operations](#retention_operations)), **`009`** dropped `resource_action_traces` with `CASCADE`, and **`016`** dropped `remediation_workflow_catalog`/`action_type_taxonomy` (v1.6, see [Workflow Catalog Migration](#workflow-catalog-migration-v16)).
 
 ## RemediationRequest Reconstruction
 

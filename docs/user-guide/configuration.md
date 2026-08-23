@@ -767,33 +767,26 @@ See [Security & RBAC -- Signal Ingestion](../architecture/security-rbac.md#signa
 
 ## LLM Provider Setup
 
-LLM configuration lives in the **SDK config** file, not in `values.yaml`. See [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) for the full schema and provider examples.
+**As of v1.6** (DD-PLATFORM-007), the recommended path is `global.llmProfiles` in Helm values -- not an inline SDK config edit. See [Kubernaut Agent SDK config](configmap-kubernaut-agent.md#provisioning) for the full precedence rules (`existingSdkConfigMap` > `sdkConfigContent` > `global.llmProfiles`) and every provider's example.
 
-**Quick setup:**
-
-1. Copy the example SDK config from the chart:
-
-```bash
-cp charts/kubernaut/examples/sdk-config.yaml my-sdk-config.yaml
-```
-
-2. Edit `my-sdk-config.yaml` -- set `llm.provider`, `llm.model`, and any provider-specific fields.
-
-3. Create the API key Secret:
+**Quick setup** (single provider, chart-generated SDK config):
 
 ```bash
 kubectl create secret generic llm-credentials \
   --namespace kubernaut-system \
-  --from-literal=OPENAI_API_KEY="sk-..."
-```
+  --from-literal=api_key="sk-..."
 
-4. Pass the SDK config during install:
-
-```bash
 helm install kubernaut charts/kubernaut/ \
-  --set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml \
+  --set global.llmProfiles.primary.provider=openai \
+  --set global.llmProfiles.primary.model=gpt-4o \
+  --set global.llmProfiles.primary.endpoint=https://api.openai.com/v1 \
+  --set global.llmProfiles.primary.credentialsSecretName=llm-credentials \
   ...
 ```
+
+With exactly one profile defined, `kubernautAgent.llmProfileRef` is inferred automatically (Issue #1987) -- no need to set it explicitly.
+
+For advanced tuning not covered by `llmProfiles` (reasoning effort, custom headers, per-phase model routing, TLS), supply a full SDK config instead via `--set-file kubernautAgent.sdkConfigContent=my-sdk-config.yaml` -- see [Kubernaut Agent SDK config](configmap-kubernaut-agent.md) for the `ai.llm.*` schema and per-provider secret-key conventions (e.g. `OPENAI_API_KEY`, `ANTHROPIC_API_KEY` -- distinct from the generic `api_key` key expected by the `llmProfiles` quickstart path above).
 
 ### Temperature Tuning
 

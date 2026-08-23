@@ -62,7 +62,7 @@ kubectl create secret generic valkey-secret \
   -n kubernaut-system
 
 kubectl create secret generic llm-credentials \
-  --from-literal=OPENAI_API_KEY=sk-... \
+  --from-literal=api_key=sk-... \
   -n kubernaut-system
 
 # 4. Configure AlertManager to forward alerts to the Gateway
@@ -95,8 +95,10 @@ AMCFG
 helm install kubernaut oci://quay.io/kubernaut-ai/charts/kubernaut \
   --namespace kubernaut-system \
   --version {{ chart_version }} \
-  --set kubernautAgent.llm.provider=openai \
-  --set kubernautAgent.llm.model=gpt-4o \
+  --set global.llmProfiles.primary.provider=openai \
+  --set global.llmProfiles.primary.model=gpt-4o \
+  --set global.llmProfiles.primary.endpoint=https://api.openai.com/v1 \
+  --set global.llmProfiles.primary.credentialsSecretName=llm-credentials \
   --set gateway.auth.signalSources[0].name=alertmanager \
   --set gateway.auth.signalSources[0].namespace=monitoring \
   --set gateway.auth.signalSources[0].serviceAccount=alertmanager-kube-prometheus-stack-alertmanager \

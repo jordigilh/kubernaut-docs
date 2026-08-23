@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1559,6 +1561,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1588,10 +1618,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1609,8 +1639,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1758,6 +1788,8 @@
       
         
           
+        
+      
         
       
         
@@ -2225,6 +2257,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3240,7 +3300,7 @@
 <li><strong>Watch Effectiveness</strong> — After execution, the AF watches the RemediationRequest CRD and relays phase transitions back to the user.</li>
 </ol>
 <h2 id="connecting-via-mcp">Connecting via MCP<a class="headerlink" href="#connecting-via-mcp" title="Permanent link">&para;</a></h2>
-<p>Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (<code>POST /mcp</code>) with 21 <code>kubernaut_*</code> MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle tools to the Kubernaut Agent's MCP server; other tools are handled locally or via DataStorage.</p>
+<p>Any MCP-compatible client can connect to Kubernaut's interactive sessions. The API Frontend exposes a MCP Streamable HTTP endpoint (<code>POST /mcp</code>) with 23 <code>kubernaut_*</code> MCP tools spanning CRD operations, investigation, interactive session lifecycle, data/history, and presentation. The AF dispatches interactive lifecycle and workflow-discovery tools to the Kubernaut Agent's MCP server (v1.6: <code>kubernaut_list_workflows</code> is KA-backed, not DataStorage-backed, per DD-WORKFLOW-019); other tools are handled locally or via DataStorage.</p>
 <h3 id="prerequisites">Prerequisites<a class="headerlink" href="#prerequisites" title="Permanent link">&para;</a></h3>
 <ul>
 <li>OIDC provider configured for the API Frontend (DEX, Keycloak, etc.)</li>
@@ -3248,7 +3308,7 @@
 <li>MCP client supporting Streamable HTTP transport (spec 2025-03-26)</li>
 </ul>
 <h2 id="mcp-tools">MCP Tools<a class="headerlink" href="#mcp-tools" title="Permanent link">&para;</a></h2>
-<p>The API Frontend exposes <strong>21 MCP tools</strong> on <code>POST /mcp</code>. For interactive investigation, the key tools are:</p>
+<p>The API Frontend exposes <strong>23 MCP tools</strong> on <code>POST /mcp</code>. For interactive investigation, the key tools are:</p>
 <h3 id="interactive-session-lifecycle">Interactive session lifecycle<a class="headerlink" href="#interactive-session-lifecycle" title="Permanent link">&para;</a></h3>
 <p>The AF decomposes the Kubernaut Agent's single <code>kubernaut_investigate</code> tool (which uses an <code>action</code> parameter internally) into separate MCP tools. Each tool below has its own input schema and is individually SAR-gated.</p>
 <table>
@@ -3351,10 +3411,7 @@
 </span></code></pre></div>
 <p>Only <code>rr_id</code> and <code>workflow_id</code> are required. When <code>kind</code> is provided, enrichment runs (owner chain resolution, labels, history) before catalog lookup. <code>parameters</code> passes workflow-specific key-value pairs validated against the workflow's declared schema.</p>
 <h2 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h2>
-<p>Real-time investigation output is available via the Kubernaut Agent's SSE endpoint:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>GET /api/v1/incident/session/{session_id}/stream
-</span></code></pre></div>
-<p>The API Frontend subscribes to this stream and relays events to MCP clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.</p>
+<p>Real-time investigation output streams over the <strong>MCP connection itself</strong>, using the Streamable HTTP transport's <code>text/event-stream</code> response mode (<code>Accept: text/event-stream</code>) on Kubernaut Agent's <code>/api/v1/mcp</code> endpoint — there is no separate REST SSE endpoint (a pre-v1.6 <code>GET /api/v1/incident/session/{id}/stream</code> REST endpoint is no longer part of the API). The API Frontend subscribes to the same MCP stream and relays events to its own clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.</p>
 <h2 id="session-management">Session Management<a class="headerlink" href="#session-management" title="Permanent link">&para;</a></h2>
 <p>Interactive sessions are managed by the <strong>Kubernaut Agent's MCP layer</strong> using Kubernetes Leases for distributed locking.</p>
 <h3 id="session-lifecycle">Session lifecycle<a class="headerlink" href="#session-lifecycle" title="Permanent link">&para;</a></h3>

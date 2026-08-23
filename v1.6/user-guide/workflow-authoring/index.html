@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1466,6 +1468,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#a-workflow-doesnt-appear-for-a-specific-cluster-fleet" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A workflow doesn't appear for a specific cluster (Fleet)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#no-workflows-found-for-the-action-type" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1488,10 +1501,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-llm-ignores-the-datastorage-ranking" class="md-nav__link">
+  <a href="#the-llm-ignores-the-catalog-ranking" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The LLM ignores the DataStorage ranking
+        The LLM ignores the catalog ranking
       
     </span>
   </a>
@@ -1781,6 +1794,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1810,10 +1851,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1831,8 +1872,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1980,6 +2021,8 @@
       
         
           
+        
+      
         
       
         
@@ -2447,6 +2490,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3468,8 +3539,8 @@
 <li>Workflow-level descriptions (not visible yet)</li>
 </ul>
 <h3 id="step-2-workflow-ranking">Step 2: Workflow Ranking<a class="headerlink" href="#step-2-workflow-ranking" title="Permanent link">&para;</a></h3>
-<p>The LLM calls <code>list_workflows</code> for the chosen action type. DataStorage returns all active, latest-version workflows under that action type, <strong>ordered by <code>final_score</code></strong>.</p>
-<p>The DataStorage scoring algorithm combines detected label boosts, custom label boosts, and penalties. See <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a> for the complete formula and boost values.</p>
+<p>The LLM calls <code>list_workflows</code> for the chosen action type. Kubernaut Agent (v1.6+; DataStorage through v1.5) returns all active, latest-version workflows under that action type, <strong>ordered by <code>final_score</code></strong>.</p>
+<p>The scoring algorithm combines detected label boosts, custom label boosts, and penalties. See <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a> for the complete formula and boost values.</p>
 <p><strong>What matters here:</strong></p>
 <ul>
 <li>DetectedLabels (highest impact on ranking)</li>
@@ -3481,11 +3552,11 @@
 <p><strong>What matters here:</strong></p>
 <ul>
 <li>The workflow <code>description.whenToUse</code> and <code>description.whenNotToUse</code></li>
-<li>The DataStorage ranking (LLM tends to prefer higher-ranked workflows when descriptions are similar)</li>
+<li>The catalog ranking (LLM tends to prefer higher-ranked workflows when descriptions are similar)</li>
 <li>Remediation history</li>
 </ul>
 <h3 id="key-insight">Key Insight<a class="headerlink" href="#key-insight" title="Permanent link">&para;</a></h3>
-<p>Steps 2 and 3 work together: DataStorage provides the <strong>ordering</strong> via scoring, and the LLM makes the <strong>final decision</strong> via descriptions. For reliable selection, <strong>both the ranking (via labels) and the description guidance must align</strong>.</p>
+<p>Steps 2 and 3 work together: the catalog provides the <strong>ordering</strong> via scoring, and the LLM makes the <strong>final decision</strong> via descriptions. For reliable selection, <strong>both the ranking (via labels) and the description guidance must align</strong>.</p>
 <h2 id="planning-your-workflow-catalog">Planning Your Workflow Catalog<a class="headerlink" href="#planning-your-workflow-catalog" title="Permanent link">&para;</a></h2>
 <h3 id="when-to-group-workflows-under-the-same-action-type">When to Group Workflows Under the Same Action Type<a class="headerlink" href="#when-to-group-workflows-under-the-same-action-type" title="Permanent link">&para;</a></h3>
 <p>If two workflows solve the <strong>same category of problem</strong> but differ in <strong>how</strong> they solve it, they should share the same action type. CustomLabels and descriptions then differentiate them.</p>
@@ -3569,7 +3640,7 @@
 </span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">    </span><span class="nt">whenToUse</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;When</span><span class="nv"> </span><span class="s">containers</span><span class="nv"> </span><span class="s">are</span><span class="nv"> </span><span class="s">being</span><span class="nv"> </span><span class="s">OOMKilled</span><span class="nv"> </span><span class="s">and</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">deployment</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">managed</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">GitOps</span><span class="nv"> </span><span class="s">tool</span><span class="nv"> </span><span class="s">(ArgoCD</span><span class="nv"> </span><span class="s">or</span><span class="nv"> </span><span class="s">Flux).</span><span class="nv"> </span><span class="s">The</span><span class="nv"> </span><span class="s">new</span><span class="nv"> </span><span class="s">memory</span><span class="nv"> </span><span class="s">value</span><span class="nv"> </span><span class="s">must</span><span class="nv"> </span><span class="s">be</span><span class="nv"> </span><span class="s">higher</span><span class="nv"> </span><span class="s">than</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">current</span><span class="nv"> </span><span class="s">limit.&quot;</span>
 </span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="w">    </span><span class="nt">whenNotToUse</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;When</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">environment</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">not</span><span class="nv"> </span><span class="s">GitOps-managed.</span><span class="nv"> </span><span class="s">When</span><span class="nv"> </span><span class="s">the</span><span class="nv"> </span><span class="s">OOMKill</span><span class="nv"> </span><span class="s">is</span><span class="nv"> </span><span class="s">caused</span><span class="nv"> </span><span class="s">by</span><span class="nv"> </span><span class="s">a</span><span class="nv"> </span><span class="s">memory</span><span class="nv"> </span><span class="s">leak.&quot;</span>
 </span></code></pre></div>
-<p>The LLM reads both descriptions and, combined with the DataStorage ranking (which boosts the GitOps workflow when <code>gitOpsManaged: "true"</code> is detected), reliably picks the right one.</p>
+<p>The LLM reads both descriptions and, combined with the catalog ranking (which boosts the GitOps workflow when <code>gitOpsManaged: "true"</code> is detected), reliably picks the right one.</p>
 <h3 id="description-engineering-checklist">Description Engineering Checklist<a class="headerlink" href="#description-engineering-checklist" title="Permanent link">&para;</a></h3>
 <ul>
 <li>[ ] Action type <code>whenToUse</code> describes the <strong>category</strong> (what problem does this solve?)</li>
@@ -3579,18 +3650,18 @@
 <li>[ ] Descriptions don't overlap semantically -- the LLM must be able to distinguish them</li>
 </ul>
 <h2 id="using-customlabels-for-condition-based-selection">Using CustomLabels for Condition-Based Selection<a class="headerlink" href="#using-customlabels-for-condition-based-selection" title="Permanent link">&para;</a></h2>
-<p>CustomLabels are operator-defined key-value pairs that influence DataStorage scoring. They're the mechanism for steering selection based on organizational or operational conditions that aren't captured by infrastructure detection.</p>
+<p>CustomLabels are operator-defined key-value pairs that influence catalog scoring. They're the mechanism for steering selection based on organizational or operational conditions that aren't captured by infrastructure detection.</p>
 <h3 id="how-customlabels-flow-through-the-system">How CustomLabels Flow Through the System<a class="headerlink" href="#how-customlabels-flow-through-the-system" title="Permanent link">&para;</a></h3>
 <pre class="mermaid"><code>flowchart LR
     NS["Namespace label&lt;br/&gt;&lt;small&gt;kubernaut.ai/label-team=payments&lt;/small&gt;"] --&gt; Rego["policy.rego labels rules&lt;br/&gt;&lt;small&gt;extracts team=payments&lt;/small&gt;"]
     Rego --&gt; SP["SignalProcessing&lt;br/&gt;&lt;small&gt;CustomLabels field&lt;/small&gt;"]
-    SP --&gt; DS["DataStorage scoring&lt;br/&gt;&lt;small&gt;custom label boost&lt;/small&gt;"]
-    DS --&gt; LLM["LLM sees ranked list"]</code></pre>
+    SP --&gt; KA["Kubernaut Agent catalog&lt;br/&gt;&lt;small&gt;custom label boost&lt;/small&gt;"]
+    KA --&gt; LLM["LLM sees ranked list"]</code></pre>
 <ol>
 <li><strong>Namespace labels</strong>: The operator labels namespaces with <code>kubernaut.ai/label-{key}={value}</code></li>
 <li><strong>Rego policy</strong>: The <code>labels</code> rules in <code>policy.rego</code> extract labels with the <code>kubernaut.ai/label-</code> prefix</li>
 <li><strong>Signal Processing</strong>: Stores them in the <code>CustomLabels</code> field on the SP CRD</li>
-<li><strong>DataStorage</strong>: During <code>list_workflows</code>, matches SP's custom labels against each workflow's <code>customLabels</code> and boosts the score</li>
+<li><strong>Kubernaut Agent</strong> (v1.6+; DataStorage through v1.5): During <code>list_workflows</code>, matches SP's custom labels against each workflow's <code>customLabels</code> and boosts the score</li>
 <li><strong>LLM</strong>: Sees the ranked list and makes the final selection, guided by descriptions</li>
 </ol>
 <h3 id="declaring-customlabels-on-workflow-schemas">Declaring CustomLabels on Workflow Schemas<a class="headerlink" href="#declaring-customlabels-on-workflow-schemas" title="Permanent link">&para;</a></h3>
@@ -3604,7 +3675,7 @@
 <li><strong>Exact match</strong>: The workflow's value must equal the incident's value.</li>
 <li><strong>Wildcard</strong> (<code>"*"</code>): The workflow matches any non-empty value for that key (half credit).</li>
 </ul>
-<p>CustomLabels are <code>map[string]string</code> on the CRD -- each key maps to a single string value. Authors always declare <code>customLabels</code> as a flat <code>map[string]string</code>. DataStorage internally wraps each single-string value into a JSON array for JSONB scoring queries (e.g., <code>"high"</code> becomes <code>["high"]</code>), but this is transparent to workflow authors.</p>
+<p>CustomLabels are <code>map[string]string</code> on the CRD -- each key maps to a single string value. Authors always declare <code>customLabels</code> as a flat <code>map[string]string</code>. Internally, the catalog wraps each single-string value into an array for scoring (e.g., <code>"high"</code> becomes <code>["high"]</code>) -- through v1.5 this was a JSONB containment query in DataStorage; as of v1.6 it's the same wrapping applied in Kubernaut Agent's in-memory representation -- but this is transparent to workflow authors either way.</p>
 <h3 id="labeling-namespaces">Labeling Namespaces<a class="headerlink" href="#labeling-namespaces" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>payments-prod<span class="w"> </span>kubernaut.ai/label-team<span class="o">=</span>payments
 </span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>payments-prod<span class="w"> </span>kubernaut.ai/label-risk_tolerance<span class="o">=</span>high
@@ -3835,7 +3906,7 @@
 <p><strong>Incident in <code>alpha-prod</code></strong> (risk_tolerance=high):</p>
 <ol>
 <li><strong>Step 1</strong>: LLM picks <code>GracefulRestart</code> based on the CrashLoopBackOff root cause</li>
-<li><strong>Step 2</strong>: DataStorage scores both workflows:<ul>
+<li><strong>Step 2</strong>: The catalog scores both workflows:<ul>
 <li><code>restart-pods-v1</code>: base 0.50 + customLabel match (<code>risk_tolerance: high</code> == <code>high</code>) = <strong>0.515</strong></li>
 <li><code>crashloop-rollback-v1</code>: base 0.50 + no match (<code>risk_tolerance: low</code> != <code>high</code>) = <strong>0.50</strong></li>
 </ul>
@@ -3845,7 +3916,7 @@
 <p><strong>Incident in <code>beta-prod</code></strong> (risk_tolerance=low):</p>
 <ol>
 <li><strong>Step 1</strong>: LLM picks <code>GracefulRestart</code> (same action type)</li>
-<li><strong>Step 2</strong>: DataStorage scores:<ul>
+<li><strong>Step 2</strong>: The catalog scores:<ul>
 <li><code>crashloop-rollback-v1</code>: base 0.50 + customLabel match = <strong>0.515</strong></li>
 <li><code>restart-pods-v1</code>: base 0.50 + no match = <strong>0.50</strong></li>
 </ul>
@@ -3855,7 +3926,7 @@
 <h3 id="why-this-works">Why This Works<a class="headerlink" href="#why-this-works" title="Permanent link">&para;</a></h3>
 <p>The ranking and the descriptions <strong>reinforce each other</strong>:</p>
 <ul>
-<li>DataStorage puts the correct workflow first via the customLabel score boost</li>
+<li>The catalog puts the correct workflow first via the customLabel score boost</li>
 <li>The LLM confirms the choice by reading the <code>whenToUse</code> description, which explicitly references risk tolerance</li>
 <li>If the descriptions were generic (no mention of risk tolerance), the LLM would have no basis to differentiate and might ignore the ranking</li>
 </ul>
@@ -3870,9 +3941,10 @@
 </span></code></pre></div>
 </li>
 <li>
-<p><strong>Check DataStorage ranking</strong>: Query the DataStorage API directly to see how workflows are scored:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>curl<span class="w"> </span>-s<span class="w"> </span><span class="s2">&quot;https://data-storage:8080/api/v1/workflows/actions/GracefulRestart?severity=critical&amp;environment=production&amp;component=deployment&amp;priority=P1&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>jq<span class="w"> </span><span class="s1">&#39;.[] | {name: .name, score: .confidence}&#39;</span>
+<p><strong>Check the ranking manually</strong>: As of v1.6 (DD-WORKFLOW-019), discovery and scoring run in-process inside Kubernaut Agent -- there is no REST endpoint to query the ranking directly. Instead, inspect each candidate workflow's declared labels and manually apply the <a href="../workflows/#workflow-search-and-scoring">Workflow Search and Scoring</a> formula:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflow<span class="w"> </span>-o<span class="w"> </span>yaml<span class="w"> </span>-l<span class="w"> </span><span class="s2">&quot;spec.actionType=GracefulRestart&quot;</span>
 </span></code></pre></div>
+<p>Compare the <code>spec.labels</code> (mandatory filters) and <code>spec.detectedLabels</code>/<code>spec.customLabels</code> (scoring inputs) of each candidate against the incident's own detected/custom labels (visible on the <code>SignalProcessing</code> CRD's <code>status</code>) to work out which one should rank higher. You can also check the <code>workflow.catalog.workflows_listed</code> audit event (<code>total_count</code> and the filter values actually used) via the DataStorage audit query API to confirm what Kubernaut Agent's catalog was asked for during the real investigation -- see <a href="../audit-and-observability/">Audit and Observability</a>.</p>
 <p>If the wrong workflow is ranked higher, check label matching.</p>
 </li>
 <li>
@@ -3891,16 +3963,41 @@
 </span></code></pre></div>
 </li>
 </ol>
+<h3 id="a-workflow-doesnt-appear-for-a-specific-cluster-fleet">A workflow doesn't appear for a specific cluster (Fleet)<a class="headerlink" href="#a-workflow-doesnt-appear-for-a-specific-cluster-fleet" title="Permanent link">&para;</a></h3>
+<p><strong>Symptom</strong>: A workflow is discoverable in some clusters but not others, and Fleet is enabled.</p>
+<p><strong>Cause</strong>: The <code>cluster</code> label (BR-FLEET-003, v1.6) is a mandatory-label filter dimension, same family as <code>severity</code>/<code>environment</code>/<code>component</code>. Once Fleet is enabled and Signal Processing resolves a concrete cluster classification for the incoming signal (e.g. <code>production</code>), a workflow with <strong>no <code>cluster</code> entries is excluded</strong> for that signal -- an empty/omitted <code>cluster</code> field is not a wildcard pass-through, it's an active exclusion. This most commonly bites teams that had working workflows <em>before</em> enabling Fleet: those workflows never declared <code>cluster</code> because the field didn't matter yet, and they silently drop out of discovery the moment Fleet starts classifying clusters.</p>
+<p><strong>Diagnostic steps:</strong></p>
+<ol>
+<li>
+<p><strong>Confirm the workflow's <code>cluster</code> field:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>remediationworkflow<span class="w"> </span>&lt;name&gt;<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.spec.labels.cluster}&#39;</span>
+</span></code></pre></div>
+<p>An empty result means the workflow has no <code>cluster</code> declared -- it will be excluded once any signal carries a classification.</p>
+</li>
+<li>
+<p><strong>Confirm the signal's resolved cluster classification:</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>kubectl<span class="w"> </span>get<span class="w"> </span>signalprocessing<span class="w"> </span>-n<span class="w"> </span>kubernaut-system<span class="w"> </span>&lt;sp-name&gt;<span class="w"> </span>-o<span class="w"> </span><span class="nv">jsonpath</span><span class="o">=</span><span class="s1">&#39;{.status.signalClassification.clusterClassification}&#39;</span>
+</span></code></pre></div>
+<p>An empty value means Fleet did not produce a classification for this signal (e.g., the cluster isn't registered) -- in that case <code>cluster</code> filtering is not evaluated and this isn't the cause.</p>
+</li>
+<li>
+<p><strong>Fix</strong>: add <code>cluster: ["*"]</code> to match any cluster, or list the specific classifications the workflow should apply to (e.g., <code>cluster: [production, staging-eu]</code>), matching case-insensitively:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span><span class="nt">labels</span><span class="p">:</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="nt">cluster</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;*&quot;</span><span class="p p-Indicator">]</span><span class="w">   </span><span class="c1"># or: [production, staging-eu]</span>
+</span></code></pre></div>
+</li>
+</ol>
+<p>See <a href="../workflows/#fleet-cluster-label-v16">Fleet: Cluster Label</a> for the full matching semantics.</p>
 <h3 id="no-workflows-found-for-the-action-type">No workflows found for the action type<a class="headerlink" href="#no-workflows-found-for-the-action-type" title="Permanent link">&para;</a></h3>
 <p><strong>Symptom</strong>: The LLM reports no workflows available after selecting an action type.</p>
 <p><strong>Causes:</strong></p>
 <ul>
 <li><strong>Mandatory label mismatch</strong>: The workflow's <code>severity</code>, <code>environment</code>, <code>component</code>, or <code>priority</code> don't match the incident. Check that labels include the incident's values or use <code>"*"</code> wildcards.</li>
-<li><strong>Workflow not active</strong>: The workflow might be <code>disabled</code> or <code>superseded</code>. Check: <code>kubectl get remediationworkflow &lt;name&gt; -o jsonpath='{.status.catalogStatus}'</code></li>
-<li><strong>Not latest version</strong>: If a newer version was registered, the old one has <code>is_latest_version = false</code> and is excluded.</li>
+<li><strong>Workflow not active</strong>: The workflow's <code>catalogStatus</code> might be <code>Disabled</code> or <code>Superseded</code> (e.g. because a newer version of the same <code>metadata.name</code> was registered). Check: <code>kubectl get remediationworkflow &lt;name&gt; -o jsonpath='{.status.catalogStatus}'</code> -- only <code>Active</code> workflows are discoverable.</li>
 </ul>
 <h3 id="customlabels-have-no-effect">CustomLabels have no effect<a class="headerlink" href="#customlabels-have-no-effect" title="Permanent link">&para;</a></h3>
-<p><strong>Symptom</strong>: Both workflows have the same DataStorage score despite different customLabels.</p>
+<p><strong>Symptom</strong>: Both workflows have the same catalog score despite different customLabels.</p>
 <p><strong>Causes:</strong></p>
 <ul>
 <li><strong>Rego policy not extracting labels</strong>: Check that the <code>labels</code> rules in <code>policy.rego</code> output the expected keys. Test with <code>opa eval</code> or check the SP CRD's <code>status.customLabels</code>.</li>
@@ -3908,7 +4005,7 @@
 <li><strong>Workflow not declaring customLabels</strong>: The workflow schema must have a <code>customLabels</code> section. Without it, there's nothing to match against.</li>
 <li><strong>Key mismatch</strong>: The Rego output key must exactly match the workflow's customLabel key (e.g., <code>risk_tolerance</code> in both).</li>
 </ul>
-<h3 id="the-llm-ignores-the-datastorage-ranking">The LLM ignores the DataStorage ranking<a class="headerlink" href="#the-llm-ignores-the-datastorage-ranking" title="Permanent link">&para;</a></h3>
+<h3 id="the-llm-ignores-the-catalog-ranking">The LLM ignores the catalog ranking<a class="headerlink" href="#the-llm-ignores-the-catalog-ranking" title="Permanent link">&para;</a></h3>
 <p><strong>Symptom</strong>: The higher-ranked workflow is not selected.</p>
 <p>This is expected behavior in some cases. The LLM makes the final decision based on descriptions and context. If the lower-ranked workflow's <code>whenToUse</code> is a much better semantic fit, the LLM will prefer it.</p>
 <p><strong>Fix</strong>: Ensure descriptions reinforce the ranking. If <code>customLabels</code> differentiate workflows, the <code>whenToUse</code> text should reference the same condition (e.g., "for teams with high risk tolerance"). When ranking and descriptions align, the LLM consistently follows the ranking.</p>

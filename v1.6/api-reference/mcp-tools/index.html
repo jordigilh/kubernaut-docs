@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3666,7 +3726,7 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 <ul>
 <li>
 <p><strong><code>kubernaut_list_workflows</code></strong> — List available remediation workflows from the catalog</p>
-<p>Backend: <strong>DataStorage</strong></p>
+<p>Backend: <strong>KA MCP</strong> — dispatches to Kubernaut Agent's own <code>kubernaut_list_workflows</code> MCP tool, backed by its in-memory, informer-cache-backed workflow catalog (v1.6, DD-WORKFLOW-019 — this was DataStorage-backed through v1.5).</p>
 <ul>
 <li><code>kind</code> (<code>string</code>) — Filter by resource kind</li>
 </ul>
@@ -3918,11 +3978,11 @@ Check the <a href="#persona-access-matrix">Persona Access Matrix</a> to ensure t
 </tr>
 <tr>
 <td><strong>KA MCP</strong></td>
-<td><code>investigate</code>, <code>message</code>, <code>complete</code>, <code>complete_no_action</code>, <code>cancel</code>, <code>status</code>, <code>reconnect</code>, <code>discover_workflows</code>, <code>select_workflow</code></td>
+<td><code>investigate</code>, <code>message</code>, <code>complete</code>, <code>complete_no_action</code>, <code>cancel</code>, <code>status</code>, <code>reconnect</code>, <code>discover_workflows</code>, <code>select_workflow</code>, <code>list_workflows</code></td>
 </tr>
 <tr>
 <td><strong>DataStorage</strong></td>
-<td><code>list_workflows</code>, <code>get_remediation_history</code>, <code>get_effectiveness</code>, <code>get_audit_trail</code></td>
+<td><code>get_remediation_history</code>, <code>get_effectiveness</code>, <code>get_audit_trail</code></td>
 </tr>
 <tr>
 <td><strong>Prometheus</strong></td>

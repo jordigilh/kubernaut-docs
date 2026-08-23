@@ -69,6 +69,10 @@
          <lastmod>2026-08-23</lastmod>
     </url>
     <url>
+         <loc>https://jordigilh.github.io/kubernaut-docs/v1.6/architecture/fleet/</loc>
+         <lastmod>2026-08-23</lastmod>
+    </url>
+    <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.6/architecture/gateway/</loc>
          <lastmod>2026-08-23</lastmod>
     </url>
@@ -218,6 +222,10 @@
     </url>
     <url>
          <loc>https://jordigilh.github.io/kubernaut-docs/v1.6/user-guide/effectiveness/</loc>
+         <lastmod>2026-08-23</lastmod>
+    </url>
+    <url>
+         <loc>https://jordigilh.github.io/kubernaut-docs/v1.6/user-guide/helm-values-reference/</loc>
          <lastmod>2026-08-23</lastmod>
     </url>
     <url>

@@ -1027,6 +1027,8 @@
       
         
       
+        
+      
     
     
     
@@ -1481,6 +1483,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1507,10 +1537,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1528,8 +1558,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1677,6 +1707,8 @@
       
         
           
+        
+      
         
       
         
@@ -2144,6 +2176,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3232,7 +3292,7 @@
 </span><span id="__span-1-24"><a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-1-25"><a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a>
 </span><span id="__span-1-26"><a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a>kubectl<span class="w"> </span>create<span class="w"> </span>secret<span class="w"> </span>generic<span class="w"> </span>llm-credentials<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">OPENAI_API_KEY</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-27"><a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">  </span>--from-literal<span class="o">=</span><span class="nv">api_key</span><span class="o">=</span>sk-...<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-28"><a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">  </span>-n<span class="w"> </span>kubernaut-system
 </span><span id="__span-1-29"><a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a>
 </span><span id="__span-1-30"><a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="c1"># 4. Configure AlertManager to forward alerts to the Gateway</span>
@@ -3264,13 +3324,15 @@
 </span><span id="__span-1-56"><a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="c1"># 5. Install Kubernaut with signal source authentication</span>
 </span><span id="__span-1-57"><a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>oci://quay.io/kubernaut-ai/charts/kubernaut<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-1-58"><a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a><span class="w">  </span>--namespace<span class="w"> </span>kubernaut-system<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-59"><a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">  </span>--version<span class="w"> </span><span class="m">1</span>.4.2<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-60"><a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-61"><a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-62"><a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.name<span class="o">=</span>alertmanager<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-63"><a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.namespace<span class="o">=</span>monitoring<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-64"><a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.serviceAccount<span class="o">=</span>alertmanager-kube-prometheus-stack-alertmanager<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-1-65"><a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="w">  </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
+</span><span id="__span-1-59"><a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">  </span>--version<span class="w"> </span><span class="m">1</span>.6.0<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-60"><a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-61"><a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.model<span class="o">=</span>gpt-4o<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-62"><a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.endpoint<span class="o">=</span>https://api.openai.com/v1<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-63"><a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.credentialsSecretName<span class="o">=</span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-64"><a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.name<span class="o">=</span>alertmanager<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-65"><a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.namespace<span class="o">=</span>monitoring<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-66"><a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a><span class="w">  </span>--set<span class="w"> </span>gateway.auth.signalSources<span class="o">[</span><span class="m">0</span><span class="o">]</span>.serviceAccount<span class="o">=</span>alertmanager-kube-prometheus-stack-alertmanager<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-67"><a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a><span class="w">  </span>--wait<span class="w"> </span>--timeout<span class="w"> </span>10m
 </span></code></pre></div>
 <div class="admonition tip">
 <p class="admonition-title">What the chart handles automatically</p>

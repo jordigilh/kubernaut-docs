@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2164,6 +2196,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#clusterid-propagation-v16-br-fleet-054" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClusterID Propagation (v1.6+, BR-FLEET-054)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2444,6 +2487,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3738,7 +3809,7 @@
 <tbody>
 <tr>
 <td>1</td>
-<td>Target not managed (<code>kubernaut.ai/managed</code>)</td>
+<td>Target not managed (<code>kubernaut.ai/managed</code>) — cluster-aware: routes to the <strong>remote/federated</strong> scope checker when <code>RemediationRequest.Spec.ClusterID</code> is non-empty (Fleet), local check otherwise</td>
 <td><code>UnmanagedResource</code></td>
 <td>5s–5m (exponential)</td>
 </tr>
@@ -3794,6 +3865,10 @@
 </tr>
 </tbody>
 </table>
+<div class="admonition note">
+<p class="admonition-title">Fleet: cluster-scoped ineffective-chain check (v1.6+, Issue #1802)</p>
+<p>When <code>RemediationRequest.Spec.ClusterID</code> is set, the <code>IneffectiveChain</code> query is scoped to that cluster, so two clusters with identically-specced resources (e.g. the same Helm-templated Deployment) don't cross-contaminate each other's ineffective-remediation counts. Empty <code>ClusterID</code> (local hub cluster, or fleet disabled) leaves the query unscoped -- unchanged from pre-v1.6 behavior.</p>
+</div>
 <h3 id="routing-configuration">Routing Configuration<a class="headerlink" href="#routing-configuration" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4016,6 +4091,8 @@
 </table>
 <h3 id="owner-references">Owner References<a class="headerlink" href="#owner-references" title="Permanent link">&para;</a></h3>
 <p>All child CRDs have a <code>controllerReference</code> pointing to the parent RR via <code>controllerutil.SetControllerReference</code>. This enables cascade deletion -- when the parent RR is garbage collected, all children are automatically cleaned up.</p>
+<h3 id="clusterid-propagation-v16-br-fleet-054">ClusterID Propagation (v1.6+, BR-FLEET-054)<a class="headerlink" href="#clusterid-propagation-v16-br-fleet-054" title="Permanent link">&para;</a></h3>
+<p>The Orchestrator propagates <code>RemediationRequest.Spec.ClusterID</code> onto <strong>every</strong> child CRD it creates -- SignalProcessing, AIAnalysis, WorkflowExecution, EffectivenessAssessment, NotificationRequest, and RemediationApprovalRequest -- as well as into its own audit events. Empty <code>ClusterID</code> (local hub cluster, or fleet disabled) means every child inherits an empty <code>ClusterID</code> too, identical to pre-v1.6 behavior. See <a href="../fleet/">Fleet Management</a> for how <code>ClusterID</code> first enters the pipeline via the Gateway.</p>
 <p>EffectivenessAssessment is created with <code>BlockOwnerDeletion: false</code> to allow audit data to persist independently.</p>
 <h2 id="reconciliation">Reconciliation<a class="headerlink" href="#reconciliation" title="Permanent link">&para;</a></h2>
 <p>The Orchestrator uses a single reconciler that watches all resource types in the pipeline:</p>

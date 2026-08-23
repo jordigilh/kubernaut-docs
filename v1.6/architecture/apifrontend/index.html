@@ -18,7 +18,7 @@
         <link rel="prev" href="../data-persistence/">
       
       
-        <link rel="next" href="../security-rbac/">
+        <link rel="next" href="../fleet/">
       
       
         
@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2099,6 +2131,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#session-closure-via-agentsession-watch-v16-2214" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Session closure via AgentSession watch (v1.6, #2214)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2163,6 +2206,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -3304,7 +3375,7 @@
 <ol>
 <li>KA sets an <code>interactiveUpgrade</code> atomic flag on the session</li>
 <li>The running investigation goroutine sees the flag at its next <code>InteractiveHold</code> check and pauses for operator input</li>
-<li>The AA controller detects the IS CRD and sets <code>Interactive=true</code> + <code>SetActivePhase</code> (no cancel)</li>
+<li>KA's <code>UpgradeToInteractive</code> acquires the per-RR interactive-driver Lease and writes <code>AgentSession.Status.Interactive=true</code> (v1.6, DD-AA-KA-001) -- the AA controller and the API Frontend both watch this field rather than inferring interactivity from <code>InvestigationSession</code> existence</li>
 <li>Session ID and correlation ID are preserved throughout</li>
 </ol>
 <p>If the autonomous session has already completed (<code>ErrSessionTerminal</code>), the system falls back to <code>ForceTransitionToUserDriving</code> to start a fresh interactive session.</p>
@@ -3318,6 +3389,31 @@
 <li>All active session Leases are released</li>
 <li>Pod terminates only after all sessions are drained</li>
 </ol>
+<h3 id="session-closure-via-agentsession-watch-v16-2214">Session closure via AgentSession watch (v1.6, #2214)<a class="headerlink" href="#session-closure-via-agentsession-watch-v16-2214" title="Permanent link">&para;</a></h3>
+<p>The AF owns closing <code>InvestigationSession</code> to a terminal phase -- the AIAnalysis controller has zero IS interaction as of v1.6. A dedicated <code>AgentSessionTerminalCloseReconciler</code> (<code>internal/controller/apifrontend/agentsession_close.go</code>) watches the correlated <a href="../../api-reference/crds/#agentsession"><code>AgentSession</code></a> and closes the IS via the same <code>CRDSessionService.FinalizeSessionByRR</code> primitive the AF's own MCP complete/cancel tools use:</p>
+<table>
+<thead>
+<tr>
+<th><code>AgentSession</code> transition</th>
+<th><code>InvestigationSession</code> phase</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Status.Phase = Completed</code></td>
+<td><code>Completed</code></td>
+</tr>
+<tr>
+<td><code>Status.Phase = Failed</code></td>
+<td><code>Failed</code></td>
+</tr>
+<tr>
+<td>Object deleted (e.g. AA's cascade-cancel on <code>ParentCancelled</code>)</td>
+<td><code>Cancelled</code></td>
+</tr>
+</tbody>
+</table>
+<p>A <code>TerminalCloseFinalizer</code> on the <code>AgentSession</code> guarantees the close happens before the object is actually removed, regardless of who deletes it.</p>
 <h2 id="sse-streaming">SSE Streaming<a class="headerlink" href="#sse-streaming" title="Permanent link">&para;</a></h2>
 <p>The AF streams investigation output to clients via <strong>Server-Sent Events</strong>:</p>
 <ul>
@@ -3341,9 +3437,14 @@
 <td>MCP tool proxying, SSE streaming</td>
 </tr>
 <tr>
+<td><strong>AgentSession CRD</strong> (v1.6+)</td>
+<td>Kubernetes watch</td>
+<td><code>Status.Interactive</code> ack (replaces the retired <code>AwaitISPhaseActive</code> poll-loop); terminal-phase/deletion signal for closing <code>InvestigationSession</code></td>
+</tr>
+<tr>
 <td><strong>DataStorage</strong></td>
 <td>HTTP/REST</td>
-<td>Workflow catalog, remediation history, audit events</td>
+<td>Remediation history, audit events</td>
 </tr>
 <tr>
 <td><strong>LLM Provider</strong></td>
@@ -3502,13 +3603,13 @@
         
         
           
-          <a href="../security-rbac/" class="md-footer__link md-footer__link--next" aria-label="Next: Security &amp; RBAC">
+          <a href="../fleet/" class="md-footer__link md-footer__link--next" aria-label="Next: Fleet Management">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Security & RBAC
+                Fleet Management
               </div>
             </div>
             <div class="md-footer__button md-icon">

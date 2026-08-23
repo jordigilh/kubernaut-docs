@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.6/user-guide/configmap-kubernaut-agent/">
       
       
-        <link rel="prev" href="../configuration/">
+        <link rel="prev" href="../helm-values-reference/">
       
       
         <link rel="next" href="../configmap-policies/">
@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1294,6 +1296,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1325,10 +1355,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_16" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_17" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1346,8 +1376,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1597,10 +1627,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#openai-compatible-vllm-localai-tgi" class="md-nav__link">
+  <a href="#openai-compatible-vllm-ollama-llamastack-deepseek" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OpenAI-Compatible (vLLM, LocalAI, TGI)
+        OpenAI-Compatible (vLLM, Ollama, LlamaStack, DeepSeek)
       
     </span>
   </a>
@@ -1619,10 +1649,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#google-vertex-ai-gemini" class="md-nav__link">
+  <a href="#google-gemini-native-api" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Google Vertex AI (Gemini)
+        Google Gemini (Native API)
       
     </span>
   </a>
@@ -1630,10 +1660,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#claude-on-vertex-ai" class="md-nav__link">
+  <a href="#google-vertex-ai-gemini-or-claude" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Claude on Vertex AI
+        Google Vertex AI (Gemini or Claude)
       
     </span>
   </a>
@@ -1683,6 +1713,17 @@
     <span class="md-ellipsis">
       
         Temperature Tuning
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reasoning-configuration-v16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reasoning Configuration (v1.6+)
       
     </span>
   </a>
@@ -1913,6 +1954,8 @@
       
         
           
+        
+      
         
       
         
@@ -2380,6 +2423,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3456,15 +3527,17 @@
 </table>
 <p>Re-read the <strong>v1.4</strong> upgrade warning at the top of this page before touching live manifests.</p>
 <h2 id="provisioning">Provisioning<a class="headerlink" href="#provisioning" title="Permanent link">&para;</a></h2>
-<p>Three options are available, with the following precedence: <code>existingSdkConfigMap</code> &gt; <code>sdkConfigContent</code> &gt; <code>llm.provider</code> + <code>llm.model</code>.</p>
+<p>Three options are available, with the following precedence: <code>existingSdkConfigMap</code> &gt; <code>sdkConfigContent</code> &gt; <code>global.llmProfiles</code> (v1.6, DD-PLATFORM-007 — replaces the old <code>kubernautAgent.llm.provider</code>/<code>.model</code>).</p>
 <h3 id="option-a-quickstart-recommended-for-getting-started">Option A: Quickstart (recommended for getting started)<a class="headerlink" href="#option-a-quickstart-recommended-for-getting-started" title="Permanent link">&para;</a></h3>
-<p>Set the provider and model directly in Helm values. The chart generates a minimal SDK config ConfigMap automatically.</p>
+<p>Set the provider and model directly in Helm values, as a named LLM profile under <code>global.llmProfiles</code>. The chart generates a minimal SDK config ConfigMap automatically.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--set<span class="w"> </span>kubernautAgent.llm.model<span class="o">=</span>gpt-4o<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>...
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.provider<span class="o">=</span>openai<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.model<span class="o">=</span>gpt-4o<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">  </span>--set<span class="w"> </span>global.llmProfiles.primary.credentialsSecretName<span class="o">=</span>llm-credentials<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">  </span>...
 </span></code></pre></div>
-<p>Supported quickstart providers: <code>openai</code>, <code>anthropic</code> (any provider needing only an API key). For Vertex AI, Azure, or advanced setups, use Option B or C.</p>
+<p><code>kubernautAgent.llmProfileRef</code> is optional when exactly one profile is defined -- it's inferred automatically (Issue #1987); set it explicitly if you define multiple named profiles for other consumers (e.g. AI Analysis severity triage).</p>
+<p>Supported quickstart providers: <code>openai</code>, <code>anthropic</code>, <code>gemini</code> (any provider needing only an API key). For Vertex AI, Azure, or advanced setups, use Option B or C.</p>
 <h3 id="option-b-inline-content">Option B: Inline content<a class="headerlink" href="#option-b-inline-content" title="Permanent link">&para;</a></h3>
 <p>Provide the full SDK config file via <code>--set-file</code>. The chart creates the ConfigMap from this content.</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>helm<span class="w"> </span>install<span class="w"> </span>kubernaut<span class="w"> </span>charts/kubernaut/<span class="w"> </span><span class="se">\</span>
@@ -3492,51 +3565,57 @@
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
 </span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># Required. One of: openai, ollama, azure, vertex,</span>
-</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">                              </span><span class="c1">#   vertexAi, anthropic, bedrock, huggingface, mistral</span>
-</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">                 </span><span class="c1"># Required. e.g., &quot;gpt-4o&quot;, &quot;gemini-2.5-pro&quot;</span>
-</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># Server origin without /v1 (required for ollama, azure, mistral)</span>
-</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nt">apiKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">                </span><span class="c1"># Provider API key</span>
-</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nt">azureApiVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">       </span><span class="c1"># Azure-specific</span>
-</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">         </span><span class="c1"># Vertex-specific (vertex and vertexAi)</span>
-</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">        </span><span class="c1"># Vertex-specific</span>
-</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="nt">bedrockRegion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">         </span><span class="c1"># Bedrock-specific</span>
-</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="nt">structuredOutput</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">   </span><span class="c1"># Reserved; KA always enables JSON mode internally (see note below)</span>
-</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span><span class="w">          </span><span class="c1"># Creativity vs determinism (0.0--1.0). Omit this key entirely to</span>
-</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">                              </span><span class="c1">#   send no temperature parameter at all (v1.5.5+, #1749) -- required</span>
-</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">                              </span><span class="c1">#   for models (e.g. claude-opus-4-8) that reject the parameter with</span>
-</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">                              </span><span class="c1">#   an HTTP 400 if present. See &quot;Temperature Tuning&quot; below.</span>
-</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">    </span><span class="nt">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">             </span><span class="c1"># LLM call retry count</span>
-</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w">       </span><span class="c1"># Per-call timeout</span>
-</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">             </span><span class="c1"># Custom CA cert for LLM endpoint (PEM, absolute path)</span>
-</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">           </span><span class="c1"># Client certificate for mTLS to LLM proxy (#1342, absolute path)</span>
-</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Client key for mTLS to LLM proxy (#1342, absolute path)</span>
-</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span><span class="w">            </span><span class="c1"># Optional custom HTTP headers (see Custom Headers section)</span>
-</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Custom&quot;</span>
-</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
-</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
-</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
-</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Request-Cert&quot;</span>
-</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
-</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">    </span><span class="nt">oauth2</span><span class="p">:</span><span class="w">                   </span><span class="c1"># Optional OAuth2 client credentials</span>
-</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">      </span><span class="nt">tokenUrl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Must use https:// when enabled</span>
-</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">      </span><span class="nt">clientId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">      </span><span class="nt">clientSecret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
-</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">      </span><span class="nt">scopes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;scope1&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">    </span><span class="nt">circuitBreaker</span><span class="p">:</span><span class="w">           </span><span class="c1"># Resilience for LLM HTTP calls</span>
+</span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># Required. One of: openai, openai_compatible, anthropic,</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a><span class="w">                              </span><span class="c1">#   vertex_ai, gemini (v1.6+ -- langchaingo removed, see</span>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="w">                              </span><span class="c1">#   &quot;Supported Providers&quot; below for the full mapping)</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">                 </span><span class="c1"># Required. e.g., &quot;gpt-4o&quot;, &quot;claude-sonnet-4-6&quot;, &quot;gemini-2.5-pro&quot;</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># Server origin without /v1 (required for openai, openai_compatible)</span>
+</span><span id="__span-5-12"><a id="__codelineno-5-12" name="__codelineno-5-12" href="#__codelineno-5-12"></a><span class="w">    </span><span class="nt">apiKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">                </span><span class="c1"># Provider API key</span>
+</span><span id="__span-5-13"><a id="__codelineno-5-13" name="__codelineno-5-13" href="#__codelineno-5-13"></a><span class="w">    </span><span class="nt">azureApiVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">       </span><span class="c1"># Set together with provider: openai/openai_compatible for Azure OpenAI (v1.6+, #1600) -- there is no separate &quot;azure&quot; provider string</span>
+</span><span id="__span-5-14"><a id="__codelineno-5-14" name="__codelineno-5-14" href="#__codelineno-5-14"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">         </span><span class="c1"># Required for provider: vertex_ai</span>
+</span><span id="__span-5-15"><a id="__codelineno-5-15" name="__codelineno-5-15" href="#__codelineno-5-15"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">        </span><span class="c1"># Required for provider: vertex_ai</span>
+</span><span id="__span-5-16"><a id="__codelineno-5-16" name="__codelineno-5-16" href="#__codelineno-5-16"></a><span class="w">    </span><span class="nt">bedrockRegion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">         </span><span class="c1"># Parsed but NOT YET consumed by any client (#1582) -- do not configure &quot;bedrock&quot; as a provider, it is rejected at startup</span>
+</span><span id="__span-5-17"><a id="__codelineno-5-17" name="__codelineno-5-17" href="#__codelineno-5-17"></a><span class="w">    </span><span class="nt">reasoning</span><span class="p">:</span><span class="w">                </span><span class="c1"># v1.6+ (BR-AI-086/BR-AI-087). Off by default. See &quot;Reasoning Configuration&quot; below.</span>
+</span><span id="__span-5-18"><a id="__codelineno-5-18" name="__codelineno-5-18" href="#__codelineno-5-18"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-5-19"><a id="__codelineno-5-19" name="__codelineno-5-19" href="#__codelineno-5-19"></a><span class="w">      </span><span class="nt">effort</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># &quot;&quot;, none, minimal, low, medium, high, xhigh (unified across all providers)</span>
+</span><span id="__span-5-20"><a id="__codelineno-5-20" name="__codelineno-5-20" href="#__codelineno-5-20"></a><span class="w">      </span><span class="nt">budgetTokens</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0</span><span class="w">         </span><span class="c1"># Anthropic-family only; overrides effort with an exact token budget when set</span>
+</span><span id="__span-5-21"><a id="__codelineno-5-21" name="__codelineno-5-21" href="#__codelineno-5-21"></a><span class="w">      </span><span class="nt">capabilityOverride</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">  </span><span class="c1"># openai_compatible only: &quot;auto&quot; (default), &quot;force_on&quot;, &quot;force_off&quot;</span>
+</span><span id="__span-5-22"><a id="__codelineno-5-22" name="__codelineno-5-22" href="#__codelineno-5-22"></a><span class="w">    </span><span class="nt">structuredOutput</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">   </span><span class="c1"># Reserved; KA always enables JSON mode internally (see note below)</span>
+</span><span id="__span-5-23"><a id="__codelineno-5-23" name="__codelineno-5-23" href="#__codelineno-5-23"></a><span class="w">    </span><span class="nt">temperature</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.7</span><span class="w">          </span><span class="c1"># Creativity vs determinism (0.0--1.0). Omit this key entirely to</span>
+</span><span id="__span-5-24"><a id="__codelineno-5-24" name="__codelineno-5-24" href="#__codelineno-5-24"></a><span class="w">                              </span><span class="c1">#   send no temperature parameter at all (v1.5.5+, #1749) -- required</span>
+</span><span id="__span-5-25"><a id="__codelineno-5-25" name="__codelineno-5-25" href="#__codelineno-5-25"></a><span class="w">                              </span><span class="c1">#   for models (e.g. claude-opus-4-8) that reject the parameter with</span>
+</span><span id="__span-5-26"><a id="__codelineno-5-26" name="__codelineno-5-26" href="#__codelineno-5-26"></a><span class="w">                              </span><span class="c1">#   an HTTP 400 if present. See &quot;Temperature Tuning&quot; below.</span>
+</span><span id="__span-5-27"><a id="__codelineno-5-27" name="__codelineno-5-27" href="#__codelineno-5-27"></a><span class="w">    </span><span class="nt">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span><span class="w">             </span><span class="c1"># LLM call retry count</span>
+</span><span id="__span-5-28"><a id="__codelineno-5-28" name="__codelineno-5-28" href="#__codelineno-5-28"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span><span class="w">       </span><span class="c1"># Per-call timeout</span>
+</span><span id="__span-5-29"><a id="__codelineno-5-29" name="__codelineno-5-29" href="#__codelineno-5-29"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">             </span><span class="c1"># Custom CA cert for LLM endpoint (PEM, absolute path)</span>
+</span><span id="__span-5-30"><a id="__codelineno-5-30" name="__codelineno-5-30" href="#__codelineno-5-30"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">           </span><span class="c1"># Client certificate for mTLS to LLM proxy (#1342, absolute path)</span>
+</span><span id="__span-5-31"><a id="__codelineno-5-31" name="__codelineno-5-31" href="#__codelineno-5-31"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Client key for mTLS to LLM proxy (#1342, absolute path)</span>
+</span><span id="__span-5-32"><a id="__codelineno-5-32" name="__codelineno-5-32" href="#__codelineno-5-32"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span><span class="w">            </span><span class="c1"># Optional custom HTTP headers (see Custom Headers section)</span>
+</span><span id="__span-5-33"><a id="__codelineno-5-33" name="__codelineno-5-33" href="#__codelineno-5-33"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Custom&quot;</span>
+</span><span id="__span-5-34"><a id="__codelineno-5-34" name="__codelineno-5-34" href="#__codelineno-5-34"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;...&quot;</span>
+</span><span id="__span-5-35"><a id="__codelineno-5-35" name="__codelineno-5-35" href="#__codelineno-5-35"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
+</span><span id="__span-5-36"><a id="__codelineno-5-36" name="__codelineno-5-36" href="#__codelineno-5-36"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
+</span><span id="__span-5-37"><a id="__codelineno-5-37" name="__codelineno-5-37" href="#__codelineno-5-37"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Request-Cert&quot;</span>
+</span><span id="__span-5-38"><a id="__codelineno-5-38" name="__codelineno-5-38" href="#__codelineno-5-38"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
+</span><span id="__span-5-39"><a id="__codelineno-5-39" name="__codelineno-5-39" href="#__codelineno-5-39"></a><span class="w">    </span><span class="nt">oauth2</span><span class="p">:</span><span class="w">                   </span><span class="c1"># Optional OAuth2 client credentials</span>
 </span><span id="__span-5-40"><a id="__codelineno-5-40" name="__codelineno-5-40" href="#__codelineno-5-40"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a><span class="w">      </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">     </span><span class="c1"># Failures before opening</span>
-</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span><span class="w">            </span><span class="c1"># Duration in open state before half-open</span>
-</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a>
-</span><span id="__span-5-44"><a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="nt">integrations</span><span class="p">:</span>
-</span><span id="__span-5-45"><a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">  </span><span class="nt">toolsets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">              </span><span class="c1"># Optional: data source toolsets</span>
-</span><span id="__span-5-46"><a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="w">    </span><span class="c1"># prometheus/metrics:</span>
-</span><span id="__span-5-47"><a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a><span class="w">    </span><span class="c1">#   enabled: true</span>
-</span><span id="__span-5-48"><a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a><span class="w">    </span><span class="c1">#   config:</span>
-</span><span id="__span-5-49"><a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a><span class="w">    </span><span class="c1">#     prometheusUrl: &quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
-</span><span id="__span-5-50"><a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a>
-</span><span id="__span-5-51"><a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a><span class="w">  </span><span class="nt">mcpServers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">            </span><span class="c1"># Optional: Model Context Protocol servers</span>
+</span><span id="__span-5-41"><a id="__codelineno-5-41" name="__codelineno-5-41" href="#__codelineno-5-41"></a><span class="w">      </span><span class="nt">tokenUrl</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">            </span><span class="c1"># Must use https:// when enabled</span>
+</span><span id="__span-5-42"><a id="__codelineno-5-42" name="__codelineno-5-42" href="#__codelineno-5-42"></a><span class="w">      </span><span class="nt">clientId</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-5-43"><a id="__codelineno-5-43" name="__codelineno-5-43" href="#__codelineno-5-43"></a><span class="w">      </span><span class="nt">clientSecret</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-5-44"><a id="__codelineno-5-44" name="__codelineno-5-44" href="#__codelineno-5-44"></a><span class="w">      </span><span class="nt">scopes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;scope1&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-5-45"><a id="__codelineno-5-45" name="__codelineno-5-45" href="#__codelineno-5-45"></a><span class="w">    </span><span class="nt">circuitBreaker</span><span class="p">:</span><span class="w">           </span><span class="c1"># Resilience for LLM HTTP calls</span>
+</span><span id="__span-5-46"><a id="__codelineno-5-46" name="__codelineno-5-46" href="#__codelineno-5-46"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-5-47"><a id="__codelineno-5-47" name="__codelineno-5-47" href="#__codelineno-5-47"></a><span class="w">      </span><span class="nt">failureThreshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5</span><span class="w">     </span><span class="c1"># Failures before opening</span>
+</span><span id="__span-5-48"><a id="__codelineno-5-48" name="__codelineno-5-48" href="#__codelineno-5-48"></a><span class="w">      </span><span class="nt">timeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span><span class="w">            </span><span class="c1"># Duration in open state before half-open</span>
+</span><span id="__span-5-49"><a id="__codelineno-5-49" name="__codelineno-5-49" href="#__codelineno-5-49"></a>
+</span><span id="__span-5-50"><a id="__codelineno-5-50" name="__codelineno-5-50" href="#__codelineno-5-50"></a><span class="nt">integrations</span><span class="p">:</span>
+</span><span id="__span-5-51"><a id="__codelineno-5-51" name="__codelineno-5-51" href="#__codelineno-5-51"></a><span class="w">  </span><span class="nt">toolsets</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">              </span><span class="c1"># Optional: data source toolsets</span>
+</span><span id="__span-5-52"><a id="__codelineno-5-52" name="__codelineno-5-52" href="#__codelineno-5-52"></a><span class="w">    </span><span class="c1"># prometheus/metrics:</span>
+</span><span id="__span-5-53"><a id="__codelineno-5-53" name="__codelineno-5-53" href="#__codelineno-5-53"></a><span class="w">    </span><span class="c1">#   enabled: true</span>
+</span><span id="__span-5-54"><a id="__codelineno-5-54" name="__codelineno-5-54" href="#__codelineno-5-54"></a><span class="w">    </span><span class="c1">#   config:</span>
+</span><span id="__span-5-55"><a id="__codelineno-5-55" name="__codelineno-5-55" href="#__codelineno-5-55"></a><span class="w">    </span><span class="c1">#     prometheusUrl: &quot;http://kube-prometheus-stack-prometheus.monitoring.svc:9090&quot;</span>
+</span><span id="__span-5-56"><a id="__codelineno-5-56" name="__codelineno-5-56" href="#__codelineno-5-56"></a>
+</span><span id="__span-5-57"><a id="__codelineno-5-57" name="__codelineno-5-57" href="#__codelineno-5-57"></a><span class="w">  </span><span class="nt">mcpServers</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w">            </span><span class="c1"># Optional: Model Context Protocol servers</span>
 </span></code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Operator: BYO runtime ConfigMap</p>
@@ -3606,11 +3685,15 @@
 </tr>
 <tr>
 <td><code>bedrockRegion</code></td>
-<td>AWS Bedrock region override</td>
+<td>Parsed for forward-compatibility; not consumed (#1582)</td>
 </tr>
 <tr>
 <td><code>temperature</code></td>
 <td>Override base/phase temperature (v1.5.5+, #1749). <code>nil</code>/omitted means inherit the base value unchanged.</td>
+</tr>
+<tr>
+<td><code>reasoning</code></td>
+<td>Override base/phase reasoning config (v1.6+). Identity fields (<code>provider</code>, <code>model</code>) are frozen at boot per phase (#1599) — only tuning fields like <code>reasoning.effort</code> are hot-reloadable.</td>
 </tr>
 </tbody>
 </table>
@@ -3644,65 +3727,55 @@
 </span></code></pre></div>
 </details>
 <h2 id="supported-providers">Supported Providers<a class="headerlink" href="#supported-providers" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">v1.6: LangChainGo removed (#1580, #1581, #1600, #1778)</p>
+<p>The Kubernaut Agent no longer depends on LangChainGo. LLM access now goes through a small set of first-party clients, each shared with the API Frontend via <code>pkg/shared/types.LLMConfig</code>. This dropped the number of distinct <code>provider</code> strings from nine to five — several older values (<code>ollama</code>, <code>azure</code>, <code>vertex</code>, <code>huggingface</code>, <code>mistral</code>) no longer exist as their own provider identity. Endpoint-compatible backends are now reached through <code>openai</code>/<code>openai_compatible</code> instead (see the table below), and <code>vertex</code> (bare) was folded into <code>vertex_ai</code>, which now auto-detects Claude vs. Gemini from the model name.</p>
+</div>
 <table>
 <thead>
 <tr>
 <th>Config <code>ai.llm.provider</code></th>
 <th>Backend</th>
 <th>Implementation</th>
+<th>Notes</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>openai</code></td>
-<td>OpenAI or OpenAI-compatible API</td>
-<td>LangChainGo <code>llms/openai</code></td>
+<td><code>anthropic</code></td>
+<td>Anthropic API (direct, <code>api.anthropic.com</code>)</td>
+<td>Native Anthropic Go SDK</td>
+<td></td>
 </tr>
 <tr>
-<td><code>ollama</code></td>
-<td>Ollama</td>
-<td>LangChainGo <code>llms/ollama</code></td>
-</tr>
-<tr>
-<td><code>azure</code></td>
-<td>Azure OpenAI</td>
-<td>LangChainGo <code>llms/openai</code> (Azure API type)</td>
-</tr>
-<tr>
-<td><code>vertex</code></td>
-<td>Google Vertex AI (Gemini models)</td>
-<td>LangChainGo <code>llms/googleai/vertex</code></td>
+<td><code>gemini</code></td>
+<td>Google Gemini Developer API (<code>generativelanguage.googleapis.com</code>)</td>
+<td>Native <code>google.golang.org/genai</code> client (BR-AI-087, #1778)</td>
+<td>New in v1.6. Distinct from <code>vertex_ai</code>: no GCP project/location.</td>
 </tr>
 <tr>
 <td><code>vertex_ai</code></td>
-<td>Claude on Google Vertex AI</td>
-<td>Anthropic Go SDK (not LangChainGo)</td>
+<td>Google Vertex AI — hosts <strong>either</strong> Claude <strong>or</strong> Gemini models</td>
+<td>Native Anthropic or <code>genai</code> client, auto-selected by model name prefix (<code>claude-*</code> vs. <code>gemini-*</code>) (#1778, #1792)</td>
+<td>A model matching neither prefix fails fast at client construction rather than silently defaulting.</td>
 </tr>
 <tr>
-<td><code>anthropic</code></td>
-<td>Anthropic API (direct)</td>
-<td>LangChainGo <code>llms/anthropic</code></td>
+<td><code>openai</code></td>
+<td>OpenAI (<code>api.openai.com</code>)</td>
+<td>Shared <code>openaicompat</code> client (DD-LLM-005)</td>
+<td></td>
 </tr>
 <tr>
-<td><code>bedrock</code></td>
-<td>Amazon Bedrock</td>
-<td>LangChainGo <code>llms/bedrock</code></td>
-</tr>
-<tr>
-<td><code>huggingface</code></td>
-<td>Hugging Face</td>
-<td>LangChainGo <code>llms/huggingface</code></td>
-</tr>
-<tr>
-<td><code>mistral</code></td>
-<td>Mistral</td>
-<td>LangChainGo <code>llms/mistral</code></td>
+<td><code>openai_compatible</code></td>
+<td>Any OpenAI-Chat-Completions-compatible endpoint: Azure OpenAI, Ollama, vLLM, LlamaStack, Mistral, Hugging Face TGI, DeepSeek</td>
+<td>Shared <code>openaicompat</code> client (#1581, DD-LLM-005)</td>
+<td>Azure OpenAI is selected by setting <code>azureApiVersion</code> alongside this provider — there is no separate <code>azure</code> value (#1600).</td>
 </tr>
 </tbody>
 </table>
 <div class="admonition warning">
-<p class="admonition-title">Vertex AI provider distinction</p>
-<p><code>vertex</code> = Gemini models on Vertex AI. <code>vertex_ai</code> = Anthropic Claude models on Vertex AI. These use separate code paths and different SDKs.</p>
+<p class="admonition-title"><code>bedrock</code> is not a supported provider value</p>
+<p><code>bedrockRegion</code> remains a parseable config field for forward compatibility, but no client currently consumes it (#1582) — configuring <code>provider: bedrock</code> is rejected at LLM client construction.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Mandatory JSON structured output</p>
@@ -3771,63 +3844,66 @@
 </span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-literal=OPENAI_API_KEY=sk-...</code></p>
-<h3 id="openai-compatible-vllm-localai-tgi">OpenAI-Compatible (vLLM, LocalAI, TGI)<a class="headerlink" href="#openai-compatible-vllm-localai-tgi" title="Permanent link">&para;</a></h3>
+<h3 id="openai-compatible-vllm-ollama-llamastack-deepseek">OpenAI-Compatible (vLLM, Ollama, LlamaStack, DeepSeek)<a class="headerlink" href="#openai-compatible-vllm-ollama-llamastack-deepseek" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai_compatible</span>
 </span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
 </span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://vllm.internal.svc:8000</span>
 </span></code></pre></div>
-<p>Set the <code>endpoint</code> to the server origin <strong>without</strong> <code>/v1</code> — the agent appends <code>/v1</code> automatically.</p>
+<p>Set the <code>endpoint</code> to the server origin <strong>without</strong> <code>/v1</code> — the agent appends <code>/v1</code> automatically. Use <code>openai_compatible</code> for any Chat-Completions-compatible backend (vLLM, Ollama, LlamaStack, Mistral, Hugging Face TGI, DeepSeek); <code>openai</code> is reserved for <code>api.openai.com</code> itself, but both are served by the same client.</p>
 <h3 id="azure-openai">Azure OpenAI<a class="headerlink" href="#azure-openai" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">azure</span>
-</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai_compatible</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span><span class="w">          </span><span class="c1"># doubles as the Azure deployment ID</span>
 </span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://my-resource.openai.azure.com/</span>
 </span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">    </span><span class="nt">azureApiVersion</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;2024-02-15-preview&quot;</span>
 </span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-literal=AZURE_API_KEY=...</code></p>
-<h3 id="google-vertex-ai-gemini">Google Vertex AI (Gemini)<a class="headerlink" href="#google-vertex-ai-gemini" title="Permanent link">&para;</a></h3>
+<div class="admonition info">
+<p class="admonition-title">No separate <code>azure</code> provider (v1.6, #1600)</p>
+<p>Azure OpenAI is not its own <code>provider</code> value — it is <code>openai</code> or <code>openai_compatible</code> with <code>azureApiVersion</code> set, which switches the shared client into Azure's deployment-scoped URL shape and <code>api-key</code> header auth instead of <code>Authorization: Bearer</code>. <code>model</code> doubles as the Azure deployment ID, matching Azure's own convention.</p>
+</div>
+<h3 id="google-gemini-native-api">Google Gemini (Native API)<a class="headerlink" href="#google-gemini-native-api" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertex</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini</span>
 </span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini-2.5-pro</span>
-</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-id</span>
-</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
-</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">apiKey</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span><span class="w">              </span><span class="c1"># or apiKeyFile / credentials secret</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
 </span></code></pre></div>
-<p>Secret: <code>kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system</code></p>
-<p>The agent auto-detects <code>application_default_credentials.json</code> in the mounted secret and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> at runtime. GCP Workload Identity is also supported — the secret can be omitted when authentication is handled by the node metadata service.</p>
-<h3 id="claude-on-vertex-ai">Claude on Vertex AI<a class="headerlink" href="#claude-on-vertex-ai" title="Permanent link">&para;</a></h3>
+<p>New in v1.6 (BR-AI-087, #1778). Talks directly to the Gemini Developer API (<code>generativelanguage.googleapis.com</code>) via the native <code>google.golang.org/genai</code> client — no GCP project or location required. Secret: <code>kubectl create secret generic llm-credentials --from-literal=GEMINI_API_KEY=...</code></p>
+<h3 id="google-vertex-ai-gemini-or-claude">Google Vertex AI (Gemini or Claude)<a class="headerlink" href="#google-vertex-ai-gemini-or-claude" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
 </span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertex_ai</span>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gemini-2.5-pro</span><span class="w">    </span><span class="c1"># or a claude-* model -- auto-detected by prefix</span>
 </span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project-id</span>
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east5</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-central1</span>
 </span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
 </span></code></pre></div>
-<p>Uses the Anthropic Go SDK directly (not LangChainGo). Requires Vertex AI Model Garden access.</p>
+<p>Secret: <code>kubectl create secret generic llm-credentials --from-file=application_default_credentials.json=service-account-key.json -n kubernaut-system</code></p>
+<p>The agent auto-detects <code>application_default_credentials.json</code> in the mounted secret and sets <code>GOOGLE_APPLICATION_CREDENTIALS</code> at runtime. GCP Workload Identity is also supported — the secret can be omitted when authentication is handled by the node metadata service. <code>vertex_ai</code> hosts both model families: <code>model</code> values matching <code>claude-*</code> route to the native Anthropic client, <code>gemini-*</code> to the native <code>genai</code> client (#1778, #1792) — a model matching neither prefix fails fast at startup rather than defaulting silently.</p>
 <h3 id="anthropic-direct">Anthropic (Direct)<a class="headerlink" href="#anthropic-direct" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
 </span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
-</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-6</span>
 </span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">    </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">180</span>
 </span></code></pre></div>
 <p>Secret: <code>kubectl create secret generic llm-credentials --from-literal=ANTHROPIC_API_KEY=...</code></p>
 <h3 id="ollama-local-air-gapped">Ollama (Local / Air-Gapped)<a class="headerlink" href="#ollama-local-air-gapped" title="Permanent link">&para;</a></h3>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="nt">ai</span><span class="p">:</span>
 </span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ollama</span>
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai_compatible</span>
 </span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llama3</span>
 </span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">http://ollama.internal.svc:11434</span>
 </span></code></pre></div>
 <p>Recommended for disconnected/air-gapped environments. See <a href="../../operations/disconnected-install/">Disconnected Installation</a> for setup guidance.</p>
 <h2 id="secrets-pairing">Secrets Pairing<a class="headerlink" href="#secrets-pairing" title="Permanent link">&para;</a></h2>
-<p>LLM API credentials are stored in a separate Kubernetes Secret (default name: <code>llm-credentials</code>). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured via <code>kubernautAgent.llm.credentialsSecretName</code>.</p>
+<p>LLM API credentials are stored in a separate Kubernetes Secret (example name: <code>llm-credentials</code> -- there is no default, since <code>global.llmProfiles</code> has no default profile). The chart mounts this Secret into the Kubernaut Agent pod alongside the SDK config. The Secret name is configured per-profile via <code>global.llmProfiles.&lt;name&gt;.credentialsSecretName</code> (v1.6, DD-PLATFORM-007).</p>
 <p>The Secret is marked <code>optional: true</code> — the agent starts without it but all LLM calls fail until it is created.</p>
 <h2 id="temperature-tuning">Temperature Tuning<a class="headerlink" href="#temperature-tuning" title="Permanent link">&para;</a></h2>
 <div class="admonition info">
@@ -3841,6 +3917,83 @@
 <li><strong>0.8--1.0</strong>: More creative. May discover non-obvious root causes but less consistent.</li>
 </ul>
 <p><code>phaseModels.&lt;phase&gt;.temperature</code> can override the base value per phase (v1.5.5+) — see <a href="#per-phase-llm-routing-v151">Per-phase LLM routing</a>.</p>
+<h2 id="reasoning-configuration-v16">Reasoning Configuration (v1.6+)<a class="headerlink" href="#reasoning-configuration-v16" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">BR-AI-086 / BR-AI-087, #1604</p>
+<p>Reasoning/thinking-token support is <strong>disabled by default</strong> for every provider and model — it requires an explicit opt-in via <code>ai.llm.reasoning.enabled: true</code>.</p>
+</div>
+<p><code>ai.llm.reasoning</code> opts a model into extended "thinking" before it answers, for providers/models that support it. <code>effort</code> is a single, <strong>provider-agnostic</strong> knob — the same value means the same thing regardless of which provider you switch to, so tuning a <code>phaseModels</code> override or migrating providers never requires re-deriving a different vendor-specific number:</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>enabled</code></td>
+<td>Must be <code>true</code> for any of the fields below to take effect. Default <code>false</code>.</td>
+</tr>
+<tr>
+<td><code>effort</code></td>
+<td>One of <code>""</code> (unset — vendor default applies), <code>none</code>, <code>minimal</code>, <code>low</code>, <code>medium</code>, <code>high</code>, <code>xhigh</code>.</td>
+</tr>
+<tr>
+<td><code>budgetTokens</code></td>
+<td>Anthropic-family only (<code>anthropic</code>, <code>vertex_ai</code> hosting a <code>claude-*</code> model). When set, wins over <code>effort</code> as an exact token-budget override.</td>
+</tr>
+<tr>
+<td><code>capabilityOverride</code></td>
+<td><code>openai_compatible</code> only. One of <code>auto</code> (default), <code>force_on</code>, <code>force_off</code> — short-circuits vendor/model-name auto-detection for self-hosted/custom models that cannot be reliably identified by name alone.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Per-provider wire mapping</strong> (same <code>effort</code> value, different dialect):</p>
+<table>
+<thead>
+<tr>
+<th>Provider</th>
+<th>Mapping</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>anthropic</code>, <code>vertex_ai</code> (Claude)</td>
+<td>Maps onto Anthropic's <code>ThinkingLevel</code> tiers. <code>xhigh</code> clamps to <code>high</code> (Anthropic's ceiling — a range clamp, not an error). <code>effort: none</code> while <code>enabled: true</code> is rejected at validation: Anthropic has no "thinking enabled with zero effort" wire state.</td>
+</tr>
+<tr>
+<td><code>gemini</code>, <code>vertex_ai</code> (Gemini)</td>
+<td>Maps onto the same <code>ThinkingLevel</code> tiers as Anthropic (shared mapping code) — <code>xhigh</code> also clamps to <code>high</code>.</td>
+</tr>
+<tr>
+<td><code>openai</code>, <code>openai_compatible</code> (real OpenAI o-series / gpt-5 models)</td>
+<td>Passed through verbatim as the wire <code>reasoning_effort</code> parameter.</td>
+</tr>
+<tr>
+<td><code>openai_compatible</code> (DeepSeek-class models)</td>
+<td>Downscaled to DeepSeek's own two-tier dialect (<code>high</code>/<code>max</code> plus a separate thinking-enabled toggle).</td>
+</tr>
+</tbody>
+</table>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">anthropic</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-6</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="nt">reasoning</span><span class="p">:</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">      </span><span class="nt">effort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">high</span>
+</span></code></pre></div>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-5</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://api.openai.com/v1</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span><span class="nt">reasoning</span><span class="p">:</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">      </span><span class="nt">effort</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">medium</span>
+</span></code></pre></div>
+<p><code>phaseModels.&lt;phase&gt;.reasoning</code> can override the base value per phase — see <a href="#per-phase-llm-routing-v151">Per-phase LLM routing</a>. LLM <strong>identity</strong> (provider + model, at both base and per-phase level) is frozen at process start (#1599); a hot-reload that only changes <code>reasoning.effort</code> (a tuning field, not identity) takes effect without a restart.</p>
 <h2 id="mtls-for-llm-proxy-1342">mTLS for LLM Proxy (#1342)<a class="headerlink" href="#mtls-for-llm-proxy-1342" title="Permanent link">&para;</a></h2>
 <p>Both the Kubernaut Agent and the API Frontend support <strong>mutual TLS (mTLS)</strong> for outbound LLM HTTP calls. This is required when a corporate LLM proxy mandates client certificate authentication.</p>
 <table>
@@ -3872,15 +4025,15 @@
 <li>When mTLS is configured, <code>tlsCaFile</code> is <strong>required</strong> — the transport chain always verifies the server certificate.</li>
 </ul>
 <p><strong>Transport chain:</strong> The mTLS transport is the innermost layer. On top of it, the chain applies OAuth2 (if configured), custom headers, and circuit breaker wrapping. For <code>vertex_ai</code>, GCP OAuth2 is layered on top of the mTLS transport via <code>WithBaseTransport</code>.</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertex_ai</span>
-</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
-</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project</span>
-</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east4</span>
-</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-ca.pem</span>
-</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.crt</span>
-</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.key</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">vertex_ai</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">claude-sonnet-4-20250514</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span><span class="nt">vertexProject</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">my-project</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span><span class="nt">vertexLocation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">us-east4</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span><span class="nt">tlsCaFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-ca.pem</span>
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span><span class="nt">tlsCertFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.crt</span>
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span><span class="nt">tlsKeyFile</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernaut/certs/llm-client.key</span>
 </span></code></pre></div>
 <p>The same fields are available under <code>apifrontend.config.agent.llm.*</code> for the AF's LLM provider. See <a href="../configuration/#af-llm-configuration-v15">AF LLM Configuration</a>.</p>
 <h2 id="custom-headers">Custom Headers<a class="headerlink" href="#custom-headers" title="Permanent link">&para;</a></h2>
@@ -3917,28 +4070,28 @@
 </tbody>
 </table>
 <h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="nt">ai</span><span class="p">:</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">      </span><span class="c1"># Static value — suitable for non-sensitive identifiers</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Team-Id&quot;</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform-sre&quot;</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">      </span><span class="c1"># Secret reference — resolves the env var LLM_PROXY_TOKEN at startup</span>
-</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
-</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
-</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a>
-</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="w">      </span><span class="c1"># File path — re-read on every request (supports cert/token rotation)</span>
-</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Client-Cert&quot;</span>
-</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="nt">ai</span><span class="p">:</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">  </span><span class="nt">llm</span><span class="p">:</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span><span class="nt">customHeaders</span><span class="p">:</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">      </span><span class="c1"># Static value — suitable for non-sensitive identifiers</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Team-Id&quot;</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">        </span><span class="nt">value</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;platform-sre&quot;</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">      </span><span class="c1"># Secret reference — resolves the env var LLM_PROXY_TOKEN at startup</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Auth-Token&quot;</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">        </span><span class="nt">secretKeyRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;LLM_PROXY_TOKEN&quot;</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">      </span><span class="c1"># File path — re-read on every request (supports cert/token rotation)</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">      </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;X-Client-Cert&quot;</span>
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a><span class="w">        </span><span class="nt">filePath</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;/etc/kubernaut/certs/client.pem&quot;</span>
 </span></code></pre></div>
 <p>To expose a Kubernetes Secret as an environment variable for <code>secretKeyRef</code>, add an <code>env</code> entry to the Kubernaut Agent Deployment:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="nt">env</span><span class="p">:</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM_PROXY_TOKEN</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-proxy-credentials</span>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nt">env</span><span class="p">:</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">LLM_PROXY_TOKEN</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span><span class="nt">valueFrom</span><span class="p">:</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">      </span><span class="nt">secretKeyRef</span><span class="p">:</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">        </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-proxy-credentials</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">        </span><span class="nt">key</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">token</span>
 </span></code></pre></div>
 <h3 id="validation-rules">Validation Rules<a class="headerlink" href="#validation-rules" title="Permanent link">&para;</a></h3>
 <ul>
@@ -4031,7 +4184,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../configuration/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Configuration Reference">
+          <a href="../helm-values-reference/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Helm Values Reference">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -4041,7 +4194,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Configuration Reference
+                Helm Values Reference
               </div>
             </div>
           </a>

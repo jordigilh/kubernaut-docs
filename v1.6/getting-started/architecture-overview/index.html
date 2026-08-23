@@ -886,6 +886,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#kubernaut-agent-v16-no-longer-stateless" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Kubernaut Agent (v1.6+: no longer stateless)
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1012,6 +1023,8 @@
       
         
           
+        
+      
         
       
         
@@ -1498,6 +1511,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1524,10 +1565,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1545,8 +1586,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1694,6 +1735,8 @@
       
         
           
+        
+      
         
       
         
@@ -2161,6 +2204,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3253,7 +3324,7 @@
 </svg>
 </div>
 
-<p>The <strong>Gateway</strong> receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The <strong>Remediation Orchestrator</strong> coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The <strong>DataStorage</strong> foundation layer persists audit events, the workflow catalog, and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation, and Kubernaut Agent queries DataStorage for the workflow catalog and remediation history. The <strong>API Frontend</strong> (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. <code>InvestigationSession</code> CRDs are created with <strong>deferred materialization</strong> — the CRD only appears in the cluster after a RemediationRequest is successfully created via <code>kubernaut_remediate</code>, so sessions that never produce an RR leave no cluster footprint.</p>
+<p>The <strong>Gateway</strong> receives signals (Prometheus alerts, Kubernetes events) and creates RemediationRequest CRDs. The <strong>Remediation Orchestrator</strong> coordinates the pipeline, creating child CRDs for each phase. Six phase controllers -- Signal Processing, AI Analysis, Workflow Execution, Effectiveness Monitor, and Notification -- each handle one phase. The <strong>DataStorage</strong> foundation layer persists audit events and remediation history to PostgreSQL (with Valkey for the DLQ). All services emit audit events to DataStorage over HTTP. AI Analysis delegates to Kubernaut Agent for LLM-driven investigation via the <code>AgentSession</code> CRD (v1.6+) rather than an HTTP call; Kubernaut Agent serves the workflow catalog itself from an in-memory, informer-cache CRD watch (no DataStorage round trip) and queries DataStorage only for audit/remediation history. The <strong>API Frontend</strong> (v1.5+) exposes MCP and A2A protocol endpoints for interactive sessions. <code>InvestigationSession</code> CRDs are created with <strong>deferred materialization</strong> — the CRD only appears in the cluster after a RemediationRequest is successfully created via <code>kubernaut_remediate</code>, so sessions that never produce an RR leave no cluster footprint.</p>
 <h2 id="remediation-pipeline">Remediation Pipeline<a class="headerlink" href="#remediation-pipeline" title="Permanent link">&para;</a></h2>
 <p>The pipeline processes signals through six CRD-native phases:</p>
 <table>
@@ -3299,11 +3370,13 @@
 </table>
 <p>For a detailed breakdown of all sub-phases and tools, see the <a href="../../architecture/kubernaut-agent-investigation/">Architecture: Investigation Pipeline</a>.</p>
 <h2 id="services">Services<a class="headerlink" href="#services" title="Permanent link">&para;</a></h2>
-<p>Kubernaut runs <strong>11 services</strong> (v1.5+): 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, 1 Go API service, and the API Frontend.</p>
+<p>Kubernaut runs <strong>11 services</strong> (v1.5+): 6 CRD controllers, 2 stateless HTTP services, 1 admission webhook, and 2 hybrid API/CRD-reconciling services (Kubernaut Agent, API Frontend).</p>
 <h3 id="crd-controllers">CRD Controllers<a class="headerlink" href="#crd-controllers" title="Permanent link">&para;</a></h3>
 <p>Each CRD is owned by a dedicated controller. See <a href="../../architecture/overview/">System Overview</a> for the complete service topology and CRD ownership model.</p>
 <h3 id="stateless-services">Stateless Services<a class="headerlink" href="#stateless-services" title="Permanent link">&para;</a></h3>
-<p>See <a href="../../architecture/overview/">System Overview</a> for the complete service topology including Gateway, DataStorage, Auth Webhook, and Kubernaut Agent.</p>
+<p><strong>Gateway</strong> and <strong>DataStorage</strong> are pure stateless HTTP services — no in-process controller-runtime <code>Manager</code>, no CRD watches of their own; horizontally scalable behind a Service with no leader election. <strong>Auth Webhook</strong> (the admission webhook) is likewise stateless — it validates admission requests only, with no persistent state. See <a href="../../architecture/overview/">System Overview</a> for the complete service topology.</p>
+<h3 id="kubernaut-agent-v16-no-longer-stateless">Kubernaut Agent (v1.6+: no longer stateless)<a class="headerlink" href="#kubernaut-agent-v16-no-longer-stateless" title="Permanent link">&para;</a></h3>
+<p>As of v1.6, <strong>Kubernaut Agent is not a stateless service</strong>: alongside its MCP/HTTP API, it runs its own internal controller-runtime <code>Manager</code> reconciling the <code>AgentSession</code> CRD (DD-AA-KA-001) — watching for investigation dispatch and acting as the exclusive writer of <code>AgentSession.status</code> (session ID, phase, curated result). Multiple KA replicas each run this reconciler concurrently; a per-object Kubernetes <code>Lease</code> (not a single elected leader) arbitrates exactly-once dispatch per session, so KA still scales operationally like a stateless service, but is architecturally a CRD-reconciling controller. KA also serves the workflow catalog itself from an in-memory, informer-cache CRD watch rather than a DataStorage REST call. See <a href="../../architecture/overview/#crds-as-the-communication-backbone">System Overview</a> and <a href="../../api-reference/crds/#agentsession">AgentSession</a> for details.</p>
 <h2 id="pipeline-modes-v15">Pipeline Modes (v1.5+)<a class="headerlink" href="#pipeline-modes-v15" title="Permanent link">&para;</a></h2>
 <p>Kubernaut supports two pipeline modes simultaneously:</p>
 <table>
@@ -3339,7 +3412,7 @@
 </table>
 <p>Both modes use the same CRDs, audit events, and effectiveness assessments. Operators can start investigations on demand via the API Frontend or join an autonomous investigation mid-flight. See <a href="../../user-guide/interactive-sessions/">Interactive Sessions</a> for the operator guide.</p>
 <h2 id="communication-pattern">Communication Pattern<a class="headerlink" href="#communication-pattern" title="Permanent link">&para;</a></h2>
-<p>All inter-service communication in the remediation pipeline uses <strong>Kubernetes CRDs</strong>. The HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, AA calls Kubernaut Agent for AI investigation, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its 14 MCP tools to multiple backends (K8s API, Kubernaut Agent REST/MCP, DataStorage).</p>
+<p>All inter-service communication in the remediation pipeline uses <strong>Kubernetes CRDs</strong> -- including, as of v1.6, AI Analysis's dispatch to Kubernaut Agent, which moved from an HTTP submit/poll channel onto the <code>AgentSession</code> CRD (AA creates it once with an immutable spec; Kubernaut Agent is the exclusive writer of its status). The remaining HTTP exceptions are: all controllers emit audit events to DataStorage, WFE reads workflow/dependency details from the immutable <code>spec.workflowRef</code> snapshot rather than querying a catalog at all (v1.6), RO queries DataStorage for remediation history, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its MCP tools to multiple backends (K8s API, Kubernaut Agent MCP, DataStorage).</p>
 <p>This architecture provides:</p>
 <ul>
 <li><strong>Resilience</strong> — If a controller restarts, it picks up from the CRD's current state</li>
@@ -3348,7 +3421,7 @@
 <li><strong>Scalability</strong> — Each controller scales independently</li>
 </ul>
 <h2 id="custom-resources">Custom Resources<a class="headerlink" href="#custom-resources" title="Permanent link">&para;</a></h2>
-<p>Kubernaut defines 10 CRD types (v1.5+; 9 in v1.4), all in API group <code>kubernaut.ai/v1alpha1</code> and namespaced. The six pipeline CRDs are each owned by a dedicated controller. <code>RemediationWorkflow</code> and <code>ActionType</code> are catalog resources managed by the AuthWebhook. <code>RemediationRequest</code> is the top-level orchestration CRD. <code>InvestigationSession</code> (v1.5+) is created and managed by the API Frontend for interactive MCP/A2A sessions. See <a href="../../architecture/overview/">System Overview</a> for the complete service topology and CRD ownership model.</p>
+<p>Kubernaut defines 11 CRD types (v1.6+; 10 in v1.5, 9 in v1.4), all in API group <code>kubernaut.ai/v1alpha1</code> and namespaced. The six pipeline CRDs are each owned by a dedicated controller. <code>RemediationWorkflow</code> and <code>ActionType</code> are catalog resources managed by the AuthWebhook. <code>RemediationRequest</code> is the top-level orchestration CRD. <code>InvestigationSession</code> (v1.5+) is created and managed by the API Frontend for interactive MCP/A2A sessions. <code>AgentSession</code> (v1.6+) is created by the AI Analysis controller and exclusively written by Kubernaut Agent as the dispatch/result channel for LLM-driven investigation. See <a href="../../architecture/overview/">System Overview</a> for the complete service topology and CRD ownership model.</p>
 <h2 id="remediation-lifecycle">Remediation Lifecycle<a class="headerlink" href="#remediation-lifecycle" title="Permanent link">&para;</a></h2>
 <p>A <code>RemediationRequest</code> progresses through these phases:</p>
 <pre class="mermaid"><code>stateDiagram-v2

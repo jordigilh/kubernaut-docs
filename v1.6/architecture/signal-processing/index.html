@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -1870,10 +1902,21 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#4-signal-mode-classifier-yaml" class="md-nav__link">
+  <a href="#4-cluster-classifier-rego-fleet-only-v16" class="md-nav__link">
     <span class="md-ellipsis">
       
-        4. Signal Mode Classifier (YAML)
+        4. Cluster Classifier (Rego, Fleet only, v1.6+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-signal-mode-classifier-yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Signal Mode Classifier (YAML)
       
     </span>
   </a>
@@ -2333,6 +2376,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3566,7 +3637,16 @@
 <li><strong>Values</strong>: <code>critical</code>, <code>high</code>, <code>warning</code>, <code>info</code>, <code>unknown</code></li>
 <li><strong>Fatal on failure</strong>: A severity policy error transitions the CRD to <code>Failed</code> with <code>RegoEvaluationError</code></li>
 </ul>
-<h3 id="4-signal-mode-classifier-yaml">4. Signal Mode Classifier (YAML)<a class="headerlink" href="#4-signal-mode-classifier-yaml" title="Permanent link">&para;</a></h3>
+<h3 id="4-cluster-classifier-rego-fleet-only-v16">4. Cluster Classifier (Rego, Fleet only, v1.6+)<a class="headerlink" href="#4-cluster-classifier-rego-fleet-only-v16" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Query</strong>: <code>data.signalprocessing.cluster</code></li>
+<li><strong>Input</strong>: <code>{cluster: {labels}, namespace: {...}, signal: {...}, workload: {...}}</code> -- <code>cluster.labels</code> are the Kubernetes <code>metadata.labels</code> on the MCP Gateway's cluster-registration object (EAIGW Backend / Kuadrant <code>MCPServerRegistration</code>), set by the fleet operator at cluster-onboarding time, looked up via <code>ClusterRegistry.Get(signal.ClusterID)</code></li>
+<li><strong>Output</strong>: A single classification string (e.g. <code>"production"</code>), or empty</li>
+<li><strong>Non-fatal by design</strong> (BR-FLEET-003, #1511): unlike Severity, an undefined result -- no <code>cluster</code> rule in the policy at all, or a rule that doesn't match this input (e.g. unregistered cluster, non-fleet deployment) -- is a valid "no classification" outcome, not an error. Only a genuine Rego evaluation failure (runtime error, malformed non-string output) is treated as an error, and even that does not fail the phase.</li>
+<li>Stored on <code>SignalProcessing.status.signalClassification.clusterClassification</code>, propagated to <code>AIAnalysis.Spec.AnalysisRequest.SignalContext.Cluster</code>, and from there to Kubernaut Agent as the <code>cluster</code> param on workflow discovery -- see <a href="../fleet/">Fleet Management</a> and <a href="../../user-guide/workflow-authoring/">Authoring Workflows: Fleet troubleshooting</a> for how this drives the mandatory <code>spec.labels.cluster</code> filter on <code>RemediationWorkflow</code> CRDs.</li>
+<li>In non-fleet deployments (no <code>ClusterRegistry</code> configured), <code>cluster.labels</code> is always an empty (but defined) object, so the classifier consistently yields an empty classification -- this phase is a no-op outside Fleet.</li>
+</ul>
+<h3 id="5-signal-mode-classifier-yaml">5. Signal Mode Classifier (YAML)<a class="headerlink" href="#5-signal-mode-classifier-yaml" title="Permanent link">&para;</a></h3>
 <p>Signal mode is determined by a YAML configuration (<code>proactive-signal-mappings.yaml</code>, per BR-SP-106), not a Rego policy:</p>
 <ul>
 <li><strong>Input</strong>: Signal name</li>
@@ -3601,6 +3681,7 @@
 <li><code>EnvironmentClassification</code> (environment + source + timestamp)</li>
 <li><code>PriorityAssignment</code> (priority + source + policy name + timestamp)</li>
 <li><code>Severity</code> (normalized)</li>
+<li><code>ClusterClassification</code> (Fleet only; empty string when unregistered, non-fleet, or no matching Rego rule -- see <a href="#4-cluster-classifier-rego-fleet-only-v16">Cluster Classifier</a>)</li>
 <li><code>PolicyHash</code> (SHA256 of the Rego policy for audit traceability)</li>
 <li><code>SignalMode</code> and <code>SignalName</code> / <code>SourceSignalName</code></li>
 </ul>

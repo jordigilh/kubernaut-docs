@@ -1089,6 +1089,8 @@
       
         
       
+        
+      
     
     
     
@@ -1543,6 +1545,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1569,10 +1599,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1590,8 +1620,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1739,6 +1769,8 @@
       
         
           
+        
+      
         
       
         
@@ -2206,6 +2238,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3256,7 +3316,7 @@
 <li><strong>Non-deterministic</strong>: The same input may produce different reasoning paths. This complicates auditing, though Kubernaut mitigates this with full investigation transcripts and structured output.</li>
 <li><strong>Latency</strong>: LLM investigation adds 10-30 seconds. For incidents where millisecond response matters, this overhead is unavoidable in the current architecture.</li>
 <li><strong>Hallucination risk</strong>: The LLM may confidently diagnose the wrong root cause. Kubernaut addresses this through approval gates, Rego policies, effectiveness verification, and the cross-validation architecture described below.</li>
-<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; DataStorage applies label-based ranking to catalog queries but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or a self-hosted OpenAI-compatible endpoint.</li>
+<li><strong>Per-token cost</strong>: Each investigation consumes LLM API tokens. Investigation, enrichment, and workflow selection run as a single LLM agent session; Kubernaut Agent applies label-based ranking to its in-memory workflow catalog (v1.6; DataStorage served this through v1.5) but the LLM drives the final selection. Cost scales with investigations. For cost-sensitive environments, use smaller models or a self-hosted OpenAI-compatible endpoint.</li>
 </ul>
 <h2 id="predictive-ai-as-a-knowledge-based-agent">Predictive AI as a Knowledge-Based Agent<a class="headerlink" href="#predictive-ai-as-a-knowledge-based-agent" title="Permanent link">&para;</a></h2>
 <p>The key architectural insight is that predictive AI and generative AI are not competing approaches. They operate at different layers, and the most effective architecture <strong>composes</strong> them: predictive AI as a tool the LLM calls during investigation, alongside <code>kubectl</code>, Prometheus, and logs.</p>

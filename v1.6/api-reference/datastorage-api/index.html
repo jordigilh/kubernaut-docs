@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1976,6 +2008,34 @@
   
   
     <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
       <a href="../../architecture/security-rbac/" class="md-nav__link">
         
   
@@ -2271,45 +2331,6 @@
     <span class="md-ellipsis">
       
         Effectiveness &amp; Remediation History
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#workflow-catalog" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow Catalog
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Workflow Catalog">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#workflow-registration-content-integrity-and-idempotency" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Workflow registration: content integrity and idempotency
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#action-type-taxonomy" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Action Type Taxonomy
       
     </span>
   </a>
@@ -3164,18 +3185,18 @@
 
 
 <h1 id="datastorage-api">DataStorage API<a class="headerlink" href="#datastorage-api" title="Permanent link">&para;</a></h1>
-<p>The DataStorage service provides a REST API for audit events, workflow catalog management, and RemediationRequest reconstruction. All Kubernaut services access PostgreSQL exclusively through this API.</p>
+<p>The DataStorage service provides a REST API for audit events, compliance operations, and RemediationRequest reconstruction. All Kubernaut services access PostgreSQL exclusively through this API.</p>
+<div class="admonition warning">
+<p class="admonition-title">v1.6: Workflow Catalog and Action Type Taxonomy REST endpoints retired</p>
+<p>Through v1.5, this page also documented a Workflow Catalog (<code>/api/v1/workflows*</code>) and Action Type Taxonomy (<code>/api/v1/action-types*</code>) REST surface. <strong>As of v1.6</strong> (DD-WORKFLOW-018/019), neither exists anymore — confirmed against the DataStorage route table, which has no remaining registration for either path. The <code>RemediationWorkflow</code>/<code>ActionType</code> CRDs (etcd) are the sole source of truth now: the Auth Webhook admits them directly, and Kubernaut Agent serves discovery/scoring from its own in-memory, informer-cache-backed catalog. See <a href="../../architecture/data-persistence/#workflow-catalog-migration-v16">Workflow Catalog Migration</a>, <a href="../../user-guide/workflows/#registration-model">Registration Model</a>, and <a href="../kubernaut-agent-api/">Kubernaut Agent API</a> for the current architecture.</p>
+</div>
 <div class="admonition note">
 <p class="admonition-title">OpenAPI Spec</p>
 <p>The full OpenAPI specification is available at <a href="https://github.com/jordigilh/kubernaut/blob/main/api/openapi/data-storage-v1.yaml"><code>api/openapi/data-storage-v1.yaml</code></a> in the main repository.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">OpenAPI enum values</p>
-<p>Catalog status enums align with the CRD typed-enum convention and use <strong>PascalCase</strong> (for example, <code>active</code> → <code>Active</code>, <code>deprecated</code> → <code>Deprecated</code>). Other fields (such as severity filters) may remain lowercase depending on the schema. API clients should follow each endpoint's declared enum values.</p>
-</div>
-<div class="admonition note">
-<p class="admonition-title">Deterministic catalog IDs</p>
-<p>Workflow catalog IDs (<code>workflowId</code>) are <strong>deterministic UUIDs</strong> (UUIDv5) and remain stable across PVC wipes for unchanged workflow specifications. Action types are keyed by their <code>actionType</code> identifier string.</p>
+<p>Enum values in the OpenAPI schema follow each endpoint's declared casing convention — API clients should follow each endpoint's declared enum values rather than assume a single global convention.</p>
 </div>
 <h2 id="base-url">Base URL<a class="headerlink" href="#base-url" title="Permanent link">&para;</a></h2>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>https://data-storage-service.kubernaut-system.svc.cluster.local:8080
@@ -3286,117 +3307,6 @@
 <td><code>GET</code></td>
 <td><code>/api/v1/remediation-history/context</code></td>
 <td>Get remediation history for a target resource (called internally by Kubernaut Agent resource-context tools during investigation; not LLM-callable directly)</td>
-</tr>
-</tbody>
-</table>
-<h3 id="workflow-catalog">Workflow Catalog<a class="headerlink" href="#workflow-catalog" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Path</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/workflows</code></td>
-<td>Register a workflow (called by Auth Webhook on <code>RemediationWorkflow</code> CRD admission)</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/workflows</code></td>
-<td>List workflows (filter by <code>status</code>, <code>environment</code>, <code>priority</code>, <code>component</code>, <code>workflow_name</code>)</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/workflows/{workflow_id}</code></td>
-<td>Get a specific workflow</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/workflows/{workflow_id}</code></td>
-<td>Update a workflow</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/workflows/actions</code></td>
-<td>List available action types (Step 1 of discovery protocol)</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/workflows/actions/{action_type}</code></td>
-<td>Get workflows by action type (Step 2 of discovery protocol)</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/workflows/{workflow_id}/disable</code></td>
-<td>Disable a workflow</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/workflows/{workflow_id}/enable</code></td>
-<td>Enable a workflow</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/workflows/{workflow_id}/deprecate</code></td>
-<td>Deprecate a workflow</td>
-</tr>
-</tbody>
-</table>
-<h4 id="workflow-registration-content-integrity-and-idempotency">Workflow registration: content integrity and idempotency<a class="headerlink" href="#workflow-registration-content-integrity-and-idempotency" title="Permanent link">&para;</a></h4>
-<p><code>POST /api/v1/workflows</code> (Auth Webhook on <code>RemediationWorkflow</code> admission) is <strong>idempotent</strong> when the same <code>(name, version)</code> is submitted with the <strong>same content hash</strong> — the API returns <strong>200 OK</strong> and does not create duplicate rows.</p>
-<p>If the client registers a workflow with the same <code>(name, version)</code> but a <strong>different</strong> content hash, the request <strong>conflicts</strong> with the existing row: the API returns <strong>HTTP 409 Conflict</strong> with an <a href="https://www.rfc-editor.org/rfc/rfc9457">RFC 7807</a> problem body:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Value</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>type</code></td>
-<td><code>content-integrity-violation</code></td>
-</tr>
-<tr>
-<td><code>title</code></td>
-<td><code>Content Changed Without Version Bump</code></td>
-</tr>
-</tbody>
-</table>
-<p>Bump the workflow <strong>version</strong> (or reconcile with the stored definition) so catalog identity matches the new content.</p>
-<h3 id="action-type-taxonomy">Action Type Taxonomy<a class="headerlink" href="#action-type-taxonomy" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Method</th>
-<th>Path</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>POST</code></td>
-<td><code>/api/v1/action-types</code></td>
-<td>Register an action type</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/action-types/{name}</code></td>
-<td>Update an action type description</td>
-</tr>
-<tr>
-<td><code>PATCH</code></td>
-<td><code>/api/v1/action-types/{name}/disable</code></td>
-<td>Disable an action type</td>
-</tr>
-<tr>
-<td><code>GET</code></td>
-<td><code>/api/v1/action-types/{name}/workflow-count</code></td>
-<td>Get the number of active workflows for an action type</td>
 </tr>
 </tbody>
 </table>

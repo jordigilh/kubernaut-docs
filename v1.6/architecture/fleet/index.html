@@ -12,13 +12,13 @@
         <meta name="author" content="Kubernaut Contributors">
       
       
-        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.6/architecture/audit-pipeline/">
+        <link rel="canonical" href="https://jordigilh.github.io/kubernaut-docs/v1.6/architecture/fleet/">
       
       
-        <link rel="prev" href="../async-propagation/">
+        <link rel="prev" href="../apifrontend/">
       
       
-        <link rel="next" href="../data-persistence/">
+        <link rel="next" href="../security-rbac/">
       
       
         
@@ -29,7 +29,7 @@
     
     
       
-        <title>Audit Pipeline - Kubernaut</title>
+        <title>Fleet Management - Kubernaut</title>
       
     
     
@@ -80,7 +80,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#audit-pipeline" class="md-skip">
+        <a href="#fleet-management" class="md-skip">
           Skip to content
         </a>
       
@@ -129,7 +129,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Audit Pipeline
+              Fleet Management
             
           </span>
         </div>
@@ -1924,37 +1924,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Audit Pipeline
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../audit-pipeline/" class="md-nav__link">
         
   
   
@@ -1970,220 +1943,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#architecture" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Architecture
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Architecture">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#design-principles" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Design Principles
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#buffered-audit-store" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Buffered Audit Store
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Buffered Audit Store">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#interface" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Interface
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#flush-triggers" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Flush Triggers
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#retry-logic" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Retry Logic
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#configuration" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Configuration
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#observability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Observability
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#event-flow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Event Flow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#event-structure" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Event Structure
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Event Structure">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#hash-chain-tamper-detection" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Hash Chain (Tamper Detection)
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#correlation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Correlation
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#emitting-services" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Emitting Services
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#operator-attribution" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Operator Attribution
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#dead-letter-queue" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Dead Letter Queue
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#next-steps" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Next Steps
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -2249,10 +2008,37 @@
                 
   
   
+    
   
   
-    <li class="md-nav__item">
-      <a href="../fleet/" class="md-nav__link">
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
         
   
   
@@ -2268,6 +2054,136 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#when-fleet-is-used" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        When Fleet Is Used
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#component-responsibilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component Responsibilities
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pluggable-scope-backend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pluggable Scope Backend
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mcp-gateway-technology" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MCP Gateway Technology
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cluster-transparent-tool-exposure-dd-fleet-005" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cluster-Transparent Tool Exposure (DD-FLEET-005)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fail-closed-readiness-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fail-Closed Readiness Gate
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#we-remote-execution" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WE Remote Execution
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration-reference" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration Reference
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Next Steps
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -3262,418 +3178,229 @@
 
 
 
-<h1 id="audit-pipeline">Audit Pipeline<a class="headerlink" href="#audit-pipeline" title="Permanent link">&para;</a></h1>
+<h1 id="fleet-management">Fleet Management<a class="headerlink" href="#fleet-management" title="Permanent link">&para;</a></h1>
+<p><em>Introduced in v1.6 (ADR-068). Status: Implemented (MVP).</em></p>
+<p>Fleet mode extends Kubernaut's single-cluster architecture to <strong>multi-cluster federation</strong>: signals from remote clusters, scope validation against a federated control plane, LLM investigation using remote cluster tools, and remediation execution on remote clusters -- all through a single external <strong>MCP Gateway</strong>, with zero regression for single-cluster deployments (fleet is disabled by default).</p>
 <div class="admonition info">
-<p class="admonition-title">Operator guide</p>
-<p>For retention policies, observability metrics, and event correlation, see <a href="../../user-guide/audit-and-observability/">Audit &amp; Observability</a>.</p>
+<p class="admonition-title">Not the AWX/OCM hub-and-spoke design from earlier roadmap drafts</p>
+<p>Earlier planning docs described a hub-and-spoke model built on Open Cluster Management (OCM) and remote execution via AWX/AAP. The architecture that actually shipped in v1.6 is a <strong>read-side federation</strong> built on an MCP Gateway (Kuadrant or Envoy AI Gateway) plus a pluggable scope-check backend -- remote execution runs through the same MCP Gateway using Kubernetes-native primitives (Jobs, Tekton PipelineRuns), not AWX. See <a href="#we-remote-execution">DD-FLEET-007</a> for why the Ansible/AAP engine specifically is not supported for remote clusters.</p>
 </div>
-<p>Kubernaut's audit pipeline provides a complete record of every action taken during remediation -- from signal ingestion to effectiveness assessment, including human approval decisions. Every service includes a buffered audit store that batches events and sends them to DataStorage for persistent storage.</p>
+<h2 id="when-fleet-is-used">When Fleet Is Used<a class="headerlink" href="#when-fleet-is-used" title="Permanent link">&para;</a></h2>
+<p>Fleet is opt-in per deployment (<code>fleet.enabled: true</code> in Helm values / <code>spec.fleet</code> on the operator's <code>Kubernaut</code> CR). When disabled, every Fleet-dependent service falls back to its existing local-only behavior with no new dependencies.</p>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
-<pre class="mermaid"><code>graph LR
-    subgraph Service["Each Kubernaut Service"]
-        H[Handler / Reconciler] --&gt;|StoreAudit| B[Buffered Store]
-        B --&gt;|batch POST| DS
+<pre class="mermaid"><code>flowchart TB
+    subgraph Mgmt["Management Cluster"]
+        Thanos["Thanos Querier&lt;br/&gt;&lt;small&gt;multi-cluster Prometheus&lt;/small&gt;"] --&gt;|alerts, cluster label| GW["Gateway"]
+        GW --&gt; RO["Remediation&lt;br/&gt;Orchestrator"]
+        RO --&gt; SP["Signal&lt;br/&gt;Processing"]
+        RO --&gt; AA["AI Analysis"]
+        AA --&gt; KA["Kubernaut Agent"]
+        RO --&gt; WE["Workflow&lt;br/&gt;Execution"]
+        AF["API Frontend"]
+        EM["Effectiveness&lt;br/&gt;Monitor"]
+        FMC["FMC&lt;br/&gt;&lt;small&gt;Fleet Metadata Cache&lt;/small&gt;"]
+
+        GW -.-&gt;|"scope check&lt;br/&gt;p95 &amp;lt; 50ms"| FSC["FederatedScopeChecker"]
+        RO -.-&gt;|scope check| FSC
+        FSC --&gt;|local| K8sAPI["local K8s API"]
+        FSC --&gt;|remote| Backend["scope.ScopeChecker&lt;br/&gt;backend adapter"]
+        Backend --&gt; Valkey[("Valkey&lt;br/&gt;(FMC default)")]
+        FMC --&gt;|polls, writes| Valkey
+
+        GW -.-&gt;|read| GWY
+        KA -.-&gt;|read| GWY
+        RO -.-&gt;|read| GWY
+        SP -.-&gt;|read| GWY
+        AF -.-&gt;|read| GWY
+        EM -.-&gt;|read| GWY
+        FMC -.-&gt;|read: cluster registry| GWY
+        WE --&gt;|"read + write&lt;br/&gt;(remediation)"| GWY["MCP Gateway&lt;br/&gt;&lt;small&gt;Kuadrant or Envoy AI Gateway&lt;/small&gt;"]
+
+        IdP["OAuth2 Provider&lt;br/&gt;&lt;small&gt;e.g. Keycloak, DEX&lt;/small&gt;"]
+        GW -.-&gt;|"client-credentials&lt;br/&gt;(all 7 Fleet-dependent services)"| IdP
+        GWY -.-&gt;|validates token| IdP
     end
 
-    DS[DataStorage&lt;br/&gt;REST API] --&gt; PG[(PostgreSQL&lt;br/&gt;audit_events)]
-    DS -.-&gt;|"single-event paths only"| RD[(Valkey&lt;br/&gt;DLQ)]</code></pre>
-<h3 id="design-principles">Design Principles<a class="headerlink" href="#design-principles" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Fire-and-forget</strong> -- Audit failures never block remediation (DD-AUDIT-002)</li>
-<li><strong>Buffered batching</strong> -- Events are queued in-memory and sent in configurable batches</li>
-<li><strong>Graceful shutdown</strong> -- Buffers flush on pod termination (DD-007, ADR-032)</li>
-<li><strong>Per-service isolation</strong> -- Each service has its own audit client with service-specific event types</li>
-<li><strong>Hash chain integrity</strong> -- Events are chained via <code>SHA256(previous_hash + event_json)</code> for tamper detection</li>
-</ul>
-<h2 id="buffered-audit-store">Buffered Audit Store<a class="headerlink" href="#buffered-audit-store" title="Permanent link">&para;</a></h2>
-<p>Every Go service instantiates a <code>BufferedAuditStore</code> from <code>pkg/audit/store.go</code>:</p>
-<h3 id="interface">Interface<a class="headerlink" href="#interface" title="Permanent link">&para;</a></h3>
+    GWY --&gt; MCPa["K8s MCP Server&lt;br/&gt;Cluster A"]
+    GWY --&gt; MCPb["K8s MCP Server&lt;br/&gt;Cluster B"]
+    GWY --&gt; MCPc["K8s MCP Server&lt;br/&gt;Cluster C"]
+
+    MCPa --&gt; ClusterA[("Cluster A")]
+    MCPb --&gt; ClusterB[("Cluster B")]
+    MCPc --&gt; ClusterC[("Cluster C")]</code></pre>
+<p>The <strong>MCP Gateway is external infrastructure</strong> -- like PostgreSQL or Prometheus, it must be deployed before Kubernaut. The Helm chart does not install it; platform teams choose and deploy their preferred implementation (Kuadrant MCP Gateway or Envoy AI Gateway) and register per-cluster K8s MCP Server backends with it.</p>
+<h2 id="component-responsibilities">Component Responsibilities<a class="headerlink" href="#component-responsibilities" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
-<th>Method</th>
-<th>Behavior</th>
+<th>Component</th>
+<th>Role</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>StoreAudit(ctx, event)</code></td>
-<td>Non-blocking enqueue. If the buffer is full, the event is <strong>dropped</strong> (not blocking)</td>
+<td><strong>Gateway (GW)</strong></td>
+<td>Extracts the <code>cluster</code> label from Thanos alerts, computes cluster-aware fingerprints (so the same resource on two clusters never deduplicates into one <code>RemediationRequest</code>), gates signals via <code>FederatedScopeChecker</code></td>
 </tr>
 <tr>
-<td><code>Flush(ctx)</code></td>
-<td>Blocks until all buffered events are written</td>
+<td><strong>WorkflowExecution (WE)</strong></td>
+<td>Executes remediation on remote clusters through the MCP Gateway: Jobs and Tekton PipelineRuns. Requires read+write gateway access.</td>
 </tr>
 <tr>
-<td><code>Close()</code></td>
-<td>Flushes remaining events and stops the background worker</td>
+<td><strong>FMC (Fleet Metadata Cache)</strong></td>
+<td>New service (v1.6). Polls the MCP Gateway for <code>kubernaut.ai/managed=true</code> resources, caches metadata in Valkey, exposes scope queries over REST -- the default backend for environments with no existing federated control plane</td>
+</tr>
+<tr>
+<td><strong>FederatedScopeChecker</strong></td>
+<td>Routes scope checks: <code>ClusterID == ""</code> -&gt; local <code>scope.Manager</code>; <code>ClusterID != ""</code> -&gt; the configured remote backend adapter</td>
+</tr>
+<tr>
+<td><strong>GatewayDiscoverer</strong></td>
+<td>Cluster/tool discovery interface, implemented once per supported gateway (Kuadrant, EAIGW). Called <strong>server-side only</strong> -- never LLM-facing (see below)</td>
+</tr>
+<tr>
+<td><strong>CRDWatcher</strong></td>
+<td>Discovers clusters from the gateway's own native CRDs (<code>MCPRoute</code>/<code>Backend</code> for EAIGW, <code>MCPServerRegistration</code> for Kuadrant); Kubernaut is a read-only consumer, never creates or modifies these</td>
+</tr>
+<tr>
+<td><strong>OAuth2 Provider</strong></td>
+<td>External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (<code>pkg/fleet/mcpclient</code>). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own.</td>
 </tr>
 </tbody>
 </table>
-<h3 id="flush-triggers">Flush Triggers<a class="headerlink" href="#flush-triggers" title="Permanent link">&para;</a></h3>
-<p>Events are flushed in four scenarios:</p>
-<ol>
-<li><strong>Batch full</strong> -- When the in-memory batch reaches <code>BatchSize</code>, it is sent immediately</li>
-<li><strong>Timer</strong> -- Every <code>FlushInterval</code>, the current batch is sent regardless of size</li>
-<li><strong>Explicit flush</strong> -- <code>Flush()</code> drains the buffer and sends all remaining events</li>
-<li><strong>Shutdown</strong> -- <code>Close()</code> performs a final flush before stopping</li>
-</ol>
-<h3 id="retry-logic">Retry Logic<a class="headerlink" href="#retry-logic" title="Permanent link">&para;</a></h3>
-<ul>
-<li><strong>Max retries</strong>: 3 per batch (3 total attempts, 2 backoff waits)</li>
-<li><strong>Backoff</strong>: 1s, 4s (quadratic: <code>n²</code> seconds). A third backoff (9s) would only occur if <code>MaxRetries</code> is increased beyond 3.</li>
-<li><strong>4xx errors</strong>: No retry (permanent failure)</li>
-<li><strong>5xx / network errors</strong>: Retry with backoff</li>
-</ul>
-<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<p>Signal Processing, API Frontend, and Effectiveness Monitor also participate as read-only MCP Gateway callers (remote enrichment, <code>list_clusters</code>/resource reads, and remote target reads respectively).</p>
+<h2 id="pluggable-scope-backend">Pluggable Scope Backend<a class="headerlink" href="#pluggable-scope-backend" title="Permanent link">&para;</a></h2>
+<p>GW and RO depend only on the <code>scope.ScopeChecker</code> interface (<code>pkg/shared/scope/checker.go</code>) -- a single method, <code>IsManagedResource(ctx, ResourceIdentity)</code>, where <code>ResourceIdentity</code> carries an optional <code>ClusterID</code>. Neither service knows which backend answers the check; the factory (<code>fleet.NewScopeChecker</code>) selects an adapter at startup from <code>fleet.backend</code> config, and returns the caller's own local checker unchanged when fleet is disabled -- that's what guarantees zero regression for single-cluster deployments, not a special-cased branch.</p>
 <table>
 <thead>
 <tr>
-<th>Parameter</th>
-<th>Default</th>
-<th>Recommendation</th>
+<th>Backend</th>
+<th>Status</th>
+<th>Scope-check latency</th>
+<th>Staleness</th>
+<th>Best for</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>BufferSize</code></td>
-<td>10,000</td>
-<td>10k--50k (DD-AUDIT-004)</td>
+<td><strong>FMC (Valkey)</strong></td>
+<td>Implemented, default</td>
+<td>&lt; 1ms</td>
+<td>30-45s (poll + TTL)</td>
+<td>GitOps environments, no existing fleet platform</td>
 </tr>
 <tr>
-<td><code>BatchSize</code></td>
-<td>1,000 (library default; Gateway chart overrides to 100)</td>
-<td>100–1,000</td>
+<td><strong>ACM (Advanced Cluster Management)</strong></td>
+<td>Implemented</td>
+<td>10-50ms</td>
+<td>Near-real-time</td>
+<td>Red Hat ACM shops</td>
 </tr>
 <tr>
-<td><code>FlushInterval</code></td>
-<td>1 second</td>
-<td>1s</td>
+<td><strong>Rancher</strong></td>
+<td>Planned (v1.6 roadmap item, not yet shipped)</td>
+<td>20-100ms (design target)</td>
+<td>Real-time (design target)</td>
+<td>SUSE Rancher shops</td>
 </tr>
 <tr>
-<td><code>MaxRetries</code></td>
-<td>3</td>
-<td>3</td>
+<td><strong>Clusterpedia</strong></td>
+<td>Planned (v1.6 roadmap item, not yet shipped)</td>
+<td>5-30ms (design target)</td>
+<td>Near-real-time (design target)</td>
+<td>Lightweight, vendor-neutral</td>
 </tr>
 </tbody>
 </table>
-<h3 id="observability">Observability<a class="headerlink" href="#observability" title="Permanent link">&para;</a></h3>
-<p>The buffered store exposes one registered Prometheus metric:</p>
-<table>
-<thead>
-<tr>
-<th>Metric</th>
-<th>Type</th>
-<th>Labels</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>audit_events_dropped_total</code></td>
-<td>CounterVec</td>
-<td><code>service</code></td>
-<td>Events dropped due to full buffer</td>
-</tr>
-</tbody>
-</table>
-<p>Additionally, internal atomic counters (<code>buffered_count</code>, <code>written_count</code>, <code>failed_batch_count</code>) are tracked for debug logging but are <strong>not</strong> registered as Prometheus metrics.</p>
-<h2 id="event-flow">Event Flow<a class="headerlink" href="#event-flow" title="Permanent link">&para;</a></h2>
-<ol>
-<li>A handler or reconciler calls <code>auditStore.StoreAudit(ctx, event)</code> with a structured <code>AuditEvent</code></li>
-<li>The buffered store enqueues the event into an in-memory channel (non-blocking)</li>
-<li>A background goroutine batches events and sends them via <code>POST /api/v1/audit/events/batch</code> to DataStorage</li>
-<li>DataStorage validates, converts, and inserts the batch into the <code>audit_events</code> PostgreSQL table within a transaction</li>
-<li>On PostgreSQL failure, the batch endpoint returns HTTP 500 — the caller's retry logic handles re-delivery. The batch handler does <strong>not</strong> use the Valkey DLQ (this is a known gap; see GAP-10 in the DataStorage source).</li>
-<li>On shutdown, <code>auditStore.Close()</code> flushes remaining events</li>
-</ol>
-<h2 id="event-structure">Event Structure<a class="headerlink" href="#event-structure" title="Permanent link">&para;</a></h2>
-<p>Every audit event includes:</p>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>event_id</code></td>
-<td><code>UUID</code></td>
-<td>Unique identifier (auto-generated)</td>
-</tr>
-<tr>
-<td><code>event_version</code></td>
-<td><code>string</code></td>
-<td>Schema version (default: <code>1.0</code>)</td>
-</tr>
-<tr>
-<td><code>event_timestamp</code></td>
-<td><code>timestamptz</code></td>
-<td>When the event occurred</td>
-</tr>
-<tr>
-<td><code>event_type</code></td>
-<td><code>string</code></td>
-<td>Hierarchical type (e.g., <code>gateway.signal.received</code>)</td>
-</tr>
-<tr>
-<td><code>event_category</code></td>
-<td><code>string</code></td>
-<td>Category (e.g., <code>signal</code>, <code>remediation</code>)</td>
-</tr>
-<tr>
-<td><code>event_action</code></td>
-<td><code>string</code></td>
-<td>Action (e.g., <code>received</code>, <code>completed</code>)</td>
-</tr>
-<tr>
-<td><code>event_outcome</code></td>
-<td><code>string</code></td>
-<td><code>success</code>, <code>failure</code>, <code>pending</code></td>
-</tr>
-<tr>
-<td><code>actor_type</code></td>
-<td><code>string</code></td>
-<td><code>service</code> or <code>human</code></td>
-</tr>
-<tr>
-<td><code>actor_id</code></td>
-<td><code>string</code></td>
-<td>Service name or operator identity</td>
-</tr>
-<tr>
-<td><code>resource_type</code></td>
-<td><code>string</code></td>
-<td>Target resource type</td>
-</tr>
-<tr>
-<td><code>resource_id</code></td>
-<td><code>string</code></td>
-<td>Target resource identifier</td>
-</tr>
-<tr>
-<td><code>correlation_id</code></td>
-<td><code>string</code></td>
-<td>Links all events for one remediation</td>
-</tr>
-<tr>
-<td><code>namespace</code></td>
-<td><code>string</code></td>
-<td>Kubernetes namespace</td>
-</tr>
-<tr>
-<td><code>actor_ip</code></td>
-<td><code>string</code></td>
-<td>Client IP address of the actor (v1.5+, AF events)</td>
-</tr>
-<tr>
-<td><code>target_namespace</code></td>
-<td><code>string</code></td>
-<td>Namespace of the target K8s resource (v1.5+, AF events)</td>
-</tr>
-<tr>
-<td><code>target_kind</code></td>
-<td><code>string</code></td>
-<td>Kind of the target K8s resource (v1.5+, AF events)</td>
-</tr>
-<tr>
-<td><code>event_data</code></td>
-<td><code>JSONB</code></td>
-<td>Service-specific payload</td>
-</tr>
-<tr>
-<td><code>event_hash</code></td>
-<td><code>string</code></td>
-<td>SHA256 hash chain for integrity</td>
-</tr>
-<tr>
-<td><code>previous_event_hash</code></td>
-<td><code>string</code></td>
-<td>Previous event's hash</td>
-</tr>
-<tr>
-<td><code>retention_days</code></td>
-<td><code>int</code></td>
-<td>Default: 2555 (7 years)</td>
-</tr>
-<tr>
-<td><code>is_sensitive</code></td>
-<td><code>bool</code></td>
-<td>PII flag</td>
-</tr>
-</tbody>
-</table>
-<h3 id="hash-chain-tamper-detection">Hash Chain (Tamper Detection)<a class="headerlink" href="#hash-chain-tamper-detection" title="Permanent link">&para;</a></h3>
-<p>Events form a hash chain for integrity verification:</p>
-<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>event_hash = SHA256(previous_event_hash + canonical_event_json)
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">fleet</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">  </span><span class="nt">backend</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fmc&quot;</span><span class="w">  </span><span class="c1"># &quot;fmc&quot; | &quot;acm&quot; today; &quot;rancher&quot; | &quot;clusterpedia&quot; planned</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="nt">fmc</span><span class="p">:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://fmc.kubernaut-system.svc:8080&quot;</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="nt">acm</span><span class="p">:</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">    </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://search-search-api.open-cluster-management.svc:4010&quot;</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">    </span><span class="c1"># Auth: mounted ServiceAccount token by default</span>
+</span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a>
+</span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span><span class="nt">mcpGatewayEndpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://mcp-gateway.example.com&quot;</span>
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span><span class="nt">mcpGatewayType</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;eaigw&quot;</span><span class="w">  </span><span class="c1"># &quot;eaigw&quot; (default) | &quot;kuadrant&quot;</span>
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span><span class="nt">oauth2</span><span class="p">:</span>
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">    </span><span class="nt">tokenURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://keycloak.example.com/realms/kubernaut-fleet/protocol/openid-connect/token&quot;</span>
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">    </span><span class="nt">credentialsSecretRef</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;fleet-oauth2-credentials&quot;</span><span class="w">  </span><span class="c1"># Secret with client_id/client_secret keys</span>
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">    </span><span class="nt">scopes</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;openid&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;groups&quot;</span><span class="p p-Indicator">]</span><span class="w">  </span><span class="c1"># DefaultFleetScopes if omitted</span>
 </span></code></pre></div>
-<p>Fields excluded from the hash: <code>event_hash</code>, <code>previous_event_hash</code>, <code>event_date</code>, <code>legal_hold</code> fields. This enables after-the-fact detection of any audit event modification.</p>
-<h2 id="correlation">Correlation<a class="headerlink" href="#correlation" title="Permanent link">&para;</a></h2>
-<p>All audit events for a single remediation share a <code>correlation_id</code> set to the <code>RemediationRequest</code> name (DD-AUDIT-CORRELATION-002). This enables:</p>
+<h2 id="mcp-gateway-technology">MCP Gateway Technology<a class="headerlink" href="#mcp-gateway-technology" title="Permanent link">&para;</a></h2>
+<p>Both <strong>Kuadrant MCP Gateway</strong> and <strong>Envoy AI Gateway (EAIGW)</strong> are supported through the same <code>GatewayDiscoverer</code> adapter pattern; Kubernaut's business logic is gateway-agnostic and never needs to know which one is deployed.</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Envoy AI Gateway</th>
+<th>Kuadrant MCP Gateway</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Components to deploy</strong></td>
+<td>1 (single Deployment/binary)</td>
+<td>3+ (Kuadrant controller + broker + Istio)</td>
+</tr>
+<tr>
+<td><strong>Istio dependency</strong></td>
+<td>None</td>
+<td>Requires <code>istiod</code></td>
+</tr>
+<tr>
+<td><strong>Tool prefixing</strong></td>
+<td><code>{backendName}__{toolName}</code></td>
+<td><code>{toolPrefix}{toolName}</code></td>
+</tr>
+<tr>
+<td><strong>Auth model</strong></td>
+<td>Built-in OAuth + CEL authorization</td>
+<td>Authorino + OPA Rego policies</td>
+</tr>
+<tr>
+<td><strong>Maturity</strong></td>
+<td>v1.0 GA</td>
+<td>Technology Preview</td>
+</tr>
+<tr>
+<td><strong>CRD model</strong></td>
+<td><code>MCPRoute</code> + <code>Backend</code></td>
+<td><code>MCPServerRegistration</code> + <code>MCPGatewayExtension</code></td>
+</tr>
+</tbody>
+</table>
+<p><code>gatewayType</code> is a single field (<code>spec.fleet.gatewayType</code> on the operator's <code>Kubernaut</code> CR), propagated by the operator to both KA's and FMC's config during reconciliation. See the <a href="https://github.com/jordigilh/kubernaut-operator/blob/main/docs/installation/04-fleet-mcp-gateway.md">Kuadrant MCP Gateway install guide</a> for a worked setup.</p>
+<h2 id="cluster-transparent-tool-exposure-dd-fleet-005">Cluster-Transparent Tool Exposure (DD-FLEET-005)<a class="headerlink" href="#cluster-transparent-tool-exposure-dd-fleet-005" title="Permanent link">&para;</a></h2>
+<p>At fleet scale (100+ clusters, 1800+ tools), presenting every cluster's tools to the LLM would waste context tokens and invite hallucination -- but a single investigation is always scoped to exactly one target cluster (<code>RemediationRequest.Spec.ClusterID</code>), so there is never a "pick a cluster" decision for the LLM to make.</p>
+<p><strong>There are no LLM-callable <code>list_clusters</code> / <code>list_tools_for_cluster</code> tools.</strong> Instead:</p>
+<ol>
+<li>KA's <code>FleetOverlayResolver</code> calls <code>GatewayDiscoverer.ToolsForCluster(signal.ClusterID)</code> <strong>server-side, once, before the LLM ever runs</strong> for that investigation</li>
+<li>The resolved remote tools are merged into the investigation's tool set under the <strong>exact same generic names</strong> as the local K8s equivalents (<code>resources_get</code>, never <code>cluster-a__resources_get</code>) -- the LLM's tool schema for a fleet-target investigation is byte-identical to a hub-local one</li>
+<li>If pre-scoping fails (gateway unreachable), the investigation proceeds <strong>without</strong> the remote overlay rather than aborting -- behaving like a hub-local investigation, with the degradation recorded as an <code>aiagent.fleet.overlay_failed</code> audit event</li>
+</ol>
+<p>Other services (SP, WE, FMC, EM) call <code>GatewayDiscoverer</code> the same way -- programmatically, server-side, never through an LLM session.</p>
+<h2 id="fail-closed-readiness-gate">Fail-Closed Readiness Gate<a class="headerlink" href="#fail-closed-readiness-gate" title="Permanent link">&para;</a></h2>
+<p>Prior to this design, a Fleet-dependent service that lost its MCP Gateway or scope-backend connection <em>after</em> startup kept reporting <code>/readyz=200</code> while silently serving stale or degraded data. Runtime unreachability now fails closed, matching the existing static-config validation:</p>
 <ul>
-<li><strong>Timeline reconstruction</strong> -- Query all events for one remediation in chronological order</li>
-<li><strong>CRD reconstruction</strong> -- Rebuild the full RemediationRequest from audit data (see <a href="../data-persistence/#remediationrequest-reconstruction">Data Persistence: Reconstruction</a>)</li>
-<li><strong>Cross-service tracing</strong> -- Follow a remediation across all services</li>
+<li>A shared <code>pkg/fleet/readiness.Gate</code> periodically probes each service's Fleet dependencies (MCP client, cluster registry, scope-checker backend)</li>
+<li><strong>Blast radius is pod-wide, not per-request</strong>: if any prober fails, the entire pod's <code>/readyz</code> flips to <code>NotReady</code> and Kubernetes removes it from Service endpoints until the dependency recovers</li>
+<li>Wired into all 7 Fleet-dependent services: Gateway, Remediation Orchestrator, Effectiveness Monitor, Signal Processing, Workflow Execution, API Frontend, Kubernaut Agent</li>
 </ul>
-<h2 id="emitting-services">Emitting Services<a class="headerlink" href="#emitting-services" title="Permanent link">&para;</a></h2>
-<p>All 11 Go services (<code>cmd/*/main.go</code>: Gateway, Signal Processing, AI Analysis, Remediation Orchestrator, Workflow Execution, Effectiveness Monitor, Notification, Auth Webhook, DataStorage, Kubernaut Agent, API Frontend) emit audit events:</p>
-<table>
-<thead>
-<tr>
-<th>Service</th>
-<th>Event Prefix</th>
-<th>Key Events</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><strong>Gateway</strong></td>
-<td><code>gateway.*</code></td>
-<td><code>signal.received</code>, <code>signal.deduplicated</code>, <code>crd.created</code>, <code>crd.failed</code></td>
-</tr>
-<tr>
-<td><strong>Signal Processing</strong></td>
-<td><code>signalprocessing.*</code></td>
-<td><code>enrichment.completed</code>, <code>classification.completed</code>, <code>phase.transition</code></td>
-</tr>
-<tr>
-<td><strong>AI Analysis</strong></td>
-<td><code>aianalysis.*</code></td>
-<td><code>investigation.submitted</code>, <code>analysis.completed</code>, <code>rego.evaluation</code>, <code>approval.decision</code></td>
-</tr>
-<tr>
-<td><strong>Kubernaut Agent</strong></td>
-<td><code>aiagent.*</code>, <code>workflow.catalog.*</code> (v1.6+)</td>
-<td><code>enrichment.completed</code>, <code>enrichment.failed</code>, <code>workflow.catalog.actions_listed</code>, <code>workflow.catalog.workflows_listed</code>, <code>workflow.catalog.workflow_retrieved</code>, <code>workflow.catalog.selection_validated</code></td>
-</tr>
-<tr>
-<td><strong>Remediation Orchestrator</strong></td>
-<td><code>orchestrator.*</code></td>
-<td><code>lifecycle.created</code>, <code>phase.transition</code>, <code>child.created</code>, <code>timeout</code></td>
-</tr>
-<tr>
-<td><strong>Workflow Execution</strong></td>
-<td><code>workflowexecution.*</code></td>
-<td><code>selection.completed</code>, <code>execution.started</code>, <code>execution.completed</code>, <code>block.cleared</code></td>
-</tr>
-<tr>
-<td><strong>Notification</strong></td>
-<td><code>notification.*</code></td>
-<td><code>message.sent</code>, <code>message.failed</code>, <code>message.acknowledged</code>, <code>message.escalated</code></td>
-</tr>
-<tr>
-<td><strong>Effectiveness Monitor</strong></td>
-<td><code>effectiveness.*</code></td>
-<td><code>health.assessed</code>, <code>hash.computed</code>, <code>alert.assessed</code>, <code>metrics.assessed</code>, <code>assessment.completed</code></td>
-</tr>
-<tr>
-<td><strong>Auth Webhook</strong></td>
-<td><code>webhook.*</code>, <code>remediationworkflow.*</code>, <code>actiontype.*</code></td>
-<td><code>remediationapprovalrequest.decided</code>, <code>remediationrequest.timeout_modified</code>, <code>notification.cancelled</code>, <code>remediationworkflow.admitted.create</code>, <code>remediationworkflow.admitted.delete</code>, <code>remediationworkflow.admitted.denied</code>, <code>actiontype.admitted.create</code>, <code>actiontype.admitted.update</code>, <code>actiontype.admitted.delete</code>, <code>actiontype.denied.create</code>, <code>actiontype.denied.update</code>, <code>actiontype.denied.delete</code></td>
-</tr>
-<tr>
-<td><strong>DataStorage</strong></td>
-<td><code>datastorage.*</code></td>
-<td><code>datastorage.ratelimit.denied</code> (per-IP HTTP rate limiting, pre-auth). As of v1.6 (DD-WORKFLOW-018/019), this is the only audit event DataStorage's production code emits — its former <code>workflow.*</code>/<code>actiontype.*</code>/<code>workflow.catalog.*</code> events were retired when the underlying tables were dropped; those responsibilities moved to the Auth Webhook (<code>remediationworkflow.admitted.*</code>, <code>actiontype.admitted.*</code>, above) and Kubernaut Agent (<code>workflow.catalog.*</code>, above).</td>
-</tr>
-<tr>
-<td><strong>API Frontend</strong></td>
-<td><code>apifrontend.*</code></td>
-<td><code>rr.created</code>, <code>rr.deduplicated</code>, <code>ka.delegated</code>, <code>ka.result_received</code>, <code>user.decision</code>, <code>severity_triage.completed</code>, <code>severity_triage.failed</code>, <code>session.completed</code>, <code>jwt.delegation</code>, <code>mcp.session_init</code>, <code>circuitbreaker.trip</code>, <code>triage.started</code>, <code>triage.completed</code></td>
-</tr>
-</tbody>
-</table>
-<h2 id="operator-attribution">Operator Attribution<a class="headerlink" href="#operator-attribution" title="Permanent link">&para;</a></h2>
-<p>The <strong>admission webhook</strong> captures human identity for all operator-driven actions:</p>
-<table>
-<thead>
-<tr>
-<th>Action</th>
-<th>Event Type</th>
-<th>What's Recorded</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Approve/reject remediation</td>
-<td><code>webhook.remediationapprovalrequest.decided</code></td>
-<td>Actor identity, decision, reason</td>
-</tr>
-<tr>
-<td>Clear execution block</td>
-<td><code>workflowexecution.block.cleared</code></td>
-<td>Actor identity, execution ref</td>
-</tr>
-<tr>
-<td>Modify timeout</td>
-<td><code>webhook.remediationrequest.timeout_modified</code></td>
-<td>Actor identity, old/new values</td>
-</tr>
-<tr>
-<td>Cancel notification</td>
-<td><code>webhook.notification.cancelled</code></td>
-<td>Actor identity, notification ref</td>
-</tr>
-<tr>
-<td>Register workflow (CRD CREATE)</td>
-<td><code>remediationworkflow.admitted.create</code></td>
-<td>Actor identity, workflow name, version</td>
-</tr>
-<tr>
-<td>Delete workflow (CRD DELETE)</td>
-<td><code>remediationworkflow.admitted.delete</code></td>
-<td>Actor identity, workflow name</td>
-</tr>
-<tr>
-<td>Register action type (CRD CREATE)</td>
-<td><code>actiontype.admitted.create</code></td>
-<td>Actor identity, action type name</td>
-</tr>
-<tr>
-<td>Update action type (CRD UPDATE)</td>
-<td><code>actiontype.admitted.update</code></td>
-<td>Actor identity, action type, changed fields</td>
-</tr>
-<tr>
-<td>Delete action type (CRD DELETE)</td>
-<td><code>actiontype.admitted.delete</code></td>
-<td>Actor identity, action type name</td>
-</tr>
-</tbody>
-</table>
-<p>This ensures every human action has a recorded identity, timestamp, and context -- critical for SOC2 Type II readiness.</p>
-<h2 id="dead-letter-queue">Dead Letter Queue<a class="headerlink" href="#dead-letter-queue" title="Permanent link">&para;</a></h2>
-<p>DataStorage uses Valkey streams as a dead letter queue for <strong>single-event write paths</strong> (e.g., notification audit events). The <strong>batch endpoint</strong> (<code>POST /api/v1/audit/events/batch</code>) does <strong>not</strong> use the DLQ — it returns HTTP 500 on PostgreSQL failure and relies on the caller's retry logic (see GAP-10 in the source).</p>
-<table>
-<thead>
-<tr>
-<th>Stream</th>
-<th>Purpose</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>audit:dlq:events</code></td>
-<td>Generic audit event batches</td>
-</tr>
-<tr>
-<td><code>audit:dlq:notifications</code></td>
-<td>Notification-specific audit events</td>
-</tr>
-<tr>
-<td><code>audit:dead-letter:{type}</code></td>
-<td>Events that exceeded retry attempts</td>
-</tr>
-</tbody>
-</table>
-<p>The DLQ uses Valkey consumer groups (<code>XREADGROUP</code>) for reliable delivery and <code>XAck</code> for acknowledgment. Maximum stream length is 10,000 entries.</p>
+<h2 id="we-remote-execution">WE Remote Execution<a class="headerlink" href="#we-remote-execution" title="Permanent link">&para;</a></h2>
+<p>WorkflowExecution can run remediation on remote clusters through the MCP Gateway for its <strong>Job</strong> and <strong>Tekton PipelineRun</strong> engines. The <strong>Ansible (AWX/AAP) engine is not supported for remote clusters</strong> (<a href="#we-remote-execution">DD-FLEET-007</a>): live validation against a real Kuadrant gateway found that <code>MCPServerRegistration.credentialRef</code> is discovery-only and is not actually injected into <code>tools/call</code> requests, so registering an AAP MCP Server as a gateway backend does not give WE a working credential path for Ansible jobs on remote clusters. Rather than build a separate, gateway-bypassing credential path for this one engine, WE's Ansible engine <strong>fails closed</strong> for remote (<code>ClusterID != ""</code>) targets instead. This does not affect Ansible execution on the local/hub cluster, or Job/Tekton execution on any cluster.</p>
+<h2 id="configuration-reference">Configuration Reference<a class="headerlink" href="#configuration-reference" title="Permanent link">&para;</a></h2>
+<p>See <a href="../../user-guide/configuration/">Configuration Reference -- Fleet</a> for the full Helm values surface, and the <a href="../../api-reference/operator-cr/">Operator CR Reference</a> for <code>spec.fleet</code> on the <code>Kubernaut</code> CRD.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
-<li><a href="../data-persistence/">Data Persistence</a> -- PostgreSQL schema, partitioning, and reconstruction</li>
-<li><a href="../../user-guide/audit-and-observability/">Audit &amp; Observability</a> -- User guide for audit features</li>
-<li><a href="../overview/">System Overview</a> -- How audit fits into the overall architecture</li>
+<li><a href="../overview/">System Overview</a> -- Single-cluster service topology and CRD backbone that Fleet extends</li>
+<li><a href="../../api-reference/crds/">Custom Resources</a> -- <code>ClusterID</code> fields on <code>RemediationRequest</code> and related CRDs</li>
+<li><a href="../../api-reference/operator-cr/">Operator CR Reference</a> -- <code>spec.fleet</code> configuration</li>
 </ul>
 
 
@@ -3710,7 +3437,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../async-propagation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Async Propagation">
+          <a href="../apifrontend/" class="md-footer__link md-footer__link--prev" aria-label="Previous: API Frontend">
             <div class="md-footer__button md-icon">
               
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
@@ -3720,20 +3447,20 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Async Propagation
+                API Frontend
               </div>
             </div>
           </a>
         
         
           
-          <a href="../data-persistence/" class="md-footer__link md-footer__link--next" aria-label="Next: Data Persistence">
+          <a href="../security-rbac/" class="md-footer__link md-footer__link--next" aria-label="Next: Security &amp; RBAC">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                Data Persistence
+                Security & RBAC
               </div>
             </div>
             <div class="md-footer__button md-icon">

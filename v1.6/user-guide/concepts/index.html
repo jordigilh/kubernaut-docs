@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1520,6 +1522,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1549,10 +1579,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1570,8 +1600,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1719,6 +1749,8 @@
       
         
           
+        
+      
         
       
         
@@ -2186,6 +2218,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3222,20 +3282,20 @@
 <h3 id="aianalysis">AIAnalysis<a class="headerlink" href="#aianalysis" title="Permanent link">&para;</a></h3>
 <p>Created after signal enrichment completes. The AI Analysis controller:</p>
 <ol>
-<li>Submits the enriched signal to <strong>Kubernaut Agent</strong> for a <strong>two-invocation</strong> LLM investigation (v1.3+):<ul>
+<li>Dispatches the enriched signal to <strong>Kubernaut Agent</strong> via an <strong><code>AgentSession</code> CRD</strong> (v1.6+, DD-AA-KA-001) for a <strong>two-invocation</strong> LLM investigation (v1.3+):<ul>
 <li><strong>Invocation 1 (RCA)</strong> — Root cause analysis using live cluster data (logs, events, resource state, metrics) via tools; also resolves the target resource's owner chain, spec hash, <strong>remediation history</strong> (DataStorage), and <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB) when resource-context tools are used</li>
-<li><strong>Invocation 2 (Workflow selection)</strong> — A <strong>new</strong> model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (<code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>); DataStorage applies label-based ranking but the LLM drives the final selection, then KA <strong>merges</strong> the two invocations' results</li>
+<li><strong>Invocation 2 (Workflow selection)</strong> — A <strong>new</strong> model session (no prior chat context) with structured RCA fields injected; the LLM discovers and selects a workflow from the catalog via a three-step protocol (<code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>), served from <strong>Kubernaut Agent's own in-memory workflow catalog</strong> (v1.6+; an informer-cache-backed watch over the <code>RemediationWorkflow</code>/<code>ActionType</code> CRDs, no DataStorage round trip) which applies label-based ranking, though the LLM drives the final selection; KA then <strong>merges</strong> the two invocations' results</li>
 </ul>
 </li>
 <li>Evaluates whether auto-approval is safe via a <strong>Rego policy</strong> (configurable confidence threshold)</li>
 </ol>
-<p>See <a href="../../architecture/kubernaut-agent-investigation/">Investigation Pipeline</a> for the full two-invocation architecture.</p>
+<p>KA owns the <code>AgentSession</code>, writing session ID, phase, and the curated result to its status; AA watches for completion. See <a href="../../architecture/kubernaut-agent-investigation/">Investigation Pipeline</a> for the full two-invocation architecture and <a href="../../api-reference/crds/#agentsession">AgentSession</a> for the CRD reference.</p>
 <h3 id="remediationapprovalrequest">RemediationApprovalRequest<a class="headerlink" href="#remediationapprovalrequest" title="Permanent link">&para;</a></h3>
 <p>Created when the AI Analysis confidence is below the approval threshold, or when the Rego policy requires human review. A human operator approves or rejects the remediation.</p>
 <h3 id="workflowexecution">WorkflowExecution<a class="headerlink" href="#workflowexecution" title="Permanent link">&para;</a></h3>
-<p>Created after approval (auto or human). The Workflow Execution controller:</p>
+<p>Created after approval (auto or human), with the selected workflow's full definition already embedded by the <strong>Remediation Orchestrator</strong> as an immutable <code>WorkflowRef</code> snapshot on <code>spec</code> — WorkflowExecution itself never queries the catalog at runtime. The Workflow Execution controller:</p>
 <ol>
-<li>Resolves the workflow from the catalog (via DataStorage)</li>
+<li>Reads the workflow definition from its own <code>spec.workflowRef</code> snapshot (no DataStorage or catalog lookup)</li>
 <li>Validates dependencies (required Secrets, ConfigMaps)</li>
 <li>Runs the remediation via <strong>Tekton Pipelines</strong> (multi-step), <strong>Kubernetes Jobs</strong> (single-step), or <strong>Ansible (AWX/AAP)</strong> (playbook-based)</li>
 <li>Injects parameters (namespace, deployment name, etc.)</li>
@@ -3377,7 +3437,7 @@
 </span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>kubectl<span class="w"> </span>label<span class="w"> </span>namespace<span class="w"> </span>my-app<span class="w"> </span>kubernaut.ai/managed<span class="o">=</span><span class="nb">true</span>
 </span></code></pre></div>
 <h2 id="workflow-catalog">Workflow Catalog<a class="headerlink" href="#workflow-catalog" title="Permanent link">&para;</a></h2>
-<p>Remediation workflows are defined as declarative <strong><code>RemediationWorkflow</code> CRDs</strong> and registered in <strong>DataStorage</strong> as a searchable catalog via the Auth Webhook admission path. Each workflow has:</p>
+<p>Remediation workflows are defined as declarative <strong><code>RemediationWorkflow</code> CRDs</strong>. The Auth Webhook's admission handler forwards every create/update/delete to <strong>DataStorage</strong>, which keeps the durable, queryable record used for audit and by other callers (e.g. the console). Each workflow has:</p>
 <ul>
 <li><strong>Identity</strong> — Name (<code>metadata.name</code>), version, and structured description (what, whenToUse, whenNotToUse, preconditions) under <code>spec</code></li>
 <li><strong>Action type</strong> — Taxonomy type (e.g., <code>RestartPod</code>, <code>RollbackDeployment</code>, <code>IncreaseMemoryLimits</code>)</li>
@@ -3385,13 +3445,17 @@
 <li><strong>Parameters</strong> — Typed inputs injected at runtime as environment variables (<code>UPPER_SNAKE_CASE</code>)</li>
 <li><strong>Execution config</strong> — Engine (<code>job</code>, <code>tekton</code>, or <code>ansible</code>) plus engine-specific execution settings. Tekton workflows may reference OCI bundles for pipeline execution artifacts</li>
 </ul>
+<div class="admonition info">
+<p class="admonition-title">v1.6: discovery moved in-process to Kubernaut Agent</p>
+<p>Through v1.5, all three discovery steps below were served by DataStorage over REST, with Kubernaut Agent acting as a thin proxy. <strong>As of v1.6</strong> (DD-WORKFLOW-019), Kubernaut Agent serves this protocol entirely from its own in-memory workflow catalog — an informer-cache-backed watch over the <code>RemediationWorkflow</code>/<code>ActionType</code> CRDs — with no DataStorage round trip on the investigation path. Filtering and label-match scoring behavior is unchanged; only where it executes changed. See <a href="../../architecture/workflow-selection/">Workflow Selection</a> for the full detail.</p>
+</div>
 <p>During investigation, the LLM selects a workflow through a three-step discovery protocol:</p>
 <ol>
-<li><strong>List action types</strong> — Kubernaut Agent calls DataStorage to retrieve available action types (e.g., <code>RestartPod</code>, <code>RollbackDeployment</code>), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)</li>
-<li><strong>List workflows for action type</strong> — The LLM picks an action type and retrieves matching workflows, which DataStorage returns ordered by label-match scoring (though scores are not exposed to the LLM)</li>
+<li><strong>List action types</strong> — Kubernaut Agent's own catalog returns available action types (e.g., <code>RestartPod</code>, <code>RollbackDeployment</code>), filtered by the signal's enriched labels (severity, environment, component, priority) and detected infrastructure labels (GitOps, Helm, service mesh)</li>
+<li><strong>List workflows for action type</strong> — The LLM picks an action type and retrieves matching workflows, which the catalog returns ordered by label-match scoring (though scores are not exposed to the LLM)</li>
 <li><strong>Get workflow details</strong> — The LLM selects a specific workflow and retrieves its full parameter schema to fill in values from the root cause analysis</li>
 </ol>
-<p>The LLM makes the final selection decision based on workflow descriptions (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>), detected infrastructure context (e.g., prefer git-based workflows when <code>gitOpsManaged=true</code>), and remediation history (avoid workflows that recently failed on the same target). See <a href="../workflows/">Remediation Workflows</a> for the full schema reference.</p>
+<p>The LLM makes the final selection decision based on workflow descriptions (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>), detected infrastructure context (e.g., prefer git-based workflows when <code>gitOpsManaged=true</code>), and remediation history (avoid workflows that recently failed on the same target). See <a href="../workflows/">Remediation Workflows</a> for the full schema reference and <a href="../../architecture/workflow-selection/">Workflow Selection</a> for the discovery protocol's filtering/scoring internals.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../signals/">Signals &amp; Alert Routing</a> — How signals enter the system</li>

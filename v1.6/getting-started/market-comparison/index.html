@@ -1077,6 +1077,8 @@
       
         
       
+        
+      
     
     
     
@@ -1531,6 +1533,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1557,10 +1587,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1578,8 +1608,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1727,6 +1757,8 @@
       
         
           
+        
+      
         
       
         
@@ -2194,6 +2226,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3230,7 +3290,7 @@
 <h2 id="head-to-head-komodor-klaudia">Head-to-Head: Komodor Klaudia<a class="headerlink" href="#head-to-head-komodor-klaudia" title="Permanent link">&para;</a></h2>
 <p>Komodor Klaudia is the closest head-to-head competitor to Kubernaut in the agentic remediation space. Both platforms detect, investigate, and remediate Kubernetes incidents using AI. The architectural differences are significant.</p>
 <h3 id="remediation-architecture">Remediation Architecture<a class="headerlink" href="#remediation-architecture" title="Permanent link">&para;</a></h3>
-<p>Kubernaut separates investigation from remediation through a <strong>declarative workflow catalog</strong>. The LLM investigates the incident and produces a structured RCA. <strong>Kubernaut Agent</strong> then matches the RCA against a catalog of pre-authored <code>RemediationWorkflow</code> CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. DataStorage ranks candidates by label-weighted SQL scoring, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.</p>
+<p>Kubernaut separates investigation from remediation through a <strong>declarative workflow catalog</strong>. The LLM investigates the incident and produces a structured RCA. <strong>Kubernaut Agent</strong> then matches the RCA against a catalog of pre-authored <code>RemediationWorkflow</code> CRDs -- versioned Kubernetes resources that define the execution engine (Job, Tekton, Ansible/AWX), parameters, action types, and prerequisites. Kubernaut Agent ranks candidates by label-weighted scoring from its own in-memory, CRD-backed catalog, and the LLM selects which pre-approved workflow to apply; it never generates or invents the remediation logic.</p>
 <p>Klaudia uses an <strong>agent-generated remediation</strong> model. The Remediator agent determines and executes the fix based on the investigation output. In Komodor's demo, Klaudia produced a specific remediation instruction ("Change the secret to app mode with a value set to 'safe'") directly from agent reasoning, not from selecting a pre-defined workflow.</p>
 <table>
 <thead>
@@ -3286,7 +3346,7 @@
 <p>Kubernaut's effectiveness scores create a <strong>structured, per-remediation feedback loop</strong>. When the same resource triggers a future alert, the LLM receives the full remediation history -- what was tried before, what the effectiveness score was, and why it succeeded or failed. The LLM uses this to avoid repeating failed approaches and to select alternatives.</p>
 <p>Klaudia describes a <strong>general learning mechanism</strong>: "every incident helps the agents learn what worked, what didn't, and which signals mattered most" and "the system learns from your feedback, incorporating your approvals and rejections." This appears to be aggregate pattern learning rather than structured per-remediation scoring.</p>
 <h3 id="deployment-model">Deployment Model<a class="headerlink" href="#deployment-model" title="Permanent link">&para;</a></h3>
-<p>Kubernaut is <strong>fully self-hosted</strong>. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. Investigation transcripts, remediation records, audit events, and telemetry are stored locally in PostgreSQL and never leave the cluster. When using a cloud LLM provider (OpenAI, Vertex AI, Bedrock, etc.), investigation prompts are sent to the provider's API; for full data containment, use a <a href="../../operations/disconnected-install/">locally hosted LLM</a> (Ollama, vLLM, or any OpenAI-compatible endpoint).</p>
+<p>Kubernaut is <strong>fully self-hosted</strong>. The entire platform -- Gateway, signal processing, AI investigation, remediation orchestration, workflow execution, data storage, audit pipeline -- runs inside the customer's Kubernetes cluster. Investigation transcripts, remediation records, audit events, and telemetry are stored locally in PostgreSQL and never leave the cluster. When using a cloud LLM provider (OpenAI, Anthropic, Gemini, Vertex AI, etc.), investigation prompts are sent to the provider's API; for full data containment, use a <a href="../../operations/disconnected-install/">locally hosted LLM</a> (Ollama, vLLM, or any OpenAI-compatible endpoint).</p>
 <p>Klaudia is a <strong>commercial SaaS</strong> platform built on AWS Bedrock. A lightweight agent runs in the customer's cluster and sends observability data to Komodor's cloud infrastructure for investigation and remediation orchestration. Komodor states that customer data is never used for training, but the data does leave the cluster boundary. No self-hosted deployment option is documented.</p>
 <table>
 <thead>
@@ -3478,7 +3538,7 @@
 <li><strong>Per-remediation approval gates</strong>: OPA/Rego policies evaluate each remediation individually based on confidence, environment, affected resource kind, detected labels, and business classification. Not an environment-level toggle.</li>
 <li><strong>Closed-loop effectiveness verification</strong>: Every remediation is scored across four dimensions. Failed fixes are marked, triggering escalation or alternative selection.</li>
 <li><strong>Structured feedback loop</strong>: Per-remediation effectiveness scores feed directly into future LLM investigations. The system avoids repeating what failed and selects alternatives.</li>
-<li><strong>No vendor lock-in</strong>: Works with any LLM provider (OpenAI, Anthropic, Vertex AI, Azure, Ollama, Bedrock), any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.</li>
+<li><strong>No vendor lock-in</strong>: Works with OpenAI, Anthropic, Google Gemini, Vertex AI (Claude or Gemini models), and any OpenAI-compatible endpoint -- which covers Azure OpenAI, Ollama, vLLM, and LlamaStack (native AWS Bedrock support is not yet shipped, tracked in <a href="https://github.com/jordigilh/kubernaut/issues/1582">#1582</a>) -- plus any monitoring stack (Prometheus, Alertmanager, any webhook-capable system), and runs fully self-hosted.</li>
 <li><strong>Data sovereignty and air-gapped support</strong>: The entire platform runs inside the customer's cluster. Investigation transcripts, remediation records, audit events, and telemetry stay in-cluster. With a locally hosted LLM, no data leaves the network boundary -- fully operational in <a href="../../operations/disconnected-install/">disconnected/air-gapped environments</a>. No commercial AIOps competitor offers this.</li>
 <li><strong>SOC2-aligned audit trails</strong>: Full audit pipeline with 7-year retention. Every investigation, approval decision, remediation action, and effectiveness assessment is a persistent, queryable record.</li>
 </ul>

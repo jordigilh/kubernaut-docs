@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1294,6 +1296,34 @@
                 
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
     
   
   
@@ -1325,10 +1355,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_16" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_17" checked>
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1346,8 +1376,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="true">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1552,10 +1582,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#default-behavior" class="md-nav__link">
+  <a href="#example-starter-policy" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Default Behavior
+        Example Starter Policy
       
     </span>
   </a>
@@ -1612,6 +1642,17 @@
     <span class="md-ellipsis">
       
         Environment-Specific Thresholds
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#warning-aware-approval-has_warnings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Warning-Aware Approval (has_warnings)
       
     </span>
   </a>
@@ -1719,6 +1760,8 @@
       
         
           
+        
+      
         
       
         
@@ -2186,6 +2229,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3308,16 +3379,17 @@
 </tr>
 </tbody>
 </table>
-<h2 id="default-behavior">Default Behavior<a class="headerlink" href="#default-behavior" title="Permanent link">&para;</a></h2>
-<p>The reference policy (<code>charts/kubernaut/files/defaults/approval.rego</code>) implements:</p>
+<h2 id="example-starter-policy">Example Starter Policy<a class="headerlink" href="#example-starter-policy" title="Permanent link">&para;</a></h2>
+<p>Kubernaut ships <strong>no built-in default</strong> approval policy -- <code>aianalysis.policies.content</code> or <code>aianalysis.policies.existingConfigMap</code> is a required Helm value (see <a href="#overview">Overview</a> above), and there is no <code>approval.rego</code> file bundled in the chart to fall back on. The following is an illustrative starting point operators commonly adapt, not a shipped default:</p>
 <ul>
 <li><strong>Production environments</strong>: Always require approval (controlled via <code>kubernaut.ai/environment=production</code> namespace label). Environment matching is <strong>case-insensitive</strong> — <code>Production</code>, <code>production</code>, <code>PRODUCTION</code> all match.</li>
 <li><strong>Sensitive resources</strong> (Node, StatefulSet): Always require approval regardless of environment</li>
 <li><strong>Missing remediation target</strong>: Always require approval (safety default)</li>
-<li><strong>Non-production</strong>: Auto-approved unless critical safety conditions are met</li>
+<li><strong>LLM warnings</strong> (recommended addition, <a href="https://github.com/jordigilh/kubernaut/issues/439">kubernaut#439</a>): Require approval whenever the AI analysis raises a warning, even in non-production namespaces -- see the <code>has_warnings</code> pattern under <a href="#customization">Customization</a> below</li>
+<li><strong>Non-production</strong>: Auto-approved unless one of the above conditions is met</li>
 </ul>
 <h2 id="risk-factors">Risk Factors<a class="headerlink" href="#risk-factors" title="Permanent link">&para;</a></h2>
-<p>The reference policy uses scored risk factors for reason generation:</p>
+<p>The example starter policy above uses scored risk factors for reason generation:</p>
 <table>
 <thead>
 <tr>
@@ -3364,21 +3436,35 @@
 </span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">  </span><span class="nb">input</span><span class="p">.</span><span class="n">confidence</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.9</span>
 </span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="p">}</span>
 </span></code></pre></div>
-<h3 id="crd-safety-gate">CRD Safety Gate<a class="headerlink" href="#crd-safety-gate" title="Permanent link">&para;</a></h3>
-<p>Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:</p>
-<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+<h3 id="warning-aware-approval-has_warnings">Warning-Aware Approval (<code>has_warnings</code>)<a class="headerlink" href="#warning-aware-approval-has_warnings" title="Permanent link">&para;</a></h3>
+<p>Require approval whenever the AI analysis raises a warning (e.g. "Alert not actionable — no remediation warranted"), regardless of environment -- otherwise a warned-but-selected workflow can auto-execute silently in non-production namespaces (<a href="https://github.com/jordigilh/kubernaut/issues/439">kubernaut#439</a>):</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="n">has_warnings</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">  </span><span class="n">count</span><span class="p">(</span><span class="nb">input</span><span class="p">.</span><span class="n">warnings</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span>
 </span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="p">}</span>
 </span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
-</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
-</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-6"><a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a><span class="w">  </span><span class="n">has_warnings</span>
 </span><span id="__span-5-7"><a id="__codelineno-5-7" name="__codelineno-5-7" href="#__codelineno-5-7"></a><span class="p">}</span>
+</span><span id="__span-5-8"><a id="__codelineno-5-8" name="__codelineno-5-8" href="#__codelineno-5-8"></a>
+</span><span id="__span-5-9"><a id="__codelineno-5-9" name="__codelineno-5-9" href="#__codelineno-5-9"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">75</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LLM raised warnings — human review recommended&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-5-10"><a id="__codelineno-5-10" name="__codelineno-5-10" href="#__codelineno-5-10"></a><span class="w">  </span><span class="n">has_warnings</span>
+</span><span id="__span-5-11"><a id="__codelineno-5-11" name="__codelineno-5-11" href="#__codelineno-5-11"></a><span class="p">}</span>
+</span></code></pre></div>
+<h3 id="crd-safety-gate">CRD Safety Gate<a class="headerlink" href="#crd-safety-gate" title="Permanent link">&para;</a></h3>
+<p>Block automated CRD modifications and require human approval. CRD changes cascade to all CRs of that type, making them high-risk for automated remediation:</p>
+<div class="language-rego highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="n">require_approval</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="p">}</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">risk_factors</span><span class="w"> </span><span class="k">contains</span><span class="w"> </span><span class="p">{</span><span class="s2">&quot;score&quot;</span><span class="p">:</span><span class="w"> </span><span class="m">95</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;reason&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;CRD modification — cascades to all CRs of this type&quot;</span><span class="p">}</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">    </span><span class="nb">input</span><span class="p">.</span><span class="n">remediation_target</span><span class="p">.</span><span class="n">kind</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="s2">&quot;CustomResourceDefinition&quot;</span>
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a><span class="p">}</span>
 </span></code></pre></div>
 <p>For GitOps-managed clusters, combine with <code>detected_labels</code> — see <a href="../policies/#crd-safety-policy">CRD Safety Policy</a> for the full pattern.</p>
 <h2 id="hot-reload">Hot-Reload<a class="headerlink" href="#hot-reload" title="Permanent link">&para;</a></h2>
 <p>The approval policy supports hot-reload via fsnotify (~60s kubelet sync delay). If the new policy has a syntax error, the previous policy is kept and an error is logged.</p>
 <h2 id="reference-file">Reference File<a class="headerlink" href="#reference-file" title="Permanent link">&para;</a></h2>
-<p>A complete reference policy is available in the chart: <code>charts/kubernaut/files/defaults/approval.rego</code></p>
+<p>Kubernaut does not bundle an example <code>approval.rego</code> file in the chart the way it does for <a href="../configmap-policies/">SignalProcessing policies</a> (<code>charts/kubernaut/examples/signalprocessing-policy.rego</code>). Use the illustrative starter policy and customization snippets above as your starting point, or adapt the <a href="../rego-reference/">Rego Policy Reference</a> examples.</p>
 
 
 

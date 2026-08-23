@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2189,6 +2221,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3204,8 +3264,8 @@
 </ul>
 <p>The only exceptions are:</p>
 <ul>
-<li><strong>DataStorage</strong> -- Called via REST API for audit events, workflow catalog, remediation history, and effectiveness data</li>
-<li><strong>Kubernaut Agent</strong> -- Called via REST API (session-based async) for LLM-driven root cause analysis, infrastructure label detection, and workflow discovery</li>
+<li><strong>DataStorage</strong> -- Called via REST API for audit events, remediation history, and effectiveness data</li>
+<li><strong>Kubernaut Agent</strong> -- Dispatched via the <code>AgentSession</code> CRD (v1.6+; replaces the retired HTTP submit/poll channel). AI Analysis creates one <code>AgentSession</code> per investigation with an immutable spec; Kubernaut Agent watches for it, dispatches exactly once via a per-object Lease, and is the exclusive writer of its status (session ID, phase, curated result). The workflow catalog itself is served in-memory by Kubernaut Agent from an informer-cache CRD watch, not a DataStorage REST call.</li>
 </ul>
 <h3 id="orchestrator-pattern">Orchestrator Pattern<a class="headerlink" href="#orchestrator-pattern" title="Permanent link">&para;</a></h3>
 <p>The <strong>Remediation Orchestrator</strong> is the central coordinator. It watches <code>RemediationRequest</code> CRDs and drives the lifecycle by creating child CRDs in sequence:</p>
@@ -3217,9 +3277,10 @@
 </span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>  └─ EffectivenessAssessment (Orchestrator → EM Controller)
 </span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>  └─ NotificationRequest (Orchestrator → Notification Controller)
 </span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>InvestigationSession (API Frontend — v1.5+, interactive MCP/A2A sessions)
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>AgentSession (AI Analysis → Kubernaut Agent, v1.6+, AA↔KA dispatch/result channel)
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>InvestigationSession (API Frontend — v1.5+, interactive MCP/A2A sessions)
 </span></code></pre></div>
-<p>Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. <code>InvestigationSession</code> CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its <a href="../remediation-routing/#phase-state-machine">phase state machine</a>.</p>
+<p>Pipeline child CRDs have owner references to the parent RR, enabling cascade deletion when the RR is garbage collected. <code>AgentSession</code> (v1.6+) is created by the AIAnalysis controller with an owner reference to the AIAnalysis CR (not the RR directly) — cascade deletion still reaches the RR transitively, since the Orchestrator already sets the RR as AIAnalysis's own owner. <code>InvestigationSession</code> CRDs are created by the API Frontend independently of the Orchestrator pipeline; they also carry an owner reference to the associated RR for cascade cleanup. The Orchestrator watches all child CRDs to detect status changes and advance the parent through its <a href="../remediation-routing/#phase-state-machine">phase state machine</a>.</p>
 <details class="note">
 <summary>Detailed sub-phase breakdown</summary>
 <table>
@@ -3352,7 +3413,7 @@
 </tr>
 <tr>
 <td><strong>DataStorage</strong></td>
-<td>Persistent storage (audit, workflow catalog, remediation history, effectiveness), workflow scoring</td>
+<td>Persistent storage (audit events, remediation history, effectiveness). The workflow catalog and its scoring moved to Kubernaut Agent's in-memory cache in v1.6 (DD-WORKFLOW-019).</td>
 <td><a href="../data-persistence/">Data Persistence</a></td>
 </tr>
 <tr>
@@ -3390,14 +3451,18 @@
         LLM[LLM Provider]
     end
 
+    subgraph SessionCRDs["AA / KA / AF Coordination — v1.6+"]
+        AS[AgentSession CRD]
+        IS[InvestigationSession CRD]
+    end
+
     subgraph Infra["Infrastructure"]
         PG[(PostgreSQL)]
         RD[(Valkey)]
     end
 
     AF -.-&gt;|MCP tools| KA
-    AF -.-&gt;|history, catalog| DS
-    AF --&gt;|InvestigationSession| AF
+    AF -.-&gt;|history| DS
 
     GW --&gt;|RemediationRequest| RO
     RO --&gt;|SignalProcessing| SP
@@ -3406,9 +3471,13 @@
     RO --&gt;|NotificationRequest| NF
     RO --&gt;|EffectivenessAssessment| EM
 
-    AA -.-&gt;|session async| KA
+    AA --&gt;|Create, ownerRef=AIAnalysis| AS
+    AS -.-&gt;|watch, dispatch via Lease| KA
+    KA --&gt;|write Status: phase, result| AS
+    AS -.-&gt;|watch: close on terminal/delete| AF
+    AF --&gt;|writes: task id, user identity| IS
     KA -.-&gt; LLM
-    KA -.-&gt; DS
+    KA -.-&gt;|audit, history| DS
 
     SP -.-&gt; DS
     AA -.-&gt; DS
@@ -3484,14 +3553,21 @@
 </tr>
 <tr>
 <td>—</td>
+<td><code>AgentSession</code></td>
+<td>AI Analysis (AA)</td>
+<td>Kubernaut Agent (KA)</td>
+<td>AA↔KA dispatch/result channel (v1.6+); replaces the retired HTTP submit/poll channel. AA creates once (immutable spec, ownerRef → AIAnalysis); KA is the exclusive writer of <code>status</code> (session ID, phase, curated result)</td>
+</tr>
+<tr>
+<td>—</td>
 <td><code>InvestigationSession</code></td>
 <td>API Frontend</td>
-<td>AF (SessionCleanup)</td>
+<td>AF (SessionCleanup, AgentSessionTerminalCloseReconciler)</td>
 <td>Interactive MCP/A2A session state (v1.5+); deferred — materialized only after RR creation</td>
 </tr>
 </tbody>
 </table>
-<p>Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. The <code>InvestigationSession</code> CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut) managed by the API Frontend's session cleanup reconciler.</p>
+<p>Each pipeline CRD has its own phase state machine. The Orchestrator monitors child CRD status and advances the parent RR accordingly. <code>AgentSession</code> follows its own lifecycle (<code>Pending</code> → <code>Investigating</code> → <code>Completed</code>/<code>Failed</code>/<code>Cancelled</code>) driven entirely by KA. The <code>InvestigationSession</code> CRD follows its own lifecycle (Active → Disconnected → Completed/TimedOut); as of v1.6, AF's <code>AgentSessionTerminalCloseReconciler</code> closes it (to <code>Cancelled</code>) by watching the correlated <code>AgentSession</code> for a terminal phase or deletion — AA no longer reads or writes <code>InvestigationSession</code> at all.</p>
 <h2 id="namespace-model">Namespace Model<a class="headerlink" href="#namespace-model" title="Permanent link">&para;</a></h2>
 <p>All Kubernaut services run in the <code>kubernaut-system</code> namespace. Workflow execution (Jobs/Tekton PipelineRuns) runs in a separate <code>kubernaut-workflows</code> namespace. By default, executions use the execution namespace default ServiceAccount (commonly configured as <code>kubernaut-workflow-runner</code> in shared-SA deployments). Starting with v1.2, workflows can declare a dedicated ServiceAccount via <code>spec.execution.serviceAccountName</code> on the <code>RemediationWorkflow</code> CRD (propagated to <code>WorkflowExecution.spec.serviceAccountName</code>), enabling per-workflow least-privilege RBAC. See <a href="../security-rbac/#per-workflow-serviceaccount-v12">Security &amp; RBAC -- Per-Workflow ServiceAccount</a> for details.</p>
 <h2 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h2>

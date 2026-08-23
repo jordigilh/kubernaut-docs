@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3109,17 +3169,16 @@
 <p>No. Kubernaut handles predictable, repeatable remediation so operators can focus on systemic issues, architecture improvements, and incident patterns that require human judgment. It reduces toil and 3am pages — it doesn't eliminate the need for people who understand the system.</p>
 <p>When Kubernaut can't confidently remediate an issue, it escalates to a human with the full root cause analysis, remediation history, and investigation context. The operator gets a head start instead of starting from scratch.</p>
 <h2 id="what-llms-does-it-support">What LLMs does it support?<a class="headerlink" href="#what-llms-does-it-support" title="Permanent link">&para;</a></h2>
-<p>The Kubernaut Agent uses <strong>LangChainGo</strong> and supports 9 providers:</p>
+<p><strong>As of v1.6</strong> (DD-PLATFORM-007), the Kubernaut Agent no longer depends on LangChainGo -- it uses a small set of native, first-party clients and supports 5 provider values:</p>
 <ul>
-<li><strong>OpenAI</strong> (GPT-4, GPT-4o) and any <strong>OpenAI-compatible endpoint</strong> (vLLM, LocalAI, TGI)</li>
-<li><strong>Google Vertex AI</strong> — Gemini models (<code>vertex</code>) and Claude via Model Garden (<code>vertex_ai</code>)</li>
-<li><strong>Anthropic</strong> (direct API)</li>
-<li><strong>Azure OpenAI</strong></li>
-<li><strong>Amazon Bedrock</strong></li>
-<li><strong>Ollama</strong> — recommended for local/air-gapped deployments</li>
-<li><strong>Hugging Face</strong>, <strong>Mistral</strong></li>
+<li><strong>OpenAI</strong> (<code>openai</code>) — <code>api.openai.com</code></li>
+<li><strong>Anthropic</strong> (<code>anthropic</code>) — direct API</li>
+<li><strong>Google Gemini</strong> (<code>gemini</code>) — Gemini Developer API, no GCP project required (new in v1.6)</li>
+<li><strong>Google Vertex AI</strong> (<code>vertex_ai</code>) — hosts either Claude or Gemini models, auto-detected by model name prefix</li>
+<li><strong>OpenAI-compatible</strong> (<code>openai_compatible</code>) — any Chat-Completions-compatible endpoint: <strong>Azure OpenAI</strong>, <strong>Ollama</strong>, vLLM, LlamaStack, Mistral, Hugging Face TGI, DeepSeek</li>
 </ul>
-<p>Configure the provider in the Kubernaut Agent SDK config. See <a href="../user-guide/configuration/">Configuration Reference</a> for details.</p>
+<p><code>ollama</code>, <code>azure</code>, <code>bedrock</code>, <code>huggingface</code>, and <code>mistral</code> are <strong>not</strong> separate provider values -- Azure OpenAI, Ollama, and other OpenAI-compatible servers use <code>openai_compatible</code> with <code>endpoint</code> set to the server origin. Native AWS Bedrock support has not shipped yet (tracked in <a href="https://github.com/jordigilh/kubernaut/issues/1582">#1582</a>).</p>
+<p>Configure the provider via <code>global.llmProfiles</code> in Helm values (recommended quickstart) or the full Kubernaut Agent SDK config for advanced tuning. See <a href="../user-guide/configmap-kubernaut-agent/">Kubernaut Agent SDK config</a> for the complete provider reference and <a href="../user-guide/configuration/#llm-provider-setup">Configuration Reference</a> for the Helm quickstart.</p>
 <h2 id="is-it-safe-for-production">Is it safe for production?<a class="headerlink" href="#is-it-safe-for-production" title="Permanent link">&para;</a></h2>
 <p>Yes, with multiple layers of safety:</p>
 <ul>
@@ -3133,7 +3192,7 @@
 </ul>
 <p>See <a href="../getting-started/why-kubernaut/#safety-and-trust">Why Kubernaut — Safety and Trust</a> for the full safety story.</p>
 <h2 id="what-about-token-cost">What about token cost?<a class="headerlink" href="#what-about-token-cost" title="Permanent link">&para;</a></h2>
-<p>LLM tokens are consumed only during the investigation phase (root cause analysis via the Kubernaut Agent). Workflow selection from the catalog is entirely label-based — it uses weighted SQL scoring against mandatory and detected labels with no LLM invocation.</p>
+<p>LLM tokens are consumed only during the investigation phase (root cause analysis via the Kubernaut Agent). Workflow selection from the catalog is entirely label-based — Kubernaut Agent scores candidates against its own in-memory workflow catalog (v1.6; DataStorage's SQL scoring served this through v1.5) using mandatory and detected labels, with no additional LLM invocation.</p>
 <p>Cost depends on the LLM provider and model. A typical investigation with Gemini 2.5 Pro costs a fraction of a cent. For cost-sensitive environments, you can use smaller models or locally hosted LLMs via Ollama or any OpenAI-compatible server.</p>
 <p>Enabled-but-unused toolsets also contribute to token consumption — each toolset injects its full schema into every LLM turn, even when none of its tools are called. Starting with <code>toolsets: {}</code> and enabling additional toolsets only for workloads that need them can reduce token usage by ~30%. See <a href="../user-guide/configmap-kubernaut-agent/#toolset-optimization">Toolset Optimization</a> for recommended configurations by incident type.</p>
 <h2 id="can-i-run-it-air-gapped">Can I run it air-gapped?<a class="headerlink" href="#can-i-run-it-air-gapped" title="Permanent link">&para;</a></h2>

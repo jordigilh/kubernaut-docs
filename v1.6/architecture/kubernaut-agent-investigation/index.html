@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -1941,6 +1973,17 @@
     <span class="md-ellipsis">
       
         4. Remediation History
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fleet-cluster-scoped-history-isolation-v16-issue-1802" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet: cluster-scoped history isolation (v1.6+, Issue #1802)
       
     </span>
   </a>
@@ -2670,6 +2713,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3679,7 +3750,7 @@
 <p class="admonition-title">Related pages</p>
 <ul>
 <li><a href="../ai-analysis/">AI Analysis</a> covers the <strong>AA controller</strong> (session management, phase transitions, Rego evaluation)</li>
-<li><a href="../workflow-selection/">Workflow Selection</a> covers the <strong>DataStorage scoring algorithm</strong> (label filtering, semantic scoring)</li>
+<li><a href="../workflow-selection/">Workflow Selection</a> covers the <strong>scoring algorithm</strong> (label filtering, semantic scoring -- run by Kubernaut Agent's in-memory catalog as of v1.6, DataStorage through v1.5)</li>
 <li>This page covers the <strong>KA internals</strong> (prompt construction, LLM investigation, resource context, decision outcomes)</li>
 </ul>
 </div>
@@ -3972,7 +4043,7 @@
 </div>
 <p>These labels are stored in <code>session_state</code> and automatically injected into all subsequent workflow discovery queries. They serve two purposes:</p>
 <ol>
-<li><strong>Workflow scoring</strong> -- DataStorage uses detected labels for semantic scoring (see <a href="../workflow-selection/">Workflow Selection</a>)</li>
+<li><strong>Workflow scoring</strong> -- Kubernaut Agent's in-memory catalog uses detected labels for semantic scoring (v1.6; DataStorage through v1.5 -- see <a href="../workflow-selection/">Workflow Selection</a>)</li>
 <li><strong>LLM context</strong> -- The <code>list_available_actions</code> tool response includes a <code>cluster_context</code> section (e.g., "target is GitOps-managed with ArgoCD") so the LLM can factor infrastructure into its decision</li>
 </ol>
 <p>Detection runs once per investigation. If it fails, an empty label set is used (graceful degradation).</p>
@@ -4014,6 +4085,8 @@
 <li><strong>Tier 2</strong> queries directly by spec hash, surfacing only outcomes for the same configuration. This helps the LLM identify recurring patterns across a longer time horizon.</li>
 </ul>
 <p><strong>How the chain is visible:</strong> Every entry in both tiers carries <code>preRemediationSpecHash</code> and <code>postRemediationSpecHash</code>. DataStorage annotates each entry with a <code>hashMatch</code> field by comparing the caller's <code>currentSpecHash</code> against these stored hashes. This lets the LLM trace the full chain of configuration transitions and outcomes.</p>
+<h3 id="fleet-cluster-scoped-history-isolation-v16-issue-1802">Fleet: cluster-scoped history isolation (v1.6+, Issue #1802)<a class="headerlink" href="#fleet-cluster-scoped-history-isolation-v16-issue-1802" title="Permanent link">&para;</a></h3>
+<p>When the request carries a non-empty <code>ClusterID</code> (propagated from <code>RemediationRequest.Spec.ClusterID</code> -- see <a href="../remediation-routing/#clusterid-propagation-v16-br-fleet-054">Remediation Routing: ClusterID Propagation</a>), the Orchestrator threads it into the history query as a <code>clusterId</code> parameter, scoping both tiers to that cluster only. This prevents cross-cluster history leakage between resources that share an identical spec hash across clusters -- for example, the same Helm-templated Deployment deployed identically to two fleet member clusters would otherwise be indistinguishable by spec hash alone, letting one cluster's failed remediation wrongly suppress a workflow on another. Empty <code>ClusterID</code> (local hub cluster, or fleet disabled) leaves the query unscoped, identical to pre-v1.6/pre-Fleet behavior.</p>
 <h2 id="how-remediation-history-influences-the-llm">How Remediation History Influences the LLM<a class="headerlink" href="#how-remediation-history-influences-the-llm" title="Permanent link">&para;</a></h2>
 <p>The history bundled in the resource context tools is the mechanism by which Kubernaut learns from past remediation outcomes. The LLM receives the full <code>RemediationHistoryContext</code> as part of the tool result, and the <strong>Invocation 1 (RCA)</strong> resource-context framing instructs: <em>"Use this to avoid repeating recently failed workflows."</em></p>
 <h3 id="three-way-hash-comparison">Three-Way Hash Comparison<a class="headerlink" href="#three-way-hash-comparison" title="Permanent link">&para;</a></h3>
@@ -4223,12 +4296,13 @@
 </table>
 <p>When either threshold is exceeded, the Orchestrator blocks the RemediationRequest and emits a notification directing operators to investigate manually. The dual-hash query semantics (matching both <code>pre_remediation_spec_hash</code> and <code>post_remediation_spec_hash</code>) enable accurate chain detection via DataStorage.</p>
 <h2 id="workflow-selection-three-step-discovery">Workflow Selection: Three-Step Discovery<a class="headerlink" href="#workflow-selection-three-step-discovery" title="Permanent link">&para;</a></h2>
-<p><strong>Invocation 2 (Workflow selection)</strong> is a <strong>separate</strong> session that runs the three-step DataStorage protocol with <strong>no tool transcript from Invocation 1</strong> — it relies on the <strong>structured RCA fields</strong> injected at session start, plus the usual workflow tools.</p>
-<p>Labels and other signal context that were <strong>detected or resolved in Invocation 1</strong> (e.g. <code>session_state["detected_labels"]</code> and enriched signal metadata) are available to the workflow step and are <strong>automatically applied</strong> to DataStorage queries (e.g. as context filters in <code>list_available_actions</code>).</p>
+<p><strong>Invocation 2 (Workflow selection)</strong> is a <strong>separate</strong> session that runs the three-step discovery protocol with <strong>no tool transcript from Invocation 1</strong> — it relies on the <strong>structured RCA fields</strong> injected at session start, plus the usual workflow tools.</p>
+<p><strong>v1.6 change:</strong> this discovery protocol is now served entirely from KA's own in-memory workflow catalog (<code>internal/kubernautagent/workflowcatalog</code>, an informer-cache-backed watch over the <code>RemediationWorkflow</code> and <code>ActionType</code> CRDs), not a DataStorage REST call. KA replicates DataStorage's scoring algorithm in-process (same <code>final_score</code> boost/penalty formula and <code>ORDER BY final_score DESC, workflow_id ASC</code> tie-break) against its own cache, so ranking behavior is unchanged, but the query no longer leaves the KA process. DataStorage's REST discovery handlers are <strong>retired outright</strong> (DD-WORKFLOW-018/019) -- there is no REST path left for this protocol at all, for KA or any other caller.</p>
+<p>Labels and other signal context that were <strong>detected or resolved in Invocation 1</strong> (e.g. <code>session_state["detected_labels"]</code> and enriched signal metadata) are available to the workflow step and are <strong>automatically applied</strong> to catalog queries (e.g. as context filters in <code>list_available_actions</code>).</p>
 <h3 id="step-1-list-available-actions">Step 1: List Available Actions<a class="headerlink" href="#step-1-list-available-actions" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>list_available_actions(offset=0, limit=20)
 </span></code></pre></div>
-<p>KA sends signal context filters (<code>severity</code>, <code>component</code>, <code>environment</code>, <code>priority</code>, <code>custom_labels</code>) and <code>detected_labels</code> as query parameters to DataStorage. DataStorage uses these to <strong>filter and rank</strong> the action types -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:</p>
+<p>KA filters its in-memory catalog using the signal context (<code>severity</code>, <code>component</code>, <code>environment</code>, <code>priority</code>, <code>custom_labels</code>) and <code>detected_labels</code> -- only action types with workflows matching the signal context are returned. The LLM sees the filtered results with structured descriptions:</p>
 <ul>
 <li><code>what</code> -- What the action does</li>
 <li><code>whenToUse</code> -- When this action is appropriate</li>
@@ -4239,7 +4313,7 @@
 <h3 id="step-2-list-workflows-for-action-type">Step 2: List Workflows for Action Type<a class="headerlink" href="#step-2-list-workflows-for-action-type" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>list_workflows(action_type=&quot;RollbackDeployment&quot;, offset=0, limit=10)
 </span></code></pre></div>
-<p>For the chosen action type, the LLM sees workflow summaries ordered by DataStorage's internal label-match score. The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.</p>
+<p>For the chosen action type, the LLM sees workflow summaries ordered by KA's internal label-match score (computed against its own cache, mirroring DataStorage's algorithm -- see the v1.6 note above). The score itself is not exposed -- the LLM sees workflows in ranked order and selects based on descriptions, parameter requirements, and infrastructure fit.</p>
 <p>Pagination is supported (<code>hasMore</code> flag) for action types with many workflows.</p>
 <h3 id="step-3-get-workflow-details">Step 3: Get Workflow Details<a class="headerlink" href="#step-3-get-workflow-details" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>get_workflow(workflow_id=&quot;rollback-deployment-v1&quot;)
@@ -4253,7 +4327,7 @@
 <li><strong>Detected infrastructure context</strong> -- GitOps-managed resources need git-based workflows, not direct kubectl rollbacks</li>
 <li><strong>Parameter fit</strong> -- Whether the investigation findings provide the data needed for the workflow's parameters</li>
 </ol>
-<p>DataStorage's scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.</p>
+<p>KA's in-catalog scoring determines the presentation order but not the selection. A workflow ranked #2 by label-match score can still be selected if its description better matches the root cause.</p>
 <h2 id="investigation-outcomes">Investigation Outcomes<a class="headerlink" href="#investigation-outcomes" title="Permanent link">&para;</a></h2>
 <p>The LLM investigation (two invocations, merged) can produce 9 distinct outcomes, each handled differently by the system:</p>
 <pre class="mermaid"><code>flowchart TD
@@ -4591,7 +4665,7 @@
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../ai-analysis/">AI Analysis</a> -- The AA controller that orchestrates KA sessions</li>
-<li><a href="../workflow-selection/">Workflow Selection</a> -- DataStorage scoring algorithm details</li>
+<li><a href="../workflow-selection/">Workflow Selection</a> -- Scoring algorithm details (Kubernaut Agent's in-memory catalog as of v1.6)</li>
 <li><a href="../effectiveness/">Effectiveness Assessment</a> -- How remediations are evaluated after execution</li>
 <li><a href="../../user-guide/workflows/">Remediation Workflows</a> -- How to author workflows that the LLM can discover</li>
 <li><a href="../../user-guide/policies/">Rego Policies</a> -- Customizing the approval policy</li>

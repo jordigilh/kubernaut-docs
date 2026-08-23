@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1671,6 +1673,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1700,10 +1730,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1721,8 +1751,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1870,6 +1900,8 @@
       
         
           
+        
+      
         
       
         
@@ -2337,6 +2369,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3405,7 +3465,7 @@
 </table>
 <div class="admonition tip">
 <p class="admonition-title">Workflow name enrichment</p>
-<p>Notification bodies automatically resolve workflow UUIDs to human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID) when the workflow exists in the catalog. If resolution fails, the original UUID is preserved. See <a href="../../architecture/notification/#notification-enrichment">Architecture: Notification Enrichment</a> for details.</p>
+<p>Notification bodies automatically replace workflow UUIDs with human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID). As of v1.6, the name is precomputed by the Remediation Orchestrator at workflow-selection time and carried on the notification -- no live catalog lookup, no failure mode. If the name is ever absent, the original UUID is preserved. See <a href="../../architecture/notification/#notification-enrichment">Architecture: Notification Enrichment</a> for details.</p>
 </div>
 <h2 id="routing-configuration">Routing Configuration<a class="headerlink" href="#routing-configuration" title="Permanent link">&para;</a></h2>
 <p>Notifications are routed using a ConfigMap with an AlertManager-style <code>route</code> + <code>receivers</code> structure.</p>

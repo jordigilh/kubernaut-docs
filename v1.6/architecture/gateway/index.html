@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -1815,6 +1847,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Scope Checking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fleet-mode-scope-checking-v16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fleet Mode Scope Checking (v1.6+)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -2316,6 +2365,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3591,10 +3668,19 @@
 </span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="nt">&quot;message&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Resource is not managed by Kubernaut. To enable: kubectl label namespace &lt;ns&gt; kubernaut.ai/managed=true&quot;</span>
 </span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
 </span></code></pre></div>
+<h3 id="fleet-mode-scope-checking-v16">Fleet Mode Scope Checking (v1.6+)<a class="headerlink" href="#fleet-mode-scope-checking-v16" title="Permanent link">&para;</a></h3>
+<p>When <code>global.fleet.enabled=true</code>, the Gateway performs a <strong>federated</strong> scope check instead of (or in addition to) the local label check above, delegating to a pluggable backend (FMC or ACM Search -- see <a href="../fleet/">Fleet Management</a>) to determine whether a remote-cluster resource is managed.</p>
+<p>Fleet mode requires <strong>both</strong> of the following to be configured, or the Gateway fails closed at startup:</p>
+<ul>
+<li><strong><code>Backend</code>/<code>Endpoint</code></strong> -- the federated scope-check backend (answers "is this resource fleet-managed?")</li>
+<li><strong><code>MCPGatewayEndpoint</code></strong> (+ <code>MCPGatewayType</code>, e.g. Kuadrant or Envoy AI Gateway) -- used for remote reads (owner-chain metadata resolution)</li>
+</ul>
+<p>Configuring only one leaves the Gateway silently degraded to local-only behavior for fleet-routed signals, which is why both are validated together rather than allowed independently.</p>
 <h2 id="phase-based-deduplication">Phase-Based Deduplication<a class="headerlink" href="#phase-based-deduplication" title="Permanent link">&para;</a></h2>
 <p>The Gateway prevents duplicate remediations using a phase-based deduplication system backed by Kubernetes RR status (no Valkey dependency).</p>
 <h3 id="fingerprint">Fingerprint<a class="headerlink" href="#fingerprint" title="Permanent link">&para;</a></h3>
 <p>The deduplication key is the signal fingerprint: <code>SHA256(namespace:kind:name)</code> of the top-level owning resource. The alert name is <strong>not</strong> part of the fingerprint, so multiple alerts about the same Deployment (e.g., <code>KubePodCrashLooping</code> and <code>KubePodNotReady</code>) are treated as duplicates.</p>
+<p><strong>Fleet mode (v1.6+)</strong>: when the signal carries a non-empty <code>ClusterID</code> (populated from the Thanos/AlertManager <code>commonLabels["cluster"]</code> external label, or a Kubernetes Event source annotation), the fingerprint becomes <code>SHA256(clusterID:namespace:kind:name)</code> (<code>CalculateClusterAwareFingerprint</code>, BR-INTEGRATION-065) so the same-named resource on two different clusters never collides into one RR. When <code>ClusterID</code> is empty (local hub cluster, or fleet disabled), the formula is unchanged from pre-v1.6 behavior. See <a href="../fleet/">Fleet Management</a>.</p>
 <h3 id="phase-based-logic">Phase-Based Logic<a class="headerlink" href="#phase-based-logic" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -3670,6 +3756,10 @@
 <tr>
 <td><code>OriginalPayload</code></td>
 <td>Raw payload for audit reconstruction</td>
+</tr>
+<tr>
+<td><code>ClusterID</code></td>
+<td>(v1.6+, Fleet only) Source cluster identity; empty for the local/hub cluster. Propagated by the Orchestrator onto every child CRD -- see <a href="../remediation-routing/">Remediation Routing</a>.</td>
 </tr>
 </tbody>
 </table>

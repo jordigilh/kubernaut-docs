@@ -1044,6 +1044,8 @@
       
         
       
+        
+      
     
     
     
@@ -1498,6 +1500,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1524,10 +1554,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1545,8 +1575,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1694,6 +1724,8 @@
       
         
           
+        
+      
         
       
         
@@ -2161,6 +2193,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3408,13 +3468,13 @@
 <p>The most significant advantage is handling the <strong>long tail</strong> of alert types. In any production environment, the majority of alert types are infrequent — they fire a few times per month or less. Building skills for these alerts has poor ROI because the engineering cost per alert is constant regardless of frequency.</p>
 <p>Kubernaut handles long-tail alerts with the same investigation quality as high-frequency alerts because the investigation process is universal. A skill-based system returns "no skill found" for unseen alert types and pages a human. Kubernaut investigates and may resolve the incident autonomously, even for novel failure modes.</p>
 <h3 id="agentic-injection-points-v17">Agentic Injection Points (v1.7)<a class="headerlink" href="#agentic-injection-points-v17" title="Permanent link">&para;</a></h3>
-<p>The strongest argument for skills is <strong>institutional knowledge</strong> — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three <strong>agentic workflow injection points</strong> (planned for <a href="../../whats-next/#custom-agent-injection">v1.7, Q3 2026</a>) where operators will contribute domain-specific context without constraining the LLM's reasoning:</p>
+<p>The strongest argument for skills is <strong>institutional knowledge</strong> — environment-specific tribal wisdom that isn't captured in SOPs or available in the LLM's training data. Rather than embedding this knowledge in rigid per-alert playbooks, Kubernaut's architecture defines three <strong>agentic workflow injection points</strong> (planned for <a href="../../whats-next/#pluggable-investigation-agent-harness">v1.7, Q3 2026</a>) where operators will contribute domain-specific context without constraining the LLM's reasoning:</p>
 <ol>
-<li><strong>Pre-Investigation</strong> — Agent workflows that execute before investigation begins, contributing <strong>context</strong> (not instructions) such as environment-specific diagnostics, SOP knowledge, or data from external systems (CMDB, change management)</li>
-<li><strong>Pre-Workflow Selection</strong> — Agent workflows that influence which remediation workflows are surfaced as candidates, enabling <strong>policy-aware remediation</strong> (e.g., FinOps cost constraints) without hardcoding policies into workflow definitions</li>
-<li><strong>Custom Effectiveness Probes</strong> — Custom validation workflows to confirm whether a remediation succeeded for resources outside Kubernetes' native observability (databases, cloud services, external infrastructure)</li>
+<li><strong>Pre-Investigation</strong> — A pluggable custom investigation agent (see <a href="../../whats-next/#pluggable-investigation-agent-harness">Pluggable Investigation Agent Harness</a>) contributing <strong>context</strong> (not instructions) such as environment-specific diagnostics, SOP knowledge, or data from external systems (CMDB, change management) — or, once <a href="https://github.com/jordigilh/kubernaut/issues/2266">signal-type-to-agent dispatch</a> lands, an entirely domain-specific investigation agent for a given signal type</li>
+<li><strong>Pre-Workflow Selection</strong> — A pluggable custom workflow-discovery agent that influences which remediation workflows are surfaced as candidates, enabling <strong>policy-aware remediation</strong> (e.g., FinOps cost constraints) without hardcoding policies into workflow definitions</li>
+<li><strong>Custom Effectiveness Probes</strong> — Goose-recipe-based validation workflows to confirm whether a remediation succeeded for resources outside Kubernetes' native observability (databases, cloud services, external infrastructure)</li>
 </ol>
-<p>These injection points are <strong>multiplicative</strong> — one pre-investigation agent for etcd diagnostics benefits all etcd alert types; one cost-optimization agent at workflow discovery applies to every remediation across the platform. Building 3 injection point workflows provides equivalent contextual enrichment to dozens of per-alert skills.</p>
+<p>These injection points are <strong>multiplicative</strong> — one pre-investigation agent for etcd diagnostics benefits all etcd alert types; one cost-optimization agent at workflow discovery applies to every remediation across the platform. Building agents/recipes for these 3 injection points provides equivalent contextual enrichment to dozens of per-alert skills.</p>
 <h3 id="skills-vs-kubernaut-trade-offs">Skills vs Kubernaut: Trade-Offs<a class="headerlink" href="#skills-vs-kubernaut-trade-offs" title="Permanent link">&para;</a></h3>
 <table>
 <thead>

@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3165,7 +3225,7 @@
 
 <h1 id="supported-scenarios">Supported Scenarios<a class="headerlink" href="#supported-scenarios" title="Permanent link">&para;</a></h1>
 <p>Kubernaut validates remediation end to end against a catalog of real-world <strong>OpenShift Container Platform (OCP)</strong> incident scenarios. Each scenario is mapped to an ITIL-style support tier (L0–L3) reflecting how OCP operations teams typically triage and escalate platform issues — from autonomous detection through known-error resolution, specialist investigation, and deep root-cause analysis.</p>
-<p>Coverage as of v1.4: <strong>39 validated scenarios</strong> with E2E golden transcript testing, plus <strong>7 planned</strong> for future releases (OpenShift Virtualization, interactive forensic post-mortems, and TSM incident record creation).</p>
+<p>Coverage as of v1.6: <strong>40 validated scenarios</strong> with E2E golden transcript testing, plus <strong>7 planned</strong> for future releases (OpenShift Virtualization, interactive forensic post-mortems, and TSM incident record creation).</p>
 <h2 id="l0-automated-detection-triage">L0 — Automated Detection &amp; Triage<a class="headerlink" href="#l0-automated-detection-triage" title="Permanent link">&para;</a></h2>
 <p>Platform handles autonomously — no human trigger required.</p>
 <table>
@@ -3254,7 +3314,7 @@
 </tr>
 <tr>
 <td>VM Boot Failure</td>
-<td>Planned (v1.5)</td>
+<td>Planned -- scaffolding exists (<code>scenarios/vm-boot-failure</code>), not yet validated end-to-end</td>
 </tr>
 </tbody>
 </table>
@@ -3343,6 +3403,10 @@
 <td>Alert Misdirection</td>
 <td>Validated</td>
 </tr>
+<tr>
+<td>Operator OOMKill (Informer Cache Flood)</td>
+<td>Validated</td>
+</tr>
 </tbody>
 </table>
 <h3 id="openshift-virtualization">OpenShift Virtualization<a class="headerlink" href="#openshift-virtualization" title="Permanent link">&para;</a></h3>
@@ -3356,11 +3420,11 @@
 <tbody>
 <tr>
 <td>VM Migration Failure</td>
-<td>Planned (v1.5)</td>
+<td>Planned</td>
 </tr>
 <tr>
 <td>VM Network Post-Migration</td>
-<td>Planned (v1.5)</td>
+<td>Planned</td>
 </tr>
 </tbody>
 </table>
@@ -3450,11 +3514,11 @@
 </tr>
 <tr>
 <td>Interactive forensic post-mortem</td>
-<td>Planned (v1.5)</td>
+<td>Planned</td>
 </tr>
 <tr>
 <td>Incident record creation (TSM)</td>
-<td>Planned (v1.6+)</td>
+<td>Planned</td>
 </tr>
 </tbody>
 </table>
@@ -3469,11 +3533,11 @@
 <tbody>
 <tr>
 <td>VM Storage Degradation</td>
-<td>Planned (v1.5)</td>
+<td>Planned</td>
 </tr>
 <tr>
 <td>VM Cascading Migration Drain</td>
-<td>Planned (v1.5)</td>
+<td>Planned</td>
 </tr>
 </tbody>
 </table>
@@ -3484,7 +3548,7 @@
 </div>
 <div class="admonition info">
 <p class="admonition-title">Validation methodology</p>
-<p>All validated scenarios are E2E tested with <strong>golden transcripts</strong> from the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository — recorded investigation and remediation sessions that serve as regression baselines. Planned scenarios for v1.5 focus on OpenShift Virtualization workloads and interactive forensic post-mortems. Incident record creation via TSM integration is targeted for v1.6+.</p>
+<p>All validated scenarios are E2E tested with <strong>golden transcripts</strong> from the <a href="https://github.com/jordigilh/kubernaut-demo-scenarios">kubernaut-demo-scenarios</a> repository — recorded investigation and remediation sessions that serve as regression baselines. Remaining planned scenarios focus on OpenShift Virtualization workloads, interactive forensic post-mortems, and TSM incident record integration; none carry a committed release target.</p>
 </div>
 
 

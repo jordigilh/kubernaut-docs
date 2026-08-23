@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2298,17 +2330,6 @@
   
 </li>
         
-          <li class="md-nav__item">
-  <a href="#extensibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Extensibility
-      
-    </span>
-  </a>
-  
-</li>
-        
       </ul>
     </nav>
   
@@ -2544,6 +2565,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -4016,18 +4065,20 @@
 <li><strong>Validation</strong>: <code>ValidateRefs(refs)</code> ensures all referenced credentials exist before delivery</li>
 </ul>
 <h2 id="notification-enrichment">Notification Enrichment<a class="headerlink" href="#notification-enrichment" title="Permanent link">&para;</a></h2>
-<p>Before delivery, the controller enriches notification bodies by resolving workflow UUIDs to human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.</p>
+<p>Before delivery, the controller enriches notification bodies by replacing workflow UUIDs with human-readable workflow names. This ensures operators see meaningful identifiers (e.g., "RollbackDeployment") instead of opaque UUIDs in notification messages.</p>
+<div class="admonition info">
+<p class="admonition-title">v1.6: no live lookup -- name is already known (Issue #1677 Phase 1, DD-WORKFLOW-018 v1.1)</p>
+<p>Through v1.5, enrichment called a live <code>WorkflowNameResolver</code> backed by DataStorage's <code>GET /api/v1/workflows/{id}</code> (now-retired). As of v1.6, that resolver and its fallback branch were <strong>deleted outright</strong>: the Remediation Orchestrator already knows the catalog-authoritative workflow name at notification-creation time -- <code>AIAnalysis.Status.SelectedWorkflow.WorkflowName</code>, always equal to <code>RemediationWorkflow.metadata.name</code> -- and populates it directly on <code>NotificationRequest.Spec.Context.Workflow.WorkflowName</code>. Enrichment is now a pure in-memory string substitution with <strong>no external call and no failure mode of its own</strong>.</p>
+</div>
 <h3 id="enrichment-flow">Enrichment Flow<a class="headerlink" href="#enrichment-flow" title="Permanent link">&para;</a></h3>
 <ol>
-<li>Extract the workflow UUID from <code>spec.metadata["workflowId"]</code> with fallback to <code>spec.metadata["selectedWorkflow"]</code> (the former is set for completion notifications, the latter for approval notifications)</li>
-<li>Call the DataStorage catalog API (<code>GET /api/v1/workflows/{id}</code>) to resolve the UUID to a workflow name</li>
-<li>Replace every occurrence of the UUID in <code>spec.Body</code> with the resolved name</li>
+<li>Extract the workflow UUID from <code>Spec.Context.Workflow.WorkflowID</code> (completion notifications) with fallback to <code>Spec.Context.Workflow.SelectedWorkflow</code> (approval notifications)</li>
+<li>Read <code>Spec.Context.Workflow.WorkflowName</code>, already populated by the Remediation Orchestrator when it created the notification</li>
+<li>Replace every occurrence of the UUID in <code>spec.Body</code> with that name</li>
 <li>Pass the enriched notification to the delivery orchestrator</li>
 </ol>
 <h3 id="graceful-degradation">Graceful Degradation<a class="headerlink" href="#graceful-degradation" title="Permanent link">&para;</a></h3>
-<p>If the workflow UUID is absent from the workflow context, the DataStorage lookup fails, or the resolved name is empty, the notification is delivered unchanged with the original UUID preserved. Enrichment failures are logged but never block delivery.</p>
-<h3 id="extensibility">Extensibility<a class="headerlink" href="#extensibility" title="Permanent link">&para;</a></h3>
-<p>The enrichment layer uses a <code>WorkflowNameResolver</code> interface, allowing alternative resolution backends (e.g., in-memory cache, external catalog) without changing the delivery pipeline.</p>
+<p>If the workflow UUID or the pre-populated <code>WorkflowName</code> is absent from the notification context, the notification is delivered unchanged with the original UUID preserved. <code>WorkflowName</code> is <code>+kubebuilder:validation:Required</code> on the underlying <code>WorkflowSnapshot</code> type, so in practice it is always populated whenever a workflow ID is present at all -- this path exists for defense-in-depth, not because it is expected to trigger.</p>
 <h2 id="completion-and-status-notification-content">Completion and status notification content<a class="headerlink" href="#completion-and-status-notification-content" title="Permanent link">&para;</a></h2>
 <h3 id="effectiveness-assessment-in-completion-messages">Effectiveness assessment in completion messages<a class="headerlink" href="#effectiveness-assessment-in-completion-messages" title="Permanent link">&para;</a></h3>
 <p>For <strong>completion</strong> notifications, the Remediation Orchestrator loads the effectiveness assessment via <code>RemediationRequest.Status.EffectivenessAssessmentRef</code> before building the message body. The notification includes assessment reason, per-component scores (health, alerts, metrics, hash), and hash comparison details so operators can see outcome and evidence in one place.</p>

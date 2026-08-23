@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1415,6 +1417,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1444,10 +1474,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1465,8 +1495,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1614,6 +1644,8 @@
       
         
           
+        
+      
         
       
         
@@ -2081,6 +2113,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3097,6 +3157,7 @@
 <li><strong>Completed remediations</strong> are retained for 24 hours, then cleaned up automatically</li>
 <li><strong>No data is lost</strong> because every stage is persisted as audit events in PostgreSQL before CRD cleanup</li>
 <li>The retention period is configurable via <code>retention.period</code> in Helm values</li>
+<li><strong><code>AgentSession</code> (v1.6+)</strong> has no independent retention timer -- it's owned by <code>AIAnalysis</code> (owner reference), so it cascades deletion transitively through the same <code>RemediationRequest</code> -&gt; <code>AIAnalysis</code> -&gt; <code>AgentSession</code> chain when the parent RR expires. See <a href="../../api-reference/crds/#agentsession">API Reference: AgentSession</a>.</li>
 </ul>
 <h2 id="postgresql-as-the-system-of-record">PostgreSQL as the System of Record<a class="headerlink" href="#postgresql-as-the-system-of-record" title="Permanent link">&para;</a></h2>
 <p>While CRDs are ephemeral, the audit trail in PostgreSQL is permanent. Every service emits detailed audit events throughout the remediation lifecycle (see <a href="../audit-and-observability/">Audit &amp; Observability</a>).</p>
@@ -3136,6 +3197,7 @@
         RR[RemediationRequest CRD]
         SP[SignalProcessing CRD]
         AA[AIAnalysis CRD]
+        AS["AgentSession CRD (v1.6+)"]
         WE[WorkflowExecution CRD]
         NR[NotificationRequest CRD]
         EA[EffectivenessAssessment CRD]

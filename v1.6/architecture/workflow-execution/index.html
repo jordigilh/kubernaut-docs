@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2355,6 +2387,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3473,7 +3533,7 @@
 </ul>
 <p>Failure → <code>MarkFailed</code> with <code>ConfigurationError</code>.</p>
 <h3 id="2-engine-resolution">2. Engine Resolution<a class="headerlink" href="#2-engine-resolution" title="Permanent link">&para;</a></h3>
-<p><code>resolveExecutionEngine</code> queries the workflow catalog in DataStorage to determine the execution engine (<code>tekton</code>, <code>job</code>, or <code>ansible</code>). This runs immediately after validation, before cooldown check.</p>
+<p>The execution engine (<code>tekton</code>, <code>job</code>, or <code>ansible</code>) is read directly off the immutable <code>spec.workflowRef.executionEngine</code> field -- the Remediation Orchestrator's already-validated, CRD-embedded snapshot copied verbatim from <code>AIAnalysis.Status.SelectedWorkflow</code>. There is no DataStorage catalog lookup at runtime (Issue #1661 Change 11f removed the former <code>resolveWorkflowCatalog</code> Spec→Status mirror entirely). <code>validateExecutionEngineResolved</code> runs immediately after validation, before the cooldown check, as a defensive fail-closed guard against a <code>workflowRef</code> that somehow lacks an execution engine -- this should be unreachable in practice since RO's <code>validateSelectedWorkflow</code> already enforces it before the WFE is ever created.</p>
 <p>Failure → <code>MarkFailed</code> with <code>ConfigurationError</code>.</p>
 <h3 id="3-cooldown-check">3. Cooldown Check<a class="headerlink" href="#3-cooldown-check" title="Permanent link">&para;</a></h3>
 <p>Before creating a new execution, the controller checks for recently completed WFEs on the same target resource:</p>
@@ -3486,16 +3546,11 @@
 <h3 id="audit-workflowexecutionselectioncompleted">Audit: <code>workflowexecution.selection.completed</code><a class="headerlink" href="#audit-workflowexecutionselectioncompleted" title="Permanent link">&para;</a></h3>
 <p>Emitted after validation + engine resolution + cooldown check pass, <strong>before</strong> dependency resolution and execution creation.</p>
 <h3 id="4-dependency-resolution">4. Dependency Resolution<a class="headerlink" href="#4-dependency-resolution" title="Permanent link">&para;</a></h3>
-<p>Fetches workflow dependencies from DataStorage and validates them in the execution namespace:</p>
-<ol>
-<li><strong>Query DataStorage</strong> via <code>WorkflowQuerier.GetWorkflowDependencies(ctx, workflowID)</code> for declared Secrets and ConfigMaps</li>
-<li><strong>Validate</strong> via <code>DependencyValidator.ValidateDependencies</code> that each declared dependency exists in the execution namespace</li>
-<li><strong>Failure modes</strong>:<ul>
-<li>DataStorage fetch failure → non-fatal, continue without dependency data</li>
-<li>Dependency validation failure → <code>MarkFailed</code> with <code>ConfigurationError</code></li>
-</ul>
-</li>
-</ol>
+<p><code>spec.workflowRef.dependencies</code> (declared Secrets/ConfigMaps) is part of the same immutable snapshot as <code>executionEngine</code>/<code>engineConfig</code> -- there is no DataStorage query at this step (Issue #1661 Change 11e consolidated the former 3-round-trip DataStorage schema fetch into RO's single upfront snapshot).</p>
+<div class="admonition info">
+<p class="admonition-title">v1.6 (Issue #1481): pre-execution dependency existence is no longer validated</p>
+<p>Earlier versions validated that each declared Secret/ConfigMap actually existed in the execution namespace before creating the Job/PipelineRun, failing the WFE with <code>ConfigurationError</code> if not. This pre-flight check was removed: a schema-declared dependency is now mounted as-is, and Kubernetes itself validates existence at runtime when the Job/PipelineRun attempts to mount the volume (<code>CreateContainerConfigError</code>/similar pod events). This is a fail-fast, not fail-closed, trade-off -- see BR-WORKFLOW-008 for the resulting observability guarantees.</p>
+</div>
 <h3 id="5-execution-creation">5. Execution Creation<a class="headerlink" href="#5-execution-creation" title="Permanent link">&para;</a></h3>
 <p>Creates a Kubernetes Job, Tekton PipelineRun, or AWX Job using the engine resolved in Step 2:</p>
 <ul>
@@ -3533,11 +3588,9 @@
 <p>For single-step remediations:</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant K8s as Kubernetes API
 
-    WE-&gt;&gt;DS: Query workflow dependencies
-    WE-&gt;&gt;WE: Validate dependencies
+    WE-&gt;&gt;WE: Read engine/dependencies from spec.workflowRef snapshot
     WE-&gt;&gt;K8s: Create Job in execution namespace
     K8s--&gt;&gt;WE: Job status (Running → Succeeded/Failed)
     WE-&gt;&gt;WE: Update WFE status</code></pre>
@@ -3545,11 +3598,9 @@
 <p>For multi-step remediations with step ordering, retries, and artifact passing:</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant Tekton as Tekton API
 
-    WE-&gt;&gt;DS: Query workflow dependencies
-    WE-&gt;&gt;WE: Validate dependencies
+    WE-&gt;&gt;WE: Read engine/dependencies from spec.workflowRef snapshot
     WE-&gt;&gt;Tekton: Create PipelineRun
     Tekton--&gt;&gt;WE: PipelineRun status
     WE-&gt;&gt;WE: Update WFE status</code></pre>
@@ -3557,11 +3608,10 @@
 <p>For remediations that use Ansible playbooks managed via AWX or Ansible Automation Platform (BR-WE-015):</p>
 <pre class="mermaid"><code>sequenceDiagram
     participant WE as WE Controller
-    participant DS as DataStorage
     participant K8s as Kubernetes API
     participant AWX as AWX/AAP
 
-    WE-&gt;&gt;DS: Query workflow dependencies (Secrets, ConfigMaps)
+    WE-&gt;&gt;WE: Read dependencies (Secrets, ConfigMaps) from spec.workflowRef snapshot
     WE-&gt;&gt;K8s: Read dependency Secrets and ConfigMaps
     WE-&gt;&gt;AWX: Create ephemeral credentials (from Secrets)
     WE-&gt;&gt;AWX: Launch Job Template (extra_vars + credentials)
@@ -3633,7 +3683,7 @@
 <h3 id="ownership-verified-cleanup">Ownership-Verified Cleanup<a class="headerlink" href="#ownership-verified-cleanup" title="Permanent link">&para;</a></h3>
 <p>During cooldown cleanup, both <code>JobExecutor</code> and <code>TektonExecutor</code> verify the <code>kubernaut.ai/workflow-execution</code> label matches the WFE name before deleting execution resources. This prevents WFE1's cooldown cleanup from destroying WFE2's newly created Job or PipelineRun when they share deterministic names.</p>
 <h3 id="engine-configuration-resolution">Engine Configuration Resolution<a class="headerlink" href="#engine-configuration-resolution" title="Permanent link">&para;</a></h3>
-<p>When a WFE spec omits <code>engineConfig</code>, the controller resolves it from the workflow catalog in DataStorage. This prevents nil-pointer panics when workflow registration did not include engine-specific configuration.</p>
+<p><code>engineConfig</code> is part of the immutable <code>spec.workflowRef</code> snapshot the Remediation Orchestrator embeds at WFE-creation time -- there is no runtime resolution or DataStorage catalog lookup. A workflow that needs engine-specific configuration (e.g. an Ansible <code>playbookPath</code>) must declare it on the <code>RemediationWorkflow</code> CRD so RO can copy it into the snapshot; there is no fallback path if it's omitted.</p>
 <h2 id="execution-namespace-and-rbac">Execution Namespace and RBAC<a class="headerlink" href="#execution-namespace-and-rbac" title="Permanent link">&para;</a></h2>
 <p>All Jobs and PipelineRuns execute in the dedicated <code>kubernaut-workflows</code> namespace. Each workflow declares its own ServiceAccount via <code>spec.execution.serviceAccountName</code> on the <code>RemediationWorkflow</code> CRD (propagated to <code>WorkflowExecution.spec.serviceAccountName</code>). This enables least-privilege RBAC per workflow. If omitted, the execution namespace default ServiceAccount is used.</p>
 <ul>

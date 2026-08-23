@@ -841,6 +841,8 @@
       
         
       
+        
+      
     
     
     
@@ -1620,6 +1622,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1649,10 +1679,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="">
             
   
   
@@ -1670,8 +1700,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1819,6 +1849,8 @@
       
         
           
+        
+      
         
       
         
@@ -2286,6 +2318,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3642,8 +3702,8 @@
 <h3 id="validation">Validation<a class="headerlink" href="#validation" title="Permanent link">&para;</a></h3>
 <p>The authwebhook validates override requests at admission time:</p>
 <ul>
-<li>The referenced workflow must exist in the DataStorage catalog</li>
-<li>The workflow must be in <code>Active</code> status (not <code>Deprecated</code> or <code>Draft</code>)</li>
+<li>The referenced workflow must exist as a <code>RemediationWorkflow</code> CRD (the Auth Webhook checks directly against the CRD, its own source of truth as of v1.6 -- no DataStorage round trip)</li>
+<li>The workflow's <code>catalogStatus</code> must be <code>Active</code> (not <code>Deprecated</code>, <code>Disabled</code>, or <code>Superseded</code>)</li>
 <li>Invalid overrides are rejected with a descriptive admission error</li>
 </ul>
 <h3 id="audit-trail">Audit trail<a class="headerlink" href="#audit-trail" title="Permanent link">&para;</a></h3>

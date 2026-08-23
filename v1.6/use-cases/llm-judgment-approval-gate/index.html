@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -2608,10 +2668,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#the-gap-in-the-default-policy" class="md-nav__link">
+  <a href="#the-gap-that-was-fixed" class="md-nav__link">
     <span class="md-ellipsis">
       
-        The Gap in the Default Policy
+        The Gap That Was Fixed
       
     </span>
   </a>
@@ -3534,14 +3594,14 @@ in a staging namespace where the default policy would have auto-approved.</p>
 </div>
 </div>
 </div>
-<h3 id="the-gap-in-the-default-policy">The Gap in the Default Policy<a class="headerlink" href="#the-gap-in-the-default-policy" title="Permanent link">&para;</a></h3>
-<p>The default <code>approval.rego</code> defines a <code>has_warnings</code> helper but <strong>never uses it</strong> in
-any <code>require_approval</code> rule. This means:</p>
+<h3 id="the-gap-that-was-fixed">The Gap That Was Fixed<a class="headerlink" href="#the-gap-that-was-fixed" title="Permanent link">&para;</a></h3>
+<p>At the time of this validation, the reference <code>approval.rego</code> defined a <code>has_warnings</code>
+helper but <strong>never used it</strong> in any <code>require_approval</code> rule. This meant:</p>
 <table>
 <thead>
 <tr>
 <th>Environment</th>
-<th>Default Policy</th>
+<th>Policy (at the time)</th>
 <th>LLM Warning Effect</th>
 </tr>
 </thead>
@@ -3559,13 +3619,19 @@ any <code>require_approval</code> rule. This means:</p>
 </tbody>
 </table>
 <div class="admonition warning">
-<p class="admonition-title">Silent execution in non-production</p>
-<p>Without a policy fix, Path B in a staging or development namespace would
-<strong>auto-execute</strong> the <code>CleanupPVC</code> workflow. The LLM's "no remediation warranted"
-warning would only appear in the audit trail after the PVCs are already deleted.</p>
+<p class="admonition-title">Silent execution in non-production (fixed)</p>
+<p>Without the <code>has_warnings</code> rule wired into <code>require_approval</code>, Path B in a staging
+or development namespace would <strong>auto-execute</strong> the <code>CleanupPVC</code> workflow. The
+LLM's "no remediation warranted" warning would only appear in the audit trail
+after the PVCs were already deleted.</p>
 </div>
-<p>This gap is tracked in <a href="https://github.com/jordigilh/kubernaut/issues/439">kubernaut#439</a>
-for inclusion in the default Helm chart policy.</p>
+<p>This gap was fixed in <a href="https://github.com/jordigilh/kubernaut/issues/439">kubernaut#439</a>:
+Kubernaut's reference approval-policy examples now wire <code>has_warnings</code> into
+<code>require_approval</code> (see <a href="../../user-guide/configmap-approval/">AIAnalysis Approval Policy</a>),
+matching the "Patched policy (staging)" behavior shown in Run 3 above. Note that
+Kubernaut ships <strong>no built-in default</strong> approval policy at all — <code>aianalysis.policies.content</code>
+(or <code>existingConfigMap</code>) is a required Helm value — so this fix applies to the reference
+examples operators are expected to start from, not an automatic chart default.</p>
 <h3 id="making-the-warning-trigger-approval">Making the Warning Trigger Approval<a class="headerlink" href="#making-the-warning-trigger-approval" title="Permanent link">&para;</a></h3>
 <p>Adding the <code>has_warnings</code> rule to the policy ensures the LLM's warning triggers the
 approval gate in <strong>any</strong> environment. This was confirmed in Run 3 (staging namespace):</p>
@@ -3599,7 +3665,7 @@ contract and <a href="../../user-guide/rego-reference/">Rego Policy Reference</a
 <h2 id="end-to-end-walkthrough">End-to-End Walkthrough<a class="headerlink" href="#end-to-end-walkthrough" title="Permanent link">&para;</a></h2>
 <p>The complete lifecycle, confirmed on a live OCP cluster:</p>
 <pre class="mermaid"><code>graph LR
-    A["Alert fires"] --&gt; B["LLM investigates&lt;br/&gt;(91 s, 6 poll cycles)"]
+    A["Alert fires"] --&gt; B["LLM investigates&lt;br/&gt;(91 s via AgentSession)"]
     B --&gt; C["CleanupPVC selected&lt;br/&gt;+ warning emitted"]
     C --&gt; D["Approval gate&lt;br/&gt;triggers"]
     D --&gt; E["Operator rejects"]
@@ -3610,9 +3676,9 @@ contract and <a href="../../user-guide/rego-reference/">Rego Policy Reference</a
 <p><code>KubePersistentVolumeClaimOrphaned</code> — 5 orphaned PVCs from completed batch jobs (500Mi
 total).</p>
 <h3 id="2-llm-investigates">2. LLM investigates<a class="headerlink" href="#2-llm-investigates" title="Permanent link">&para;</a></h3>
-<p>Over 91 seconds (6 poll cycles), the LLM identifies low-severity housekeeping.
-Contributing factors: "completed batch jobs without automatic PVC cleanup", "missing
-storage lifecycle management."</p>
+<p>Over 91 seconds, dispatched and tracked via the <code>AgentSession</code> CRD (create → watch →
+status), the LLM identifies low-severity housekeeping. Contributing factors: "completed
+batch jobs without automatic PVC cleanup", "missing storage lifecycle management."</p>
 <h3 id="3-workflow-matched-with-warning">3. Workflow matched with warning<a class="headerlink" href="#3-workflow-matched-with-warning" title="Permanent link">&para;</a></h3>
 <p><code>CleanupPVC</code> selected (confidence 0.9) with parameters
 <code>LABEL_SELECTOR=batch-run=completed</code>. The LLM simultaneously emits: <em>"Alert not

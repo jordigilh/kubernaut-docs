@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -4130,7 +4190,7 @@
 <tr>
 <td></td>
 <td><code>quay.io/kubernaut-ai/datastorage</code></td>
-<td>Audit trail and workflow catalog persistence</td>
+<td>Audit trail and remediation history persistence</td>
 </tr>
 <tr>
 <td></td>
@@ -4785,7 +4845,7 @@
 </span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="s">apiVersion: v1</span>
 </span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="s">kind: ConfigMap</span>
 </span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="s">metadata:</span>
-</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="s">  name: aianalysis-policies</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="s">  name: aianalysis-policy</span>
 </span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="s">  namespace: kubernaut-system</span>
 </span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a><span class="s">data:</span>
 </span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a><span class="s">  approval.rego: |</span>
@@ -5096,7 +5156,7 @@
 </table>
 </div>
 <p>Apply the Kubernaut custom resource. Replace <code>&lt;KEYCLOAK_HOST&gt;</code> and <code>&lt;llm-*&gt;</code> placeholders:</p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha2</span>
 </span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
 </span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="nt">metadata</span><span class="p">:</span>
 </span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut</span>
@@ -5116,165 +5176,176 @@
 </span><span id="__span-34-18"><a id="__codelineno-34-18" name="__codelineno-34-18" href="#__codelineno-34-18"></a><span class="w">    </span><span class="nt">port</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">6379</span>
 </span><span id="__span-34-19"><a id="__codelineno-34-19" name="__codelineno-34-19" href="#__codelineno-34-19"></a><span class="w">    </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">valkey-secret</span>
 </span><span id="__span-34-20"><a id="__codelineno-34-20" name="__codelineno-34-20" href="#__codelineno-34-20"></a>
-</span><span id="__span-34-21"><a id="__codelineno-34-21" name="__codelineno-34-21" href="#__codelineno-34-21"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
-</span><span id="__span-34-22"><a id="__codelineno-34-22" name="__codelineno-34-22" href="#__codelineno-34-22"></a><span class="w">    </span><span class="nt">llm</span><span class="p">:</span>
-</span><span id="__span-34-23"><a id="__codelineno-34-23" name="__codelineno-34-23" href="#__codelineno-34-23"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;llm-provider&gt;&quot;</span><span class="w">          </span><span class="c1"># e.g. openai, vertex_ai, ollama, anthropic</span>
-</span><span id="__span-34-24"><a id="__codelineno-34-24" name="__codelineno-34-24" href="#__codelineno-34-24"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;model-name&gt;&quot;</span><span class="w">               </span><span class="c1"># e.g. llama3, gpt-4o, claude-sonnet-4-6</span>
-</span><span id="__span-34-25"><a id="__codelineno-34-25" name="__codelineno-34-25" href="#__codelineno-34-25"></a><span class="w">      </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;llm-endpoint&gt;&quot;</span><span class="w">          </span><span class="c1"># e.g. http://ollama.internal.svc:11434</span>
-</span><span id="__span-34-26"><a id="__codelineno-34-26" name="__codelineno-34-26" href="#__codelineno-34-26"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-credentials</span>
-</span><span id="__span-34-27"><a id="__codelineno-34-27" name="__codelineno-34-27" href="#__codelineno-34-27"></a><span class="w">      </span><span class="nt">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-34-28"><a id="__codelineno-34-28" name="__codelineno-34-28" href="#__codelineno-34-28"></a><span class="w">      </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
-</span><span id="__span-34-29"><a id="__codelineno-34-29" name="__codelineno-34-29" href="#__codelineno-34-29"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-30"><a id="__codelineno-34-30" name="__codelineno-34-30" href="#__codelineno-34-30"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
-</span><span id="__span-34-31"><a id="__codelineno-34-31" name="__codelineno-34-31" href="#__codelineno-34-31"></a><span class="w">    </span><span class="nt">maxTurns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
-</span><span id="__span-34-32"><a id="__codelineno-34-32" name="__codelineno-34-32" href="#__codelineno-34-32"></a><span class="w">    </span><span class="nt">audit</span><span class="p">:</span>
-</span><span id="__span-34-33"><a id="__codelineno-34-33" name="__codelineno-34-33" href="#__codelineno-34-33"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-34"><a id="__codelineno-34-34" name="__codelineno-34-34" href="#__codelineno-34-34"></a><span class="w">    </span><span class="nt">interactive</span><span class="p">:</span>
-</span><span id="__span-34-35"><a id="__codelineno-34-35" name="__codelineno-34-35" href="#__codelineno-34-35"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-36"><a id="__codelineno-34-36" name="__codelineno-34-36" href="#__codelineno-34-36"></a><span class="w">      </span><span class="nt">inactivityTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
-</span><span id="__span-34-37"><a id="__codelineno-34-37" name="__codelineno-34-37" href="#__codelineno-34-37"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-</span><span id="__span-34-38"><a id="__codelineno-34-38" name="__codelineno-34-38" href="#__codelineno-34-38"></a><span class="w">      </span><span class="nt">rateLimitPerUser</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-</span><span id="__span-34-39"><a id="__codelineno-34-39" name="__codelineno-34-39" href="#__codelineno-34-39"></a><span class="w">      </span><span class="nt">sessionTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-34-40"><a id="__codelineno-34-40" name="__codelineno-34-40" href="#__codelineno-34-40"></a><span class="w">    </span><span class="nt">safety</span><span class="p">:</span>
-</span><span id="__span-34-41"><a id="__codelineno-34-41" name="__codelineno-34-41" href="#__codelineno-34-41"></a><span class="w">      </span><span class="nt">anomaly</span><span class="p">:</span>
-</span><span id="__span-34-42"><a id="__codelineno-34-42" name="__codelineno-34-42" href="#__codelineno-34-42"></a><span class="w">        </span><span class="nt">maxRepeatedFailures</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
-</span><span id="__span-34-43"><a id="__codelineno-34-43" name="__codelineno-34-43" href="#__codelineno-34-43"></a><span class="w">        </span><span class="nt">maxToolCallsPerTool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
-</span><span id="__span-34-44"><a id="__codelineno-34-44" name="__codelineno-34-44" href="#__codelineno-34-44"></a><span class="w">        </span><span class="nt">maxTotalToolCalls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
-</span><span id="__span-34-45"><a id="__codelineno-34-45" name="__codelineno-34-45" href="#__codelineno-34-45"></a><span class="w">      </span><span class="nt">sanitization</span><span class="p">:</span>
-</span><span id="__span-34-46"><a id="__codelineno-34-46" name="__codelineno-34-46" href="#__codelineno-34-46"></a><span class="w">        </span><span class="nt">credentialScrubEnabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-47"><a id="__codelineno-34-47" name="__codelineno-34-47" href="#__codelineno-34-47"></a><span class="w">        </span><span class="nt">injectionPatternsEnabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-48"><a id="__codelineno-34-48" name="__codelineno-34-48" href="#__codelineno-34-48"></a><span class="w">    </span><span class="nt">summarizer</span><span class="p">:</span>
-</span><span id="__span-34-49"><a id="__codelineno-34-49" name="__codelineno-34-49" href="#__codelineno-34-49"></a><span class="w">      </span><span class="nt">maxToolOutputSize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100000</span>
-</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a><span class="w">      </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
-</span><span id="__span-34-51"><a id="__codelineno-34-51" name="__codelineno-34-51" href="#__codelineno-34-51"></a><span class="w">    </span><span class="nt">alignmentCheck</span><span class="p">:</span>
-</span><span id="__span-34-52"><a id="__codelineno-34-52" name="__codelineno-34-52" href="#__codelineno-34-52"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-34-53"><a id="__codelineno-34-53" name="__codelineno-34-53" href="#__codelineno-34-53"></a><span class="w">    </span><span class="nt">session</span><span class="p">:</span>
-</span><span id="__span-34-54"><a id="__codelineno-34-54" name="__codelineno-34-54" href="#__codelineno-34-54"></a><span class="w">      </span><span class="nt">ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-34-55"><a id="__codelineno-34-55" name="__codelineno-34-55" href="#__codelineno-34-55"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
-</span><span id="__span-34-56"><a id="__codelineno-34-56" name="__codelineno-34-56" href="#__codelineno-34-56"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-</span><span id="__span-34-57"><a id="__codelineno-34-57" name="__codelineno-34-57" href="#__codelineno-34-57"></a>
-</span><span id="__span-34-58"><a id="__codelineno-34-58" name="__codelineno-34-58" href="#__codelineno-34-58"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
-</span><span id="__span-34-59"><a id="__codelineno-34-59" name="__codelineno-34-59" href="#__codelineno-34-59"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-60"><a id="__codelineno-34-60" name="__codelineno-34-60" href="#__codelineno-34-60"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
-</span><span id="__span-34-61"><a id="__codelineno-34-61" name="__codelineno-34-61" href="#__codelineno-34-61"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
-</span><span id="__span-34-62"><a id="__codelineno-34-62" name="__codelineno-34-62" href="#__codelineno-34-62"></a><span class="w">      </span><span class="nt">audience</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
-</span><span id="__span-34-63"><a id="__codelineno-34-63" name="__codelineno-34-63" href="#__codelineno-34-63"></a><span class="w">      </span><span class="nt">jwksURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs&quot;</span>
-</span><span id="__span-34-64"><a id="__codelineno-34-64" name="__codelineno-34-64" href="#__codelineno-34-64"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-65"><a id="__codelineno-34-65" name="__codelineno-34-65" href="#__codelineno-34-65"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">debug</span>
-</span><span id="__span-34-66"><a id="__codelineno-34-66" name="__codelineno-34-66" href="#__codelineno-34-66"></a><span class="w">    </span><span class="nt">rateLimit</span><span class="p">:</span>
-</span><span id="__span-34-67"><a id="__codelineno-34-67" name="__codelineno-34-67" href="#__codelineno-34-67"></a><span class="w">      </span><span class="nt">ipRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
-</span><span id="__span-34-68"><a id="__codelineno-34-68" name="__codelineno-34-68" href="#__codelineno-34-68"></a><span class="w">      </span><span class="nt">userRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
-</span><span id="__span-34-69"><a id="__codelineno-34-69" name="__codelineno-34-69" href="#__codelineno-34-69"></a><span class="w">      </span><span class="nt">toolCallsPerMinute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
-</span><span id="__span-34-70"><a id="__codelineno-34-70" name="__codelineno-34-70" href="#__codelineno-34-70"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
-</span><span id="__span-34-71"><a id="__codelineno-34-71" name="__codelineno-34-71" href="#__codelineno-34-71"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-34-72"><a id="__codelineno-34-72" name="__codelineno-34-72" href="#__codelineno-34-72"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-34-73"><a id="__codelineno-34-73" name="__codelineno-34-73" href="#__codelineno-34-73"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
-</span><span id="__span-34-74"><a id="__codelineno-34-74" name="__codelineno-34-74" href="#__codelineno-34-74"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
-</span><span id="__span-34-75"><a id="__codelineno-34-75" name="__codelineno-34-75" href="#__codelineno-34-75"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
-</span><span id="__span-34-76"><a id="__codelineno-34-76" name="__codelineno-34-76" href="#__codelineno-34-76"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-77"><a id="__codelineno-34-77" name="__codelineno-34-77" href="#__codelineno-34-77"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
-</span><span id="__span-34-78"><a id="__codelineno-34-78" name="__codelineno-34-78" href="#__codelineno-34-78"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-34-79"><a id="__codelineno-34-79" name="__codelineno-34-79" href="#__codelineno-34-79"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
-</span><span id="__span-34-80"><a id="__codelineno-34-80" name="__codelineno-34-80" href="#__codelineno-34-80"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-34-81"><a id="__codelineno-34-81" name="__codelineno-34-81" href="#__codelineno-34-81"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-34-82"><a id="__codelineno-34-82" name="__codelineno-34-82" href="#__codelineno-34-82"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-83"><a id="__codelineno-34-83" name="__codelineno-34-83" href="#__codelineno-34-83"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
-</span><span id="__span-34-84"><a id="__codelineno-34-84" name="__codelineno-34-84" href="#__codelineno-34-84"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-85"><a id="__codelineno-34-85" name="__codelineno-34-85" href="#__codelineno-34-85"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cicd</span>
-</span><span id="__span-34-86"><a id="__codelineno-34-86" name="__codelineno-34-86" href="#__codelineno-34-86"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-87"><a id="__codelineno-34-87" name="__codelineno-34-87" href="#__codelineno-34-87"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-34-21"><a id="__codelineno-34-21" name="__codelineno-34-21" href="#__codelineno-34-21"></a><span class="w">  </span><span class="c1"># At least one named LLM profile is schema-required (spec.llmProfiles</span>
+</span><span id="__span-34-22"><a id="__codelineno-34-22" name="__codelineno-34-22" href="#__codelineno-34-22"></a><span class="w">  </span><span class="c1"># itself is a mandatory key). endpoint is additionally required when</span>
+</span><span id="__span-34-23"><a id="__codelineno-34-23" name="__codelineno-34-23" href="#__codelineno-34-23"></a><span class="w">  </span><span class="c1"># provider is openai.</span>
+</span><span id="__span-34-24"><a id="__codelineno-34-24" name="__codelineno-34-24" href="#__codelineno-34-24"></a><span class="w">  </span><span class="nt">llmProfiles</span><span class="p">:</span>
+</span><span id="__span-34-25"><a id="__codelineno-34-25" name="__codelineno-34-25" href="#__codelineno-34-25"></a><span class="w">    </span><span class="nt">primary</span><span class="p">:</span>
+</span><span id="__span-34-26"><a id="__codelineno-34-26" name="__codelineno-34-26" href="#__codelineno-34-26"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;llm-provider&gt;&quot;</span><span class="w">          </span><span class="c1"># e.g. openai, anthropic, gemini, vertex_ai, openai_compatible (Ollama, vLLM, etc.)</span>
+</span><span id="__span-34-27"><a id="__codelineno-34-27" name="__codelineno-34-27" href="#__codelineno-34-27"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;model-name&gt;&quot;</span><span class="w">               </span><span class="c1"># e.g. llama3, gpt-4o, claude-sonnet-4-6</span>
+</span><span id="__span-34-28"><a id="__codelineno-34-28" name="__codelineno-34-28" href="#__codelineno-34-28"></a><span class="w">      </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&lt;llm-endpoint&gt;&quot;</span><span class="w">          </span><span class="c1"># e.g. http://ollama.internal.svc:11434 (schema-required only for provider: openai; set it for openai_compatible too -- e.g. Ollama -- since there&#39;s no other way to point at a self-hosted server)</span>
+</span><span id="__span-34-29"><a id="__codelineno-34-29" name="__codelineno-34-29" href="#__codelineno-34-29"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-credentials</span>
+</span><span id="__span-34-30"><a id="__codelineno-34-30" name="__codelineno-34-30" href="#__codelineno-34-30"></a><span class="w">      </span><span class="nt">maxRetries</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span id="__span-34-31"><a id="__codelineno-34-31" name="__codelineno-34-31" href="#__codelineno-34-31"></a><span class="w">      </span><span class="nt">timeoutSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">120</span>
+</span><span id="__span-34-32"><a id="__codelineno-34-32" name="__codelineno-34-32" href="#__codelineno-34-32"></a>
+</span><span id="__span-34-33"><a id="__codelineno-34-33" name="__codelineno-34-33" href="#__codelineno-34-33"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
+</span><span id="__span-34-34"><a id="__codelineno-34-34" name="__codelineno-34-34" href="#__codelineno-34-34"></a><span class="w">    </span><span class="nt">llmProfileRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">primary</span>
+</span><span id="__span-34-35"><a id="__codelineno-34-35" name="__codelineno-34-35" href="#__codelineno-34-35"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-36"><a id="__codelineno-34-36" name="__codelineno-34-36" href="#__codelineno-34-36"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG</span>
+</span><span id="__span-34-37"><a id="__codelineno-34-37" name="__codelineno-34-37" href="#__codelineno-34-37"></a><span class="w">    </span><span class="nt">maxTurns</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
+</span><span id="__span-34-38"><a id="__codelineno-34-38" name="__codelineno-34-38" href="#__codelineno-34-38"></a><span class="w">    </span><span class="nt">audit</span><span class="p">:</span>
+</span><span id="__span-34-39"><a id="__codelineno-34-39" name="__codelineno-34-39" href="#__codelineno-34-39"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-40"><a id="__codelineno-34-40" name="__codelineno-34-40" href="#__codelineno-34-40"></a><span class="w">    </span><span class="nt">interactive</span><span class="p">:</span>
+</span><span id="__span-34-41"><a id="__codelineno-34-41" name="__codelineno-34-41" href="#__codelineno-34-41"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-42"><a id="__codelineno-34-42" name="__codelineno-34-42" href="#__codelineno-34-42"></a><span class="w">      </span><span class="nt">inactivityTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+</span><span id="__span-34-43"><a id="__codelineno-34-43" name="__codelineno-34-43" href="#__codelineno-34-43"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-34-44"><a id="__codelineno-34-44" name="__codelineno-34-44" href="#__codelineno-34-44"></a><span class="w">      </span><span class="nt">rateLimitPerUser</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-34-45"><a id="__codelineno-34-45" name="__codelineno-34-45" href="#__codelineno-34-45"></a><span class="w">      </span><span class="nt">sessionTTL</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-34-46"><a id="__codelineno-34-46" name="__codelineno-34-46" href="#__codelineno-34-46"></a><span class="w">    </span><span class="nt">safety</span><span class="p">:</span>
+</span><span id="__span-34-47"><a id="__codelineno-34-47" name="__codelineno-34-47" href="#__codelineno-34-47"></a><span class="w">      </span><span class="nt">anomaly</span><span class="p">:</span>
+</span><span id="__span-34-48"><a id="__codelineno-34-48" name="__codelineno-34-48" href="#__codelineno-34-48"></a><span class="w">        </span><span class="nt">maxRepeatedFailures</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">3</span>
+</span><span id="__span-34-49"><a id="__codelineno-34-49" name="__codelineno-34-49" href="#__codelineno-34-49"></a><span class="w">        </span><span class="nt">maxToolCallsPerTool</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10</span>
+</span><span id="__span-34-50"><a id="__codelineno-34-50" name="__codelineno-34-50" href="#__codelineno-34-50"></a><span class="w">        </span><span class="nt">maxTotalToolCalls</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">40</span>
+</span><span id="__span-34-51"><a id="__codelineno-34-51" name="__codelineno-34-51" href="#__codelineno-34-51"></a><span class="w">      </span><span class="nt">sanitization</span><span class="p">:</span>
+</span><span id="__span-34-52"><a id="__codelineno-34-52" name="__codelineno-34-52" href="#__codelineno-34-52"></a><span class="w">        </span><span class="nt">credentialScrubEnabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-53"><a id="__codelineno-34-53" name="__codelineno-34-53" href="#__codelineno-34-53"></a><span class="w">        </span><span class="nt">injectionPatternsEnabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-54"><a id="__codelineno-34-54" name="__codelineno-34-54" href="#__codelineno-34-54"></a><span class="w">    </span><span class="nt">summarizer</span><span class="p">:</span>
+</span><span id="__span-34-55"><a id="__codelineno-34-55" name="__codelineno-34-55" href="#__codelineno-34-55"></a><span class="w">      </span><span class="nt">maxToolOutputSize</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100000</span>
+</span><span id="__span-34-56"><a id="__codelineno-34-56" name="__codelineno-34-56" href="#__codelineno-34-56"></a><span class="w">      </span><span class="nt">threshold</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">8000</span>
+</span><span id="__span-34-57"><a id="__codelineno-34-57" name="__codelineno-34-57" href="#__codelineno-34-57"></a><span class="w">    </span><span class="nt">alignmentCheck</span><span class="p">:</span>
+</span><span id="__span-34-58"><a id="__codelineno-34-58" name="__codelineno-34-58" href="#__codelineno-34-58"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-59"><a id="__codelineno-34-59" name="__codelineno-34-59" href="#__codelineno-34-59"></a><span class="w">    </span><span class="nt">session</span><span class="p">:</span>
+</span><span id="__span-34-60"><a id="__codelineno-34-60" name="__codelineno-34-60" href="#__codelineno-34-60"></a><span class="w">      </span><span class="nt">ttl</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-34-61"><a id="__codelineno-34-61" name="__codelineno-34-61" href="#__codelineno-34-61"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
+</span><span id="__span-34-62"><a id="__codelineno-34-62" name="__codelineno-34-62" href="#__codelineno-34-62"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+</span><span id="__span-34-63"><a id="__codelineno-34-63" name="__codelineno-34-63" href="#__codelineno-34-63"></a>
+</span><span id="__span-34-64"><a id="__codelineno-34-64" name="__codelineno-34-64" href="#__codelineno-34-64"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-34-65"><a id="__codelineno-34-65" name="__codelineno-34-65" href="#__codelineno-34-65"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-66"><a id="__codelineno-34-66" name="__codelineno-34-66" href="#__codelineno-34-66"></a><span class="w">    </span><span class="nt">auth</span><span class="p">:</span>
+</span><span id="__span-34-67"><a id="__codelineno-34-67" name="__codelineno-34-67" href="#__codelineno-34-67"></a><span class="w">      </span><span class="nt">issuerURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
+</span><span id="__span-34-68"><a id="__codelineno-34-68" name="__codelineno-34-68" href="#__codelineno-34-68"></a><span class="w">      </span><span class="nt">audience</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;https://&lt;KEYCLOAK_HOST&gt;/realms/kagenti&quot;</span>
+</span><span id="__span-34-69"><a id="__codelineno-34-69" name="__codelineno-34-69" href="#__codelineno-34-69"></a><span class="w">      </span><span class="nt">jwksURL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;http://keycloak-service.keycloak:8080/realms/kagenti/protocol/openid-connect/certs&quot;</span>
+</span><span id="__span-34-70"><a id="__codelineno-34-70" name="__codelineno-34-70" href="#__codelineno-34-70"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-71"><a id="__codelineno-34-71" name="__codelineno-34-71" href="#__codelineno-34-71"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">DEBUG</span>
+</span><span id="__span-34-72"><a id="__codelineno-34-72" name="__codelineno-34-72" href="#__codelineno-34-72"></a><span class="w">    </span><span class="nt">rateLimit</span><span class="p">:</span>
+</span><span id="__span-34-73"><a id="__codelineno-34-73" name="__codelineno-34-73" href="#__codelineno-34-73"></a><span class="w">      </span><span class="nt">ipRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">50</span>
+</span><span id="__span-34-74"><a id="__codelineno-34-74" name="__codelineno-34-74" href="#__codelineno-34-74"></a><span class="w">      </span><span class="nt">userRequestsPerSec</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">20</span>
+</span><span id="__span-34-75"><a id="__codelineno-34-75" name="__codelineno-34-75" href="#__codelineno-34-75"></a><span class="w">      </span><span class="nt">toolCallsPerMinute</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">60</span>
+</span><span id="__span-34-76"><a id="__codelineno-34-76" name="__codelineno-34-76" href="#__codelineno-34-76"></a><span class="w">      </span><span class="nt">maxConcurrentSessions</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">100</span>
+</span><span id="__span-34-77"><a id="__codelineno-34-77" name="__codelineno-34-77" href="#__codelineno-34-77"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-34-78"><a id="__codelineno-34-78" name="__codelineno-34-78" href="#__codelineno-34-78"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-79"><a id="__codelineno-34-79" name="__codelineno-34-79" href="#__codelineno-34-79"></a><span class="w">    </span><span class="nt">shutdown</span><span class="p">:</span>
+</span><span id="__span-34-80"><a id="__codelineno-34-80" name="__codelineno-34-80" href="#__codelineno-34-80"></a><span class="w">      </span><span class="nt">drainSeconds</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15</span>
+</span><span id="__span-34-81"><a id="__codelineno-34-81" name="__codelineno-34-81" href="#__codelineno-34-81"></a><span class="w">    </span><span class="nt">spire</span><span class="p">:</span>
+</span><span id="__span-34-82"><a id="__codelineno-34-82" name="__codelineno-34-82" href="#__codelineno-34-82"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-83"><a id="__codelineno-34-83" name="__codelineno-34-83" href="#__codelineno-34-83"></a><span class="w">      </span><span class="nt">className</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">zero-trust-workload-identity-manager-spire</span>
+</span><span id="__span-34-84"><a id="__codelineno-34-84" name="__codelineno-34-84" href="#__codelineno-34-84"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-34-85"><a id="__codelineno-34-85" name="__codelineno-34-85" href="#__codelineno-34-85"></a><span class="w">      </span><span class="nt">sarCacheTTL</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;30s&quot;</span>
+</span><span id="__span-34-86"><a id="__codelineno-34-86" name="__codelineno-34-86" href="#__codelineno-34-86"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-34-87"><a id="__codelineno-34-87" name="__codelineno-34-87" href="#__codelineno-34-87"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
 </span><span id="__span-34-88"><a id="__codelineno-34-88" name="__codelineno-34-88" href="#__codelineno-34-88"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-89"><a id="__codelineno-34-89" name="__codelineno-34-89" href="#__codelineno-34-89"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l3-audit</span>
+</span><span id="__span-34-89"><a id="__codelineno-34-89" name="__codelineno-34-89" href="#__codelineno-34-89"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ai-orchestrator</span>
 </span><span id="__span-34-90"><a id="__codelineno-34-90" name="__codelineno-34-90" href="#__codelineno-34-90"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-91"><a id="__codelineno-34-91" name="__codelineno-34-91" href="#__codelineno-34-91"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-34-91"><a id="__codelineno-34-91" name="__codelineno-34-91" href="#__codelineno-34-91"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cicd</span>
 </span><span id="__span-34-92"><a id="__codelineno-34-92" name="__codelineno-34-92" href="#__codelineno-34-92"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-34-93"><a id="__codelineno-34-93" name="__codelineno-34-93" href="#__codelineno-34-93"></a>
-</span><span id="__span-34-94"><a id="__codelineno-34-94" name="__codelineno-34-94" href="#__codelineno-34-94"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
-</span><span id="__span-34-95"><a id="__codelineno-34-95" name="__codelineno-34-95" href="#__codelineno-34-95"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-96"><a id="__codelineno-34-96" name="__codelineno-34-96" href="#__codelineno-34-96"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-97"><a id="__codelineno-34-97" name="__codelineno-34-97" href="#__codelineno-34-97"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-98"><a id="__codelineno-34-98" name="__codelineno-34-98" href="#__codelineno-34-98"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
-</span><span id="__span-34-99"><a id="__codelineno-34-99" name="__codelineno-34-99" href="#__codelineno-34-99"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-100"><a id="__codelineno-34-100" name="__codelineno-34-100" href="#__codelineno-34-100"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
-</span><span id="__span-34-101"><a id="__codelineno-34-101" name="__codelineno-34-101" href="#__codelineno-34-101"></a><span class="w">      </span><span class="nt">deduplicationCooldown</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-34-102"><a id="__codelineno-34-102" name="__codelineno-34-102" href="#__codelineno-34-102"></a><span class="w">      </span><span class="nt">k8sRequestTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
-</span><span id="__span-34-103"><a id="__codelineno-34-103" name="__codelineno-34-103" href="#__codelineno-34-103"></a><span class="w">      </span><span class="nt">cors</span><span class="p">:</span>
-</span><span id="__span-34-104"><a id="__codelineno-34-104" name="__codelineno-34-104" href="#__codelineno-34-104"></a><span class="w">        </span><span class="nt">allowCredentials</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-34-105"><a id="__codelineno-34-105" name="__codelineno-34-105" href="#__codelineno-34-105"></a><span class="w">        </span><span class="nt">maxAge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
-</span><span id="__span-34-106"><a id="__codelineno-34-106" name="__codelineno-34-106" href="#__codelineno-34-106"></a>
-</span><span id="__span-34-107"><a id="__codelineno-34-107" name="__codelineno-34-107" href="#__codelineno-34-107"></a><span class="w">  </span><span class="nt">dataStorage</span><span class="p">:</span>
-</span><span id="__span-34-108"><a id="__codelineno-34-108" name="__codelineno-34-108" href="#__codelineno-34-108"></a><span class="w">    </span><span class="nt">endpointPropagationDelay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
-</span><span id="__span-34-109"><a id="__codelineno-34-109" name="__codelineno-34-109" href="#__codelineno-34-109"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-110"><a id="__codelineno-34-110" name="__codelineno-34-110" href="#__codelineno-34-110"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-111"><a id="__codelineno-34-111" name="__codelineno-34-111" href="#__codelineno-34-111"></a>
-</span><span id="__span-34-112"><a id="__codelineno-34-112" name="__codelineno-34-112" href="#__codelineno-34-112"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
-</span><span id="__span-34-113"><a id="__codelineno-34-113" name="__codelineno-34-113" href="#__codelineno-34-113"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-114"><a id="__codelineno-34-114" name="__codelineno-34-114" href="#__codelineno-34-114"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-115"><a id="__codelineno-34-115" name="__codelineno-34-115" href="#__codelineno-34-115"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-34-116"><a id="__codelineno-34-116" name="__codelineno-34-116" href="#__codelineno-34-116"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policies</span>
+</span><span id="__span-34-93"><a id="__codelineno-34-93" name="__codelineno-34-93" href="#__codelineno-34-93"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-34-94"><a id="__codelineno-34-94" name="__codelineno-34-94" href="#__codelineno-34-94"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-34-95"><a id="__codelineno-34-95" name="__codelineno-34-95" href="#__codelineno-34-95"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">l3-audit</span>
+</span><span id="__span-34-96"><a id="__codelineno-34-96" name="__codelineno-34-96" href="#__codelineno-34-96"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-34-97"><a id="__codelineno-34-97" name="__codelineno-34-97" href="#__codelineno-34-97"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-34-98"><a id="__codelineno-34-98" name="__codelineno-34-98" href="#__codelineno-34-98"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;platform-engineering&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-34-99"><a id="__codelineno-34-99" name="__codelineno-34-99" href="#__codelineno-34-99"></a>
+</span><span id="__span-34-100"><a id="__codelineno-34-100" name="__codelineno-34-100" href="#__codelineno-34-100"></a><span class="w">  </span><span class="nt">gateway</span><span class="p">:</span>
+</span><span id="__span-34-101"><a id="__codelineno-34-101" name="__codelineno-34-101" href="#__codelineno-34-101"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-102"><a id="__codelineno-34-102" name="__codelineno-34-102" href="#__codelineno-34-102"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-103"><a id="__codelineno-34-103" name="__codelineno-34-103" href="#__codelineno-34-103"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-104"><a id="__codelineno-34-104" name="__codelineno-34-104" href="#__codelineno-34-104"></a><span class="w">    </span><span class="nt">route</span><span class="p">:</span>
+</span><span id="__span-34-105"><a id="__codelineno-34-105" name="__codelineno-34-105" href="#__codelineno-34-105"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-106"><a id="__codelineno-34-106" name="__codelineno-34-106" href="#__codelineno-34-106"></a><span class="w">    </span><span class="nt">config</span><span class="p">:</span>
+</span><span id="__span-34-107"><a id="__codelineno-34-107" name="__codelineno-34-107" href="#__codelineno-34-107"></a><span class="w">      </span><span class="nt">deduplicationCooldown</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-34-108"><a id="__codelineno-34-108" name="__codelineno-34-108" href="#__codelineno-34-108"></a><span class="w">      </span><span class="nt">k8sRequestTimeout</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15s</span>
+</span><span id="__span-34-109"><a id="__codelineno-34-109" name="__codelineno-34-109" href="#__codelineno-34-109"></a><span class="w">      </span><span class="nt">cors</span><span class="p">:</span>
+</span><span id="__span-34-110"><a id="__codelineno-34-110" name="__codelineno-34-110" href="#__codelineno-34-110"></a><span class="w">        </span><span class="nt">allowCredentials</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-111"><a id="__codelineno-34-111" name="__codelineno-34-111" href="#__codelineno-34-111"></a><span class="w">        </span><span class="nt">maxAge</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300</span>
+</span><span id="__span-34-112"><a id="__codelineno-34-112" name="__codelineno-34-112" href="#__codelineno-34-112"></a>
+</span><span id="__span-34-113"><a id="__codelineno-34-113" name="__codelineno-34-113" href="#__codelineno-34-113"></a><span class="w">  </span><span class="nt">dataStorage</span><span class="p">:</span>
+</span><span id="__span-34-114"><a id="__codelineno-34-114" name="__codelineno-34-114" href="#__codelineno-34-114"></a><span class="w">    </span><span class="nt">endpointPropagationDelay</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10s</span>
+</span><span id="__span-34-115"><a id="__codelineno-34-115" name="__codelineno-34-115" href="#__codelineno-34-115"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-116"><a id="__codelineno-34-116" name="__codelineno-34-116" href="#__codelineno-34-116"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
 </span><span id="__span-34-117"><a id="__codelineno-34-117" name="__codelineno-34-117" href="#__codelineno-34-117"></a>
-</span><span id="__span-34-118"><a id="__codelineno-34-118" name="__codelineno-34-118" href="#__codelineno-34-118"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-34-118"><a id="__codelineno-34-118" name="__codelineno-34-118" href="#__codelineno-34-118"></a><span class="w">  </span><span class="nt">aiAnalysis</span><span class="p">:</span>
 </span><span id="__span-34-119"><a id="__codelineno-34-119" name="__codelineno-34-119" href="#__codelineno-34-119"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-120"><a id="__codelineno-34-120" name="__codelineno-34-120" href="#__codelineno-34-120"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
+</span><span id="__span-34-120"><a id="__codelineno-34-120" name="__codelineno-34-120" href="#__codelineno-34-120"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
 </span><span id="__span-34-121"><a id="__codelineno-34-121" name="__codelineno-34-121" href="#__codelineno-34-121"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
-</span><span id="__span-34-122"><a id="__codelineno-34-122" name="__codelineno-34-122" href="#__codelineno-34-122"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
+</span><span id="__span-34-122"><a id="__codelineno-34-122" name="__codelineno-34-122" href="#__codelineno-34-122"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">aianalysis-policy</span>
 </span><span id="__span-34-123"><a id="__codelineno-34-123" name="__codelineno-34-123" href="#__codelineno-34-123"></a>
-</span><span id="__span-34-124"><a id="__codelineno-34-124" name="__codelineno-34-124" href="#__codelineno-34-124"></a><span class="w">  </span><span class="nt">remediationOrchestrator</span><span class="p">:</span>
-</span><span id="__span-34-125"><a id="__codelineno-34-125" name="__codelineno-34-125" href="#__codelineno-34-125"></a><span class="w">    </span><span class="nt">dryRun</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-34-126"><a id="__codelineno-34-126" name="__codelineno-34-126" href="#__codelineno-34-126"></a><span class="w">    </span><span class="nt">dryRunHoldPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
-</span><span id="__span-34-127"><a id="__codelineno-34-127" name="__codelineno-34-127" href="#__codelineno-34-127"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-128"><a id="__codelineno-34-128" name="__codelineno-34-128" href="#__codelineno-34-128"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-129"><a id="__codelineno-34-129" name="__codelineno-34-129" href="#__codelineno-34-129"></a><span class="w">    </span><span class="nt">retention</span><span class="p">:</span>
-</span><span id="__span-34-130"><a id="__codelineno-34-130" name="__codelineno-34-130" href="#__codelineno-34-130"></a><span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24h</span>
-</span><span id="__span-34-131"><a id="__codelineno-34-131" name="__codelineno-34-131" href="#__codelineno-34-131"></a><span class="w">    </span><span class="nt">effectivenessAssessment</span><span class="p">:</span>
-</span><span id="__span-34-132"><a id="__codelineno-34-132" name="__codelineno-34-132" href="#__codelineno-34-132"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-34-133"><a id="__codelineno-34-133" name="__codelineno-34-133" href="#__codelineno-34-133"></a><span class="w">    </span><span class="nt">notifications</span><span class="p">:</span>
-</span><span id="__span-34-134"><a id="__codelineno-34-134" name="__codelineno-34-134" href="#__codelineno-34-134"></a><span class="w">      </span><span class="nt">notifySelfResolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
-</span><span id="__span-34-135"><a id="__codelineno-34-135" name="__codelineno-34-135" href="#__codelineno-34-135"></a><span class="w">    </span><span class="nt">timeouts</span><span class="p">:</span>
-</span><span id="__span-34-136"><a id="__codelineno-34-136" name="__codelineno-34-136" href="#__codelineno-34-136"></a><span class="w">      </span><span class="nt">global</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
-</span><span id="__span-34-137"><a id="__codelineno-34-137" name="__codelineno-34-137" href="#__codelineno-34-137"></a><span class="w">      </span><span class="nt">processing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
-</span><span id="__span-34-138"><a id="__codelineno-34-138" name="__codelineno-34-138" href="#__codelineno-34-138"></a><span class="w">      </span><span class="nt">analyzing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
-</span><span id="__span-34-139"><a id="__codelineno-34-139" name="__codelineno-34-139" href="#__codelineno-34-139"></a><span class="w">      </span><span class="nt">awaitingApproval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15m</span>
-</span><span id="__span-34-140"><a id="__codelineno-34-140" name="__codelineno-34-140" href="#__codelineno-34-140"></a><span class="w">      </span><span class="nt">executing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-34-141"><a id="__codelineno-34-141" name="__codelineno-34-141" href="#__codelineno-34-141"></a><span class="w">      </span><span class="nt">verifying</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
-</span><span id="__span-34-142"><a id="__codelineno-34-142" name="__codelineno-34-142" href="#__codelineno-34-142"></a>
-</span><span id="__span-34-143"><a id="__codelineno-34-143" name="__codelineno-34-143" href="#__codelineno-34-143"></a><span class="w">  </span><span class="nt">workflowExecution</span><span class="p">:</span>
-</span><span id="__span-34-144"><a id="__codelineno-34-144" name="__codelineno-34-144" href="#__codelineno-34-144"></a><span class="w">    </span><span class="nt">cooldownPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
-</span><span id="__span-34-145"><a id="__codelineno-34-145" name="__codelineno-34-145" href="#__codelineno-34-145"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-146"><a id="__codelineno-34-146" name="__codelineno-34-146" href="#__codelineno-34-146"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-147"><a id="__codelineno-34-147" name="__codelineno-34-147" href="#__codelineno-34-147"></a><span class="w">    </span><span class="nt">workflowNamespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-workflows</span>
+</span><span id="__span-34-124"><a id="__codelineno-34-124" name="__codelineno-34-124" href="#__codelineno-34-124"></a><span class="w">  </span><span class="nt">signalProcessing</span><span class="p">:</span>
+</span><span id="__span-34-125"><a id="__codelineno-34-125" name="__codelineno-34-125" href="#__codelineno-34-125"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-126"><a id="__codelineno-34-126" name="__codelineno-34-126" href="#__codelineno-34-126"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-127"><a id="__codelineno-34-127" name="__codelineno-34-127" href="#__codelineno-34-127"></a><span class="w">    </span><span class="nt">policy</span><span class="p">:</span>
+</span><span id="__span-34-128"><a id="__codelineno-34-128" name="__codelineno-34-128" href="#__codelineno-34-128"></a><span class="w">      </span><span class="nt">configMapName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">signalprocessing-policy</span>
+</span><span id="__span-34-129"><a id="__codelineno-34-129" name="__codelineno-34-129" href="#__codelineno-34-129"></a>
+</span><span id="__span-34-130"><a id="__codelineno-34-130" name="__codelineno-34-130" href="#__codelineno-34-130"></a><span class="w">  </span><span class="nt">remediationOrchestrator</span><span class="p">:</span>
+</span><span id="__span-34-131"><a id="__codelineno-34-131" name="__codelineno-34-131" href="#__codelineno-34-131"></a><span class="w">    </span><span class="nt">dryRun</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-132"><a id="__codelineno-34-132" name="__codelineno-34-132" href="#__codelineno-34-132"></a><span class="w">    </span><span class="nt">dryRunHoldPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+</span><span id="__span-34-133"><a id="__codelineno-34-133" name="__codelineno-34-133" href="#__codelineno-34-133"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-134"><a id="__codelineno-34-134" name="__codelineno-34-134" href="#__codelineno-34-134"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-135"><a id="__codelineno-34-135" name="__codelineno-34-135" href="#__codelineno-34-135"></a><span class="w">    </span><span class="nt">retention</span><span class="p">:</span>
+</span><span id="__span-34-136"><a id="__codelineno-34-136" name="__codelineno-34-136" href="#__codelineno-34-136"></a><span class="w">      </span><span class="nt">period</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">24h</span>
+</span><span id="__span-34-137"><a id="__codelineno-34-137" name="__codelineno-34-137" href="#__codelineno-34-137"></a><span class="w">    </span><span class="nt">effectivenessAssessment</span><span class="p">:</span>
+</span><span id="__span-34-138"><a id="__codelineno-34-138" name="__codelineno-34-138" href="#__codelineno-34-138"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-34-139"><a id="__codelineno-34-139" name="__codelineno-34-139" href="#__codelineno-34-139"></a><span class="w">    </span><span class="nt">notifications</span><span class="p">:</span>
+</span><span id="__span-34-140"><a id="__codelineno-34-140" name="__codelineno-34-140" href="#__codelineno-34-140"></a><span class="w">      </span><span class="nt">notifySelfResolved</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-141"><a id="__codelineno-34-141" name="__codelineno-34-141" href="#__codelineno-34-141"></a><span class="w">    </span><span class="nt">timeouts</span><span class="p">:</span>
+</span><span id="__span-34-142"><a id="__codelineno-34-142" name="__codelineno-34-142" href="#__codelineno-34-142"></a><span class="w">      </span><span class="nt">global</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1h</span>
+</span><span id="__span-34-143"><a id="__codelineno-34-143" name="__codelineno-34-143" href="#__codelineno-34-143"></a><span class="w">      </span><span class="nt">processing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">5m</span>
+</span><span id="__span-34-144"><a id="__codelineno-34-144" name="__codelineno-34-144" href="#__codelineno-34-144"></a><span class="w">      </span><span class="nt">analyzing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10m</span>
+</span><span id="__span-34-145"><a id="__codelineno-34-145" name="__codelineno-34-145" href="#__codelineno-34-145"></a><span class="w">      </span><span class="nt">awaitingApproval</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">15m</span>
+</span><span id="__span-34-146"><a id="__codelineno-34-146" name="__codelineno-34-146" href="#__codelineno-34-146"></a><span class="w">      </span><span class="nt">executing</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
+</span><span id="__span-34-147"><a id="__codelineno-34-147" name="__codelineno-34-147" href="#__codelineno-34-147"></a><span class="w">      </span><span class="nt">verifying</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30m</span>
 </span><span id="__span-34-148"><a id="__codelineno-34-148" name="__codelineno-34-148" href="#__codelineno-34-148"></a>
-</span><span id="__span-34-149"><a id="__codelineno-34-149" name="__codelineno-34-149" href="#__codelineno-34-149"></a><span class="w">  </span><span class="nt">effectivenessMonitor</span><span class="p">:</span>
-</span><span id="__span-34-150"><a id="__codelineno-34-150" name="__codelineno-34-150" href="#__codelineno-34-150"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-151"><a id="__codelineno-34-151" name="__codelineno-34-151" href="#__codelineno-34-151"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-152"><a id="__codelineno-34-152" name="__codelineno-34-152" href="#__codelineno-34-152"></a><span class="w">    </span><span class="nt">assessment</span><span class="p">:</span>
-</span><span id="__span-34-153"><a id="__codelineno-34-153" name="__codelineno-34-153" href="#__codelineno-34-153"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
-</span><span id="__span-34-154"><a id="__codelineno-34-154" name="__codelineno-34-154" href="#__codelineno-34-154"></a><span class="w">      </span><span class="nt">validityWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
-</span><span id="__span-34-155"><a id="__codelineno-34-155" name="__codelineno-34-155" href="#__codelineno-34-155"></a>
-</span><span id="__span-34-156"><a id="__codelineno-34-156" name="__codelineno-34-156" href="#__codelineno-34-156"></a><span class="w">  </span><span class="nt">notification</span><span class="p">:</span>
-</span><span id="__span-34-157"><a id="__codelineno-34-157" name="__codelineno-34-157" href="#__codelineno-34-157"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-158"><a id="__codelineno-34-158" name="__codelineno-34-158" href="#__codelineno-34-158"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-159"><a id="__codelineno-34-159" name="__codelineno-34-159" href="#__codelineno-34-159"></a><span class="w">    </span><span class="nt">slack</span><span class="p">:</span>
-</span><span id="__span-34-160"><a id="__codelineno-34-160" name="__codelineno-34-160" href="#__codelineno-34-160"></a><span class="w">      </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
-</span><span id="__span-34-161"><a id="__codelineno-34-161" name="__codelineno-34-161" href="#__codelineno-34-161"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
-</span><span id="__span-34-162"><a id="__codelineno-34-162" name="__codelineno-34-162" href="#__codelineno-34-162"></a>
-</span><span id="__span-34-163"><a id="__codelineno-34-163" name="__codelineno-34-163" href="#__codelineno-34-163"></a><span class="w">  </span><span class="nt">authWebhook</span><span class="p">:</span>
-</span><span id="__span-34-164"><a id="__codelineno-34-164" name="__codelineno-34-164" href="#__codelineno-34-164"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
-</span><span id="__span-34-165"><a id="__codelineno-34-165" name="__codelineno-34-165" href="#__codelineno-34-165"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">info</span>
-</span><span id="__span-34-166"><a id="__codelineno-34-166" name="__codelineno-34-166" href="#__codelineno-34-166"></a>
-</span><span id="__span-34-167"><a id="__codelineno-34-167" name="__codelineno-34-167" href="#__codelineno-34-167"></a><span class="w">  </span><span class="nt">monitoring</span><span class="p">:</span>
-</span><span id="__span-34-168"><a id="__codelineno-34-168" name="__codelineno-34-168" href="#__codelineno-34-168"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
-</span><span id="__span-34-169"><a id="__codelineno-34-169" name="__codelineno-34-169" href="#__codelineno-34-169"></a>
-</span><span id="__span-34-170"><a id="__codelineno-34-170" name="__codelineno-34-170" href="#__codelineno-34-170"></a><span class="w">  </span><span class="nt">networkPolicies</span><span class="p">:</span>
-</span><span id="__span-34-171"><a id="__codelineno-34-171" name="__codelineno-34-171" href="#__codelineno-34-171"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
+</span><span id="__span-34-149"><a id="__codelineno-34-149" name="__codelineno-34-149" href="#__codelineno-34-149"></a><span class="w">  </span><span class="nt">workflowExecution</span><span class="p">:</span>
+</span><span id="__span-34-150"><a id="__codelineno-34-150" name="__codelineno-34-150" href="#__codelineno-34-150"></a><span class="w">    </span><span class="nt">cooldownPeriod</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">1m</span>
+</span><span id="__span-34-151"><a id="__codelineno-34-151" name="__codelineno-34-151" href="#__codelineno-34-151"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-152"><a id="__codelineno-34-152" name="__codelineno-34-152" href="#__codelineno-34-152"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-153"><a id="__codelineno-34-153" name="__codelineno-34-153" href="#__codelineno-34-153"></a><span class="w">    </span><span class="nt">workflowNamespace</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-workflows</span>
+</span><span id="__span-34-154"><a id="__codelineno-34-154" name="__codelineno-34-154" href="#__codelineno-34-154"></a><span class="w">    </span><span class="c1"># Moved here from top-level spec.ansible in v1alpha2 (F4) -- WorkflowExecution</span>
+</span><span id="__span-34-155"><a id="__codelineno-34-155" name="__codelineno-34-155" href="#__codelineno-34-155"></a><span class="w">    </span><span class="c1"># is Ansible&#39;s only consumer.</span>
+</span><span id="__span-34-156"><a id="__codelineno-34-156" name="__codelineno-34-156" href="#__codelineno-34-156"></a><span class="w">    </span><span class="nt">ansible</span><span class="p">:</span>
+</span><span id="__span-34-157"><a id="__codelineno-34-157" name="__codelineno-34-157" href="#__codelineno-34-157"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-158"><a id="__codelineno-34-158" name="__codelineno-34-158" href="#__codelineno-34-158"></a>
+</span><span id="__span-34-159"><a id="__codelineno-34-159" name="__codelineno-34-159" href="#__codelineno-34-159"></a><span class="w">  </span><span class="nt">effectivenessMonitor</span><span class="p">:</span>
+</span><span id="__span-34-160"><a id="__codelineno-34-160" name="__codelineno-34-160" href="#__codelineno-34-160"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-161"><a id="__codelineno-34-161" name="__codelineno-34-161" href="#__codelineno-34-161"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-162"><a id="__codelineno-34-162" name="__codelineno-34-162" href="#__codelineno-34-162"></a><span class="w">    </span><span class="nt">assessment</span><span class="p">:</span>
+</span><span id="__span-34-163"><a id="__codelineno-34-163" name="__codelineno-34-163" href="#__codelineno-34-163"></a><span class="w">      </span><span class="nt">stabilizationWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">30s</span>
+</span><span id="__span-34-164"><a id="__codelineno-34-164" name="__codelineno-34-164" href="#__codelineno-34-164"></a><span class="w">      </span><span class="nt">validityWindow</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">300s</span>
+</span><span id="__span-34-165"><a id="__codelineno-34-165" name="__codelineno-34-165" href="#__codelineno-34-165"></a>
+</span><span id="__span-34-166"><a id="__codelineno-34-166" name="__codelineno-34-166" href="#__codelineno-34-166"></a><span class="w">  </span><span class="nt">notification</span><span class="p">:</span>
+</span><span id="__span-34-167"><a id="__codelineno-34-167" name="__codelineno-34-167" href="#__codelineno-34-167"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-168"><a id="__codelineno-34-168" name="__codelineno-34-168" href="#__codelineno-34-168"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-169"><a id="__codelineno-34-169" name="__codelineno-34-169" href="#__codelineno-34-169"></a><span class="w">    </span><span class="nt">slack</span><span class="p">:</span>
+</span><span id="__span-34-170"><a id="__codelineno-34-170" name="__codelineno-34-170" href="#__codelineno-34-170"></a><span class="w">      </span><span class="nt">channel</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;#kubernaut-alerts&quot;</span>
+</span><span id="__span-34-171"><a id="__codelineno-34-171" name="__codelineno-34-171" href="#__codelineno-34-171"></a><span class="w">      </span><span class="nt">secretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">slack-webhook</span>
 </span><span id="__span-34-172"><a id="__codelineno-34-172" name="__codelineno-34-172" href="#__codelineno-34-172"></a>
-</span><span id="__span-34-173"><a id="__codelineno-34-173" name="__codelineno-34-173" href="#__codelineno-34-173"></a><span class="w">  </span><span class="nt">ansible</span><span class="p">:</span>
-</span><span id="__span-34-174"><a id="__codelineno-34-174" name="__codelineno-34-174" href="#__codelineno-34-174"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-34-173"><a id="__codelineno-34-173" name="__codelineno-34-173" href="#__codelineno-34-173"></a><span class="w">  </span><span class="nt">authWebhook</span><span class="p">:</span>
+</span><span id="__span-34-174"><a id="__codelineno-34-174" name="__codelineno-34-174" href="#__codelineno-34-174"></a><span class="w">    </span><span class="nt">logging</span><span class="p">:</span>
+</span><span id="__span-34-175"><a id="__codelineno-34-175" name="__codelineno-34-175" href="#__codelineno-34-175"></a><span class="w">      </span><span class="nt">level</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">INFO</span>
+</span><span id="__span-34-176"><a id="__codelineno-34-176" name="__codelineno-34-176" href="#__codelineno-34-176"></a>
+</span><span id="__span-34-177"><a id="__codelineno-34-177" name="__codelineno-34-177" href="#__codelineno-34-177"></a><span class="w">  </span><span class="c1"># spec.monitoring.enabled (v1alpha1) and spec.networkPolicies.enabled</span>
+</span><span id="__span-34-178"><a id="__codelineno-34-178" name="__codelineno-34-178" href="#__codelineno-34-178"></a><span class="w">  </span><span class="c1"># (v1alpha1) are both removed in v1alpha2: NetworkPolicies are now always</span>
+</span><span id="__span-34-179"><a id="__codelineno-34-179" name="__codelineno-34-179" href="#__codelineno-34-179"></a><span class="w">  </span><span class="c1"># created (F3), and monitoring RBAC/endpoint auto-detection is on by</span>
+</span><span id="__span-34-180"><a id="__codelineno-34-180" name="__codelineno-34-180" href="#__codelineno-34-180"></a><span class="w">  </span><span class="c1"># default (spec.monitoring.prometheus.enabled / .alertManager.enabled</span>
+</span><span id="__span-34-181"><a id="__codelineno-34-181" name="__codelineno-34-181" href="#__codelineno-34-181"></a><span class="w">  </span><span class="c1"># both default true) -- no explicit block is needed to get this example&#39;s</span>
+</span><span id="__span-34-182"><a id="__codelineno-34-182" name="__codelineno-34-182" href="#__codelineno-34-182"></a><span class="w">  </span><span class="c1"># equivalent behavior. See the Operator CR Reference for the new</span>
+</span><span id="__span-34-183"><a id="__codelineno-34-183" name="__codelineno-34-183" href="#__codelineno-34-183"></a><span class="w">  </span><span class="c1"># spec.monitoring.{prometheus,alertManager} shape if you need to override</span>
+</span><span id="__span-34-184"><a id="__codelineno-34-184" name="__codelineno-34-184" href="#__codelineno-34-184"></a><span class="w">  </span><span class="c1"># the auto-detected endpoint URLs.</span>
 </span></code></pre></div>
 <p>Apply:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>oc<span class="w"> </span>apply<span class="w"> </span>-f<span class="w"> </span>kubernaut-cr.yaml
 </span></code></pre></div>
 <p>The operator will reconcile the CR and create all component deployments, services, ConfigMaps, RBAC, and the <code>kubernaut-workflows</code> namespace automatically.</p>
+<p>See the <a href="../../api-reference/operator-cr/">Operator CR Reference</a> for the full field-by-field schema, defaults, and the v1alpha1 → v1alpha2 upgrade notes.</p>
 <hr />
 <h2 id="kagenti-integration">Step 5: kagenti Integration<a class="headerlink" href="#kagenti-integration" title="Permanent link">&para;</a></h2>
 <p>The operator is validated with <strong>kagenti <code>0.2.0-alpha.36</code></strong>. This version uses an envoy-based authbridge sidecar with iptables interception.</p>
@@ -5816,12 +5887,12 @@
 <h3 id="step-1-identify-all-images">Step 1: Identify all images<a class="headerlink" href="#step-1-identify-all-images" title="Permanent link">&para;</a></h3>
 <p>All published under <code>quay.io/kubernaut-ai/</code> with a tag matching the chart version. Use the included script to extract the exact images:</p>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-48-1"><a id="__codelineno-48-1" name="__codelineno-48-1" href="#__codelineno-48-1"></a>./hack/airgap/generate-image-list.sh<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span><span class="m">1</span>.5.7<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-48-2"><a id="__codelineno-48-2" name="__codelineno-48-2" href="#__codelineno-48-2"></a><span class="w">  </span>--set<span class="w"> </span>global.image.tag<span class="o">=</span><span class="m">1</span>.6.0<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-48-3"><a id="__codelineno-48-3" name="__codelineno-48-3" href="#__codelineno-48-3"></a><span class="w">  </span>-f<span class="w"> </span>charts/kubernaut/values-ocp.yaml
 </span></code></pre></div>
 <h3 id="step-2-mirror-images_1">Step 2: Mirror images<a class="headerlink" href="#step-2-mirror-images_1" title="Permanent link">&para;</a></h3>
 <div class="language-bash highlight"><pre><span></span><code><span id="__span-49-1"><a id="__codelineno-49-1" name="__codelineno-49-1" href="#__codelineno-49-1"></a>cp<span class="w"> </span>hack/airgap/imageset-config.yaml.tmpl<span class="w"> </span>imageset-config.yaml
-</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/1.5.7/g&#39;</span><span class="w"> </span>imageset-config.yaml
+</span><span id="__span-49-2"><a id="__codelineno-49-2" name="__codelineno-49-2" href="#__codelineno-49-2"></a>sed<span class="w"> </span>-i<span class="w"> </span><span class="s1">&#39;s/&lt;VERSION&gt;/1.6.0/g&#39;</span><span class="w"> </span>imageset-config.yaml
 </span><span id="__span-49-3"><a id="__codelineno-49-3" name="__codelineno-49-3" href="#__codelineno-49-3"></a>
 </span><span id="__span-49-4"><a id="__codelineno-49-4" name="__codelineno-49-4" href="#__codelineno-49-4"></a>oc<span class="w"> </span>mirror<span class="w"> </span>--config<span class="o">=</span>imageset-config.yaml<span class="w"> </span><span class="se">\</span>
 </span><span id="__span-49-5"><a id="__codelineno-49-5" name="__codelineno-49-5" href="#__codelineno-49-5"></a><span class="w">  </span>docker://&lt;mirror-registry&gt;

@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1489,6 +1519,8 @@
       
         
           
+        
+      
         
       
         
@@ -1956,6 +1988,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../architecture/fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -2891,6 +2951,45 @@
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#opentelemetry-tracing-v16" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        OpenTelemetry Tracing (v1.6+)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="OpenTelemetry Tracing (v1.6+)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-gets-traced" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What gets traced
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -4034,24 +4133,73 @@
 </span></code></pre></div>
 <p>This gathers CRDs, logs, Tekton resources, DataStorage state, events, and metrics into a single archive for troubleshooting.</p>
 <h2 id="operator-monitoring-configuration">Operator Monitoring Configuration<a class="headerlink" href="#operator-monitoring-configuration" title="Permanent link">&para;</a></h2>
-<p>When deploying via the Kubernaut Operator, monitoring integration is controlled by <code>spec.monitoring.enabled</code> (default: <code>true</code>). When enabled, the operator:</p>
+<div class="admonition warning">
+<p class="admonition-title">v1alpha2 (v1.6): <code>spec.monitoring</code> changed shape and meaning</p>
+<p>v1alpha1's <code>spec.monitoring.enabled</code> was a single, all-or-nothing bool that both provisioned RBAC and toggled URL auto-detection. <strong>That field no longer exists in v1alpha2.</strong> <code>spec.monitoring</code> is now a <code>{prometheus, alertManager}</code> pair, each independently toggleable and each carrying its own optional URL/CA overrides. Converting a v1alpha1 CR drops any explicit <code>monitoring.enabled</code> value — there is no direct v1alpha2 equivalent to carry it to. See <a href="../../api-reference/operator-cr/#upgrading-from-v1alpha1">Upgrading from v1alpha1</a> for the full migration table.</p>
+</div>
+<p>When deploying via the Kubernaut Operator, <code>spec.monitoring.prometheus.enabled</code> and <code>spec.monitoring.alertManager.enabled</code> (both default <code>true</code>) control whether Prometheus/AlertManager-backed features (EffectivenessMonitor assessment, Kubernaut Agent alert correlation, API Frontend severity-triage) are active, and gate the associated RBAC:</p>
 <ol>
-<li><strong>Auto-derives</strong> Prometheus and AlertManager URLs from the OCP monitoring stack</li>
-<li><strong>Creates 2 additional ClusterRoles</strong>: <code>{namespace}-alertmanager-view</code> and <code>{namespace}-gateway-signal-source</code></li>
+<li><strong>Auto-derives</strong> Prometheus and AlertManager URLs from the OCP monitoring stack, unless <code>prometheus.url</code> / <code>alertManager.url</code> overrides are set</li>
+<li><strong>Creates</strong> the <code>{namespace}-alertmanager-view</code> ClusterRole when <code>alertManager.enabled: true</code>, and <code>{namespace}-gateway-signal-source</code> when either <code>prometheus.enabled</code> or <code>alertManager.enabled</code> is <code>true</code></li>
 <li><strong>Binds</strong> the Effectiveness Monitor and Kubernaut Agent ServiceAccounts to <code>cluster-monitoring-view</code> for Prometheus query access</li>
 <li><strong>Binds</strong> the OCP AlertManager ServiceAccount to <code>gateway-signal-source</code> for signal ingestion</li>
 </ol>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha1</span>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut.ai/v1alpha2</span>
 </span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Kubernaut</span>
 </span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="nt">spec</span><span class="p">:</span>
 </span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="w">  </span><span class="nt">monitoring</span><span class="p">:</span>
-</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">   </span><span class="c1"># default; set to false to disable monitoring RBAC</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">    </span><span class="nt">prometheus</span><span class="p">:</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">    </span><span class="c1"># default; set to false to disable Prometheus-backed features + RBAC</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">    </span><span class="nt">alertManager</span><span class="p">:</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">      </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span><span class="w">    </span><span class="c1"># default; set to false to disable AlertManager-backed features + RBAC</span>
 </span></code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Disabling monitoring</p>
-<p>Setting <code>spec.monitoring.enabled: false</code> removes the 2 monitoring ClusterRoles and their bindings. The Effectiveness Monitor will not be able to query Prometheus for post-remediation health checks, and AlertManager will not have RBAC to send alerts to the Gateway.</p>
+<p>Setting <code>prometheus.enabled: false</code> or <code>alertManager.enabled: false</code> removes the corresponding monitoring ClusterRole(s) and bindings. With AlertManager disabled, the Effectiveness Monitor loses post-remediation health-check RBAC and AlertManager loses RBAC to send signals to the Gateway.</p>
 </div>
 <p>See the <a href="../../api-reference/operator-cr/#monitoringspec">Operator CR API Reference</a> for all monitoring-related fields.</p>
+<h2 id="opentelemetry-tracing-v16">OpenTelemetry Tracing (v1.6+)<a class="headerlink" href="#opentelemetry-tracing-v16" title="Permanent link">&para;</a></h2>
+<div class="admonition info">
+<p class="admonition-title">New in v1.6</p>
+<p>Kubernaut adds optional distributed tracing via OpenTelemetry (OTel), complementing the existing Prometheus metrics and structured logs. As of v1.6, tracing instruments the <strong>Gateway</strong>, <strong>DataStorage</strong>, and <strong>Kubernaut Agent</strong> — other services do not yet emit spans.</p>
+</div>
+<h3 id="what-gets-traced">What gets traced<a class="headerlink" href="#what-gets-traced" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>Instrumented spans</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Gateway</td>
+<td>Inbound signal ingestion HTTP handlers</td>
+</tr>
+<tr>
+<td>DataStorage</td>
+<td>REST API handlers and PostgreSQL write operations</td>
+</tr>
+<tr>
+<td>Kubernaut Agent</td>
+<td>Outbound LLM HTTP calls (always wrapped, regardless of other transport config — the single most valuable hop to time in an AI agent)</td>
+</tr>
+</tbody>
+</table>
+<p>Every outbound LLM HTTP call from the Kubernaut Agent is wrapped in an OTel span unconditionally, independent of whether TLS, OAuth2, custom headers, or a circuit breaker are also configured on that transport — the span exists even on the vanilla default-config path, and is a no-op when no <code>TracerProvider</code> is registered (i.e. <code>telemetry.endpoint</code> unset).</p>
+<h3 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h3>
+<p>Tracing is off by default (no <code>TracerProvider</code> registered, zero overhead) and is enabled by setting an OTLP endpoint. Helm exposes it as a shared <code>telemetry</code> values block:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a><span class="nt">telemetry</span><span class="p">:</span>
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="w">  </span><span class="nt">endpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;otel-collector.observability.svc:4317&quot;</span><span class="w">   </span><span class="c1"># OTLP/HTTP endpoint; unset = tracing disabled</span>
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="w">  </span><span class="nt">logSink</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span><span class="w">                                       </span><span class="c1"># true: also emit one structured log line per completed span</span>
+</span><span id="__span-12-4"><a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="w">  </span><span class="nt">tls</span><span class="p">:</span>
+</span><span id="__span-12-5"><a id="__codelineno-12-5" name="__codelineno-12-5" href="#__codelineno-12-5"></a><span class="w">    </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">false</span>
+</span><span id="__span-12-6"><a id="__codelineno-12-6" name="__codelineno-12-6" href="#__codelineno-12-6"></a><span class="w">    </span><span class="nt">caFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-12-7"><a id="__codelineno-12-7" name="__codelineno-12-7" href="#__codelineno-12-7"></a><span class="w">    </span><span class="nt">certFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span><span id="__span-12-8"><a id="__codelineno-12-8" name="__codelineno-12-8" href="#__codelineno-12-8"></a><span class="w">    </span><span class="nt">keyFile</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;&quot;</span>
+</span></code></pre></div>
+<p>Via the Operator CR (v1alpha2), the equivalent lives under each instrumented service's own spec, e.g. <code>spec.dataStorage.telemetry</code> and <code>spec.kubernautAgent.telemetry</code> — see <a href="../../api-reference/operator-cr/#telemetryspec">TelemetrySpec</a>.</p>
+<p>See <a href="../../user-guide/configuration/#opentelemetry-tracing">Helm Values: OpenTelemetry Tracing</a> for the full parameter reference and additional examples.</p>
 <h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
 <ul>
 <li><a href="../troubleshooting/">Troubleshooting</a> -- Common issues and resolutions</li>

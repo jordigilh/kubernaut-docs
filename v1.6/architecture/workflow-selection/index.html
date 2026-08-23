@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -2272,6 +2304,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3275,50 +3335,55 @@
 
 
 <h1 id="workflow-selection">Workflow Selection<a class="headerlink" href="#workflow-selection" title="Permanent link">&para;</a></h1>
-<p>Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) where Kubernaut Agent queries DataStorage, which applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.</p>
+<p>Workflow selection is the process of finding the best remediation workflow for an incident. It uses a three-step discovery protocol (DD-HAPI-017) that applies mandatory filtering and semantic scoring before the LLM makes the final selection decision.</p>
 <div class="admonition abstract">
 <p class="admonition-title">CRD Reference</p>
 <p>For the complete CRD specifications, see <a href="../../api-reference/crds/#remediationworkflow">RemediationWorkflow</a> and <a href="../../api-reference/crds/#actiontype">ActionType</a> in the API Reference.</p>
+</div>
+<div class="admonition info">
+<p class="admonition-title">v1.6: discovery moved in-process to Kubernaut Agent</p>
+<p>Through v1.5, all three discovery steps were served by DataStorage over REST, with KA acting as a thin proxy. <strong>As of v1.6</strong> (DD-WORKFLOW-018/019), KA serves this protocol entirely from its own in-memory workflow catalog (<code>internal/kubernautagent/workflowcatalog</code>) -- an informer-cache-backed watch over the <code>RemediationWorkflow</code> and <code>ActionType</code> CRDs, no DataStorage round trip involved. KA's Go implementation is a faithful, verified port of DataStorage's Layer 1 filtering and Layer 2 <code>final_score</code> formula (same weights, same tie-break order), so filtering and ranking behavior described below is unchanged -- only where it executes changed. DataStorage's REST discovery endpoints (documented at the bottom of this page for historical reference) are <strong>retired outright</strong>, not merely bypassed -- there is no REST path left for this protocol at all, for KA or any other caller. The SQL shown in this page reflects DataStorage's pre-v1.6 implementation, which KA's catalog logic reproduces in Go.</p>
 </div>
 <h2 id="three-step-discovery-protocol">Three-Step Discovery Protocol<a class="headerlink" href="#three-step-discovery-protocol" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>sequenceDiagram
     participant LLM as LLM
     participant KA as Kubernaut Agent
-    participant DS as DataStorage
+    participant Cache as KA workflow catalog&lt;br/&gt;(informer cache)
 
     LLM-&gt;&gt;KA: list_available_actions()
-    KA-&gt;&gt;DS: GET /api/v1/workflows/actions
-    DS--&gt;&gt;KA: Action types with workflow counts
+    KA-&gt;&gt;Cache: filter action types (Layer 1)
+    Cache--&gt;&gt;KA: Action types with workflow counts
     KA--&gt;&gt;LLM: Available action types
 
     LLM-&gt;&gt;KA: list_workflows(action_type)
-    KA-&gt;&gt;DS: GET /api/v1/workflows/actions/{action_type}
-    DS-&gt;&gt;DS: Layer 1 filter + Layer 2 scoring
-    DS--&gt;&gt;KA: Scored candidates (scores stripped)
+    KA-&gt;&gt;Cache: Layer 1 filter + Layer 2 scoring
+    Cache--&gt;&gt;KA: Scored candidates (scores stripped)
     KA--&gt;&gt;LLM: Workflow summaries
 
     LLM-&gt;&gt;KA: get_workflow(workflow_id)
-    KA-&gt;&gt;DS: GET /api/v1/workflows/{workflow_id}
-    DS--&gt;&gt;KA: Full workflow schema
+    KA-&gt;&gt;Cache: lookup by workflow_id
+    Cache--&gt;&gt;KA: Full workflow schema
     KA--&gt;&gt;LLM: Full schema for evaluation</code></pre>
 <h3 id="step-1-list-action-types">Step 1: List Action Types<a class="headerlink" href="#step-1-list-action-types" title="Permanent link">&para;</a></h3>
-<p>The LLM calls <code>list_available_actions()</code> to discover what types of remediations are available. DataStorage returns action types from the <code>action_type_taxonomy</code> table, filtered to only include types that have at least one active workflow matching the signal context.</p>
-<div class="language-sql highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">workflow_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">workflow_count</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="k">FROM</span><span class="w"> </span><span class="n">action_type_taxonomy</span><span class="w"> </span><span class="n">t</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">INNER</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">remediation_workflow_catalog</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">action_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">is_latest_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="p">[</span><span class="n">context</span><span class="w"> </span><span class="n">filters</span><span class="p">]</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
+<p>The LLM calls <code>list_available_actions()</code> to discover what types of remediations are available. KA filters its in-memory catalog (mirroring the <code>action_type_taxonomy</code> semantics below) to only include types that have at least one active workflow matching the signal context.</p>
+<div class="language-sql highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="c1">-- DataStorage&#39;s pre-v1.6 REST equivalent of the same query (GET /api/v1/workflows/actions,</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="c1">-- now retired), reproduced in Go against KA&#39;s own cache as of v1.6:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="k">SELECT</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span><span class="p">,</span><span class="w"> </span><span class="k">COUNT</span><span class="p">(</span><span class="n">w</span><span class="p">.</span><span class="n">workflow_id</span><span class="p">)</span><span class="w"> </span><span class="k">AS</span><span class="w"> </span><span class="n">workflow_count</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="k">FROM</span><span class="w"> </span><span class="n">action_type_taxonomy</span><span class="w"> </span><span class="n">t</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="k">INNER</span><span class="w"> </span><span class="k">JOIN</span><span class="w"> </span><span class="n">remediation_workflow_catalog</span><span class="w"> </span><span class="n">w</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">action_type</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="k">WHERE</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span><span class="w"> </span><span class="k">AND</span><span class="w"> </span><span class="n">w</span><span class="p">.</span><span class="n">is_latest_version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">true</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">status</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s1">&#39;active&#39;</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">  </span><span class="k">AND</span><span class="w"> </span><span class="p">[</span><span class="n">context</span><span class="w"> </span><span class="n">filters</span><span class="p">]</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="k">GROUP</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span><span class="p">,</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">description</span>
+</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="k">ORDER</span><span class="w"> </span><span class="k">BY</span><span class="w"> </span><span class="n">t</span><span class="p">.</span><span class="n">action_type</span>
 </span></code></pre></div>
 <p>Each action type includes a structured description (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>, <code>preconditions</code>) that the LLM uses to choose the appropriate action category based on the root cause analysis.</p>
 <h3 id="step-2-list-workflows-by-action-type">Step 2: List Workflows by Action Type<a class="headerlink" href="#step-2-list-workflows-by-action-type" title="Permanent link">&para;</a></h3>
-<p>The LLM calls <code>list_workflows(action_type)</code> to get candidate workflows. DataStorage applies <strong>Layer 1</strong> mandatory filtering and <strong>Layer 2</strong> semantic scoring, returning results ordered by score. Scores are stripped before reaching the LLM -- they are used only for ordering.</p>
+<p>The LLM calls <code>list_workflows(action_type)</code> to get candidate workflows. KA applies <strong>Layer 1</strong> mandatory filtering and <strong>Layer 2</strong> semantic scoring against its own cache, returning results ordered by score. Scores are stripped before reaching the LLM -- they are used only for ordering.</p>
 <h3 id="step-3-get-full-workflow-schema">Step 3: Get Full Workflow Schema<a class="headerlink" href="#step-3-get-full-workflow-schema" title="Permanent link">&para;</a></h3>
 <p>The LLM calls <code>get_workflow(workflow_id)</code> to retrieve the full schema for detailed evaluation. A context filter security gate ensures the workflow still matches the signal context.</p>
 <h2 id="signal-context-propagation">Signal Context Propagation<a class="headerlink" href="#signal-context-propagation" title="Permanent link">&para;</a></h2>
-<p>KA propagates signal context from the investigation session to all DataStorage queries:</p>
+<p>KA propagates signal context from the investigation session to its in-memory catalog filters (through v1.5, this was propagated to DataStorage queries instead):</p>
 <table>
 <thead>
 <tr>
@@ -3365,9 +3430,9 @@
 </tr>
 </tbody>
 </table>
-<p>Detected labels are computed by KA for the RCA target resource (ADR-056). Labels with <code>failedDetections</code> entries are stripped before propagation to DataStorage.</p>
+<p>Detected labels are computed by KA for the RCA target resource (ADR-056). Labels with <code>failedDetections</code> entries are stripped before filtering.</p>
 <h2 id="layer-1-mandatory-filtering">Layer 1: Mandatory Filtering<a class="headerlink" href="#layer-1-mandatory-filtering" title="Permanent link">&para;</a></h2>
-<p>Every workflow declares four mandatory labels. DataStorage applies these as hard filters -- a workflow must match all four to be a candidate.</p>
+<p>Every workflow declares four mandatory labels. These are applied as hard filters -- a workflow must match all four to be a candidate. (DataStorage's SQL below and KA's in-memory Go filter implement identical semantics; see the v1.6 callout above.)</p>
 <table>
 <thead>
 <tr>
@@ -3430,7 +3495,7 @@
 <p><code>signalName</code> is optional metadata in the workflow schema (DD-WORKFLOW-016). It is <strong>not</strong> used for filtering or matching — only for the final result ordering tiebreaker (<code>ORDER BY final_score DESC, workflow_id ASC</code>). The LLM selects workflows by <code>actionType</code>, not by <code>signalName</code>.</p>
 </div>
 <h2 id="layer-2-semantic-scoring">Layer 2: Semantic Scoring<a class="headerlink" href="#layer-2-semantic-scoring" title="Permanent link">&para;</a></h2>
-<p>DataStorage computes a <code>final_score</code> for each candidate to <strong>order</strong> results (DD-WORKFLOW-004 v1.5). Scores are used only for ordering and are stripped before reaching the LLM.</p>
+<p>A <code>final_score</code> is computed for each candidate to <strong>order</strong> results (DD-WORKFLOW-004 v1.5) -- by DataStorage's SQL for non-KA callers, and by KA's own Go port of the identical formula for the investigation pipeline (v1.6+). Scores are used only for ordering and are stripped before reaching the LLM.</p>
 <h3 id="scoring-formula">Scoring Formula<a class="headerlink" href="#scoring-formula" title="Permanent link">&para;</a></h3>
 <div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>final_score = LEAST((5.0 + detected_label_boost + custom_label_boost - label_penalty) / 10.0, 1.0)
 </span></code></pre></div>
@@ -3598,52 +3663,56 @@
 </tbody>
 </table>
 <h2 id="api-endpoints">API Endpoints<a class="headerlink" href="#api-endpoints" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">v1.6: these DataStorage REST endpoints are retired, not just unused by KA</p>
+<p>Through v1.5, the endpoints below were served by DataStorage for both Kubernaut Agent and other callers (e.g. the console). <strong>As of v1.6</strong> (DD-WORKFLOW-018/019), they are gone entirely -- confirmed against DataStorage's route table, which has no registration for any <code>/api/v1/workflows*</code> or <code>/api/v1/action-types*</code> path. There is no REST equivalent of Steps 1-3 anymore for any caller: Kubernaut Agent serves discovery from its in-memory catalog (as described above), and any other caller (including the console) must read the <code>RemediationWorkflow</code>/<code>ActionType</code> CRDs directly via the Kubernetes API.</p>
+</div>
 <table>
 <thead>
 <tr>
-<th>Endpoint</th>
+<th>Endpoint (retired in v1.6)</th>
 <th>Method</th>
-<th>Purpose</th>
+<th>Purpose (pre-v1.6)</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>GET /api/v1/workflows/actions</code></td>
+<td><code>/api/v1/workflows/actions</code></td>
 <td>GET</td>
 <td>Step 1: List action types with counts</td>
 </tr>
 <tr>
-<td><code>GET /api/v1/workflows/actions/{action_type}</code></td>
+<td><code>/api/v1/workflows/actions/{action_type}</code></td>
 <td>GET</td>
 <td>Step 2: Scored candidates for action type</td>
 </tr>
 <tr>
-<td><code>GET /api/v1/workflows/{workflow_id}</code></td>
+<td><code>/api/v1/workflows/{workflow_id}</code></td>
 <td>GET</td>
 <td>Step 3: Full schema with security gate</td>
 </tr>
 <tr>
-<td><code>GET /api/v1/workflows</code></td>
+<td><code>/api/v1/workflows</code></td>
 <td>GET</td>
 <td>Catalog listing (no scoring)</td>
 </tr>
 <tr>
-<td><code>POST /api/v1/workflows</code></td>
+<td><code>/api/v1/workflows</code></td>
 <td>POST</td>
-<td>Register workflow catalog entry (Auth Webhook/CRD admission path)</td>
+<td>Register workflow catalog entry</td>
 </tr>
 <tr>
-<td><code>PATCH /api/v1/workflows/{id}/disable</code></td>
+<td><code>/api/v1/workflows/{id}/disable</code></td>
 <td>PATCH</td>
 <td>Disable workflow</td>
 </tr>
 <tr>
-<td><code>PATCH /api/v1/workflows/{id}/enable</code></td>
+<td><code>/api/v1/workflows/{id}/enable</code></td>
 <td>PATCH</td>
 <td>Enable workflow</td>
 </tr>
 <tr>
-<td><code>PATCH /api/v1/workflows/{id}/deprecate</code></td>
+<td><code>/api/v1/workflows/{id}/deprecate</code></td>
 <td>PATCH</td>
 <td>Deprecate workflow</td>
 </tr>

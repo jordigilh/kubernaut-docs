@@ -839,6 +839,8 @@
       
         
       
+        
+      
     
     
     
@@ -1293,6 +1295,34 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../../user-guide/helm-values-reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Helm Values Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
     
     
       
@@ -1319,10 +1349,10 @@
         
           
         
-        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_16" >
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_17" >
         
           
-          <label class="md-nav__link" for="__nav_3_16" id="__nav_3_16_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3_17" id="__nav_3_17_label" tabindex="0">
             
   
   
@@ -1340,8 +1370,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_16_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_3_16">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_17_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_17">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1491,6 +1521,8 @@
       
         
           
+        
+      
         
       
         
@@ -1742,15 +1774,15 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#session-based-async-pattern" class="md-nav__link">
+  <a href="#agentsession-based-async-pattern" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Session-Based Async Pattern
+        AgentSession-Based Async Pattern
       
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Session-Based Async Pattern">
+    <nav class="md-nav" aria-label="AgentSession-Based Async Pattern">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2156,6 +2188,34 @@
     
   
     API Frontend
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fleet/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Fleet Management
   
 
     
@@ -3166,42 +3226,44 @@
 </div>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
 <pre class="mermaid"><code>graph TB
-    AA[AI Analysis&lt;br/&gt;Controller] --&gt;|session submit| KA[Kubernaut Agent]
-    AA --&gt;|session poll| KA
-    AA --&gt;|session result| KA
-    KA --&gt;|LLM call| LLM[LLM Provider&lt;br/&gt;&lt;small&gt;Vertex AI / OpenAI&lt;/small&gt;]
-    KA --&gt;|workflow query| DS[DataStorage]
+    AA[AI Analysis&lt;br/&gt;Controller] --&gt;|"1. create"| AS[AgentSession CRD]
+    KA[Kubernaut Agent] --&gt;|"2. watch + dispatch&lt;br/&gt;(per-object Lease)"| AS
+    KA --&gt;|"3. exclusive writer&lt;br/&gt;of status"| AS
+    AA --&gt;|"4. watch&lt;br/&gt;+ deadline backstop"| AS
+    KA --&gt;|LLM call| LLM[LLM Provider&lt;br/&gt;&lt;small&gt;Vertex AI / OpenAI / Anthropic / Gemini / ...&lt;/small&gt;]
+    KA --&gt;|"workflow discovery&lt;br/&gt;(in-memory catalog, v1.6+)"| CRDs[RemediationWorkflow /&lt;br/&gt;ActionType CRDs]
     AA --&gt;|Rego eval| REGO[Approval Policy]
-    AA --&gt;|audit| DS</code></pre>
-<h2 id="session-based-async-pattern">Session-Based Async Pattern<a class="headerlink" href="#session-based-async-pattern" title="Permanent link">&para;</a></h2>
-<p>The AI Analysis controller communicates with Kubernaut Agent using a <strong>session-based asynchronous</strong> pattern (BR-AA-HAPI-064):</p>
+    AA --&gt;|audit| DS[DataStorage]</code></pre>
+<h2 id="agentsession-based-async-pattern">AgentSession-Based Async Pattern<a class="headerlink" href="#agentsession-based-async-pattern" title="Permanent link">&para;</a></h2>
+<p>The AI Analysis controller communicates with Kubernaut Agent using the <strong><code>AgentSession</code> CRD</strong> as a Kubernetes-native create/watch/status channel (DD-AA-KA-001, v1.6+) — <strong>not HTTP</strong>. This supersedes the pre-v1.6 HTTP submit/poll loop from BR-AA-HAPI-064, whose REST endpoints (<code>POST /api/v1/incident/analyze</code>, <code>GET .../session/{id}</code>, <code>GET .../result</code>) no longer exist on Kubernaut Agent at all as of v1.6 (confirmed against its route table).</p>
 <h3 id="flow">Flow<a class="headerlink" href="#flow" title="Permanent link">&para;</a></h3>
 <ol>
-<li><strong>Submit</strong> — <code>POST /api/v1/incident/analyze</code> → <code>202 Accepted</code> + <code>session_id</code></li>
-<li><strong>Poll</strong> — <code>GET /api/v1/incident/session/{session_id}</code> → status (<code>pending</code>, <code>investigating</code>, <code>completed</code>, <code>failed</code>)</li>
-<li><strong>Result</strong> — <code>GET /api/v1/incident/session/{session_id}/result</code> → full analysis</li>
+<li><strong>Create</strong> — The AI Analysis controller creates the <code>AgentSession</code> CRD directly (owned by the <code>AIAnalysis</code> CR), populating <code>spec</code> with the investigation request.</li>
+<li><strong>Dispatch</strong> — Kubernaut Agent's own internal <code>controller-runtime</code> Reconciler watches for the Create event, acquires a per-object <code>Lease</code>, and dispatches the investigation exactly once.</li>
+<li><strong>Watch</strong> — The controller watches the <code>AgentSession</code> CRD for completion, backstopped by a deadline-driven requeue (#2204) that catches a hung KA rather than relying on the watch alone.</li>
+<li><strong>Result</strong> — Once <code>AgentSession.status.phase</code> reaches <code>Completed</code>, the curated result is already present on <code>status.result</code> — no separate fetch call is needed.</li>
 </ol>
 <pre class="mermaid"><code>sequenceDiagram
     participant AA as AI Analysis Controller
+    participant AS as AgentSession (etcd)
     participant KA as Kubernaut Agent
     participant LLM as LLM Provider
 
-    AA-&gt;&gt;KA: POST /api/v1/incident/analyze
-    KA--&gt;&gt;AA: 202 {session_id}
+    AA-&gt;&gt;AS: Create AgentSession (spec = investigation request)
     Note over AA: Phase: Investigating
 
+    KA-&gt;&gt;AS: Watch Create event, acquire Lease, dispatch once
     KA-&gt;&gt;LLM: Run investigation (kubectl access)
     LLM--&gt;&gt;KA: Analysis result
+    KA-&gt;&gt;AS: Write status.phase = Completed, status.result
 
-    AA-&gt;&gt;KA: GET /session/{id}
-    KA--&gt;&gt;AA: {status: "completed"}
-
-    AA-&gt;&gt;KA: GET /session/{id}/result
-    KA--&gt;&gt;AA: IncidentResponse
+    AA-&gt;&gt;AS: Watch for completion&lt;br/&gt;(+ deadline backstop requeue)
+    AS--&gt;&gt;AA: status.phase = Completed (result already present)
     Note over AA: Phase: Analyzing</code></pre>
-<p>This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (<code>RequeueAfter</code>) while the LLM investigation runs. The controller polls at a <strong>constant 15-second interval</strong> (configurable from 1s to 5m via the <code>kubernautAgent.sessionPollInterval</code> YAML config field).</p>
+<p>This pattern avoids long HTTP timeouts and polling overhead by using Kubernetes-native watches: the controller reacts to <code>AgentSession</code> status changes instead of polling KA on a fixed interval. The Investigating phase carries a wall-clock cap of 25 minutes (<code>DefaultMaxInvestigationDuration</code>); the deadline-driven backstop requeue ensures a hung KA (one that never updates <code>AgentSession.status</code>) still gets caught even if the watch itself is missed.</p>
+<p><strong>Crash recovery</strong> — If a Kubernaut Agent replica crashes mid-dispatch, its <code>Lease</code> expires and is reclaimed by another (or the restarted) replica, which redispatches the still-<code>Pending</code> <code>AgentSession</code>. This is more resilient than the pre-v1.6 model, where a lost in-memory session required the AI Analysis controller itself to regenerate it (up to 5 attempts).</p>
 <h3 id="session-recovery">Session Recovery<a class="headerlink" href="#session-recovery" title="Permanent link">&para;</a></h3>
-<p>If Kubernaut Agent restarts and returns <code>404</code> for a session, the controller regenerates the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).</p>
+<p>If the <code>AgentSession</code> reports <code>Failed</code>/<code>Cancelled</code>, or the 25-minute investigation cap is exceeded, the AIAnalysis transitions to <code>Failed</code>. See <a href="../../api-reference/crds/#agentsession">AgentSession</a> for the full CRD reference.</p>
 <h2 id="timeout-configuration">Timeout Configuration<a class="headerlink" href="#timeout-configuration" title="Permanent link">&para;</a></h2>
 <p>The Orchestrator passes per-analysis timeout configuration via the AIAnalysis CRD spec:</p>
 <table>
@@ -3241,7 +3303,7 @@
 </tr>
 <tr>
 <td><code>Investigating</code></td>
-<td>Session submitted to Kubernaut Agent, polling for completion</td>
+<td><code>AgentSession</code> created, watching for completion (deadline-backstopped)</td>
 </tr>
 <tr>
 <td><code>Analyzing</code></td>
@@ -3264,7 +3326,7 @@
 <li><strong>Investigates using K8s tools</strong> — Inspects pod logs, events, resource state via <code>kubectl</code>; optionally queries Prometheus for live metrics when enabled</li>
 <li><strong>Produces a root cause analysis</strong> — Structured explanation of what went wrong</li>
 <li><strong>Resolves the target resource</strong> — Calls <code>get_namespaced_resource_context</code> (or <code>get_cluster_resource_context</code> for cluster-scoped resources) to resolve the owner chain, compute a spec hash, fetch <strong>remediation history</strong> (past outcomes and effectiveness scores via internal DataStorage lookup), and detect <strong>infrastructure labels</strong> (GitOps, Helm, service mesh, HPA, PDB)</li>
-<li><strong>Discovers workflows via DataStorage</strong> — The LLM uses a three-step protocol: <code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).</li>
+<li><strong>Discovers workflows via Kubernaut Agent's own catalog (v1.6+)</strong> — The LLM uses a three-step protocol: <code>list_available_actions</code> → <code>list_workflows</code> → <code>get_workflow</code>, served from KA's in-memory, informer-cache-backed watch over the <code>RemediationWorkflow</code>/<code>ActionType</code> CRDs (no DataStorage round trip; DD-WORKFLOW-019). Signal context and detected labels are auto-injected as filters; the catalog orders results by label-match scoring (scores not exposed to the LLM).</li>
 <li><strong>LLM selects a workflow</strong> — Based on workflow descriptions (<code>what</code>, <code>whenToUse</code>, <code>whenNotToUse</code>), detected infrastructure context, and remediation history</li>
 <li><strong>Returns <code>actionable</code> flag</strong> — Indicates whether the investigation identified a concrete remediation action. Propagated to the <code>AIAnalysis</code> CRD status and used downstream for audit and decision filtering.</li>
 </ol>

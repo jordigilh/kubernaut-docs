@@ -4474,12 +4474,13 @@
 <p>The AF also uses 5 internal tools (<code>kubectl_get</code>, <code>kubectl_list</code>, <code>kubectl_list_events</code>, <code>kubernaut_check_existing_remediation</code>, <code>kubernaut_remediate</code>) that run under the AF pod's own ServiceAccount. These are <strong>not</strong> exposed via MCP/A2A, are <strong>not</strong> SAR-gated, and are not included in persona tool counts.</p>
 </div>
 <h3 id="console-access-gate">Console-access authorization gate (v1.5.6)<a class="headerlink" href="#console-access-gate" title="Permanent link">&para;</a></h3>
-<p>v1.5.6 adds a second, <strong>coarse-grained</strong> SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12). Every tool-invocation request on <code>POST /mcp</code> and <code>POST /a2a/invoke</code> must now pass <strong>both</strong>:</p>
+<p>v1.5.6 adds a second, <strong>coarse-grained</strong> SAR check in front of the per-tool checks above (#1919, #1941, AC-3/AC-6/AU-12) -- a deliberately separate, independently-auditable authorization step from per-tool access (least privilege, AC-6). Operators grant "console access" and "tool access" as two explicit steps rather than one implying the other. Every tool-invocation request on <code>POST /mcp</code> and <code>POST /a2a/invoke</code> must now pass <strong>both</strong>:</p>
 <ol>
 <li><code>can &lt;user&gt; use console in apiGroup kubernaut.ai?</code> — the new coarse-grained gate, checked once per request</li>
 <li><code>can &lt;user&gt; use tools/&lt;tool-name&gt; in apiGroup kubernaut.ai?</code> — the existing per-tool check described above</li>
 </ol>
 <p>Both are independent SAR calls (different <code>resource</code> values, same <code>apiGroup: kubernaut.ai</code>, <code>verb: use</code>) with independently cached results — a group can hold one without the other. The gate is <strong>fail-closed</strong>: an SAR API error is treated the same as denial.</p>
+<p><strong>Enforcement is server-side, at both existing tool-invocation paths</strong> -- <code>checkRBAC()</code> for <code>/mcp</code> and <code>newRBACGuard()</code> for <code>/a2a/invoke</code> -- identical code paths to the per-tool gate above, not merely at a UI-advisory endpoint. A client that calls <code>/mcp</code> or <code>/a2a/invoke</code> directly, without ever hitting the pre-flight endpoint below, still cannot bypass the gate.</p>
 <p><strong>Advisory pre-flight endpoint</strong> — <code>GET /a2a/access</code> lets a UI client check the console gate before opening a session, without the roundtrip cost of a real tool call:</p>
 <table>
 <thead>
@@ -4499,11 +4500,11 @@
 </tr>
 <tr>
 <td><code>403 Forbidden</code> (RFC 7807)</td>
-<td>Authenticated but not granted (or the SAR call itself errored); emits an <code>EventAuthAccessDenied</code> audit event with <code>endpoint: "console"</code></td>
+<td>Authenticated but not granted (or the SAR call itself errored)</td>
 </tr>
 </tbody>
 </table>
-<p>This endpoint is <strong>advisory only</strong> — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every <code>/mcp</code> and <code>/a2a/invoke</code> call, identical to the per-tool gate.</p>
+<p>This endpoint is <strong>advisory only</strong> — it is not itself a security boundary. The actual enforcement is the per-request SAR check on every <code>/mcp</code> and <code>/a2a/invoke</code> call, identical to the per-tool gate. Denials at either the pre-flight endpoint or the two enforcement points emit an <code>EventAuthAccessDenied</code> audit event (the endpoint sets <code>Detail.endpoint: "console"</code>).</p>
 <h4 id="helm-consoleaccessgroups">Helm: <code>consoleAccessGroups</code><a class="headerlink" href="#helm-consoleaccessgroups" title="Permanent link">&para;</a></h4>
 <p>The chart's <code>apifrontend.config.rbac.consoleAccessGroups</code> value controls which OIDC groups pass the console gate. It <strong>defaults to all 6 built-in persona names</strong> (<code>sre</code>, <code>ai-orchestrator</code>, <code>cicd</code>, <code>observability</code>, <code>l3-audit</code>, <code>remediation-approver</code>):</p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nt">apifrontend</span><span class="p">:</span>
@@ -4519,7 +4520,7 @@
 </span></code></pre></div>
 <div class="admonition danger">
 <p class="admonition-title">Upgrade action required for custom persona groups</p>
-<p>If you deploy via Helm and configured a <strong>custom</strong> group under <code>apifrontend.config.rbac.personas</code> (renamed or added to the 6 defaults), that group's name is <strong>not</strong> automatically added to <code>consoleAccessGroups</code>. Members of that group will have <strong>every</strong> AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to <code>consoleAccessGroups</code>.</p>
+<p><code>consoleAccessGroups</code> is a separate, independently-maintained list -- it is <strong>not</strong> derived from <code>apifrontend.config.rbac.personas</code>'s keys. If you deploy via Helm and configured a <strong>custom</strong> group under <code>apifrontend.config.rbac.personas</code> (renamed or added to the 6 defaults), that group's name is <strong>not</strong> automatically added to <code>consoleAccessGroups</code>. Members of that group will have <strong>every</strong> AF tool call denied after upgrading to v1.5.6+, even though their existing per-tool ClusterRoleBindings are unchanged and still correct. You must explicitly add the group name to <code>consoleAccessGroups</code>.</p>
 <p><code>helm install</code>/<code>helm upgrade</code> prints an <code>NOTES.txt</code> warning that lists any <code>personas</code> group missing from <code>consoleAccessGroups</code>, to catch this at deploy time rather than at first login.</p>
 </div>
 <p>Deployments using only the 6 default persona group names need no changes.</p>

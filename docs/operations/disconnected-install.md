@@ -1328,7 +1328,7 @@ Kubernaut has two components that consume LLM configuration:
 - **Kubernaut Agent (KA)** — the investigation/analysis engine. Supports 9 providers.
 - **API Frontend (AF)** — the MCP/A2A gateway. Supports 4 providers (subset of KA).
 
-The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` CR fields. There is no separate AF LLM section in the CR.
+By default, AF's LLM config resolves from the same profile as KA (`spec.kubernautAgent.llmProfileRef`). Set `spec.apiFrontend.llmProfileRef` to point AF at a different profile in `spec.llmProfiles` when it needs distinct credentials or a different provider than KA.
 
 ### Supported Providers
 
@@ -1348,7 +1348,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 !!! note "`vertex` vs `vertex_ai`"
     `vertex` = Gemini models on Vertex AI (LangChainGo); `vertex_ai` = Claude models on Vertex AI (Anthropic SDK). These are different code paths.
 
-### CR Fields (`spec.kubernautAgent.llm`)
+### CR Fields (`spec.llmProfiles[<name>]`, referenced by `spec.kubernautAgent.llmProfileRef`)
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -1365,7 +1365,8 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 | `azureApiVersion` | string | Azure | — | Azure OpenAI API version (e.g. `2024-02-01`) |
 | `tlsCaFile` | string | No | — | Path to CA cert for TLS to LLM endpoint |
 | `oauth2` | object | No | disabled | OAuth2 client credentials auth (see below) |
-| `runtimeConfigMapName` | string | No | — | Name of a pre-existing ConfigMap for hot-reloadable runtime config |
+
+`spec.kubernautAgent.runtimeConfigMapName` (a sibling of `llmProfileRef`, not a profile field) names a pre-existing ConfigMap for hot-reloadable runtime config.
 
 ### Credential Secret Format
 
@@ -1380,7 +1381,7 @@ The operator populates AF's LLM config from the same `spec.kubernautAgent.llm` C
 | `mistral` | `MISTRAL_API_KEY` | API key string |
 | `huggingface` | `HUGGINGFACEHUB_API_TOKEN` | HuggingFace token |
 
-### OAuth2 Configuration (`spec.kubernautAgent.llm.oauth2`)
+### OAuth2 Configuration (`spec.llmProfiles[<name>].oauth2`)
 
 For LLM endpoints behind OAuth2 (client credentials grant):
 

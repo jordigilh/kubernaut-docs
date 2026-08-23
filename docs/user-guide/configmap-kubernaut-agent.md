@@ -168,7 +168,7 @@ integrations:
 ```
 
 !!! info "Operator: BYO runtime ConfigMap"
-    When deploying via the Kubernaut Operator, set `spec.kubernautAgent.llm.runtimeConfigMapName` to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.
+    When deploying via the Kubernaut Operator, set `spec.kubernautAgent.runtimeConfigMapName` to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.
 
 ### Per-phase LLM routing (v1.5.1) {: #per-phase-llm-routing-v151 }
 
@@ -206,9 +206,9 @@ The `phaseModels` map in the `kubernaut-agent-llm-runtime` ConfigMap allows conf
 
 **Configuration paths**:
 
-- **Operator CR**: `spec.kubernautAgent.llm.phaseModels` (map with CEL validation)
-- **Direct ConfigMap patch**: add `phaseModels:` key to the `kubernaut-agent-llm-runtime` ConfigMap
-- **Helm chart**: not yet exposed as a value key
+- **Operator CR**: `spec.kubernautAgent.phaseModels` — a map of phase name to a **profile name** defined in `spec.llmProfiles` (CEL-validated keys), not an inline override object. The operator resolves the named profile and renders it into the ConfigMap's override-object shape shown above.
+- **Direct ConfigMap patch**: add `phaseModels:` key to the `kubernaut-agent-llm-runtime` ConfigMap using the inline override-object shape directly
+- **Helm chart**: `kubernautAgent.phaseModels` — same profile-name-map shape as the operator CR, referencing `global.llmProfiles` (DD-PLATFORM-007)
 
 ??? example "phaseModels in kubernaut-agent-llm-runtime ConfigMap"
     ```yaml

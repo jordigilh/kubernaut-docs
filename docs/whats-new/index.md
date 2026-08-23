@@ -190,7 +190,7 @@ Configure different LLM models for each phase of the investigation pipeline via 
 
 Override fields per phase: `provider`, `endpoint`, `model`, `apiKey`, plus cloud-specific fields (`azureApiVersion`, `vertexProject`, `vertexLocation`, `bedrockRegion`). Non-empty fields override the base config; `temperature`, `maxRetries`, and `timeoutSeconds` are always inherited. Hot-reloadable via FileWatcher — no pod restart needed.
 
-**Configuration paths**: operator CR (`spec.kubernautAgent.llm.phaseModels`) or direct ConfigMap patch. The Helm chart does not yet expose `phaseModels` as a value key.
+**Configuration paths**: operator CR (`spec.kubernautAgent.phaseModels`, a map of phase to profile name) or direct ConfigMap patch (inline override object). The Helm chart now also exposes this as `kubernautAgent.phaseModels` (same profile-name-map shape).
 
 See [Kubernaut Agent Config: phaseModels](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151) for the full reference.
 
@@ -260,7 +260,7 @@ See [CRD Reference](../api-reference/crds.md) for the updated enum tables.
 The Kubernaut Operator CRD now includes:
 
 - **`JWTProviderSpec`** at `spec.kubernautAgent.interactive.jwtProviders[]` and `spec.apiFrontend.auth.jwtProviders[]` — `name`, `issuerURL`, `jwksURL`, `audiences`, `claimMappings` (`username`, `groups`)
-- **`phaseModels`** at `spec.kubernautAgent.llm.phaseModels` — per-phase LLM override map with CEL validation for keys (`rca`, `workflow_discovery`, `validation`)
+- **`phaseModels`** at `spec.kubernautAgent.phaseModels` — per-phase LLM profile override map with CEL validation for keys (`rca`, `workflow_discovery`, `validation`)
 - **`ConsoleSpec`** at `spec.console` — `enabled`, `auth.secretName`, `route.enabled`, `route.host`, `resources`
 
 See [Operator CR Reference](../api-reference/operator-cr.md) for the full schema.

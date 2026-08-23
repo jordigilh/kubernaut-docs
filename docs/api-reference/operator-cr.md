@@ -14,9 +14,8 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 
     - `spec.aiAnalysis.policy.configMapName` — must reference a ConfigMap containing key `approval.rego`
     - `spec.signalProcessing.policy.configMapName` — must reference a ConfigMap containing key `policy.rego`
-    - `spec.kubernautAgent.llm.provider` — LLM provider name
-    - `spec.kubernautAgent.llm.model` — LLM model name
-    - `spec.kubernautAgent.llm.credentialsSecretName` — Secret with LLM API credentials
+    - `spec.kubernautAgent.llmProfileRef` — must reference a profile key defined in `spec.llmProfiles`
+    - For every profile in `spec.llmProfiles`: `.provider`, `.model`, and `.credentialsSecretName` — see [LLMProfileSpec](#llmprofilespec)
 
     Create these resources **before** applying the Kubernaut CR. See [Installation Prerequisites](../getting-started/installation.md#prerequisites).
 
@@ -26,6 +25,7 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 |---|---|---|
 | `postgresql` | [PostgreSQLSpec](#postgresqlspec) | BYO PostgreSQL connection |
 | `valkey` | [ValkeySpec](#valkeyspec) | BYO Valkey/Redis connection |
+| `llmProfiles` | map[string][LLMProfileSpec](#llmprofilespec) | Named LLM provider profiles (at least 1 entry required), referenced by name from `kubernautAgent.llmProfileRef` and other components |
 | `kubernautAgent` | [KubernautAgentSpec](#kubernautagentspec) | LLM and agent configuration |
 
 ### Optional fields
@@ -81,7 +81,9 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
-| `llm` | [LLMSpec](#llmspec) | **yes** | — | Primary LLM configuration |
+| `llmProfileRef` | string | **yes** | — | Name of a profile defined in `spec.llmProfiles`, used for KA's investigator LLM calls |
+| `runtimeConfigMapName` | string | no | — | BYO hot-reloadable ConfigMap name (key: `llm-runtime.yaml`) |
+| `phaseModels` | map[string]string | no | — | Per-phase LLM profile overrides (v1.5.1). Keys must be `rca`, `workflow_discovery`, or `validation` (CEL-validated); values are profile names in `spec.llmProfiles`. When absent, all phases use `llmProfileRef`'s profile. |
 | `interactive` | [InteractiveSpec](#interactivespec) | no | — | Interactive session configuration including JWT providers (v1.5.1) |
 | `maxTurns` | int | no | `40` | Max tool-call turns per investigation (min: 1) |
 | `session` | SessionSpec | no | — | Session TTL configuration |
@@ -93,7 +95,9 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `logging` | LoggingSpec | no | — | Log level |
 | `resources` | ResourceRequirements | no | — | CPU/memory requests and limits |
 
-### LLMSpec
+### LLMProfileSpec {: #llmprofilespec }
+
+Profiles live in the top-level `spec.llmProfiles` map (keyed by an arbitrary user-chosen name, e.g. `"primary"`) and are referenced by name via `llmProfileRef` fields on `kubernautAgent`, `apiFrontend`, and `apiFrontend.severityTriage` — decoupling each component's LLM identity from a single shared config. At least one profile is required. (`kubernautAgent.alignmentCheck.llm` still uses its own pre-profile shape — see [AlignmentCheckSpec](#alignmentcheckspec) below.)
 
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
@@ -102,27 +106,32 @@ The `Kubernaut` custom resource (`kubernaut.ai/v1alpha1`) is the single deployme
 | `credentialsSecretName` | string | **yes** | — | Secret containing API key |
 | `endpoint` | string | no | — | Custom endpoint (required for `openai`, `ollama`, `azure`, `mistral`). For `openai`, the operator appends `/v1` and translates to `openai_compatible` for AF. |
 | `temperature` | string | no | — | LLM temperature |
-| `maxRetries` | int | no | — | Retry count per LLM call |
-| `timeoutSeconds` | int | no | — | Per-call timeout |
+| `maxRetries` | int | no | `3` | Retry count per LLM call |
+| `timeoutSeconds` | int | no | `120` | Per-call timeout |
 | `vertexProject` | string | no | — | Vertex AI project ID |
 | `vertexLocation` | string | no | — | Vertex AI location |
 | `bedrockRegion` | string | no | — | AWS Bedrock region |
 | `azureApiVersion` | string | no | — | Azure OpenAI API version |
 | `tlsCaFile` | string | no | — | Custom CA certificate file path |
+| `tlsCertFile` / `tlsKeyFile` | string | no | — | Client certificate/key paths for mTLS to the LLM endpoint (must be set together) |
+| `tlsClientSecretRef` | string | when mTLS configured | — | Secret containing `tls.crt`/`tls.key`, required when `tlsCertFile`/`tlsKeyFile` are set |
 | `oauth2` | OAuth2Spec | no | — | OAuth2 client credentials flow |
-| `runtimeConfigMapName` | string | no | — | BYO hot-reloadable ConfigMap name (key: `llm-runtime.yaml`) |
-| `phaseModels` | map[string][LLMPhaseOverrideSpec](#llmphaseoverridespec) | no | — | Per-phase LLM overrides (v1.5.1). Keys must be `rca`, `workflow_discovery`, or `validation` (CEL-validated). |
+| `reasoning` | LLMReasoningSpec | no | disabled | Model-aware reasoning/thinking-token configuration |
 
-### LLMPhaseOverrideSpec (v1.5.1) {: #llmphaseoverridespec }
+**Example:**
 
-| Field | Type | Description |
-|---|---|---|
-| `provider` | string | Override LLM provider for this phase |
-| `model` | string | Override model name |
-| `endpoint` | string | Override endpoint URL |
-| `apiKey` | string | Override API key |
+```yaml
+spec:
+  llmProfiles:
+    primary:
+      provider: openai
+      model: gpt-4o
+      credentialsSecretName: llm-credentials
+  kubernautAgent:
+    llmProfileRef: primary
+```
 
-See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151) for usage details and YAML examples.
+`phaseModels` values are plain profile names (strings), not inline override objects — each referenced profile may use its own provider/model/credentials independently of `llmProfileRef`'s profile. See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase-llm-routing-v151) for usage details and YAML examples.
 
 ### InteractiveSpec (v1.5.1) {: #interactivespec }
 
@@ -217,6 +226,7 @@ See [Per-phase LLM routing](../user-guide/configmap-kubernaut-agent.md#per-phase
 | Field | Type | Required | Default | Description |
 |---|---|---|---|---|
 | `enabled` | *bool | no | `true` | Deploy the API Frontend. Set `false` to skip all AF resources |
+| `llmProfileRef` | string | no | — | Name of a profile in `spec.llmProfiles` for AF's own agent LLM connection. When empty, falls back to `kubernautAgent.llmProfileRef`'s resolved profile |
 | `auth` | [APIFrontendAuthSpec](#apifrontendauthspec) | no | — | OIDC authentication |
 | `rateLimit` | [APIFrontendRateLimitSpec](#apifrontendratelimitspec) | no | — | Request rate limiting |
 | `shutdown` | [APIFrontendShutdownSpec](#apifrontendshutdownspec) | no | — | Graceful shutdown |

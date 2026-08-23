@@ -3248,7 +3248,7 @@ Review the changes below to understand what differs from the version you are cur
 </tbody>
 </table>
 <p>Override fields per phase: <code>provider</code>, <code>endpoint</code>, <code>model</code>, <code>apiKey</code>, plus cloud-specific fields (<code>azureApiVersion</code>, <code>vertexProject</code>, <code>vertexLocation</code>, <code>bedrockRegion</code>). Non-empty fields override the base config; <code>temperature</code>, <code>maxRetries</code>, and <code>timeoutSeconds</code> are always inherited. Hot-reloadable via FileWatcher — no pod restart needed.</p>
-<p><strong>Configuration paths</strong>: operator CR (<code>spec.kubernautAgent.llm.phaseModels</code>) or direct ConfigMap patch. The Helm chart does not yet expose <code>phaseModels</code> as a value key.</p>
+<p><strong>Configuration paths</strong>: operator CR (<code>spec.kubernautAgent.phaseModels</code>, a map of phase to profile name) or direct ConfigMap patch (inline override object). The Helm chart now also exposes this as <code>kubernautAgent.phaseModels</code> (same profile-name-map shape).</p>
 <p>See <a href="../user-guide/configmap-kubernaut-agent/#per-phase-llm-routing-v151">Kubernaut Agent Config: phaseModels</a> for the full reference.</p>
 <h3 id="severity-triage-llm-configuration">Severity triage LLM configuration<a class="headerlink" href="#severity-triage-llm-configuration" title="Permanent link">&para;</a></h3>
 <p>The severity triage pipeline can now use a <strong>dedicated LLM</strong> instead of sharing the agent's LLM. Configure via a ConfigMap overlay under <code>severityTriage.llm</code> — supports <code>provider</code> (vertex_ai, gemini, anthropic), <code>model</code>, <code>endpoint</code>, <code>apiKeyFile</code>, <code>timeoutSeconds</code>, <code>oauth2</code>, <code>circuitBreaker</code>, and <code>customHeaders</code>.</p>
@@ -3337,7 +3337,7 @@ Review the changes below to understand what differs from the version you are cur
 <p>The Kubernaut Operator CRD now includes:</p>
 <ul>
 <li><strong><code>JWTProviderSpec</code></strong> at <code>spec.kubernautAgent.interactive.jwtProviders[]</code> and <code>spec.apiFrontend.auth.jwtProviders[]</code> — <code>name</code>, <code>issuerURL</code>, <code>jwksURL</code>, <code>audiences</code>, <code>claimMappings</code> (<code>username</code>, <code>groups</code>)</li>
-<li><strong><code>phaseModels</code></strong> at <code>spec.kubernautAgent.llm.phaseModels</code> — per-phase LLM override map with CEL validation for keys (<code>rca</code>, <code>workflow_discovery</code>, <code>validation</code>)</li>
+<li><strong><code>phaseModels</code></strong> at <code>spec.kubernautAgent.phaseModels</code> — per-phase LLM profile override map with CEL validation for keys (<code>rca</code>, <code>workflow_discovery</code>, <code>validation</code>)</li>
 <li><strong><code>ConsoleSpec</code></strong> at <code>spec.console</code> — <code>enabled</code>, <code>auth.secretName</code>, <code>route.enabled</code>, <code>route.host</code>, <code>resources</code></li>
 </ul>
 <p>See <a href="../api-reference/operator-cr/">Operator CR Reference</a> for the full schema.</p>

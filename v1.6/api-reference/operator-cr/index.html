@@ -2278,21 +2278,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#llmspec" class="md-nav__link">
+  <a href="#llmprofilespec" class="md-nav__link">
     <span class="md-ellipsis">
       
-        LLMSpec
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#llmphaseoverridespec" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        LLMPhaseOverrideSpec (v1.5.1)
+        LLMProfileSpec
       
     </span>
   </a>
@@ -3417,9 +3406,8 @@
 <ul>
 <li><code>spec.aiAnalysis.policy.configMapName</code> — must reference a ConfigMap containing key <code>approval.rego</code></li>
 <li><code>spec.signalProcessing.policy.configMapName</code> — must reference a ConfigMap containing key <code>policy.rego</code></li>
-<li><code>spec.kubernautAgent.llm.provider</code> — LLM provider name</li>
-<li><code>spec.kubernautAgent.llm.model</code> — LLM model name</li>
-<li><code>spec.kubernautAgent.llm.credentialsSecretName</code> — Secret with LLM API credentials</li>
+<li><code>spec.kubernautAgent.llmProfileRef</code> — must reference a profile key defined in <code>spec.llmProfiles</code></li>
+<li>For every profile in <code>spec.llmProfiles</code>: <code>.provider</code>, <code>.model</code>, and <code>.credentialsSecretName</code> — see <a href="#llmprofilespec">LLMProfileSpec</a></li>
 </ul>
 <p>Create these resources <strong>before</strong> applying the Kubernaut CR. See <a href="../../getting-started/installation/#prerequisites">Installation Prerequisites</a>.</p>
 </div>
@@ -3442,6 +3430,11 @@
 <td><code>valkey</code></td>
 <td><a href="#valkeyspec">ValkeySpec</a></td>
 <td>BYO Valkey/Redis connection</td>
+</tr>
+<tr>
+<td><code>llmProfiles</code></td>
+<td>map[string]<a href="#llmprofilespec">LLMProfileSpec</a></td>
+<td>Named LLM provider profiles (at least 1 entry required), referenced by name from <code>kubernautAgent.llmProfileRef</code> and other components</td>
 </tr>
 <tr>
 <td><code>kubernautAgent</code></td>
@@ -3672,11 +3665,25 @@
 </thead>
 <tbody>
 <tr>
-<td><code>llm</code></td>
-<td><a href="#llmspec">LLMSpec</a></td>
+<td><code>llmProfileRef</code></td>
+<td>string</td>
 <td><strong>yes</strong></td>
 <td>—</td>
-<td>Primary LLM configuration</td>
+<td>Name of a profile defined in <code>spec.llmProfiles</code>, used for KA's investigator LLM calls</td>
+</tr>
+<tr>
+<td><code>runtimeConfigMapName</code></td>
+<td>string</td>
+<td>no</td>
+<td>—</td>
+<td>BYO hot-reloadable ConfigMap name (key: <code>llm-runtime.yaml</code>)</td>
+</tr>
+<tr>
+<td><code>phaseModels</code></td>
+<td>map[string]string</td>
+<td>no</td>
+<td>—</td>
+<td>Per-phase LLM profile overrides (v1.5.1). Keys must be <code>rca</code>, <code>workflow_discovery</code>, or <code>validation</code> (CEL-validated); values are profile names in <code>spec.llmProfiles</code>. When absent, all phases use <code>llmProfileRef</code>'s profile.</td>
 </tr>
 <tr>
 <td><code>interactive</code></td>
@@ -3750,7 +3757,8 @@
 </tr>
 </tbody>
 </table>
-<h3 id="llmspec">LLMSpec<a class="headerlink" href="#llmspec" title="Permanent link">&para;</a></h3>
+<h3 id="llmprofilespec">LLMProfileSpec<a class="headerlink" href="#llmprofilespec" title="Permanent link">&para;</a></h3>
+<p>Profiles live in the top-level <code>spec.llmProfiles</code> map (keyed by an arbitrary user-chosen name, e.g. <code>"primary"</code>) and are referenced by name via <code>llmProfileRef</code> fields on <code>kubernautAgent</code>, <code>apiFrontend</code>, and <code>apiFrontend.severityTriage</code> — decoupling each component's LLM identity from a single shared config. At least one profile is required. (<code>kubernautAgent.alignmentCheck.llm</code> still uses its own pre-profile shape — see <a href="#alignmentcheckspec">AlignmentCheckSpec</a> below.)</p>
 <table>
 <thead>
 <tr>
@@ -3801,14 +3809,14 @@
 <td><code>maxRetries</code></td>
 <td>int</td>
 <td>no</td>
-<td>—</td>
+<td><code>3</code></td>
 <td>Retry count per LLM call</td>
 </tr>
 <tr>
 <td><code>timeoutSeconds</code></td>
 <td>int</td>
 <td>no</td>
-<td>—</td>
+<td><code>120</code></td>
 <td>Per-call timeout</td>
 </tr>
 <tr>
@@ -3847,6 +3855,20 @@
 <td>Custom CA certificate file path</td>
 </tr>
 <tr>
+<td><code>tlsCertFile</code> / <code>tlsKeyFile</code></td>
+<td>string</td>
+<td>no</td>
+<td>—</td>
+<td>Client certificate/key paths for mTLS to the LLM endpoint (must be set together)</td>
+</tr>
+<tr>
+<td><code>tlsClientSecretRef</code></td>
+<td>string</td>
+<td>when mTLS configured</td>
+<td>—</td>
+<td>Secret containing <code>tls.crt</code>/<code>tls.key</code>, required when <code>tlsCertFile</code>/<code>tlsKeyFile</code> are set</td>
+</tr>
+<tr>
 <td><code>oauth2</code></td>
 <td>OAuth2Spec</td>
 <td>no</td>
@@ -3854,54 +3876,25 @@
 <td>OAuth2 client credentials flow</td>
 </tr>
 <tr>
-<td><code>runtimeConfigMapName</code></td>
-<td>string</td>
+<td><code>reasoning</code></td>
+<td>LLMReasoningSpec</td>
 <td>no</td>
-<td>—</td>
-<td>BYO hot-reloadable ConfigMap name (key: <code>llm-runtime.yaml</code>)</td>
-</tr>
-<tr>
-<td><code>phaseModels</code></td>
-<td>map[string]<a href="#llmphaseoverridespec">LLMPhaseOverrideSpec</a></td>
-<td>no</td>
-<td>—</td>
-<td>Per-phase LLM overrides (v1.5.1). Keys must be <code>rca</code>, <code>workflow_discovery</code>, or <code>validation</code> (CEL-validated).</td>
+<td>disabled</td>
+<td>Model-aware reasoning/thinking-token configuration</td>
 </tr>
 </tbody>
 </table>
-<h3 id="llmphaseoverridespec">LLMPhaseOverrideSpec (v1.5.1)<a class="headerlink" href="#llmphaseoverridespec" title="Permanent link">&para;</a></h3>
-<table>
-<thead>
-<tr>
-<th>Field</th>
-<th>Type</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>provider</code></td>
-<td>string</td>
-<td>Override LLM provider for this phase</td>
-</tr>
-<tr>
-<td><code>model</code></td>
-<td>string</td>
-<td>Override model name</td>
-</tr>
-<tr>
-<td><code>endpoint</code></td>
-<td>string</td>
-<td>Override endpoint URL</td>
-</tr>
-<tr>
-<td><code>apiKey</code></td>
-<td>string</td>
-<td>Override API key</td>
-</tr>
-</tbody>
-</table>
-<p>See <a href="../../user-guide/configmap-kubernaut-agent/#per-phase-llm-routing-v151">Per-phase LLM routing</a> for usage details and YAML examples.</p>
+<p><strong>Example:</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">llmProfiles</span><span class="p">:</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">primary</span><span class="p">:</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">provider</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">openai</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">      </span><span class="nt">model</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">gpt-4o</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">      </span><span class="nt">credentialsSecretName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">llm-credentials</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">  </span><span class="nt">kubernautAgent</span><span class="p">:</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">    </span><span class="nt">llmProfileRef</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">primary</span>
+</span></code></pre></div>
+<p><code>phaseModels</code> values are plain profile names (strings), not inline override objects — each referenced profile may use its own provider/model/credentials independently of <code>llmProfileRef</code>'s profile. See <a href="../../user-guide/configmap-kubernaut-agent/#per-phase-llm-routing-v151">Per-phase LLM routing</a> for usage details and YAML examples.</p>
 <h3 id="interactivespec">InteractiveSpec (v1.5.1)<a class="headerlink" href="#interactivespec" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -4258,6 +4251,13 @@
 <td>Deploy the API Frontend. Set <code>false</code> to skip all AF resources</td>
 </tr>
 <tr>
+<td><code>llmProfileRef</code></td>
+<td>string</td>
+<td>no</td>
+<td>—</td>
+<td>Name of a profile in <code>spec.llmProfiles</code> for AF's own agent LLM connection. When empty, falls back to <code>kubernautAgent.llmProfileRef</code>'s resolved profile</td>
+</tr>
+<tr>
 <td><code>auth</code></td>
 <td><a href="#apifrontendauthspec">APIFrontendAuthSpec</a></td>
 <td>no</td>
@@ -4498,30 +4498,30 @@
 </tbody>
 </table>
 <p><strong>Example (built-in personas only):</strong></p>
-<div class="language-yaml highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">spec</span><span class="p">:</span>
-</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
-</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
-</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;sre-team&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;platform-eng&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
-</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;monitoring-team&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
-</span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-mgmt&quot;</span><span class="p p-Indicator">]</span>
-</span></code></pre></div>
-<p><strong>Example (mixed — built-in + custom ClusterRoles):</strong></p>
 <div class="language-yaml highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nt">spec</span><span class="p">:</span>
 </span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
 </span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
 </span><span id="__span-1-4"><a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
-</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="c1"># Built-in persona: operator manages the ClusterRole</span>
-</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
-</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">        </span><span class="c1"># User-managed ClusterRole: operator creates only the CRB</span>
-</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
-</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
-</span><span id="__span-1-11"><a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
-</span><span id="__span-1-12"><a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;compliance-team&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-5"><a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-1-6"><a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;sre-team&quot;</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="s">&quot;platform-eng&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-7"><a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">observability</span>
+</span><span id="__span-1-8"><a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;monitoring-team&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-1-9"><a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">remediation-approver</span>
+</span><span id="__span-1-10"><a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;change-mgmt&quot;</span><span class="p p-Indicator">]</span>
+</span></code></pre></div>
+<p><strong>Example (mixed — built-in + custom ClusterRoles):</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="nt">spec</span><span class="p">:</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="w">  </span><span class="nt">apiFrontend</span><span class="p">:</span>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="w">    </span><span class="nt">rbac</span><span class="p">:</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="w">      </span><span class="nt">roleBindings</span><span class="p">:</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="w">        </span><span class="c1"># Built-in persona: operator manages the ClusterRole</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">role</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sre</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;senior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="w">        </span><span class="c1"># User-managed ClusterRole: operator creates only the CRB</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-restricted-investigator</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;junior-sres&quot;</span><span class="p p-Indicator">]</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="w">        </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">clusterRoleName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernaut-readonly-audit</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="w">          </span><span class="nt">groups</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="s">&quot;compliance-team&quot;</span><span class="p p-Indicator">]</span>
 </span></code></pre></div>
 <p>See <a href="../../architecture/security-rbac/#custom-clusterroles">Custom ClusterRoles</a> for how to create user-managed ClusterRoles with fine-grained tool subsets.</p>
 <h3 id="apifrontendratelimitspec">APIFrontendRateLimitSpec<a class="headerlink" href="#apifrontendratelimitspec" title="Permanent link">&para;</a></h3>

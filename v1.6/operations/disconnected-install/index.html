@@ -3398,10 +3398,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#cr-fields-speckubernautagentllm" class="md-nav__link">
+  <a href="#cr-fields-specllmprofilesname-referenced-by-speckubernautagentllmprofileref" class="md-nav__link">
     <span class="md-ellipsis">
       
-        CR Fields (spec.kubernautAgent.llm)
+        CR Fields (spec.llmProfiles[&lt;name&gt;], referenced by spec.kubernautAgent.llmProfileRef)
       
     </span>
   </a>
@@ -3420,10 +3420,10 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#oauth2-configuration-speckubernautagentllmoauth2" class="md-nav__link">
+  <a href="#oauth2-configuration-specllmprofilesnameoauth2" class="md-nav__link">
     <span class="md-ellipsis">
       
-        OAuth2 Configuration (spec.kubernautAgent.llm.oauth2)
+        OAuth2 Configuration (spec.llmProfiles[&lt;name&gt;].oauth2)
       
     </span>
   </a>
@@ -5492,7 +5492,7 @@
 <li><strong>Kubernaut Agent (KA)</strong> — the investigation/analysis engine. Supports 9 providers.</li>
 <li><strong>API Frontend (AF)</strong> — the MCP/A2A gateway. Supports 4 providers (subset of KA).</li>
 </ul>
-<p>The operator populates AF's LLM config from the same <code>spec.kubernautAgent.llm</code> CR fields. There is no separate AF LLM section in the CR.</p>
+<p>By default, AF's LLM config resolves from the same profile as KA (<code>spec.kubernautAgent.llmProfileRef</code>). Set <code>spec.apiFrontend.llmProfileRef</code> to point AF at a different profile in <code>spec.llmProfiles</code> when it needs distinct credentials or a different provider than KA.</p>
 <h3 id="supported-providers">Supported Providers<a class="headerlink" href="#supported-providers" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -5581,7 +5581,7 @@
 <p class="admonition-title"><code>vertex</code> vs <code>vertex_ai</code></p>
 <p><code>vertex</code> = Gemini models on Vertex AI (LangChainGo); <code>vertex_ai</code> = Claude models on Vertex AI (Anthropic SDK). These are different code paths.</p>
 </div>
-<h3 id="cr-fields-speckubernautagentllm">CR Fields (<code>spec.kubernautAgent.llm</code>)<a class="headerlink" href="#cr-fields-speckubernautagentllm" title="Permanent link">&para;</a></h3>
+<h3 id="cr-fields-specllmprofilesname-referenced-by-speckubernautagentllmprofileref">CR Fields (<code>spec.llmProfiles[&lt;name&gt;]</code>, referenced by <code>spec.kubernautAgent.llmProfileRef</code>)<a class="headerlink" href="#cr-fields-specllmprofilesname-referenced-by-speckubernautagentllmprofileref" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
 <tr>
@@ -5684,15 +5684,9 @@
 <td>disabled</td>
 <td>OAuth2 client credentials auth (see below)</td>
 </tr>
-<tr>
-<td><code>runtimeConfigMapName</code></td>
-<td>string</td>
-<td>No</td>
-<td>—</td>
-<td>Name of a pre-existing ConfigMap for hot-reloadable runtime config</td>
-</tr>
 </tbody>
 </table>
+<p><code>spec.kubernautAgent.runtimeConfigMapName</code> (a sibling of <code>llmProfileRef</code>, not a profile field) names a pre-existing ConfigMap for hot-reloadable runtime config.</p>
 <h3 id="credential-secret-format">Credential Secret Format<a class="headerlink" href="#credential-secret-format" title="Permanent link">&para;</a></h3>
 <table>
 <thead>
@@ -5745,7 +5739,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="oauth2-configuration-speckubernautagentllmoauth2">OAuth2 Configuration (<code>spec.kubernautAgent.llm.oauth2</code>)<a class="headerlink" href="#oauth2-configuration-speckubernautagentllmoauth2" title="Permanent link">&para;</a></h3>
+<h3 id="oauth2-configuration-specllmprofilesnameoauth2">OAuth2 Configuration (<code>spec.llmProfiles[&lt;name&gt;].oauth2</code>)<a class="headerlink" href="#oauth2-configuration-specllmprofilesnameoauth2" title="Permanent link">&para;</a></h3>
 <p>For LLM endpoints behind OAuth2 (client credentials grant):</p>
 <table>
 <thead>

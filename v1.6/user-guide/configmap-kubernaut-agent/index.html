@@ -3540,7 +3540,7 @@
 </span></code></pre></div>
 <div class="admonition info">
 <p class="admonition-title">Operator: BYO runtime ConfigMap</p>
-<p>When deploying via the Kubernaut Operator, set <code>spec.kubernautAgent.llm.runtimeConfigMapName</code> to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.</p>
+<p>When deploying via the Kubernaut Operator, set <code>spec.kubernautAgent.runtimeConfigMapName</code> to point to a ConfigMap you manage. The operator mounts it as the hot-reloadable config, so changes take effect without pod restart. The static ConfigMap is managed by the operator and should not be edited directly.</p>
 </div>
 <h3 id="per-phase-llm-routing-v151">Per-phase LLM routing (v1.5.1)<a class="headerlink" href="#per-phase-llm-routing-v151" title="Permanent link">&para;</a></h3>
 <p>The <code>phaseModels</code> map in the <code>kubernaut-agent-llm-runtime</code> ConfigMap allows configuring different LLM models for each phase of the investigation pipeline. This is useful for routing expensive reasoning models to RCA while using faster/cheaper models for workflow selection or validation.</p>
@@ -3620,9 +3620,9 @@
 <p><strong>Hot-reloadable</strong>: yes — changes to the <code>kubernaut-agent-llm-runtime</code> ConfigMap take effect via FileWatcher without pod restart.</p>
 <p><strong>Configuration paths</strong>:</p>
 <ul>
-<li><strong>Operator CR</strong>: <code>spec.kubernautAgent.llm.phaseModels</code> (map with CEL validation)</li>
-<li><strong>Direct ConfigMap patch</strong>: add <code>phaseModels:</code> key to the <code>kubernaut-agent-llm-runtime</code> ConfigMap</li>
-<li><strong>Helm chart</strong>: not yet exposed as a value key</li>
+<li><strong>Operator CR</strong>: <code>spec.kubernautAgent.phaseModels</code> — a map of phase name to a <strong>profile name</strong> defined in <code>spec.llmProfiles</code> (CEL-validated keys), not an inline override object. The operator resolves the named profile and renders it into the ConfigMap's override-object shape shown above.</li>
+<li><strong>Direct ConfigMap patch</strong>: add <code>phaseModels:</code> key to the <code>kubernaut-agent-llm-runtime</code> ConfigMap using the inline override-object shape directly</li>
+<li><strong>Helm chart</strong>: <code>kubernautAgent.phaseModels</code> — same profile-name-map shape as the operator CR, referencing <code>global.llmProfiles</code> (DD-PLATFORM-007)</li>
 </ul>
 <details class="example">
 <summary>phaseModels in kubernaut-agent-llm-runtime ConfigMap</summary>

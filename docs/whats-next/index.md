@@ -25,29 +25,16 @@ Rancher and Clusterpedia as additional pluggable scope backends alongside the FM
 
 ## Future
 
-### Custom Agent Injection
+### Pluggable Investigation Agent Harness
 
-Pluggable investigation and remediation agents via the **AgenticWorkflow CRD**, enabling operators to inject domain-specific automation into the Kubernaut pipeline ([#1242](https://github.com/jordigilh/kubernaut/issues/1242), [#883](https://github.com/jordigilh/kubernaut/issues/883), [#711](https://github.com/jordigilh/kubernaut/issues/711)).
+!!! info "Evolves the earlier Custom Agent Injection concept"
+    The three-injection-point structure below is unchanged, but the mechanism behind the first two points has changed: **Pre-Investigation** and **Pre-Workflow Selection** move from declarative Goose-recipe context injection to hosting fully pluggable custom agents. **EM Direct Execution** (effectiveness probes) is unaffected and remains Goose-recipe-based.
 
-SREs define reusable agentic workflows as declarative [Goose recipes](https://block.github.io/goose/docs/guides/recipes/) — YAML-based configurations that package instructions, MCP extensions, and parameters into shareable, reproducible agent behaviors. Kubernaut injects them at three pipeline points via the Goose runtime, each calling external MCP tools. Each injection point accepts multiple stacked recipes.
+Kubernaut Agent's investigation loop (RCA and workflow discovery) is currently a bespoke Go implementation (`internal/kubernautagent/investigator/`). [Issue #1740](https://github.com/jordigilh/kubernaut/issues/1740) and its accompanying [PR #1742](https://github.com/jordigilh/kubernaut/pull/1742) propose making this harness **pluggable**: Kubernaut defines the contract (inputs, tools, output schema, audit hooks), and operators choose the runtime — the current Go agent remains the default. A validated spike using a NousResearch Hermes-based harness correctly identified root cause and prior revision history on a real OpenShift cluster, with no hallucination, in 74 seconds. This proposal is in draft, pending maintainer review — not yet approved.
 
-<div style="max-width:100%;overflow-x:auto;margin:1rem 0">
-<img src="../assets/images/recipe-injection.svg" alt="Declarative Recipes — 3 pipeline injection points" style="width:100%">
-</div>
+This pluggability is what lets the **Pre-Investigation** and **Pre-Workflow Selection** injection points host fully custom investigation and workflow-discovery agents, rather than recipe-driven context injection into one generalist agent. It's also the architectural prerequisite for a further step: **[signal-type-to-agent dispatch](https://github.com/jordigilh/kubernaut/issues/2266)** — routing each investigation to a dedicated agent instance selected by its signal type or pillar. This is what would let Kubernaut's already-proposed multi-pillar vision — [Threat Remediation](https://github.com/jordigilh/kubernaut/issues/554), Cost Optimization (#555), and [Compliance Continuous Remediation](https://github.com/jordigilh/kubernaut/issues/669) — plug in a domain-tuned investigation agent per pillar (e.g., a Falco/Trivy-aware agent for threat signals) instead of forcing every signal type through one RCA loop, extending Kubernaut past Kubernetes alerts.
 
-#### Injection 1: Pre-Investigation (Kubernaut Agent)
-
-Context injected into the LLM prompt before analysis begins.
-
-**Example: `check-maintenance-window`** — Calls a CMDB MCP server to check if the resource is in a maintenance window or had recent deployments. The result is injected into the investigation context before the LLM starts. If under maintenance, alerting is skipped and the RCA is annotated as expected downtime.
-
-#### Injection 2: Pre-Workflow Selection (Kubernaut Agent)
-
-Constraints injected to bias workflow choice.
-
-**Example: `enforce-cost-guardrails`** — Calls a Cost/Resource MCP for budget utilization and scaling limits for the namespace. Returns constraints such as "do not select scale-up workflows", nudging the LLM toward restart/rollback over resource-intensive remediations.
-
-#### Injection 3: EM Direct Execution (via Goose)
+#### Injection 3: EM Direct Execution (via Goose) — unchanged
 
 Recipe runs via Kubernaut Agent endpoint at effectiveness assessment time.
 

@@ -22,7 +22,7 @@ Kubernaut sends notifications at key points in the remediation lifecycle: when h
 | Webhook | Schema-defined | Not yet implemented |
 
 !!! tip "Workflow name enrichment"
-    Notification bodies automatically resolve workflow UUIDs to human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID) when the workflow exists in the catalog. If resolution fails, the original UUID is preserved. See [Architecture: Notification Enrichment](../architecture/notification.md#notification-enrichment) for details.
+    Notification bodies automatically replace workflow UUIDs with human-readable workflow names (e.g., "RollbackDeployment" instead of a UUID). As of v1.6, the name is precomputed by the Remediation Orchestrator at workflow-selection time and carried on the notification -- no live catalog lookup, no failure mode. If the name is ever absent, the original UUID is preserved. See [Architecture: Notification Enrichment](../architecture/notification.md#notification-enrichment) for details.
 
 ## Routing Configuration
 

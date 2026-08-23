@@ -243,6 +243,7 @@ The API Frontend ServiceAccount requires:
 | apiGroup | Resources | Verbs | Purpose |
 |---|---|---|---|
 | `kubernaut.ai` | `investigationsessions`, `investigationsessions/status` | get, list, watch, create, update, patch, delete | Session CRD management |
+| `kubernaut.ai` | `agentsessions` (v1.6+) | get, list, watch, update, patch | `AwaitAgentSessionInteractive` (DD-AA-KA-001 Amendment Gap 1, #2172) watches KA's ack signal; `update`/`patch` are metadata-only, used by `AgentSessionTerminalCloseReconciler` to add/remove its own finalizer (#2214, #2222). **No `agentsessions/status` grant** — AF never writes `Status`, only KA does (BR-AA-KA-065.9). |
 | `kubernaut.ai` | `remediationrequests` | get, list, watch, create, update, patch | RR lifecycle for MCP/A2A sessions |
 | `kubernaut.ai` | `remediationapprovalrequests`, `remediationapprovalrequests/status` | get, list, create, update, patch | Approval request access |
 | `authorization.k8s.io` | `subjectaccessreviews` | create | SAR-based tool authorization |
@@ -550,7 +551,7 @@ The following tool names can be used in `resourceNames` when authoring custom Cl
 | `kubernaut_discover_workflows` | Discover available workflows for a remediation |
 | `kubernaut_select_workflow` | Select a workflow for execution |
 | `kubernaut_present_decision` | Present investigation results for a decision |
-| `kubernaut_list_workflows` | List available workflows from the catalog |
+| `kubernaut_list_workflows` | List available workflows from the catalog (v1.6+: dispatched to Kubernaut Agent's in-memory catalog, not DataStorage; DD-WORKFLOW-019) |
 | `kubernaut_list_alerts` | Query firing Prometheus alerts (conditional) |
 | `kubernaut_get_remediation_history` | Query historical remediations |
 | `kubernaut_get_effectiveness` | Get effectiveness scores for workflows |

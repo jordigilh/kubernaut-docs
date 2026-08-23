@@ -137,13 +137,13 @@ All 11 Go services (`cmd/*/main.go`: Gateway, Signal Processing, AI Analysis, Re
 | **Gateway** | `gateway.*` | `signal.received`, `signal.deduplicated`, `crd.created`, `crd.failed` |
 | **Signal Processing** | `signalprocessing.*` | `enrichment.completed`, `classification.completed`, `phase.transition` |
 | **AI Analysis** | `aianalysis.*` | `investigation.submitted`, `analysis.completed`, `rego.evaluation`, `approval.decision` |
-| **Kubernaut Agent** | `aiagent.*` | `enrichment.completed`, `enrichment.failed` |
+| **Kubernaut Agent** | `aiagent.*`, `workflow.catalog.*` (v1.6+) | `enrichment.completed`, `enrichment.failed`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
 | **Remediation Orchestrator** | `orchestrator.*` | `lifecycle.created`, `phase.transition`, `child.created`, `timeout` |
 | **Workflow Execution** | `workflowexecution.*` | `selection.completed`, `execution.started`, `execution.completed`, `block.cleared` |
 | **Notification** | `notification.*` | `message.sent`, `message.failed`, `message.acknowledged`, `message.escalated` |
 | **Effectiveness Monitor** | `effectiveness.*` | `health.assessed`, `hash.computed`, `alert.assessed`, `metrics.assessed`, `assessment.completed` |
 | **Auth Webhook** | `webhook.*`, `remediationworkflow.*`, `actiontype.*` | `remediationapprovalrequest.decided`, `remediationrequest.timeout_modified`, `notification.cancelled`, `remediationworkflow.admitted.create`, `remediationworkflow.admitted.delete`, `remediationworkflow.admitted.denied`, `actiontype.admitted.create`, `actiontype.admitted.update`, `actiontype.admitted.delete`, `actiontype.denied.create`, `actiontype.denied.update`, `actiontype.denied.delete` |
-| **DataStorage** | `datastorage.*`, `workflow.catalog.*` | `workflow.created`, `workflow.updated`, `actiontype.created`, `actiontype.updated`, `actiontype.disabled`, `actiontype.reenabled`, `actiontype.disable_denied`, `workflow.catalog.actions_listed`, `workflow.catalog.workflows_listed`, `workflow.catalog.workflow_retrieved`, `workflow.catalog.selection_validated` |
+| **DataStorage** | `datastorage.*` | `datastorage.ratelimit.denied` (per-IP HTTP rate limiting, pre-auth). As of v1.6 (DD-WORKFLOW-018/019), this is the only audit event DataStorage's production code emits — its former `workflow.*`/`actiontype.*`/`workflow.catalog.*` events were retired when the underlying tables were dropped; those responsibilities moved to the Auth Webhook (`remediationworkflow.admitted.*`, `actiontype.admitted.*`, above) and Kubernaut Agent (`workflow.catalog.*`, above). |
 | **API Frontend** | `apifrontend.*` | `rr.created`, `rr.deduplicated`, `ka.delegated`, `ka.result_received`, `user.decision`, `severity_triage.completed`, `severity_triage.failed`, `session.completed`, `jwt.delegation`, `mcp.session_init`, `circuitbreaker.trip`, `triage.started`, `triage.completed` |
 
 ## Operator Attribution

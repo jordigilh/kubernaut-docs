@@ -9,51 +9,55 @@ The AI Analysis service performs root cause investigation using an LLM (via Kube
 
 ```mermaid
 graph TB
-    AA[AI Analysis<br/>Controller] -->|session submit| KA[Kubernaut Agent]
-    AA -->|session poll| KA
-    AA -->|session result| KA
-    KA -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI</small>]
-    KA -->|workflow query| DS[DataStorage]
+    AA[AI Analysis<br/>Controller] -->|"1. submit<br/>202 + session_id"| KA[Kubernaut Agent]
+    AA -->|"2. watch AgentSession<br/>+ deadline backstop"| AS[AgentSession CRD]
+    KA -->|owns / writes status| AS
+    AA -->|"3. fetch result<br/>(once completed)"| KA
+    KA -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI / Anthropic / ...</small>]
+    KA -->|"workflow discovery<br/>(in-memory catalog, v1.6+)"| CRDs[RemediationWorkflow /<br/>ActionType CRDs]
     AA -->|Rego eval| REGO[Approval Policy]
-    AA -->|audit| DS
+    AA -->|audit| DS[DataStorage]
 ```
 
-## Session-Based Async Pattern
+## AgentSession-Based Async Pattern
 
-The AI Analysis controller communicates with Kubernaut Agent using a **session-based asynchronous** pattern (BR-AA-HAPI-064):
+The AI Analysis controller communicates with Kubernaut Agent using an **`AgentSession` CRD-based asynchronous** pattern (DD-AA-KA-001, v1.6+; supersedes the pre-v1.6 HTTP polling loop from BR-AA-HAPI-064).
 
 ### Flow
 
-1. **Submit** — `POST /api/v1/incident/analyze` → `202 Accepted` + `session_id`
-2. **Poll** — `GET /api/v1/incident/session/{session_id}` → status (`pending`, `investigating`, `completed`, `failed`)
-3. **Result** — `GET /api/v1/incident/session/{session_id}/result` → full analysis
+1. **Submit** — `POST /api/v1/incident/analyze` → `202 Accepted` + `session_id`. Kubernaut Agent creates and owns the `AgentSession` CRD for this session.
+2. **Watch** — The controller watches the `AgentSession` CRD for completion, backstopped by a deadline-driven requeue (#2204) that catches a hung KA rather than relying on the watch alone.
+3. **Result** — Once `AgentSession.status` reports the session complete, `GET /api/v1/incident/session/{session_id}/result` fetches the full analysis exactly once (no polling loop).
 
 ```mermaid
 sequenceDiagram
     participant AA as AI Analysis Controller
+    participant AS as AgentSession CRD
     participant KA as Kubernaut Agent
     participant LLM as LLM Provider
 
     AA->>KA: POST /api/v1/incident/analyze
     KA-->>AA: 202 {session_id}
+    KA->>AS: Create AgentSession (owned by KA)
     Note over AA: Phase: Investigating
 
     KA->>LLM: Run investigation (kubectl access)
     LLM-->>KA: Analysis result
+    KA->>AS: Write status (session ID, phase, curated result)
 
-    AA->>KA: GET /session/{id}
-    KA-->>AA: {status: "completed"}
+    AA->>AS: Watch for completion<br/>(+ deadline backstop requeue)
+    AS-->>AA: status.phase = completed
 
     AA->>KA: GET /session/{id}/result
     KA-->>AA: IncidentResponse
     Note over AA: Phase: Analyzing
 ```
 
-This pattern avoids long HTTP timeouts and allows the controller to use Kubernetes-native requeue mechanisms (`RequeueAfter`) while the LLM investigation runs. The controller polls at a **constant 15-second interval** (configurable from 1s to 5m via the `kubernautAgent.sessionPollInterval` YAML config field).
+This pattern avoids long HTTP timeouts and polling overhead by using Kubernetes-native watches: the controller reacts to `AgentSession` status changes instead of polling KA on a fixed interval. The Investigating phase carries a wall-clock cap of 25 minutes (`DefaultMaxInvestigationDuration`); the deadline-driven backstop requeue ensures a hung KA (one that never updates `AgentSession.status`) still gets caught even if the watch itself is missed.
 
 ### Session Recovery
 
-If Kubernaut Agent restarts and returns `404` for a session, the controller regenerates the session (up to 5 attempts per BR-AA-HAPI-064.5/064.6).
+If the `AgentSession` reports `failed`/cancelled, or the 25-minute investigation cap is exceeded, the AIAnalysis transitions to `Failed`. See [AgentSession](../api-reference/crds.md#agentsession) for the full CRD reference.
 
 ## Timeout Configuration
 
@@ -84,7 +88,7 @@ Kubernaut Agent is a Go service that orchestrates LLM-driven investigation with 
 2. **Investigates using K8s tools** — Inspects pod logs, events, resource state via `kubectl`; optionally queries Prometheus for live metrics when enabled
 3. **Produces a root cause analysis** — Structured explanation of what went wrong
 4. **Resolves the target resource** — Calls `get_namespaced_resource_context` (or `get_cluster_resource_context` for cluster-scoped resources) to resolve the owner chain, compute a spec hash, fetch **remediation history** (past outcomes and effectiveness scores via internal DataStorage lookup), and detect **infrastructure labels** (GitOps, Helm, service mesh, HPA, PDB)
-5. **Discovers workflows via DataStorage** — The LLM uses a three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`. Signal context and detected labels are auto-injected as filters; DataStorage orders results by label-match scoring (scores not exposed to the LLM).
+5. **Discovers workflows via Kubernaut Agent's own catalog (v1.6+)** — The LLM uses a three-step protocol: `list_available_actions` → `list_workflows` → `get_workflow`, served from KA's in-memory, informer-cache-backed watch over the `RemediationWorkflow`/`ActionType` CRDs (no DataStorage round trip; DD-WORKFLOW-019). Signal context and detected labels are auto-injected as filters; the catalog orders results by label-match scoring (scores not exposed to the LLM).
 6. **LLM selects a workflow** — Based on workflow descriptions (`what`, `whenToUse`, `whenNotToUse`), detected infrastructure context, and remediation history
 7. **Returns `actionable` flag** — Indicates whether the investigation identified a concrete remediation action. Propagated to the `AIAnalysis` CRD status and used downstream for audit and decision filtering.
 

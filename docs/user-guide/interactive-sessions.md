@@ -132,13 +132,7 @@ Only `rr_id` and `workflow_id` are required. When `kind` is provided, enrichment
 
 ## SSE Streaming
 
-Real-time investigation output is available via the Kubernaut Agent's SSE endpoint:
-
-```
-GET /api/v1/incident/session/{session_id}/stream
-```
-
-The API Frontend subscribes to this stream and relays events to MCP clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.
+Real-time investigation output streams over the **MCP connection itself**, using the Streamable HTTP transport's `text/event-stream` response mode (`Accept: text/event-stream`) on Kubernaut Agent's `/api/v1/mcp` endpoint — there is no separate REST SSE endpoint (a pre-v1.6 `GET /api/v1/incident/session/{id}/stream` REST endpoint is no longer part of the API). The API Frontend subscribes to the same MCP stream and relays events to its own clients. Events include token-by-token LLM output, tool call notifications, and phase transitions.
 
 ## Session Management
 

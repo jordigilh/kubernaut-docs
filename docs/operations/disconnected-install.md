@@ -44,7 +44,7 @@ For reference, the full set (19 images) is:
 | **Operator** | `quay.io/kubernaut-ai/kubernaut-operator@sha256:...` | Controller manager binary |
 | **Operands** | | |
 | | `quay.io/kubernaut-ai/gateway` | Signal ingestion webhook |
-| | `quay.io/kubernaut-ai/datastorage` | Audit trail and workflow catalog persistence |
+| | `quay.io/kubernaut-ai/datastorage` | Audit trail and remediation history persistence |
 | | `quay.io/kubernaut-ai/aianalysis` | Root cause analysis controller |
 | | `quay.io/kubernaut-ai/signalprocessing` | Signal deduplication and enrichment |
 | | `quay.io/kubernaut-ai/remediationorchestrator` | Remediation workflow orchestration |

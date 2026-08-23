@@ -32,7 +32,7 @@ See [API Frontend Architecture: Session closure via AgentSession watch](../archi
 
 ### Workflow catalog moved from DataStorage to Kubernaut Agent's in-memory cache
 
-The Kubernaut Agent's workflow-discovery tools (`list_workflows`, `list_available_actions`) no longer call DataStorage's REST catalog endpoints at investigation time. KA now maintains its own **informer-cache-backed, in-memory workflow catalog**, replicating DataStorage's mandatory-filtering and semantic-scoring algorithm in Go. DataStorage's REST discovery endpoints remain available for non-KA callers, but are no longer on KA's investigation hot path — removing a network round-trip per discovery step.
+The Kubernaut Agent's workflow-discovery tools (`list_workflows`, `list_available_actions`) no longer call DataStorage's REST catalog endpoints at investigation time. KA now maintains its own **informer-cache-backed, in-memory workflow catalog**, replicating DataStorage's mandatory-filtering and semantic-scoring algorithm in Go. DataStorage's REST discovery endpoints are **retired outright** (DD-WORKFLOW-018/019), not merely bypassed — the `RemediationWorkflow`/`ActionType` CRDs are the sole source of truth for every caller now, removing a network round-trip per discovery step.
 
 See [Workflow Selection](../architecture/workflow-selection.md) and [Kubernaut Agent Investigation Pipeline](../architecture/kubernaut-agent-investigation.md) for the updated discovery flow.
 

@@ -139,7 +139,7 @@ Both modes use the same CRDs, audit events, and effectiveness assessments. Opera
 
 ## Communication Pattern
 
-All inter-service communication in the remediation pipeline uses **Kubernetes CRDs** -- including, as of v1.6, AI Analysis's dispatch to Kubernaut Agent, which moved from an HTTP submit/poll channel onto the `AgentSession` CRD (AA creates it once with an immutable spec; Kubernaut Agent is the exclusive writer of its status). The remaining HTTP exceptions are: all controllers emit audit events to DataStorage, WFE queries DataStorage for the workflow catalog, RO queries DataStorage for remediation history, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its MCP tools to multiple backends (K8s API, Kubernaut Agent MCP, DataStorage).
+All inter-service communication in the remediation pipeline uses **Kubernetes CRDs** -- including, as of v1.6, AI Analysis's dispatch to Kubernaut Agent, which moved from an HTTP submit/poll channel onto the `AgentSession` CRD (AA creates it once with an immutable spec; Kubernaut Agent is the exclusive writer of its status). The remaining HTTP exceptions are: all controllers emit audit events to DataStorage, WFE reads workflow/dependency details from the immutable `spec.workflowRef` snapshot rather than querying a catalog at all (v1.6), RO queries DataStorage for remediation history, EM queries AlertManager and Prometheus for effectiveness assessment, and the API Frontend dispatches its MCP tools to multiple backends (K8s API, Kubernaut Agent MCP, DataStorage).
 
 This architecture provides:
 

@@ -6,7 +6,7 @@ Workflow selection is the process of finding the best remediation workflow for a
     For the complete CRD specifications, see [RemediationWorkflow](../api-reference/crds.md#remediationworkflow) and [ActionType](../api-reference/crds.md#actiontype) in the API Reference.
 
 !!! info "v1.6: discovery moved in-process to Kubernaut Agent"
-    Through v1.5, all three discovery steps were served by DataStorage over REST, with KA acting as a thin proxy. **As of v1.6**, KA serves this protocol entirely from its own in-memory workflow catalog (`internal/kubernautagent/workflowcatalog`) -- an informer-cache-backed watch over the `RemediationWorkflow` and `ActionType` CRDs, no DataStorage round trip involved. KA's Go implementation is a faithful, verified port of DataStorage's Layer 1 filtering and Layer 2 `final_score` formula (same weights, same tie-break order), so filtering and ranking behavior described below is unchanged -- only where it executes changed. DataStorage's REST discovery endpoints (documented at the bottom of this page) remain in place for other callers (e.g. the console) but are no longer on KA's investigation critical path. The SQL shown in this page reflects DataStorage's own implementation, which KA's catalog logic mirrors in Go rather than calling.
+    Through v1.5, all three discovery steps were served by DataStorage over REST, with KA acting as a thin proxy. **As of v1.6** (DD-WORKFLOW-018/019), KA serves this protocol entirely from its own in-memory workflow catalog (`internal/kubernautagent/workflowcatalog`) -- an informer-cache-backed watch over the `RemediationWorkflow` and `ActionType` CRDs, no DataStorage round trip involved. KA's Go implementation is a faithful, verified port of DataStorage's Layer 1 filtering and Layer 2 `final_score` formula (same weights, same tie-break order), so filtering and ranking behavior described below is unchanged -- only where it executes changed. DataStorage's REST discovery endpoints (documented at the bottom of this page for historical reference) are **retired outright**, not merely bypassed -- there is no REST path left for this protocol at all, for KA or any other caller. The SQL shown in this page reflects DataStorage's pre-v1.6 implementation, which KA's catalog logic reproduces in Go.
 
 ## Three-Step Discovery Protocol
 
@@ -37,8 +37,8 @@ sequenceDiagram
 The LLM calls `list_available_actions()` to discover what types of remediations are available. KA filters its in-memory catalog (mirroring the `action_type_taxonomy` semantics below) to only include types that have at least one active workflow matching the signal context.
 
 ```sql
--- DataStorage's REST equivalent of the same query (GET /api/v1/workflows/actions),
--- reproduced in Go against KA's own cache as of v1.6:
+-- DataStorage's pre-v1.6 REST equivalent of the same query (GET /api/v1/workflows/actions,
+-- now retired), reproduced in Go against KA's own cache as of v1.6:
 SELECT t.action_type, t.description, COUNT(w.workflow_id) AS workflow_count
 FROM action_type_taxonomy t
 INNER JOIN remediation_workflow_catalog w ON w.action_type = t.action_type
@@ -235,18 +235,19 @@ After selection, the confidence score determines the next step:
 
 ## API Endpoints
 
-These DataStorage REST endpoints remain available for non-KA callers (e.g. the console). **As of v1.6, Kubernaut Agent's own investigation-time discovery (Steps 1-3 above) no longer calls them** -- it serves the same logic from its in-memory catalog instead.
+!!! warning "v1.6: these DataStorage REST endpoints are retired, not just unused by KA"
+    Through v1.5, the endpoints below were served by DataStorage for both Kubernaut Agent and other callers (e.g. the console). **As of v1.6** (DD-WORKFLOW-018/019), they are gone entirely -- confirmed against DataStorage's route table, which has no registration for any `/api/v1/workflows*` or `/api/v1/action-types*` path. There is no REST equivalent of Steps 1-3 anymore for any caller: Kubernaut Agent serves discovery from its in-memory catalog (as described above), and any other caller (including the console) must read the `RemediationWorkflow`/`ActionType` CRDs directly via the Kubernetes API.
 
-| Endpoint | Method | Purpose |
+| Endpoint (retired in v1.6) | Method | Purpose (pre-v1.6) |
 |---|---|---|
-| `GET /api/v1/workflows/actions` | GET | Step 1 (pre-v1.6 KA path; still used by other callers): List action types with counts |
-| `GET /api/v1/workflows/actions/{action_type}` | GET | Step 2 (pre-v1.6 KA path; still used by other callers): Scored candidates for action type |
-| `GET /api/v1/workflows/{workflow_id}` | GET | Step 3 (pre-v1.6 KA path; still used by other callers): Full schema with security gate |
-| `GET /api/v1/workflows` | GET | Catalog listing (no scoring) |
-| `POST /api/v1/workflows` | POST | Register workflow catalog entry (Auth Webhook/CRD admission path) |
-| `PATCH /api/v1/workflows/{id}/disable` | PATCH | Disable workflow |
-| `PATCH /api/v1/workflows/{id}/enable` | PATCH | Enable workflow |
-| `PATCH /api/v1/workflows/{id}/deprecate` | PATCH | Deprecate workflow |
+| `/api/v1/workflows/actions` | GET | Step 1: List action types with counts |
+| `/api/v1/workflows/actions/{action_type}` | GET | Step 2: Scored candidates for action type |
+| `/api/v1/workflows/{workflow_id}` | GET | Step 3: Full schema with security gate |
+| `/api/v1/workflows` | GET | Catalog listing (no scoring) |
+| `/api/v1/workflows` | POST | Register workflow catalog entry |
+| `/api/v1/workflows/{id}/disable` | PATCH | Disable workflow |
+| `/api/v1/workflows/{id}/enable` | PATCH | Enable workflow |
+| `/api/v1/workflows/{id}/deprecate` | PATCH | Deprecate workflow |
 
 ## Next Steps
 

@@ -69,7 +69,7 @@ Each service has a single responsibility:
 | **Workflow Execution** | Dependency resolution, Job/Tekton execution, cooldown, deterministic locking | [Workflow Execution](workflow-execution.md) |
 | **Notification** | Multi-channel delivery with routing, retry, circuit breaker | [Notification Pipeline](notification.md) |
 | **Effectiveness Monitor** | Post-remediation health, alert, metrics, and spec hash assessment | [Effectiveness Assessment](effectiveness.md) |
-| **DataStorage** | Persistent storage (audit, workflow catalog, remediation history, effectiveness), workflow scoring | [Data Persistence](data-persistence.md) |
+| **DataStorage** | Persistent storage (audit events, remediation history, effectiveness). The workflow catalog and its scoring moved to Kubernaut Agent's in-memory cache in v1.6 (DD-WORKFLOW-019). | [Data Persistence](data-persistence.md) |
 | **API Frontend** | MCP/A2A/REST gateway, SAR-based tool authorization, session management (v1.5+) | [API Frontend](apifrontend.md) |
 
 ## Service Topology

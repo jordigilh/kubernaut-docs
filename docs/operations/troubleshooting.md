@@ -152,8 +152,9 @@ AI Analysis completes but no workflow is selected.
 **Check**:
 
 ```bash
-# List available workflows
-curl https://data-storage-service.kubernaut-system.svc.cluster.local:8080/api/v1/workflows
+# List available workflows and their labels directly from the CRDs
+# (as of v1.6, this is the catalog — there is no DataStorage REST equivalent, see DD-WORKFLOW-018/019)
+kubectl get remediationworkflow -A -o custom-columns='NAME:.metadata.name,ACTION:.spec.actionType,ENV:.spec.labels.environment,CLUSTER:.spec.labels.cluster,STATUS:.status.catalogStatus'
 
 # Check AI analysis results — selected workflow, phase, and human review reason
 kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.phase}{"\n"}{.status.selectedWorkflow}{"\n"}{.status.humanReviewReason}{"\n"}'
@@ -162,7 +163,7 @@ kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.phase}{"
 kubectl get aianalysis <name> -n kubernaut-system -o jsonpath='{.status.rootCauseAnalysis}'
 ```
 
-**Common causes**: No workflow registered for this alert type, label mismatch, DataStorage not running.
+**Common causes**: No workflow registered for this alert type, label mismatch (including the [Fleet `cluster` label](../user-guide/workflow-authoring.md)), Kubernaut Agent not running or its catalog not yet synced.
 
 ## Notification Not Delivered
 

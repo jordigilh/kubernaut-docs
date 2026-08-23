@@ -9,11 +9,11 @@ The AI Analysis service performs root cause investigation using an LLM (via Kube
 
 ```mermaid
 graph TB
-    AA[AI Analysis<br/>Controller] -->|"1. submit<br/>202 + session_id"| KA[Kubernaut Agent]
-    AA -->|"2. watch AgentSession<br/>+ deadline backstop"| AS[AgentSession CRD]
-    KA -->|owns / writes status| AS
-    AA -->|"3. fetch result<br/>(once completed)"| KA
-    KA -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI / Anthropic / ...</small>]
+    AA[AI Analysis<br/>Controller] -->|"1. create"| AS[AgentSession CRD]
+    KA[Kubernaut Agent] -->|"2. watch + dispatch<br/>(per-object Lease)"| AS
+    KA -->|"3. exclusive writer<br/>of status"| AS
+    AA -->|"4. watch<br/>+ deadline backstop"| AS
+    KA -->|LLM call| LLM[LLM Provider<br/><small>Vertex AI / OpenAI / Anthropic / Gemini / ...</small>]
     KA -->|"workflow discovery<br/>(in-memory catalog, v1.6+)"| CRDs[RemediationWorkflow /<br/>ActionType CRDs]
     AA -->|Rego eval| REGO[Approval Policy]
     AA -->|audit| DS[DataStorage]
@@ -21,43 +21,42 @@ graph TB
 
 ## AgentSession-Based Async Pattern
 
-The AI Analysis controller communicates with Kubernaut Agent using an **`AgentSession` CRD-based asynchronous** pattern (DD-AA-KA-001, v1.6+; supersedes the pre-v1.6 HTTP polling loop from BR-AA-HAPI-064).
+The AI Analysis controller communicates with Kubernaut Agent using the **`AgentSession` CRD** as a Kubernetes-native create/watch/status channel (DD-AA-KA-001, v1.6+) — **not HTTP**. This supersedes the pre-v1.6 HTTP submit/poll loop from BR-AA-HAPI-064, whose REST endpoints (`POST /api/v1/incident/analyze`, `GET .../session/{id}`, `GET .../result`) no longer exist on Kubernaut Agent at all as of v1.6 (confirmed against its route table).
 
 ### Flow
 
-1. **Submit** — `POST /api/v1/incident/analyze` → `202 Accepted` + `session_id`. Kubernaut Agent creates and owns the `AgentSession` CRD for this session.
-2. **Watch** — The controller watches the `AgentSession` CRD for completion, backstopped by a deadline-driven requeue (#2204) that catches a hung KA rather than relying on the watch alone.
-3. **Result** — Once `AgentSession.status` reports the session complete, `GET /api/v1/incident/session/{session_id}/result` fetches the full analysis exactly once (no polling loop).
+1. **Create** — The AI Analysis controller creates the `AgentSession` CRD directly (owned by the `AIAnalysis` CR), populating `spec` with the investigation request.
+2. **Dispatch** — Kubernaut Agent's own internal `controller-runtime` Reconciler watches for the Create event, acquires a per-object `Lease`, and dispatches the investigation exactly once.
+3. **Watch** — The controller watches the `AgentSession` CRD for completion, backstopped by a deadline-driven requeue (#2204) that catches a hung KA rather than relying on the watch alone.
+4. **Result** — Once `AgentSession.status.phase` reaches `Completed`, the curated result is already present on `status.result` — no separate fetch call is needed.
 
 ```mermaid
 sequenceDiagram
     participant AA as AI Analysis Controller
-    participant AS as AgentSession CRD
+    participant AS as AgentSession (etcd)
     participant KA as Kubernaut Agent
     participant LLM as LLM Provider
 
-    AA->>KA: POST /api/v1/incident/analyze
-    KA-->>AA: 202 {session_id}
-    KA->>AS: Create AgentSession (owned by KA)
+    AA->>AS: Create AgentSession (spec = investigation request)
     Note over AA: Phase: Investigating
 
+    KA->>AS: Watch Create event, acquire Lease, dispatch once
     KA->>LLM: Run investigation (kubectl access)
     LLM-->>KA: Analysis result
-    KA->>AS: Write status (session ID, phase, curated result)
+    KA->>AS: Write status.phase = Completed, status.result
 
     AA->>AS: Watch for completion<br/>(+ deadline backstop requeue)
-    AS-->>AA: status.phase = completed
-
-    AA->>KA: GET /session/{id}/result
-    KA-->>AA: IncidentResponse
+    AS-->>AA: status.phase = Completed (result already present)
     Note over AA: Phase: Analyzing
 ```
 
 This pattern avoids long HTTP timeouts and polling overhead by using Kubernetes-native watches: the controller reacts to `AgentSession` status changes instead of polling KA on a fixed interval. The Investigating phase carries a wall-clock cap of 25 minutes (`DefaultMaxInvestigationDuration`); the deadline-driven backstop requeue ensures a hung KA (one that never updates `AgentSession.status`) still gets caught even if the watch itself is missed.
 
+**Crash recovery** — If a Kubernaut Agent replica crashes mid-dispatch, its `Lease` expires and is reclaimed by another (or the restarted) replica, which redispatches the still-`Pending` `AgentSession`. This is more resilient than the pre-v1.6 model, where a lost in-memory session required the AI Analysis controller itself to regenerate it (up to 5 attempts).
+
 ### Session Recovery
 
-If the `AgentSession` reports `failed`/cancelled, or the 25-minute investigation cap is exceeded, the AIAnalysis transitions to `Failed`. See [AgentSession](../api-reference/crds.md#agentsession) for the full CRD reference.
+If the `AgentSession` reports `Failed`/`Cancelled`, or the 25-minute investigation cap is exceeded, the AIAnalysis transitions to `Failed`. See [AgentSession](../api-reference/crds.md#agentsession) for the full CRD reference.
 
 ## Timeout Configuration
 
@@ -75,7 +74,7 @@ If either timeout expires, the AIAnalysis transitions to `Failed`.
 | Phase | Description |
 |---|---|
 | `Pending` | CRD created by Orchestrator |
-| `Investigating` | Session submitted to Kubernaut Agent, polling for completion |
+| `Investigating` | `AgentSession` created, watching for completion (deadline-backstopped) |
 | `Analyzing` | Results received, evaluating Rego approval policy |
 | `Completed` | Analysis and approval decision recorded |
 | `Failed` | Investigation or analysis failed |

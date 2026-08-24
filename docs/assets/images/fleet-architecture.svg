@@ -105,38 +105,39 @@
   <text x="525" y="486" text-anchor="middle" font-size="20px" font-weight="800" fill="white">MCP Gateway</text>
   <text x="525" y="510" text-anchor="middle" font-size="11.5px" fill="#DDD6FE">Kuadrant MCP Gateway or Envoy AI Gateway · external infra, bring your own</text>
 
-  <!-- ═══════════ Remote Clusters container (full width) ═══════════ -->
-  <rect x="20" y="592" width="1360" height="160" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <!-- ═══════════ Remote Clusters container (matches Hub Cluster's width: x 20-1030) ═══════════ -->
+  <rect x="20" y="592" width="1010" height="160" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
   <rect x="40" y="576" width="180" height="32" rx="8" fill="#334155"/>
   <text x="130" y="597" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
 
-  <line x1="265" y1="532" x2="360" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="525" y1="532" x2="700" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="785" y1="532" x2="1040" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <!-- straight vertical drops: each card is centered directly under its MCP Gateway source point -->
+  <line x1="275" y1="532" x2="275" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="525" y1="532" x2="525" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="775" y1="532" x2="775" y2="616" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
 
   <!-- Cluster A -->
-  <g filter="url(#sh)"><rect x="265" y="616" width="190" height="126" rx="12" fill="white"/></g>
-  <rect x="338" y="628" width="44" height="44" rx="10" fill="#326CE5"/>
-  <use href="#k8sLogo" x="345" y="635" width="30" height="30"/>
-  <text x="360" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster A</text>
-  <rect x="295" y="702" width="130" height="22" rx="6" fill="#EEF2FF"/>
-  <text x="360" y="717" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
+  <g filter="url(#sh)"><rect x="180" y="616" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="253" y="628" width="44" height="44" rx="10" fill="#326CE5"/>
+  <use href="#k8sLogo" x="260" y="635" width="30" height="30"/>
+  <text x="275" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster A</text>
+  <rect x="210" y="702" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="275" y="717" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
 
   <!-- Cluster B -->
-  <g filter="url(#sh)"><rect x="605" y="616" width="190" height="126" rx="12" fill="white"/></g>
-  <rect x="678" y="628" width="44" height="44" rx="10" fill="#326CE5"/>
-  <use href="#k8sLogo" x="685" y="635" width="30" height="30"/>
-  <text x="700" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster B</text>
-  <rect x="635" y="702" width="130" height="22" rx="6" fill="#EEF2FF"/>
-  <text x="700" y="717" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
+  <g filter="url(#sh)"><rect x="430" y="616" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="503" y="628" width="44" height="44" rx="10" fill="#326CE5"/>
+  <use href="#k8sLogo" x="510" y="635" width="30" height="30"/>
+  <text x="525" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster B</text>
+  <rect x="460" y="702" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="525" y="717" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
 
   <!-- + more clusters (ghost, replaces a third named example - same pattern repeats at fleet scale) -->
-  <rect x="945" y="616" width="190" height="126" rx="12" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/>
-  <circle cx="1028" cy="662" r="3.2" fill="#94A3B8"/>
-  <circle cx="1040" cy="662" r="3.2" fill="#94A3B8"/>
-  <circle cx="1052" cy="662" r="3.2" fill="#94A3B8"/>
-  <text x="1040" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#64748B">100s more</text>
-  <text x="1040" y="709" text-anchor="middle" font-size="11px" fill="#94A3B8">same pattern</text>
+  <rect x="680" y="616" width="190" height="126" rx="12" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <circle cx="763" cy="662" r="3.2" fill="#94A3B8"/>
+  <circle cx="775" cy="662" r="3.2" fill="#94A3B8"/>
+  <circle cx="787" cy="662" r="3.2" fill="#94A3B8"/>
+  <text x="775" y="690" text-anchor="middle" font-size="13px" font-weight="700" fill="#64748B">100s more</text>
+  <text x="775" y="709" text-anchor="middle" font-size="11px" fill="#94A3B8">same pattern</text>
 
   <!-- ═══════════ Legend + note ═══════════ -->
   <g>

@@ -24,49 +24,44 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
 
     ```mermaid
     flowchart TB
-        subgraph Mgmt["Hub Cluster"]
-            Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
-            GW --> RO["Remediation<br/>Orchestrator"]
-            RO --> SP["Signal<br/>Processing"]
-            RO --> AA["AI Analysis"]
-            AA --> KA["Kubernaut Agent"]
-            RO --> WE["Workflow<br/>Execution"]
-            AF["API Frontend"] -->|creates RemediationRequest| RO
-            RO -->|creates EffectivenessAssessment| EM["Effectiveness<br/>Monitor"]
-            FMC["FMC<br/><small>Fleet Metadata Cache</small>"]
+        Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
+        AF["API Frontend"]
 
-            GW -.->|"scope check<br/>p95 &lt; 50ms"| FSC["FederatedScopeChecker"]
-            RO -.->|scope check| FSC
-            FSC -->|local| K8sAPI["local K8s API"]
-            FSC -->|remote| Backend["scope.ScopeChecker<br/>backend adapter"]
-            Backend --> Valkey[("Valkey<br/>(FMC default)")]
-            FMC -->|polls, writes| Valkey
-
-            GW -.->|read| GWY
-            KA -.->|read| GWY
-            RO -.->|read| GWY
-            SP -.->|read| GWY
-            AF -.->|read| GWY
-            EM -.->|read| GWY
-            FMC -.->|read: cluster registry| GWY
-            WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
-
-            IdP["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"]
-            GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
-            GWY -.->|validates token| IdP
+        subgraph Engine["Kubernaut Engine"]
+            direction LR
+            RO["Remediation<br/>Orchestrator"] --> SP["Signal<br/>Processing"]
+            SP --> AA["AI Analysis"] --> KA["Kubernaut Agent"]
+            AA --> WE["Workflow<br/>Execution"]
+            RO --> EM["Effectiveness<br/>Monitor"]
         end
 
-        GWY --> MCPa["K8s MCP Server<br/>Cluster A"]
-        GWY --> MCPb["K8s MCP Server<br/>Cluster B"]
-        GWY --> MCPc["K8s MCP Server<br/>Cluster C"]
+        GW -->|creates RemediationRequest| RO
+        AF -->|"creates +<br/>watches RemediationRequest"| RO
 
-        MCPa -.->|"requests token exchange<br/>RFC 8693"| IdP
-        MCPb -.->|"requests token exchange<br/>RFC 8693"| IdP
-        MCPc -.->|"requests token exchange<br/>RFC 8693"| IdP
+        subgraph ScopeBackend["Scope Check Backend"]
+            direction LR
+            FSC["FederatedScopeChecker"] -->|local| K8sAPI["local K8s API"]
+            FSC -->|remote| Backend["scope.ScopeChecker<br/>adapter (FMC / ACM / ...)"]
+            Backend --> Valkey[("Valkey<br/>(FMC default)")]
+            FMC["FMC<br/><small>Fleet Metadata Cache</small>"] -->|polls, writes| Valkey
+        end
 
-        MCPa --> ClusterA[("Cluster A")]
-        MCPb --> ClusterB[("Cluster B")]
-        MCPc --> ClusterC[("Cluster C")]
+        GW & RO -.->|scope check| FSC
+
+        IdP(["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"])
+        GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
+
+        Engine -.->|"read<br/>(6 services)"| GWY
+        WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
+        AF -.->|read| GWY
+        FMC -.->|"read:<br/>cluster registry"| GWY
+        GWY <-.->|validates token| IdP
+
+        GWY --> MCPa["K8s MCP Server<br/>Cluster A"] --> ClusterA[("Cluster A")]
+        GWY --> MCPb["K8s MCP Server<br/>Cluster B"] --> ClusterB[("Cluster B")]
+        GWY -.->|"same pattern,<br/>100s more clusters"| MCPc["..."]
+
+        MCPa -.->|"requests token exchange, RFC 8693<br/><small>(every cluster's MCP server does this independently)</small>"| IdP
     ```
 
     Two distinct OAuth2 interactions happen against the same IdP, and the Gateway is not involved in either: the MCP Gateway only **validates** the caller's client-credentials token at the edge. The actual **RFC 8693 Standard Token Exchange** is performed by the **OAuth2 Provider itself** -- it is the only party that holds both the caller's identity (the passthrough token it already issued) and the target audience's requirements (the client-scope/audience-mapper assignment for `kube-mcp-server`), so only it can validate the old token and mint the new one. Each remote cluster's `kube-mcp-server` merely **requests** this exchange (`POST .../protocol/openid-connect/token` with `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, per its `keycloak-v1` exchange strategy) and receives back a token newly scoped to its own Kubernetes API server.

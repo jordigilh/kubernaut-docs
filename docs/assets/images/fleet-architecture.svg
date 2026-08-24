@@ -81,11 +81,13 @@
   <line x1="121" y1="126" x2="204" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
   <text x="162" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">alerts</text>
 
-  <!-- entry arrows: Gateway and API Frontend both WRITE - they create RemediationRequest, not read -->
+  <!-- Gateway: fire-and-forget WRITE. Gateway is stateless with no ongoing reconciliation, so single-headed. -->
   <line x1="256" y1="126" x2="450" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
   <text x="353" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">creates RemediationRequest</text>
-  <line x1="929" y1="126" x2="730" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
-  <text x="830" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">creates RemediationRequest</text>
+  <!-- API Frontend: creates RemediationRequest AND watches AgentSession/status back to relay results to
+       its interactive session - a real round trip, so double-headed unlike Gateway's fire-and-forget write. -->
+  <line x1="929" y1="126" x2="730" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="830" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">creates + watches RemediationRequest</text>
 
   <!-- Scope Check (positioned so Gateway's and the Engine's check-arrows are equal length) -->
   <rect x="320" y="280" width="52" height="52" rx="12" fill="#0E7490"/>
@@ -102,17 +104,20 @@
   <text x="650" y="362" text-anchor="middle" font-size="10.5px" fill="#64748B">external IdP</text>
 
   <!-- scope-check: Gateway (entry, fail-fast) and the Engine (routing, temporal drift) each check independently, equal-length
-       orthogonal (vertical/horizontal only) elbow connectors, matching every other arrow in the diagram -->
-  <path d="M230,152 L230,240 L337,240 L337,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arc)"/>
-  <path d="M490,182 L490,240 L357,240 L357,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arc)"/>
+       orthogonal (vertical/horizontal only) elbow connectors, matching every other arrow in the diagram.
+       Double-headed: IsManagedResource(ctx, ResourceIdentity) is a synchronous call that returns a result. -->
+  <path d="M230,152 L230,240 L337,240 L337,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-start="url(#arc)" marker-end="url(#arc)"/>
+  <path d="M490,182 L490,240 L357,240 L357,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-start="url(#arc)" marker-end="url(#arc)"/>
 
-  <!-- client-credentials: engine -> OAuth2 (straight, unobstructed) -->
-  <line x1="650" y1="182" x2="650" y2="278" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-end="url(#ard)"/>
+  <!-- client-credentials: engine <-> OAuth2 (straight, unobstructed). Double-headed: token request/response round trip. -->
+  <line x1="650" y1="182" x2="650" y2="278" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-start="url(#ard)" marker-end="url(#ard)"/>
   <text x="660" y="222" font-size="10px" fill="#8B5CF6">client-credentials</text>
   <text x="660" y="235" font-size="10px" fill="#8B5CF6">(all 7 services)</text>
 
-  <!-- OAuth2 validates token: exits right edge, down to MCP Gateway -->
-  <path d="M676,306 L712,306 L712,452" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-end="url(#ard)"/>
+  <!-- OAuth2 <-> MCP Gateway: exits right edge, down to MCP Gateway. Double-headed: token presented, valid/invalid result returned.
+       Gateway only validates here - RFC 8693 token exchange happens in each remote cluster's kube-mcp-server, not the Gateway
+       (see the Mermaid flowchart and Component Responsibilities table below for that distinction). -->
+  <path d="M676,306 L712,306 L712,452" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-start="url(#ard)" marker-end="url(#ard)"/>
   <text x="718" y="380" font-size="10px" fill="#A78BFA">validates token</text>
 
   <!-- boundary arrows: Hub Cluster <-> MCP Gateway (straight, vertical). Double-headed: MCP tool calls are request/response, results flow back up. -->

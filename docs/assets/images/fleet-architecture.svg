@@ -1,166 +1,191 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 645" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
   <defs>
-    <filter id="sh" x="-2%" y="-4%" width="104%" height="112%">
-      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#000" flood-opacity="0.06"/>
+    <filter id="sh" x="-4%" y="-6%" width="108%" height="118%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.10"/>
     </filter>
     <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
       <polygon points="0,0 8,3 0,6" fill="#94A3B8"/>
     </marker>
+    <marker id="arw" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+      <polygon points="0,0 9,3.5 0,7" fill="#D97706"/>
+    </marker>
     <marker id="ard" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
-      <polygon points="0,0 8,3 0,6" fill="#CBD5E1"/>
+      <polygon points="0,0 8,3 0,6" fill="#A78BFA"/>
     </marker>
     <linearGradient id="gwGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#7C3AED"/>
       <stop offset="1" stop-color="#4C1D95"/>
     </linearGradient>
+    <symbol id="hexCluster" viewBox="0 0 48 48">
+      <polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="none" stroke="white" stroke-width="2.5"/>
+      <circle cx="24" cy="24" r="5" fill="white"/>
+    </symbol>
   </defs>
 
-  <rect x="0" y="0" width="1400" height="645" fill="white"/>
+  <rect x="0" y="0" width="1400" height="800" fill="white"/>
 
-  <!-- ═══════════ Row 1: Management-cluster services ═══════════ -->
+  <!-- ═══════════ Management Cluster container ═══════════ -->
+  <rect x="20" y="46" width="1010" height="440" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="30" width="204" height="32" rx="8" fill="#0F172A"/>
+  <text x="142" y="51" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">MANAGEMENT CLUSTER</text>
 
-  <!-- Card 1: Signal Entry -->
-  <g filter="url(#sh)"><rect x="20" y="20" width="440" height="170" rx="12" fill="white"/></g>
-  <rect x="20" y="20" width="440" height="42" rx="12" fill="#0891B2"/>
-  <rect x="20" y="50" width="440" height="12" fill="#0891B2"/>
-  <text x="44" y="48" font-size="17px" font-weight="700" fill="white">Signal Entry</text>
-  <text x="44" y="88" font-size="14px" fill="#374151">Thanos Querier — multi-cluster Prometheus</text>
-  <text x="44" y="112" font-size="14px" fill="#374151">Gateway extracts the <tspan font-weight="600">cluster</tspan> label per alert</text>
-  <text x="44" y="136" font-size="14px" fill="#374151">Cluster-aware fingerprinting (no cross-cluster dedup)</text>
-  <rect x="44" y="152" width="130" height="26" rx="7" fill="#F8FAFC"/>
-  <text x="109" y="169" text-anchor="middle" font-size="12px" font-weight="600" fill="#64748B">Gateway</text>
+  <!-- Node template: 52x52 icon badge, bold label below, optional gray subtitle -->
 
-  <!-- Card 2: Orchestration -->
-  <g filter="url(#sh)"><rect x="480" y="20" width="440" height="170" rx="12" fill="white"/></g>
-  <rect x="480" y="20" width="440" height="42" rx="12" fill="#0F172A"/>
-  <rect x="480" y="50" width="440" height="12" fill="#0F172A"/>
-  <text x="504" y="48" font-size="17px" font-weight="700" fill="white">Orchestration</text>
-  <text x="504" y="88" font-size="14px" fill="#374151">Remediation Orchestrator creates 6 child CRDs</text>
-  <text x="504" y="112" font-size="14px" fill="#374151">Routes: Signal Processing → AI Analysis → Execution</text>
-  <text x="504" y="136" font-size="14px" fill="#374151">Propagates <tspan font-weight="600">ClusterID</tspan> to every child CRD + audit event</text>
-  <rect x="504" y="152" width="220" height="26" rx="7" fill="#F8FAFC"/>
-  <text x="614" y="169" text-anchor="middle" font-size="12px" font-weight="600" fill="#64748B">Remediation Orchestrator</text>
+  <!-- Thanos -->
+  <rect x="66" y="90" width="52" height="52" rx="12" fill="#0E7490"/>
+  <rect x="80" y="112" width="6" height="18" fill="white"/>
+  <rect x="90" y="104" width="6" height="26" fill="white"/>
+  <rect x="100" y="116" width="6" height="14" fill="white"/>
+  <text x="92" y="158" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Thanos</text>
+  <text x="92" y="172" text-anchor="middle" font-size="10.5px" fill="#64748B">metrics</text>
 
-  <!-- Card 3: Fleet-aware roster (pills) -->
-  <g filter="url(#sh)"><rect x="940" y="20" width="440" height="170" rx="12" fill="white"/></g>
-  <rect x="940" y="20" width="440" height="42" rx="12" fill="#475569"/>
-  <rect x="940" y="50" width="440" height="12" fill="#475569"/>
-  <text x="964" y="48" font-size="17px" font-weight="700" fill="white">7 Fleet-Dependent Services</text>
+  <!-- Gateway -->
+  <rect x="196" y="90" width="52" height="52" rx="12" fill="#0891B2"/>
+  <path d="M212,104 L236,104 L226,122 L222,122 Z" fill="white"/>
+  <rect x="221" y="122" width="4" height="10" fill="white"/>
+  <text x="222" y="158" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Gateway</text>
+  <text x="222" y="172" text-anchor="middle" font-size="10.5px" fill="#64748B">ingest + dedup</text>
 
-  <!-- pill row 1 -->
-  <rect x="964" y="76" width="98" height="26" rx="13" fill="#0891B2"/>
-  <text x="1013" y="93" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">Gateway</text>
-  <rect x="1072" y="76" width="98" height="26" rx="13" fill="#0F172A"/>
-  <text x="1121" y="93" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">Orchestrator</text>
-  <rect x="1180" y="76" width="98" height="26" rx="13" fill="#0891B2"/>
-  <text x="1229" y="93" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">Signal Proc.</text>
-  <rect x="1288" y="76" width="72" height="26" rx="13" fill="#6366F1"/>
-  <text x="1324" y="93" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">AI + KA</text>
+  <!-- Remediation Orchestrator (hub, bigger) -->
+  <rect x="360" y="80" width="68" height="68" rx="14" fill="#0F172A"/>
+  <circle cx="394" cy="114" r="5" fill="white"/>
+  <circle cx="378" cy="98" r="3.4" fill="#94A3B8"/>
+  <circle cx="410" cy="98" r="3.4" fill="#94A3B8"/>
+  <circle cx="394" cy="132" r="3.4" fill="#94A3B8"/>
+  <line x1="394" y1="114" x2="378" y2="98" stroke="#94A3B8" stroke-width="1.6"/>
+  <line x1="394" y1="114" x2="410" y2="98" stroke="#94A3B8" stroke-width="1.6"/>
+  <line x1="394" y1="114" x2="394" y2="132" stroke="#94A3B8" stroke-width="1.6"/>
+  <text x="394" y="172" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Orchestrator</text>
+  <text x="394" y="186" text-anchor="middle" font-size="10.5px" fill="#64748B">6 child CRDs · ClusterID</text>
 
-  <!-- pill row 2 -->
-  <rect x="964" y="110" width="130" height="26" rx="13" fill="#D97706"/>
-  <text x="1029" y="127" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">Workflow Exec.</text>
-  <rect x="1102" y="110" width="118" height="26" rx="13" fill="#64748B"/>
-  <text x="1161" y="127" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">API Frontend</text>
-  <rect x="1228" y="110" width="132" height="26" rx="13" fill="#059669"/>
-  <text x="1294" y="127" text-anchor="middle" font-size="11.5px" font-weight="600" fill="white">Effectiveness Mon.</text>
+  <!-- API Frontend -->
+  <rect x="560" y="90" width="52" height="52" rx="12" fill="#64748B"/>
+  <path d="M572,104 h28 a4,4 0 0 1 4,4 v12 a4,4 0 0 1 -4,4 h-16 l-8,7 v-7 h-4 a4,4 0 0 1 -4,-4 v-12 a4,4 0 0 1 4,-4 z" fill="white"/>
+  <text x="586" y="158" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">API Frontend</text>
+  <text x="586" y="172" text-anchor="middle" font-size="10.5px" fill="#64748B">interactive entry</text>
 
-  <text x="964" y="156" font-size="13px" fill="#374151">All 7 <tspan font-weight="600">read</tspan> the MCP Gateway;</text>
-  <text x="964" y="176" font-size="13px" fill="#374151">Workflow Execution also <tspan font-weight="600">writes</tspan> (remote runs)</text>
+  <!-- Effectiveness Monitor -->
+  <rect x="690" y="90" width="52" height="52" rx="12" fill="#059669"/>
+  <polyline points="700,116 708,116 713,104 720,128 725,116 734,116" fill="none" stroke="white" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
+  <text x="716" y="158" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Effectiveness</text>
+  <text x="716" y="172" text-anchor="middle" font-size="10.5px" fill="#64748B">verify + learn</text>
 
-  <!-- converging arrows row1 -> row2 -->
-  <line x1="240" y1="190" x2="620" y2="235" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <line x1="700" y1="190" x2="700" y2="235" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <line x1="1160" y1="190" x2="780" y2="235" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <!-- roster -> OAuth2 -->
-  <line x1="1180" y1="190" x2="1150" y2="235" stroke="#CBD5E1" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+  <!-- Signal Processing (spoke) -->
+  <rect x="260" y="256" width="52" height="52" rx="12" fill="#0891B2"/>
+  <polyline points="270,282 278,282 282,270 288,294 293,282 302,282" fill="none" stroke="white" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+  <text x="286" y="322" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Signal Proc.</text>
+  <text x="286" y="336" text-anchor="middle" font-size="10.5px" fill="#64748B">classify</text>
 
-  <!-- ═══════════ Row 2: Scope Check · MCP Gateway · OAuth2 ═══════════ -->
+  <!-- AI Analysis + KA (spoke, slightly bigger) -->
+  <rect x="368" y="250" width="60" height="60" rx="13" fill="#6366F1"/>
+  <polygon points="398,266 412,275 412,291 398,300 384,291 384,275" fill="none" stroke="white" stroke-width="2.2"/>
+  <circle cx="398" cy="283" r="3" fill="white"/>
+  <text x="398" y="326" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">AI Analysis + KA</text>
+  <text x="398" y="340" text-anchor="middle" font-size="10.5px" fill="#64748B">investigate + select WF</text>
 
-  <!-- Scope Check card -->
-  <g filter="url(#sh)"><rect x="20" y="235" width="340" height="110" rx="12" fill="white"/></g>
-  <rect x="20" y="235" width="340" height="38" rx="12" fill="#0E7490"/>
-  <rect x="20" y="261" width="340" height="12" fill="#0E7490"/>
-  <text x="40" y="260" font-size="15px" font-weight="700" fill="white">Scope Check</text>
-  <text x="40" y="292" font-size="12.5px" fill="#374151">Pluggable backend: FederatedScopeChecker routes local</text>
-  <text x="40" y="310" font-size="12.5px" fill="#374151">ClusterID → own K8s API; remote → adapter. FMC polls</text>
-  <text x="40" y="328" font-size="12.5px" fill="#374151">the MCP Gateway, caches managed resources in Valkey.</text>
-  <rect x="228" y="238" width="126" height="22" rx="6" fill="#F0FDFA"/>
-  <text x="291" y="253" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#0E7490">FMC &lt;1ms · ACM 10-50ms</text>
+  <!-- Workflow Execution (spoke) -->
+  <rect x="480" y="256" width="52" height="52" rx="12" fill="#D97706"/>
+  <circle cx="506" cy="282" r="10" fill="none" stroke="white" stroke-width="2.4"/>
+  <circle cx="506" cy="282" r="3.5" fill="white"/>
+  <rect x="503" y="266" width="6" height="6" fill="white"/>
+  <rect x="503" y="292" width="6" height="6" fill="white"/>
+  <rect x="490" y="279" width="6" height="6" fill="white"/>
+  <rect x="516" y="279" width="6" height="6" fill="white"/>
+  <text x="506" y="322" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Workflow Exec.</text>
+  <text x="506" y="336" text-anchor="middle" font-size="10.5px" fill="#64748B">runs remediation</text>
 
-  <!-- MCP Gateway banner -->
-  <g filter="url(#sh)"><rect x="390" y="235" width="620" height="110" rx="14" fill="url(#gwGrad)"/></g>
-  <text x="700" y="278" text-anchor="middle" font-size="24px" font-weight="800" fill="white">MCP Gateway</text>
-  <text x="700" y="302" text-anchor="middle" font-size="13px" fill="#E9D5FF">Kuadrant MCP Gateway or Envoy AI Gateway (EAIGW)</text>
-  <rect x="490" y="313" width="420" height="22" rx="6" fill="rgba(255,255,255,0.15)"/>
-  <text x="700" y="328" text-anchor="middle" font-size="11px" font-weight="600" fill="white">external infra — bring your own, like PostgreSQL/Prometheus</text>
+  <!-- Scope Check -->
+  <rect x="120" y="390" width="52" height="52" rx="12" fill="#0E7490"/>
+  <path d="M146,398 L162,404 v14 c0,10 -8,16 -16,20 c-8,-4 -16,-10 -16,-20 v-14 z" fill="none" stroke="white" stroke-width="2.2"/>
+  <polyline points="138,414 145,421 156,408" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="146" y="458" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Scope Check</text>
+  <text x="146" y="472" text-anchor="middle" font-size="10.5px" fill="#64748B">FMC (default) · ACM</text>
 
-  <!-- OAuth2 card -->
-  <g filter="url(#sh)"><rect x="1040" y="235" width="340" height="110" rx="12" fill="white" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/></g>
-  <rect x="1040" y="235" width="340" height="38" rx="12" fill="#64748B"/>
-  <rect x="1040" y="261" width="340" height="12" fill="#64748B"/>
-  <text x="1060" y="260" font-size="15px" font-weight="700" fill="white">OAuth2 Provider</text>
-  <text x="1060" y="295" font-size="12.5px" fill="#374151">External IdP — Keycloak, DEX, or any OIDC provider</text>
-  <text x="1060" y="313" font-size="12.5px" fill="#374151">All 7 services acquire + auto-refresh client-credential tokens</text>
-  <text x="1060" y="331" font-size="12.5px" fill="#374151">Gateway validates every token against the same IdP</text>
+  <!-- OAuth2 -->
+  <rect x="560" y="390" width="52" height="52" rx="12" fill="#475569" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="3,3"/>
+  <path d="M578,412 v-6 a8,8 0 0 1 16,0 v6" fill="none" stroke="white" stroke-width="2.4"/>
+  <rect x="574" y="412" width="24" height="16" rx="3" fill="white"/>
+  <text x="586" y="458" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">OAuth2 Provider</text>
+  <text x="586" y="472" text-anchor="middle" font-size="10.5px" fill="#64748B">external IdP</text>
 
-  <!-- horizontal connectors around gateway -->
-  <line x1="360" y1="290" x2="390" y2="290" stroke="#0E7490" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="1010" y1="290" x2="1040" y2="290" stroke="#CBD5E1" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#ard)"/>
-  <text x="985" y="282" text-anchor="end" font-size="10.5px" fill="#94A3B8">validates token</text>
+  <!-- pipeline arrows -->
+  <line x1="118" y1="116" x2="196" y2="116" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
+  <line x1="248" y1="116" x2="360" y2="116" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
+  <line x1="382" y1="148" x2="310" y2="256" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="394" y1="148" x2="397" y2="250" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="406" y1="148" x2="490" y2="256" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
 
-  <!-- ═══════════ Row 3: Remote / spoke clusters ═══════════ -->
+  <!-- scope-check arrows (dashed, from Gateway + Orchestrator) -->
+  <line x1="215" y1="142" x2="165" y2="390" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
+  <line x1="378" y1="148" x2="165" y2="390" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
 
-  <line x1="580" y1="345" x2="182" y2="390" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <line x1="660" y1="345" x2="527" y2="390" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <line x1="740" y1="345" x2="872" y2="390" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
-  <line x1="820" y1="345" x2="1217" y2="390" stroke="#94A3B8" stroke-width="1.4" marker-end="url(#ar)"/>
+  <!-- OAuth2 arrow (dashed, client-credentials) -->
+  <path d="M222,142 L222,224 L560,224 L560,390" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+  <text x="392" y="217" text-anchor="middle" font-size="10.5px" fill="#8B5CF6">client-credentials (7 services)</text>
 
-  <!-- Cluster A -->
-  <g filter="url(#sh)"><rect x="20" y="390" width="325" height="150" rx="12" fill="white"/></g>
-  <rect x="20" y="390" width="325" height="36" rx="12" fill="#334155"/>
-  <rect x="20" y="414" width="325" height="12" fill="#334155"/>
-  <text x="42" y="413" font-size="15px" font-weight="700" fill="white">Cluster A</text>
-  <rect x="42" y="446" width="150" height="26" rx="7" fill="#EEF2FF"/>
-  <text x="117" y="463" text-anchor="middle" font-size="11.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
-  <line x1="117" y1="472" x2="117" y2="488" stroke="#CBD5E1" stroke-width="1.4" marker-end="url(#ar)"/>
-  <text x="42" y="512" font-size="12.5px" fill="#374151">Remote resource reads +</text>
-  <text x="42" y="530" font-size="12.5px" fill="#374151">remediation (Jobs / Tekton)</text>
+  <!-- boundary arrows: Management Cluster -> MCP Gateway -->
+  <line x1="420" y1="486" x2="600" y2="560" stroke="#94A3B8" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="470" y="512" font-size="12px" fill="#64748B">reads (6 services)</text>
+  <line x1="560" y1="486" x2="700" y2="560" stroke="#D97706" stroke-width="3" marker-end="url(#arw)"/>
+  <text x="620" y="524" font-size="12px" font-weight="600" fill="#B45309">+ writes (Workflow Exec.)</text>
 
-  <!-- Cluster B -->
-  <g filter="url(#sh)"><rect x="365" y="390" width="325" height="150" rx="12" fill="white"/></g>
-  <rect x="365" y="390" width="325" height="36" rx="12" fill="#334155"/>
-  <rect x="365" y="414" width="325" height="12" fill="#334155"/>
-  <text x="387" y="413" font-size="15px" font-weight="700" fill="white">Cluster B</text>
-  <rect x="387" y="446" width="150" height="26" rx="7" fill="#EEF2FF"/>
-  <text x="462" y="463" text-anchor="middle" font-size="11.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
-  <line x1="462" y1="472" x2="462" y2="488" stroke="#CBD5E1" stroke-width="1.4" marker-end="url(#ar)"/>
-  <text x="387" y="512" font-size="12.5px" fill="#374151">Remote resource reads +</text>
-  <text x="387" y="530" font-size="12.5px" fill="#374151">remediation (Jobs / Tekton)</text>
+  <!-- OAuth2 validates token -->
+  <line x1="612" y1="416" x2="900" y2="590" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+  <text x="700" y="470" font-size="11px" fill="#A78BFA">validates token</text>
 
-  <!-- Cluster C -->
-  <g filter="url(#sh)"><rect x="710" y="390" width="325" height="150" rx="12" fill="white"/></g>
-  <rect x="710" y="390" width="325" height="36" rx="12" fill="#334155"/>
-  <rect x="710" y="414" width="325" height="12" fill="#334155"/>
-  <text x="732" y="413" font-size="15px" font-weight="700" fill="white">Cluster C</text>
-  <rect x="732" y="446" width="150" height="26" rx="7" fill="#EEF2FF"/>
-  <text x="807" y="463" text-anchor="middle" font-size="11.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
-  <line x1="807" y1="472" x2="807" y2="488" stroke="#CBD5E1" stroke-width="1.4" marker-end="url(#ar)"/>
-  <text x="732" y="512" font-size="12.5px" fill="#374151">Remote resource reads +</text>
-  <text x="732" y="530" font-size="12.5px" fill="#374151">remediation (Jobs / Tekton)</text>
+  <!-- ═══════════ MCP Gateway ═══════════ -->
+  <g filter="url(#sh)"><rect x="400" y="560" width="600" height="100" rx="16" fill="url(#gwGrad)"/></g>
+  <text x="700" y="600" text-anchor="middle" font-size="22px" font-weight="800" fill="white">MCP Gateway</text>
+  <text x="700" y="622" text-anchor="middle" font-size="12.5px" fill="#E9D5FF">Kuadrant MCP Gateway or Envoy AI Gateway</text>
+  <text x="700" y="644" text-anchor="middle" font-size="11px" fill="#C4B5FD">external infra — bring your own, like PostgreSQL/Prometheus</text>
 
-  <!-- + more clusters -->
-  <g><rect x="1055" y="390" width="325" height="150" rx="12" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/></g>
-  <text x="1217" y="460" text-anchor="middle" font-size="15px" font-weight="700" fill="#64748B">+ up to 100s more</text>
-  <text x="1217" y="482" text-anchor="middle" font-size="13px" fill="#94A3B8">clusters, same pattern</text>
-  <circle cx="1187" cy="512" r="4" fill="#CBD5E1"/>
-  <circle cx="1217" cy="512" r="4" fill="#CBD5E1"/>
-  <circle cx="1247" cy="512" r="4" fill="#CBD5E1"/>
+  <!-- ═══════════ Remote Clusters container (full width) ═══════════ -->
+  <rect x="20" y="700" width="1360" height="90" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="684" width="180" height="32" rx="8" fill="#334155"/>
+  <text x="130" y="705" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
 
-  <!-- ═══════════ Footer ═══════════ -->
-  <g filter="url(#sh)"><rect x="20" y="565" width="1360" height="56" rx="12" fill="#0F172A"/></g>
-  <text x="44" y="588" font-size="14px" font-weight="700" fill="white">Fleet is opt-in</text>
-  <text x="44" y="608" font-size="12.5px" fill="#E2E8F0">Disabled by default (<tspan font-family="monospace">fleet.enabled: true</tspan>) — zero regression for single-cluster deployments</text>
-  <rect x="1220" y="579" width="140" height="26" rx="6" fill="rgba(255,255,255,0.15)"/>
-  <text x="1290" y="596" text-anchor="middle" font-size="12px" font-weight="600" fill="white">v1.6 · ADR-068</text>
+  <line x1="560" y1="660" x2="190" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="630" y1="660" x2="530" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="770" y1="660" x2="870" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="840" y1="660" x2="1210" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+
+  <rect x="166" y="722" width="48" height="48" rx="10" fill="#334155"/>
+  <use href="#hexCluster" x="172" y="728" width="36" height="36"/>
+  <text x="190" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster A</text>
+
+  <rect x="506" y="722" width="48" height="48" rx="10" fill="#334155"/>
+  <use href="#hexCluster" x="512" y="728" width="36" height="36"/>
+  <text x="530" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster B</text>
+
+  <rect x="846" y="722" width="48" height="48" rx="10" fill="#334155"/>
+  <use href="#hexCluster" x="852" y="728" width="36" height="36"/>
+  <text x="870" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster C</text>
+
+  <circle cx="1198" cy="740" r="3.2" fill="#94A3B8"/>
+  <circle cx="1210" cy="740" r="3.2" fill="#94A3B8"/>
+  <circle cx="1222" cy="740" r="3.2" fill="#94A3B8"/>
+  <text x="1210" y="782" text-anchor="middle" font-size="11.5px" fill="#64748B">100s more</text>
+
+  <!-- ═══════════ Legend + note ═══════════ -->
+  <g>
+    <line x1="1060" y1="100" x2="1090" y2="100" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
+    <text x="1098" y="104" font-size="12px" fill="#374151">reads</text>
+
+    <line x1="1060" y1="128" x2="1090" y2="128" stroke="#D97706" stroke-width="3" marker-end="url(#arw)"/>
+    <text x="1098" y="132" font-size="12px" fill="#374151">reads + writes</text>
+
+    <line x1="1060" y1="156" x2="1090" y2="156" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+    <text x="1098" y="160" font-size="12px" fill="#374151">auth / token</text>
+
+    <line x1="1060" y1="184" x2="1090" y2="184" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
+    <text x="1098" y="188" font-size="12px" fill="#374151">scope check</text>
+  </g>
+
+  <rect x="1050" y="70" width="330" height="150" rx="12" fill="none" stroke="#E2E8F0" stroke-width="1.5"/>
+  <text x="1070" y="52" font-size="12px" font-weight="700" fill="#64748B">LEGEND</text>
+
+  <text x="1050" y="250" font-size="12.5px" fill="#64748B">Fleet is opt-in (<tspan font-family="monospace">fleet.enabled: true</tspan>),</text>
+  <text x="1050" y="270" font-size="12.5px" fill="#64748B">disabled by default — zero regression</text>
+  <text x="1050" y="290" font-size="12.5px" fill="#64748B">for single-cluster deployments.</text>
+  <text x="1050" y="316" font-size="11.5px" font-weight="600" fill="#94A3B8">v1.6 · ADR-068</text>
 </svg>

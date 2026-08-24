@@ -3,13 +3,13 @@
     <filter id="sh" x="-4%" y="-6%" width="108%" height="118%">
       <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.10"/>
     </filter>
-    <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+    <marker id="ar" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse">
       <polygon points="0,0 8,3 0,6" fill="#94A3B8"/>
     </marker>
-    <marker id="arw" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto">
+    <marker id="arw" markerWidth="9" markerHeight="7" refX="8" refY="3.5" orient="auto-start-reverse">
       <polygon points="0,0 9,3.5 0,7" fill="#D97706"/>
     </marker>
-    <marker id="ard" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+    <marker id="ard" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto-start-reverse">
       <polygon points="0,0 8,3 0,6" fill="#A78BFA"/>
     </marker>
     <linearGradient id="gwGrad" x1="0" y1="0" x2="1" y2="1">
@@ -130,13 +130,16 @@
   <rect x="40" y="596" width="180" height="32" rx="8" fill="#334155"/>
   <text x="130" y="617" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
 
-  <!-- straight vertical drops: each card is centered directly under its MCP Gateway source point.
-       Amber (reads + writes): the Gateway is a shared boundary, so every fan-out arrow carries the
-       combined superset (6 services' reads + workflow execution's writes) to that cluster's MCP server.
+  <!-- straight vertical drops: each cluster gets the same paired-line treatment as the Hub Cluster
+       boundary above - gray (reads, 6 services) + amber (writes, workflow execution only), so the
+       read/write distinction stays visible all the way down, not just at the top boundary.
        Double-headed: tool-call results flow back up through the same path. -->
-  <line x1="275" y1="552" x2="275" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
-  <line x1="525" y1="552" x2="525" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
-  <line x1="775" y1="552" x2="775" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="257" y1="552" x2="257" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="293" y1="552" x2="293" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="507" y1="552" x2="507" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="543" y1="552" x2="543" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="757" y1="552" x2="757" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="793" y1="552" x2="793" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
 
   <!-- Cluster A -->
   <g filter="url(#sh)"><rect x="180" y="636" width="190" height="126" rx="12" fill="white"/></g>

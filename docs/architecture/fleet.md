@@ -29,8 +29,8 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
             RO --> AA["AI Analysis"]
             AA --> KA["Kubernaut Agent"]
             RO --> WE["Workflow<br/>Execution"]
-            AF["API Frontend"]
-            EM["Effectiveness<br/>Monitor"]
+            AF["API Frontend"] -->|creates RemediationRequest| RO
+            RO -->|creates EffectivenessAssessment| EM["Effectiveness<br/>Monitor"]
             FMC["FMC<br/><small>Fleet Metadata Cache</small>"]
 
             GW -.->|"scope check<br/>p95 &lt; 50ms"| FSC["FederatedScopeChecker"]

@@ -13,50 +13,55 @@ Fleet is opt-in per deployment (`fleet.enabled: true` in Helm values / `spec.fle
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    subgraph Mgmt["Management Cluster"]
-        Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
-        GW --> RO["Remediation<br/>Orchestrator"]
-        RO --> SP["Signal<br/>Processing"]
-        RO --> AA["AI Analysis"]
-        AA --> KA["Kubernaut Agent"]
-        RO --> WE["Workflow<br/>Execution"]
-        AF["API Frontend"]
-        EM["Effectiveness<br/>Monitor"]
-        FMC["FMC<br/><small>Fleet Metadata Cache</small>"]
-
-        GW -.->|"scope check<br/>p95 &lt; 50ms"| FSC["FederatedScopeChecker"]
-        RO -.->|scope check| FSC
-        FSC -->|local| K8sAPI["local K8s API"]
-        FSC -->|remote| Backend["scope.ScopeChecker<br/>backend adapter"]
-        Backend --> Valkey[("Valkey<br/>(FMC default)")]
-        FMC -->|polls, writes| Valkey
-
-        GW -.->|read| GWY
-        KA -.->|read| GWY
-        RO -.->|read| GWY
-        SP -.->|read| GWY
-        AF -.->|read| GWY
-        EM -.->|read| GWY
-        FMC -.->|read: cluster registry| GWY
-        WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
-
-        IdP["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"]
-        GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
-        GWY -.->|validates token| IdP
-    end
-
-    GWY --> MCPa["K8s MCP Server<br/>Cluster A"]
-    GWY --> MCPb["K8s MCP Server<br/>Cluster B"]
-    GWY --> MCPc["K8s MCP Server<br/>Cluster C"]
-
-    MCPa --> ClusterA[("Cluster A")]
-    MCPb --> ClusterB[("Cluster B")]
-    MCPc --> ClusterC[("Cluster C")]
-```
+![Fleet architecture: management-cluster services, scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters](../assets/images/fleet-architecture.svg)
 
 The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus, it must be deployed before Kubernaut. The Helm chart does not install it; platform teams choose and deploy their preferred implementation (Kuadrant MCP Gateway or Envoy AI Gateway) and register per-cluster K8s MCP Server backends with it.
+
+??? note "Full detailed flowchart (Mermaid)"
+    The diagram above simplifies the exact edge-level relationships for readability. For the complete, precise call graph including every scope-check and MCP Gateway read/write edge:
+
+    ```mermaid
+    flowchart TB
+        subgraph Mgmt["Management Cluster"]
+            Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
+            GW --> RO["Remediation<br/>Orchestrator"]
+            RO --> SP["Signal<br/>Processing"]
+            RO --> AA["AI Analysis"]
+            AA --> KA["Kubernaut Agent"]
+            RO --> WE["Workflow<br/>Execution"]
+            AF["API Frontend"]
+            EM["Effectiveness<br/>Monitor"]
+            FMC["FMC<br/><small>Fleet Metadata Cache</small>"]
+
+            GW -.->|"scope check<br/>p95 &lt; 50ms"| FSC["FederatedScopeChecker"]
+            RO -.->|scope check| FSC
+            FSC -->|local| K8sAPI["local K8s API"]
+            FSC -->|remote| Backend["scope.ScopeChecker<br/>backend adapter"]
+            Backend --> Valkey[("Valkey<br/>(FMC default)")]
+            FMC -->|polls, writes| Valkey
+
+            GW -.->|read| GWY
+            KA -.->|read| GWY
+            RO -.->|read| GWY
+            SP -.->|read| GWY
+            AF -.->|read| GWY
+            EM -.->|read| GWY
+            FMC -.->|read: cluster registry| GWY
+            WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
+
+            IdP["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"]
+            GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
+            GWY -.->|validates token| IdP
+        end
+
+        GWY --> MCPa["K8s MCP Server<br/>Cluster A"]
+        GWY --> MCPb["K8s MCP Server<br/>Cluster B"]
+        GWY --> MCPc["K8s MCP Server<br/>Cluster C"]
+
+        MCPa --> ClusterA[("Cluster A")]
+        MCPb --> ClusterB[("Cluster B")]
+        MCPc --> ClusterC[("Cluster C")]
+    ```
 
 ## Component Responsibilities
 

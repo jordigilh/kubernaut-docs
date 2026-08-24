@@ -13,50 +13,58 @@ Fleet is opt-in per deployment (`fleet.enabled: true` in Helm values / `spec.fle
 
 ## Architecture
 
-```mermaid
-flowchart TB
-    subgraph Mgmt["Management Cluster"]
-        Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
-        GW --> RO["Remediation<br/>Orchestrator"]
-        RO --> SP["Signal<br/>Processing"]
-        RO --> AA["AI Analysis"]
-        AA --> KA["Kubernaut Agent"]
-        RO --> WE["Workflow<br/>Execution"]
-        AF["API Frontend"]
-        EM["Effectiveness<br/>Monitor"]
-        FMC["FMC<br/><small>Fleet Metadata Cache</small>"]
+![Fleet architecture: Kubernaut Engine (hub-cluster core services), scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters, each running a K8s MCP Server](../assets/images/fleet-architecture.svg)
 
-        GW -.->|"scope check<br/>p95 &lt; 50ms"| FSC["FederatedScopeChecker"]
-        RO -.->|scope check| FSC
-        FSC -->|local| K8sAPI["local K8s API"]
-        FSC -->|remote| Backend["scope.ScopeChecker<br/>backend adapter"]
-        Backend --> Valkey[("Valkey<br/>(FMC default)")]
-        FMC -->|polls, writes| Valkey
-
-        GW -.->|read| GWY
-        KA -.->|read| GWY
-        RO -.->|read| GWY
-        SP -.->|read| GWY
-        AF -.->|read| GWY
-        EM -.->|read| GWY
-        FMC -.->|read: cluster registry| GWY
-        WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
-
-        IdP["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"]
-        GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
-        GWY -.->|validates token| IdP
-    end
-
-    GWY --> MCPa["K8s MCP Server<br/>Cluster A"]
-    GWY --> MCPb["K8s MCP Server<br/>Cluster B"]
-    GWY --> MCPc["K8s MCP Server<br/>Cluster C"]
-
-    MCPa --> ClusterA[("Cluster A")]
-    MCPb --> ClusterB[("Cluster B")]
-    MCPc --> ClusterC[("Cluster C")]
-```
+**Kubernaut Engine** in the diagram above is a single box standing in for the six services that already communicate intra-cluster via CRD watches, regardless of Fleet mode: the **Remediation Orchestrator** (creates and sequences the other five), **Signal Processing**, **AI Analysis** (plus the **Kubernaut Agent** it delegates investigation and workflow selection to), **Workflow Execution** (the only one of the six with MCP Gateway *write* access -- everything else is read-only), **Effectiveness Monitor**, and **Notification**. Their internal call graph doesn't change under Fleet mode, so it's intentionally left out of this diagram; see [Remediation Routing](remediation-routing.md) for that detail, or expand the flowchart below for the fully expanded, edge-level version scoped to Fleet.
 
 The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus, it must be deployed before Kubernaut. The Helm chart does not install it; platform teams choose and deploy their preferred implementation (Kuadrant MCP Gateway or Envoy AI Gateway) and register per-cluster K8s MCP Server backends with it.
+
+??? note "Full detailed flowchart (Mermaid)"
+    The diagram above simplifies the exact edge-level relationships for readability. For the complete, precise call graph including every scope-check and MCP Gateway read/write edge:
+
+    ```mermaid
+    flowchart TB
+        Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
+        AF["API Frontend"]
+
+        subgraph Engine["Kubernaut Engine"]
+            direction LR
+            RO["Remediation<br/>Orchestrator"] --> SP["Signal<br/>Processing"]
+            SP --> AA["AI Analysis"] --> KA["Kubernaut Agent"]
+            AA --> WE["Workflow<br/>Execution"]
+            RO --> EM["Effectiveness<br/>Monitor"]
+        end
+
+        GW -->|creates RemediationRequest| RO
+        AF -->|"creates +<br/>watches RemediationRequest"| RO
+
+        subgraph ScopeBackend["Scope Check Backend"]
+            direction LR
+            FSC["FederatedScopeChecker"] -->|local| K8sAPI["local K8s API"]
+            FSC -->|remote| Backend["scope.ScopeChecker<br/>adapter (FMC / ACM / ...)"]
+            Backend --> Valkey[("Valkey<br/>(FMC default)")]
+            FMC["FMC<br/><small>Fleet Metadata Cache</small>"] -->|polls, writes| Valkey
+        end
+
+        GW & RO -.->|scope check| FSC
+
+        IdP(["OAuth2 Provider<br/><small>e.g. Keycloak, DEX</small>"])
+        GW -.->|"client-credentials<br/>(all 7 Fleet-dependent services)"| IdP
+
+        Engine -.->|"read<br/>(6 services)"| GWY
+        WE -->|"read + write<br/>(remediation)"| GWY["MCP Gateway<br/><small>Kuadrant or Envoy AI Gateway</small>"]
+        AF -.->|read| GWY
+        FMC -.->|"read:<br/>cluster registry"| GWY
+        GWY <-.->|validates token| IdP
+
+        GWY --> MCPa["K8s MCP Server<br/>Cluster A"] --> ClusterA[("Cluster A")]
+        GWY --> MCPb["K8s MCP Server<br/>Cluster B"] --> ClusterB[("Cluster B")]
+        GWY -.->|"same pattern,<br/>100s more clusters"| MCPc["..."]
+
+        MCPa -.->|"requests token exchange, RFC 8693<br/><small>(every cluster's MCP server does this independently)</small>"| IdP
+    ```
+
+    Two distinct OAuth2 interactions happen against the same IdP, and the Gateway is not involved in either: the MCP Gateway only **validates** the caller's client-credentials token at the edge. The actual **RFC 8693 Standard Token Exchange** is performed by the **OAuth2 Provider itself** -- it is the only party that holds both the caller's identity (the passthrough token it already issued) and the target audience's requirements (the client-scope/audience-mapper assignment for `kube-mcp-server`), so only it can validate the old token and mint the new one. Each remote cluster's `kube-mcp-server` merely **requests** this exchange (`POST .../protocol/openid-connect/token` with `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, per its `keycloak-v1` exchange strategy) and receives back a token newly scoped to its own Kubernetes API server.
 
 ## Component Responsibilities
 
@@ -68,7 +76,7 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
 | **FederatedScopeChecker** | Routes scope checks: `ClusterID == ""` -> local `scope.Manager`; `ClusterID != ""` -> the configured remote backend adapter |
 | **GatewayDiscoverer** | Cluster/tool discovery interface, implemented once per supported gateway (Kuadrant, EAIGW). Called **server-side only** -- never LLM-facing (see below) |
 | **CRDWatcher** | Discovers clusters from the gateway's own native CRDs (`MCPRoute`/`Backend` for EAIGW, `MCPServerRegistration` for Kuadrant); Kubernaut is a read-only consumer, never creates or modifies these |
-| **OAuth2 Provider** | External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (`pkg/fleet/mcpclient`). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own. |
+| **OAuth2 Provider** | External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (`pkg/fleet/mcpclient`). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Independently, each remote cluster's **K8s MCP Server** (`kube-mcp-server`) *requests* an RFC 8693 Standard Token Exchange from the same IdP -- the IdP itself performs the exchange (it alone holds both the caller's identity and the target audience's requirements) and returns a token newly scoped to that cluster's own Kubernetes API server. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own. |
 
 Signal Processing, API Frontend, and Effectiveness Monitor also participate as read-only MCP Gateway callers (remote enrichment, `list_clusters`/resource reads, and remote target reads respectively).
 

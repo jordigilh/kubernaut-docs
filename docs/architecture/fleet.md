@@ -13,7 +13,9 @@ Fleet is opt-in per deployment (`fleet.enabled: true` in Helm values / `spec.fle
 
 ## Architecture
 
-![Fleet architecture: hub-cluster services, scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters, each running a K8s MCP Server](../assets/images/fleet-architecture.svg)
+![Fleet architecture: Kubernaut Engine (hub-cluster core services), scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters, each running a K8s MCP Server](../assets/images/fleet-architecture.svg)
+
+**Kubernaut Engine** in the diagram above is a single box standing in for the six services that already communicate intra-cluster via CRD watches, regardless of Fleet mode: the **Remediation Orchestrator** (creates and sequences the other five), **Signal Processing**, **AI Analysis** (plus the **Kubernaut Agent** it delegates investigation and workflow selection to), **Workflow Execution** (the only one of the six with MCP Gateway *write* access -- everything else is read-only), **Effectiveness Monitor**, and **Notification**. Their internal call graph doesn't change under Fleet mode, so it's intentionally left out of this diagram; see [Remediation Routing](remediation-routing.md) for that detail, or expand the flowchart below for the fully expanded, edge-level version scoped to Fleet.
 
 The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus, it must be deployed before Kubernaut. The Helm chart does not install it; platform teams choose and deploy their preferred implementation (Kuadrant MCP Gateway or Envoy AI Gateway) and register per-cluster K8s MCP Server backends with it.
 

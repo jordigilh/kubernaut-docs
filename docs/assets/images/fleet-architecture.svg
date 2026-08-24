@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 800" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 890" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
   <defs>
     <filter id="sh" x="-4%" y="-6%" width="108%" height="118%">
       <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.10"/>
@@ -16,18 +16,30 @@
       <stop offset="0" stop-color="#7C3AED"/>
       <stop offset="1" stop-color="#4C1D95"/>
     </linearGradient>
-    <symbol id="hexCluster" viewBox="0 0 48 48">
-      <polygon points="24,4 42,14 42,34 24,44 6,34 6,14" fill="none" stroke="white" stroke-width="2.5"/>
-      <circle cx="24" cy="24" r="5" fill="white"/>
+    <symbol id="k8sWheel" viewBox="0 0 48 48">
+      <circle cx="24" cy="24" r="15" fill="none" stroke="white" stroke-width="2"/>
+      <circle cx="24" cy="24" r="4.5" fill="white"/>
+      <line x1="24" y1="9" x2="24" y2="17" stroke="white" stroke-width="2"/>
+      <line x1="24" y1="31" x2="24" y2="39" stroke="white" stroke-width="2"/>
+      <line x1="11.4" y1="16.5" x2="18.7" y2="20.7" stroke="white" stroke-width="2"/>
+      <line x1="29.3" y1="27.3" x2="36.6" y2="31.5" stroke="white" stroke-width="2"/>
+      <line x1="11.4" y1="31.5" x2="18.7" y2="27.3" stroke="white" stroke-width="2"/>
+      <line x1="29.3" y1="20.7" x2="36.6" y2="16.5" stroke="white" stroke-width="2"/>
+      <circle cx="24" cy="9" r="2" fill="white"/>
+      <circle cx="24" cy="39" r="2" fill="white"/>
+      <circle cx="11.4" cy="16.5" r="2" fill="white"/>
+      <circle cx="36.6" cy="31.5" r="2" fill="white"/>
+      <circle cx="11.4" cy="31.5" r="2" fill="white"/>
+      <circle cx="36.6" cy="16.5" r="2" fill="white"/>
     </symbol>
   </defs>
 
-  <rect x="0" y="0" width="1400" height="800" fill="white"/>
+  <rect x="0" y="0" width="1400" height="890" fill="white"/>
 
-  <!-- ═══════════ Management Cluster container ═══════════ -->
-  <rect x="20" y="46" width="1010" height="440" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
-  <rect x="40" y="30" width="204" height="32" rx="8" fill="#0F172A"/>
-  <text x="142" y="51" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">MANAGEMENT CLUSTER</text>
+  <!-- ═══════════ Hub Cluster container ═══════════ -->
+  <rect x="20" y="46" width="1010" height="460" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="30" width="150" height="32" rx="8" fill="#0F172A"/>
+  <text x="115" y="51" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">HUB CLUSTER</text>
 
   <!-- Node template: 52x52 icon badge, bold label below, optional gray subtitle -->
 
@@ -115,56 +127,72 @@
   <line x1="394" y1="148" x2="397" y2="250" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
   <line x1="406" y1="148" x2="490" y2="256" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
 
-  <!-- scope-check arrows (dashed, from Gateway + Orchestrator) -->
-  <line x1="215" y1="142" x2="165" y2="390" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
-  <line x1="378" y1="148" x2="165" y2="390" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
+  <!-- scope-check: Gateway + Orchestrator merge into one trunk, no crossing with pipeline arrows -->
+  <line x1="222" y1="142" x2="270" y2="190" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <line x1="378" y1="148" x2="270" y2="190" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3"/>
+  <line x1="270" y1="190" x2="150" y2="386" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#ar)"/>
 
-  <!-- OAuth2 arrow (dashed, client-credentials) -->
-  <path d="M222,142 L222,224 L560,224 L560,390" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
-  <text x="392" y="217" text-anchor="middle" font-size="10.5px" fill="#8B5CF6">client-credentials (7 services)</text>
+  <!-- OAuth2 arrow (dashed, client-credentials): routed under everything, enters OAuth2 from below -->
+  <path d="M222,142 L222,498 L586,498 L586,450" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+  <text x="404" y="491" text-anchor="middle" font-size="10.5px" fill="#8B5CF6">client-credentials (7 services)</text>
 
-  <!-- boundary arrows: Management Cluster -> MCP Gateway -->
-  <line x1="420" y1="486" x2="600" y2="560" stroke="#94A3B8" stroke-width="2" marker-end="url(#ar)"/>
-  <text x="470" y="512" font-size="12px" fill="#64748B">reads (6 services)</text>
-  <line x1="560" y1="486" x2="700" y2="560" stroke="#D97706" stroke-width="3" marker-end="url(#arw)"/>
-  <text x="620" y="524" font-size="12px" font-weight="600" fill="#B45309">+ writes (Workflow Exec.)</text>
+  <!-- boundary arrows: Hub Cluster -> MCP Gateway -->
+  <line x1="420" y1="506" x2="600" y2="580" stroke="#94A3B8" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="470" y="532" font-size="12px" fill="#64748B">reads (6 services)</text>
+  <line x1="560" y1="506" x2="700" y2="580" stroke="#D97706" stroke-width="3" marker-end="url(#arw)"/>
+  <text x="620" y="544" font-size="12px" font-weight="600" fill="#B45309">+ writes (Workflow Exec.)</text>
 
   <!-- OAuth2 validates token -->
-  <line x1="612" y1="416" x2="900" y2="590" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
-  <text x="700" y="470" font-size="11px" fill="#A78BFA">validates token</text>
+  <line x1="612" y1="416" x2="900" y2="610" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="4,3" marker-end="url(#ard)"/>
+  <text x="700" y="490" font-size="11px" fill="#A78BFA">validates token</text>
 
   <!-- ═══════════ MCP Gateway ═══════════ -->
-  <g filter="url(#sh)"><rect x="400" y="560" width="600" height="100" rx="16" fill="url(#gwGrad)"/></g>
-  <text x="700" y="600" text-anchor="middle" font-size="22px" font-weight="800" fill="white">MCP Gateway</text>
-  <text x="700" y="622" text-anchor="middle" font-size="12.5px" fill="#E9D5FF">Kuadrant MCP Gateway or Envoy AI Gateway</text>
-  <text x="700" y="644" text-anchor="middle" font-size="11px" fill="#C4B5FD">external infra — bring your own, like PostgreSQL/Prometheus</text>
+  <g filter="url(#sh)"><rect x="400" y="580" width="600" height="100" rx="16" fill="url(#gwGrad)"/></g>
+  <text x="700" y="620" text-anchor="middle" font-size="22px" font-weight="800" fill="white">MCP Gateway</text>
+  <text x="700" y="642" text-anchor="middle" font-size="12.5px" fill="#E9D5FF">Kuadrant MCP Gateway or Envoy AI Gateway</text>
+  <text x="700" y="664" text-anchor="middle" font-size="11px" fill="#C4B5FD">external infra — bring your own, like PostgreSQL/Prometheus</text>
 
   <!-- ═══════════ Remote Clusters container (full width) ═══════════ -->
-  <rect x="20" y="700" width="1360" height="90" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
-  <rect x="40" y="684" width="180" height="32" rx="8" fill="#334155"/>
-  <text x="130" y="705" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
+  <rect x="20" y="720" width="1360" height="150" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="704" width="180" height="32" rx="8" fill="#334155"/>
+  <text x="130" y="725" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
 
-  <line x1="560" y1="660" x2="190" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="630" y1="660" x2="530" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="770" y1="660" x2="870" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
-  <line x1="840" y1="660" x2="1210" y2="722" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="560" y1="680" x2="190" y2="732" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="630" y1="680" x2="530" y2="732" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="770" y1="680" x2="870" y2="732" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
+  <line x1="840" y1="680" x2="1210" y2="732" stroke="#94A3B8" stroke-width="1.6" marker-end="url(#ar)"/>
 
-  <rect x="166" y="722" width="48" height="48" rx="10" fill="#334155"/>
-  <use href="#hexCluster" x="172" y="728" width="36" height="36"/>
-  <text x="190" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster A</text>
+  <!-- Cluster A -->
+  <g filter="url(#sh)"><rect x="95" y="732" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="168" y="744" width="44" height="44" rx="10" fill="#334155"/>
+  <use href="#k8sWheel" x="172" y="748" width="36" height="36"/>
+  <text x="190" y="806" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster A</text>
+  <rect x="125" y="818" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="190" y="833" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
 
-  <rect x="506" y="722" width="48" height="48" rx="10" fill="#334155"/>
-  <use href="#hexCluster" x="512" y="728" width="36" height="36"/>
-  <text x="530" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster B</text>
+  <!-- Cluster B -->
+  <g filter="url(#sh)"><rect x="435" y="732" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="508" y="744" width="44" height="44" rx="10" fill="#334155"/>
+  <use href="#k8sWheel" x="512" y="748" width="36" height="36"/>
+  <text x="530" y="806" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster B</text>
+  <rect x="465" y="818" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="530" y="833" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
 
-  <rect x="846" y="722" width="48" height="48" rx="10" fill="#334155"/>
-  <use href="#hexCluster" x="852" y="728" width="36" height="36"/>
-  <text x="870" y="782" text-anchor="middle" font-size="12px" font-weight="700" fill="#0F172A">Cluster C</text>
+  <!-- Cluster C -->
+  <g filter="url(#sh)"><rect x="775" y="732" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="848" y="744" width="44" height="44" rx="10" fill="#334155"/>
+  <use href="#k8sWheel" x="852" y="748" width="36" height="36"/>
+  <text x="870" y="806" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster C</text>
+  <rect x="805" y="818" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="870" y="833" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
 
-  <circle cx="1198" cy="740" r="3.2" fill="#94A3B8"/>
-  <circle cx="1210" cy="740" r="3.2" fill="#94A3B8"/>
-  <circle cx="1222" cy="740" r="3.2" fill="#94A3B8"/>
-  <text x="1210" y="782" text-anchor="middle" font-size="11.5px" fill="#64748B">100s more</text>
+  <!-- + more clusters (ghost) -->
+  <rect x="1115" y="732" width="190" height="126" rx="12" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <circle cx="1198" cy="778" r="3.2" fill="#94A3B8"/>
+  <circle cx="1210" cy="778" r="3.2" fill="#94A3B8"/>
+  <circle cx="1222" cy="778" r="3.2" fill="#94A3B8"/>
+  <text x="1210" y="806" text-anchor="middle" font-size="13px" font-weight="700" fill="#64748B">100s more</text>
+  <text x="1210" y="825" text-anchor="middle" font-size="11px" fill="#94A3B8">same pattern</text>
 
   <!-- ═══════════ Legend + note ═══════════ -->
   <g>

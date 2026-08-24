@@ -13,7 +13,7 @@ Fleet is opt-in per deployment (`fleet.enabled: true` in Helm values / `spec.fle
 
 ## Architecture
 
-![Fleet architecture: management-cluster services, scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters](../assets/images/fleet-architecture.svg)
+![Fleet architecture: hub-cluster services, scope-check backend, OAuth2 provider, and the MCP Gateway boundary to remote clusters, each running a K8s MCP Server](../assets/images/fleet-architecture.svg)
 
 The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus, it must be deployed before Kubernaut. The Helm chart does not install it; platform teams choose and deploy their preferred implementation (Kuadrant MCP Gateway or Envoy AI Gateway) and register per-cluster K8s MCP Server backends with it.
 
@@ -22,7 +22,7 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
 
     ```mermaid
     flowchart TB
-        subgraph Mgmt["Management Cluster"]
+        subgraph Mgmt["Hub Cluster"]
             Thanos["Thanos Querier<br/><small>multi-cluster Prometheus</small>"] -->|alerts, cluster label| GW["Gateway"]
             GW --> RO["Remediation<br/>Orchestrator"]
             RO --> SP["Signal<br/>Processing"]

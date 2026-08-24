@@ -60,16 +60,16 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
         GWY --> MCPb["K8s MCP Server<br/>Cluster B"]
         GWY --> MCPc["K8s MCP Server<br/>Cluster C"]
 
-        MCPa -.->|"token exchange<br/>RFC 8693"| IdP
-        MCPb -.->|"token exchange<br/>RFC 8693"| IdP
-        MCPc -.->|"token exchange<br/>RFC 8693"| IdP
+        MCPa -.->|"requests token exchange<br/>RFC 8693"| IdP
+        MCPb -.->|"requests token exchange<br/>RFC 8693"| IdP
+        MCPc -.->|"requests token exchange<br/>RFC 8693"| IdP
 
         MCPa --> ClusterA[("Cluster A")]
         MCPb --> ClusterB[("Cluster B")]
         MCPc --> ClusterC[("Cluster C")]
     ```
 
-    Two distinct OAuth2 interactions happen against the same IdP: the MCP Gateway only **validates** the caller's client-credentials token at the edge; the actual **RFC 8693 Standard Token Exchange** -- swapping that passthrough token for one scoped to the local cluster's Kubernetes API server -- happens independently inside each remote cluster's `kube-mcp-server`, not in the Gateway itself.
+    Two distinct OAuth2 interactions happen against the same IdP, and the Gateway is not involved in either: the MCP Gateway only **validates** the caller's client-credentials token at the edge. The actual **RFC 8693 Standard Token Exchange** is performed by the **OAuth2 Provider itself** -- it is the only party that holds both the caller's identity (the passthrough token it already issued) and the target audience's requirements (the client-scope/audience-mapper assignment for `kube-mcp-server`), so only it can validate the old token and mint the new one. Each remote cluster's `kube-mcp-server` merely **requests** this exchange (`POST .../protocol/openid-connect/token` with `grant_type=urn:ietf:params:oauth:grant-type:token-exchange`, per its `keycloak-v1` exchange strategy) and receives back a token newly scoped to its own Kubernetes API server.
 
 ## Component Responsibilities
 
@@ -81,7 +81,7 @@ The **MCP Gateway is external infrastructure** -- like PostgreSQL or Prometheus,
 | **FederatedScopeChecker** | Routes scope checks: `ClusterID == ""` -> local `scope.Manager`; `ClusterID != ""` -> the configured remote backend adapter |
 | **GatewayDiscoverer** | Cluster/tool discovery interface, implemented once per supported gateway (Kuadrant, EAIGW). Called **server-side only** -- never LLM-facing (see below) |
 | **CRDWatcher** | Discovers clusters from the gateway's own native CRDs (`MCPRoute`/`Backend` for EAIGW, `MCPServerRegistration` for Kuadrant); Kubernaut is a read-only consumer, never creates or modifies these |
-| **OAuth2 Provider** | External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (`pkg/fleet/mcpclient`). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Independently, each remote cluster's **K8s MCP Server** (`kube-mcp-server`) performs its own RFC 8693 Standard Token Exchange against the same IdP, swapping the passthrough token for one scoped to that cluster's own Kubernetes API server before serving the call. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own. |
+| **OAuth2 Provider** | External IdP (Keycloak, DEX, or any OIDC-compliant provider) issuing client-credentials tokens (`pkg/fleet/mcpclient`). All 7 Fleet-dependent services acquire, cache, and auto-refresh a token before calling the MCP Gateway; the Gateway validates it against the same IdP. Independently, each remote cluster's **K8s MCP Server** (`kube-mcp-server`) *requests* an RFC 8693 Standard Token Exchange from the same IdP -- the IdP itself performs the exchange (it alone holds both the caller's identity and the target audience's requirements) and returns a token newly scoped to that cluster's own Kubernetes API server. Not shipped by the Helm chart -- like the MCP Gateway itself, platform teams bring their own. |
 
 Signal Processing, API Frontend, and Effectiveness Monitor also participate as read-only MCP Gateway callers (remote enrichment, `list_clusters`/resource reads, and remote target reads respectively).
 

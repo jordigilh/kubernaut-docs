@@ -115,8 +115,9 @@
   <text x="660" y="235" font-size="10px" fill="#8B5CF6">(all 7 services)</text>
 
   <!-- OAuth2 <-> MCP Gateway: exits right edge, down to MCP Gateway. Double-headed: token presented, valid/invalid result returned.
-       Gateway only validates here - RFC 8693 token exchange happens in each remote cluster's kube-mcp-server, not the Gateway
-       (see the Mermaid flowchart and Component Responsibilities table below for that distinction). -->
+       Gateway only validates here - the RFC 8693 token exchange is performed by the OAuth2 Provider itself, merely
+       requested by each remote cluster's kube-mcp-server, not the Gateway (see the Mermaid flowchart and Component
+       Responsibilities table below for that distinction). -->
   <path d="M676,306 L712,306 L712,452" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-start="url(#ard)" marker-end="url(#ard)"/>
   <text x="718" y="380" font-size="10px" fill="#A78BFA">validates token</text>
 

@@ -17,6 +17,7 @@ Kubernaut v1.6 introduces **Fleet Management**, enabling a single management-clu
 - **`ClusterID` propagation** — `RemediationRequestSpec.clusterID` threads the originating cluster identity through the full pipeline (Gateway → Signal Processing → AI Analysis → Workflow Execution), and participates in deduplication so identical signals from different clusters are not conflated.
 - **Fail-closed readiness gate** — Fleet-mode investigations refuse to proceed if the configured scope backend is unreachable or stale, rather than silently falling back to local-cluster-only behavior.
 - **Ansible/AWX is not supported for remote execution** — remote fleet workflows are restricted to Tekton/Job-based execution engines.
+- **Workflow-declared execution cluster** — `RemediationWorkflow.spec.execution.clusterId` (DD-FLEET-008, BR-FLEET-004) lets a workflow declare which cluster its Job/PipelineRun/Ansible run executes on, decoupled from the signal's origin cluster. Covers GitOps-hub remediation and edge-device-via-aggregator patterns; empty (the default) keeps today's behavior unchanged.
 
 See the new [Fleet Management architecture page](../architecture/fleet.md) for the full design, backend comparison matrix, and [Configuration: Fleet](../user-guide/configuration.md#fleet) / [Operator CR: FleetSpec](../api-reference/operator-cr.md#fleetspec) for configuration.
 

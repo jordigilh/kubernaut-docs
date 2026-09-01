@@ -237,6 +237,28 @@ The ServiceAccount must exist in the `kubernaut-workflows` namespace (or the con
 
 TokenRequest is used by the Ansible path for AWX credential injection when the workflow specifies a service account. See [Security & RBAC -- Per-Workflow ServiceAccount](../architecture/security-rbac.md#per-workflow-serviceaccount-v12) for scope, TTL validation, and fallback behavior.
 
+## Per-Workflow Execution Cluster
+
+The optional `spec.execution.clusterId` field on a `RemediationWorkflow` declares which fleet cluster the workflow's execution resource (Job, PipelineRun, or Ansible run) runs on, decoupled from the cluster that the triggering signal originated from (DD-FLEET-008, BR-FLEET-004).
+
+```yaml
+spec:
+  execution:
+    engine: job
+    bundle: registry.example.com/workflows/my-workflow@sha256:...
+    serviceAccountName: my-workflow-sa
+    clusterId: prod-east
+```
+
+If `clusterId` is omitted (the default), execution runs on the same cluster as the signal -- unchanged from today's behavior. When set, it takes precedence over `RemediationRequest.Spec.ClusterID` for the resulting `WorkflowExecution.Spec.ClusterID`. It must resolve to a cluster already registered with the fleet MCP Gateway; an unregistered or unreachable value fails at dispatch time, the same fail-closed behavior as an operator-supplied `ClusterID` typo today.
+
+This is not a new GitOps or edge-device execution engine -- both use cases below are ordinary `job`/`ansible` workflows that also set `clusterId`.
+
+- **GitOps-hub remediation**: the fix is a Git commit (a Helm value bump, a Kustomize overlay) that a centralized ArgoCD or Flux instance on a hub cluster reconciles onto the signal's origin cluster. The workflow declares that hub's `clusterId` so its Job runs wherever the GitOps tooling and credentials live, regardless of which cluster fired the signal.
+- **Edge devices via an aggregator**: a resource-constrained edge device (e.g. a minimal K3s node) can't run a Job itself, but a separate, capable cluster with network reach to that device (a device management API, SSH, Redfish) can act on its behalf. The workflow declares that aggregator's `clusterId`.
+
+See [Fleet Management: WE Remote Execution](../architecture/fleet.md#we-remote-execution) for how `clusterId` fits into the broader ClusterID propagation chain.
+
 ## Standard Resource Parameters
 
 Every workflow receives a set of standard `TARGET_RESOURCE_*` parameters that identify the Kubernetes resource selected for remediation. **Kubernaut Agent** derives these from the K8s-verified `root_owner` during investigation and injects them into the selected workflow's parameters before the AIAnalysis completes -- workflow authors do not need to populate them manually.

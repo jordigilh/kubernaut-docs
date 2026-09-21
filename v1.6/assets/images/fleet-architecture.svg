@@ -1,0 +1,195 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1050 852" font-family="Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif">
+  <defs>
+    <filter id="sh" x="-4%" y="-6%" width="108%" height="118%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.10"/>
+    </filter>
+    <marker id="ar" markerWidth="6" markerHeight="4.5" refX="5" refY="2.25" orient="auto-start-reverse">
+      <polygon points="0,0 6,2.25 0,4.5" fill="#94A3B8"/>
+    </marker>
+    <marker id="arw" markerWidth="6.5" markerHeight="5" refX="5.5" refY="2.5" orient="auto-start-reverse">
+      <polygon points="0,0 6.5,2.5 0,5" fill="#D97706"/>
+    </marker>
+    <marker id="ard" markerWidth="6" markerHeight="4.5" refX="5" refY="2.25" orient="auto-start-reverse">
+      <polygon points="0,0 6,2.25 0,4.5" fill="#A78BFA"/>
+    </marker>
+    <marker id="arc" markerWidth="6" markerHeight="4.5" refX="5" refY="2.25" orient="auto-start-reverse">
+      <polygon points="0,0 6,2.25 0,4.5" fill="#67E8F9"/>
+    </marker>
+    <linearGradient id="gwGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7C3AED"/>
+      <stop offset="1" stop-color="#4C1D95"/>
+    </linearGradient>
+    <linearGradient id="engineGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6366F1"/>
+      <stop offset="1" stop-color="#4338CA"/>
+    </linearGradient>
+    <symbol id="k8sLogo" viewBox="0 0 24 24">
+      <path fill="white" d="M10.204 14.35l.007.01-.999 2.413a5.171 5.171 0 0 1-2.075-2.597l2.578-.437.004.005a.44.44 0 0 1 .484.606zm-.833-2.129a.44.44 0 0 0 .173-.756l.002-.011L7.585 9.7a5.143 5.143 0 0 0-.73 3.255l2.514-.725.002-.009zm1.145-1.98a.44.44 0 0 0 .699-.337l.01-.005.15-2.62a5.144 5.144 0 0 0-3.01 1.442l2.147 1.523.004-.002zm.76 2.75l.723.349.722-.347.18-.78-.5-.623h-.804l-.5.623.179.779zm1.5-3.095a.44.44 0 0 0 .7.336l.008.003 2.134-1.513a5.188 5.188 0 0 0-2.992-1.442l.148 2.615.002.001zm10.876 5.97l-5.773 7.181a1.6 1.6 0 0 1-1.248.594l-9.261.003a1.6 1.6 0 0 1-1.247-.596l-5.776-7.18a1.583 1.583 0 0 1-.307-1.34L2.1 5.573c.108-.47.425-.864.863-1.073L11.305.513a1.606 1.606 0 0 1 1.385 0l8.345 3.985c.438.209.755.604.863 1.073l2.062 8.955c.108.47-.005.963-.308 1.34zm-3.289-2.057c-.042-.01-.103-.026-.145-.034-.174-.033-.315-.025-.479-.038-.35-.037-.638-.067-.895-.148-.105-.04-.18-.165-.216-.216l-.201-.059a6.45 6.45 0 0 0-.105-2.332 6.465 6.465 0 0 0-.936-2.163c.052-.047.15-.133.177-.159.008-.09.001-.183.094-.282.197-.185.444-.338.743-.522.142-.084.273-.137.415-.242.032-.024.076-.062.11-.089.24-.191.295-.52.123-.736-.172-.216-.506-.236-.745-.045-.034.027-.08.062-.111.088-.134.116-.217.23-.33.35-.246.25-.45.458-.673.609-.097.056-.239.037-.303.033l-.19.135a6.545 6.545 0 0 0-4.146-2.003l-.012-.223c-.065-.062-.143-.115-.163-.25-.022-.268.015-.557.057-.905.023-.163.061-.298.068-.475.001-.04-.001-.099-.001-.142 0-.306-.224-.555-.5-.555-.275 0-.499.249-.499.555l.001.014c0 .041-.002.092 0 .128.006.177.044.312.067.475.042.348.078.637.056.906a.545.545 0 0 1-.162.258l-.012.211a6.424 6.424 0 0 0-4.166 2.003 8.373 8.373 0 0 1-.18-.128c-.09.012-.18.04-.297-.029-.223-.15-.427-.358-.673-.608-.113-.12-.195-.234-.329-.349-.03-.026-.077-.062-.111-.088a.594.594 0 0 0-.348-.132.481.481 0 0 0-.398.176c-.172.216-.117.546.123.737l.007.005.104.083c.142.105.272.159.414.242.299.185.546.338.743.522.076.082.09.226.1.288l.16.143a6.462 6.462 0 0 0-1.02 4.506l-.208.06c-.055.072-.133.184-.215.217-.257.081-.546.11-.895.147-.164.014-.305.006-.48.039-.037.007-.09.02-.133.03l-.004.002-.007.002c-.295.071-.484.342-.423.608.061.267.349.429.645.365l.007-.001.01-.003.129-.029c.17-.046.294-.113.448-.172.33-.118.604-.217.87-.256.112-.009.23.069.288.101l.217-.037a6.5 6.5 0 0 0 2.88 3.596l-.09.218c.033.084.069.199.044.282-.097.252-.263.517-.452.813-.091.136-.185.242-.268.399-.02.037-.045.095-.064.134-.128.275-.034.591.213.71.248.12.556-.007.69-.282v-.002c.02-.039.046-.09.062-.127.07-.162.094-.301.144-.458.132-.332.205-.68.387-.897.05-.06.13-.082.215-.105l.113-.205a6.453 6.453 0 0 0 4.609.012l.106.192c.086.028.18.042.256.155.136.232.229.507.342.84.05.156.074.295.145.457.016.037.043.09.062.129.133.276.442.402.69.282.247-.118.341-.435.213-.71-.02-.039-.045-.096-.065-.134-.083-.156-.177-.261-.268-.398-.19-.296-.346-.541-.443-.793-.04-.13.007-.21.038-.294-.018-.022-.059-.144-.083-.202a6.499 6.499 0 0 0 2.88-3.622c.064.01.176.03.213.038.075-.05.144-.114.28-.104.266.039.54.138.87.256.154.06.277.128.448.173.036.01.088.019.13.028l.009.003.007.001c.297.064.584-.098.645-.365.06-.266-.128-.537-.423-.608zM16.4 9.701l-1.95 1.746v.005a.44.44 0 0 0 .173.757l.003.01 2.526.728a5.199 5.199 0 0 0-.108-1.674A5.208 5.208 0 0 0 16.4 9.7zm-4.013 5.325a.437.437 0 0 0-.404-.232.44.44 0 0 0-.372.233h-.002l-1.268 2.292a5.164 5.164 0 0 0 3.326.003l-1.27-2.296h-.01zm1.888-1.293a.44.44 0 0 0-.27.036.44.44 0 0 0-.214.572l-.003.004 1.01 2.438a5.15 5.15 0 0 0 2.081-2.615l-2.6-.44-.004.005z"/>
+    </symbol>
+    <symbol id="kubernautLogo" viewBox="0 0 200 200">
+      <path d="M100,92 C82,66 38,66 38,100 C38,134 82,134 100,108" fill="none" stroke="#E5E7EB" stroke-width="13" stroke-linecap="round"/>
+      <path d="M100,92 C118,66 162,66 162,100 C162,134 118,134 100,108" fill="none" stroke="#F59E0B" stroke-width="13" stroke-linecap="round"/>
+    </symbol>
+    <!-- Official project marks (CNCF artwork, white/monochrome variants for placement on colored badges) -->
+    <symbol id="thanosLogo" viewBox="2.41 2.16 355.42 355.17">
+      <path fill="white" d="M9.49808 9.14822v341.59786h241.93485a99.66306 99.66306 0 0 0 99.657-99.663V9.14822zm266.263 215.32837h12.75033v12.75018h-12.75035zm-4.00963-54.89h20.71531v20.72131h-20.71533zm-3.186-54.10261h27.09335v27.11729h-27.09343zm-43.739 159.90321h12.7381v12.75018h-12.75017zm-3.98558-55.53932h20.72129V240.587h-20.72129zm-3.186-53.44731h27.12344v27.09337h-27.09339zm3.186-27.00322v-20.71528h20.72129v20.71527zm-97.82954 135.98981h12.75021v12.75018h-12.75021zm-3.98558-54.8901h20.72131v20.69121h-20.72124zm3.98558-34.1748v-12.75019h12.75021v12.75018zm-3.98558-67.64019h20.72131v20.71527h-20.72124zM72.10081 275.38715H84.875v12.75018H72.10081zm0-50.91056H84.875v12.75018H72.10081zm-3.97955-54.89h20.7153v20.72131h-20.7153zm-3.19206-54.10265h27.09939v27.11729H64.9292zM53.01459 52.67679h254.53469v50.91052H205.74622v203.6302h-50.90449v-203.6302H53.01459z"/>
+    </symbol>
+    <symbol id="kuadrantLogo" viewBox="0 0 1024 1024">
+      <path fill="white" d="M809,1C993.59,183.56 1065.7,449.65 998.12,699.05C964.778,821.823 899.519,933.607 809,1023L292.27,512L809,1Z"/>
+      <rect fill="white" x="1" y="1" width="218" height="1022"/>
+    </symbol>
+    <symbol id="envoyLogo" viewBox="-4.43 47.82 438.36 331.11">
+      <path fill="white" d="M109.3 208.2l.6 25.4 26.7 16.5-.6-25.4zm65.2 105.4l-.6-24.8-23.4-14.5c-.3-.2-.7-.5-1-.7l.6 24.9 24.4 15.1zm-83.4 33.5L30 309.2l-1.5-63.5 29.9-12.9-.6-25.4L10 228c-3.7 1.6-5.9 5-5.8 8.9L6 313.1c.1 3.9 2.5 7.8 6.3 10.1l73.3 45.4c3.4 2.1 7.5 2.7 11 1.6.4-.1.7-.2 1-.4l45-19.4-24.4-15.1-27.1 11.8zm197.4-140.4c-.1-4.6-2.9-9.1-7.3-11.8l-88.9-55.1-2.7 1.2.6 26.7 70.4 43.6 1.7 71.4 26.9 16.7 1.5-.6-2.2-92.1z"/>
+      <path fill="white" d="M182 332l-82.6-51.2-2-86 37.6-16.2-.7-29.6-58.4 25.2c-4.3 1.9-6.9 5.8-6.8 10.4l2.4 100.8c.1 4.6 2.9 9.1 7.3 11.8l96.8 60c4 2.5 8.8 3.1 12.8 1.9.4-.1.8-.3 1.2-.5l57.2-24.7-28.4-17.6L182 332z"/>
+      <path fill="white" d="M414.4 136.2l-124.2-77c-4.6-2.8-10-3.6-14.7-2.1-.5.1-.9.3-1.4.5L153 109.8c-4.9 2.1-7.9 6.6-7.7 11.9l3 129.2c.1 5.2 3.3 10.4 8.3 13.5l124.2 76.9c4.6 2.8 10 3.6 14.7 2.1.5-.1.9-.3 1.4-.5L418 290.7c4.9-2.1 7.8-6.6 7.7-11.9l-3-129.2c-.1-5.2-3.3-10.3-8.3-13.4zM288.2 312.5l-107.9-66.9-2.7-112.2L282.9 88l107.9 66.9 2.7 112.2-105.3 45.4z"/>
+    </symbol>
+  </defs>
+
+  <rect x="0" y="0" width="1050" height="852" fill="white"/>
+
+  <!-- ═══════════ Hub Cluster container ═══════════ -->
+  <rect x="20" y="46" width="1010" height="362" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="30" width="150" height="32" rx="8" fill="#0F172A"/>
+  <text x="115" y="51" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">HUB CLUSTER</text>
+
+  <!-- Thanos (feeds Gateway with alerts carrying the cluster label) -->
+  <rect x="69" y="100" width="52" height="52" rx="12" fill="#0E7490"/>
+  <use href="#thanosLogo" x="80" y="111" width="30" height="30"/>
+  <text x="95" y="168" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Thanos</text>
+  <text x="95" y="182" text-anchor="middle" font-size="10.5px" fill="#64748B">metrics</text>
+
+  <!-- Gateway (entry point #1) -->
+  <rect x="204" y="100" width="52" height="52" rx="12" fill="#0891B2"/>
+  <path d="M220,104 L244,104 L234,122 L230,122 Z" fill="white"/>
+  <rect x="228" y="122" width="4" height="10" fill="white"/>
+  <text x="230" y="168" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Gateway</text>
+  <text x="230" y="182" text-anchor="middle" font-size="10.5px" fill="#64748B">ingest + dedup</text>
+
+  <!-- ═══════════ Kubernaut Engine (consolidated: RO, SP, AI Analysis+KA, WE, EM, Notification) ═══════════ -->
+  <g filter="url(#sh)"><rect x="450" y="88" width="280" height="94" rx="18" fill="url(#engineGrad)"/></g>
+  <use href="#kubernautLogo" x="473" y="113" width="44" height="44"/>
+  <text x="538" y="127" font-size="15px" font-weight="800" fill="white">Kubernaut Engine</text>
+  <text x="538" y="147" font-size="10px" fill="#E0E7FF">6 services · one pipeline</text>
+
+  <!-- API Frontend (entry point #2) -->
+  <rect x="929" y="100" width="52" height="52" rx="12" fill="#64748B"/>
+  <path d="M941,114 h28 a4,4 0 0 1 4,4 v12 a4,4 0 0 1 -4,4 h-16 l-8,7 v-7 h-4 a4,4 0 0 1 -4,-4 v-12 a4,4 0 0 1 4,-4 z" fill="white"/>
+  <text x="955" y="168" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">API Frontend</text>
+  <text x="955" y="182" text-anchor="middle" font-size="10.5px" fill="#64748B">interactive entry</text>
+
+  <!-- Thanos -> Gateway: alerts carrying the cluster label (matches the detailed Mermaid flowchart) -->
+  <line x1="121" y1="126" x2="204" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
+  <text x="162" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">alerts</text>
+
+  <!-- Gateway: fire-and-forget WRITE. Gateway is stateless with no ongoing reconciliation, so single-headed. -->
+  <line x1="256" y1="126" x2="450" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-end="url(#ar)"/>
+  <text x="353" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">creates RemediationRequest</text>
+  <!-- API Frontend: creates RemediationRequest AND watches AgentSession/status back to relay results to
+       its interactive session - a real round trip, so double-headed unlike Gateway's fire-and-forget write. -->
+  <line x1="929" y1="126" x2="730" y2="126" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="830" y="116" text-anchor="middle" font-size="9.5px" fill="#64748B">creates + watches RemediationRequest</text>
+
+  <!-- Scope Check (positioned so Gateway's and the Engine's check-arrows are equal length) -->
+  <rect x="320" y="280" width="52" height="52" rx="12" fill="#0E7490"/>
+  <path d="M346,288 L362,294 v14 c0,10 -8,16 -16,20 c-8,-4 -16,-10 -16,-20 v-14 z" fill="none" stroke="white" stroke-width="2.2"/>
+  <polyline points="338,304 345,311 356,298" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="346" y="348" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">Scope Check</text>
+  <text x="346" y="362" text-anchor="middle" font-size="10.5px" fill="#64748B">against fleet control plane</text>
+  <text x="346" y="376" text-anchor="middle" font-size="10.5px" fill="#64748B">FMC (default) · bring your own</text>
+
+  <!-- OAuth2 -->
+  <rect x="624" y="280" width="52" height="52" rx="12" fill="#475569" stroke="#94A3B8" stroke-width="1.4" stroke-dasharray="3,3"/>
+  <path d="M642,302 v-6 a8,8 0 0 1 16,0 v6" fill="none" stroke="white" stroke-width="2.4"/>
+  <rect x="638" y="302" width="24" height="16" rx="3" fill="white"/>
+  <text x="650" y="348" text-anchor="middle" font-size="12.5px" font-weight="700" fill="#0F172A">OAuth2 Provider</text>
+  <text x="650" y="362" text-anchor="middle" font-size="10.5px" fill="#64748B">external IdP</text>
+
+  <!-- scope-check: Gateway (entry, fail-fast) and the Engine (routing, temporal drift) each check independently, equal-length
+       orthogonal (vertical/horizontal only) elbow connectors, matching every other arrow in the diagram.
+       Double-headed: IsManagedResource(ctx, ResourceIdentity) is a synchronous call that returns a result. -->
+  <path d="M230,152 L230,240 L337,240 L337,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-start="url(#arc)" marker-end="url(#arc)"/>
+  <path d="M490,182 L490,240 L357,240 L357,278" fill="none" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-start="url(#arc)" marker-end="url(#arc)"/>
+
+  <!-- client-credentials: engine <-> OAuth2 (straight, unobstructed). Double-headed: token request/response round trip. -->
+  <line x1="650" y1="182" x2="650" y2="278" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-start="url(#ard)" marker-end="url(#ard)"/>
+  <text x="660" y="222" font-size="10px" fill="#8B5CF6">client-credentials</text>
+  <text x="660" y="235" font-size="10px" fill="#8B5CF6">(all 7 services)</text>
+
+  <!-- OAuth2 <-> MCP Gateway: exits right edge, down to MCP Gateway. Double-headed: token presented, valid/invalid result returned.
+       Gateway only validates here - the RFC 8693 token exchange is performed by the OAuth2 Provider itself, merely
+       requested by each remote cluster's kube-mcp-server, not the Gateway (see the Mermaid flowchart and Component
+       Responsibilities table below for that distinction). -->
+  <path d="M676,306 L712,306 L712,452" fill="none" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-start="url(#ard)" marker-end="url(#ard)"/>
+  <text x="718" y="380" font-size="10px" fill="#A78BFA">validates token</text>
+
+  <!-- boundary arrows: Hub Cluster <-> MCP Gateway (straight, vertical). Double-headed: MCP tool calls are request/response, results flow back up. -->
+  <line x1="440" y1="408" x2="440" y2="452" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <text x="455" y="434" font-size="12px" fill="#64748B">reads (6 services)</text>
+  <line x1="590" y1="408" x2="590" y2="452" stroke="#D97706" stroke-width="2.2" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <text x="605" y="434" font-size="12px" font-weight="600" fill="#B45309">+ writes (workflow execution)</text>
+
+  <!-- ═══════════ MCP Gateway (centered under the Hub Cluster container, x 20-1030 → center 525) ═══════════ -->
+  <g filter="url(#sh)"><rect x="225" y="452" width="600" height="100" rx="16" fill="url(#gwGrad)"/></g>
+  <text x="525" y="478" text-anchor="middle" font-size="20px" font-weight="800" fill="white">MCP Gateway</text>
+  <use href="#kuadrantLogo" x="486" y="492" width="20" height="20"/>
+  <text x="522" y="507" text-anchor="middle" font-size="10px" fill="#DDD6FE">or</text>
+  <use href="#envoyLogo" x="538" y="492" width="26" height="20"/>
+  <text x="525" y="534" text-anchor="middle" font-size="11.5px" fill="#DDD6FE">external infra · bring your own</text>
+
+  <!-- ═══════════ Remote Clusters container (matches Hub Cluster's width: x 20-1030) ═══════════ -->
+  <rect x="20" y="612" width="1010" height="160" rx="16" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="6,4"/>
+  <rect x="40" y="596" width="180" height="32" rx="8" fill="#334155"/>
+  <text x="130" y="617" text-anchor="middle" font-size="12px" font-weight="700" fill="white" letter-spacing="0.5">REMOTE CLUSTERS</text>
+
+  <!-- straight vertical drops: each cluster gets the same paired-line treatment as the Hub Cluster
+       boundary above - gray (reads, 6 services) + amber (writes, workflow execution only), so the
+       read/write distinction stays visible all the way down, not just at the top boundary.
+       Double-headed: tool-call results flow back up through the same path. -->
+  <line x1="257" y1="552" x2="257" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="293" y1="552" x2="293" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="507" y1="552" x2="507" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="543" y1="552" x2="543" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+  <line x1="757" y1="552" x2="757" y2="636" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+  <line x1="793" y1="552" x2="793" y2="636" stroke="#D97706" stroke-width="2.4" marker-start="url(#arw)" marker-end="url(#arw)"/>
+
+  <!-- Cluster A -->
+  <g filter="url(#sh)"><rect x="180" y="636" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="253" y="648" width="44" height="44" rx="10" fill="#326CE5"/>
+  <use href="#k8sLogo" x="260" y="655" width="30" height="30"/>
+  <text x="275" y="710" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster A</text>
+  <rect x="210" y="722" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="275" y="737" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
+
+  <!-- Cluster B -->
+  <g filter="url(#sh)"><rect x="430" y="636" width="190" height="126" rx="12" fill="white"/></g>
+  <rect x="503" y="648" width="44" height="44" rx="10" fill="#326CE5"/>
+  <use href="#k8sLogo" x="510" y="655" width="30" height="30"/>
+  <text x="525" y="710" text-anchor="middle" font-size="13px" font-weight="700" fill="#0F172A">Cluster B</text>
+  <rect x="460" y="722" width="130" height="22" rx="6" fill="#EEF2FF"/>
+  <text x="525" y="737" text-anchor="middle" font-size="10.5px" font-weight="600" fill="#4338CA">K8s MCP Server</text>
+
+  <!-- + more clusters (ghost, replaces a third named example - same pattern repeats at fleet scale) -->
+  <rect x="680" y="636" width="190" height="126" rx="12" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <circle cx="763" cy="682" r="3.2" fill="#94A3B8"/>
+  <circle cx="775" cy="682" r="3.2" fill="#94A3B8"/>
+  <circle cx="787" cy="682" r="3.2" fill="#94A3B8"/>
+  <text x="775" y="710" text-anchor="middle" font-size="13px" font-weight="700" fill="#64748B">100s more</text>
+  <text x="775" y="729" text-anchor="middle" font-size="11px" fill="#94A3B8">same pattern</text>
+
+  <!-- ═══════════ Legend (horizontal strip, same width as the containers above) ═══════════ -->
+  <rect x="20" y="776" width="1010" height="56" rx="12" fill="#F8FAFC" stroke="#E2E8F0" stroke-width="1.5"/>
+
+  <g>
+    <line x1="50" y1="810" x2="94" y2="810" stroke="#94A3B8" stroke-width="1.8" marker-start="url(#ar)" marker-end="url(#ar)"/>
+    <text x="104" y="814" font-size="12px" fill="#374151">reads (call + response)</text>
+
+    <line x1="360" y1="810" x2="404" y2="810" stroke="#D97706" stroke-width="2.2" marker-start="url(#arw)" marker-end="url(#arw)"/>
+    <text x="414" y="814" font-size="12px" fill="#374151">reads + writes</text>
+
+    <line x1="610" y1="810" x2="634" y2="810" stroke="#A78BFA" stroke-width="1.3" stroke-dasharray="1,2,5,2" marker-end="url(#ard)"/>
+    <text x="642" y="814" font-size="12px" fill="#374151">auth / token</text>
+
+    <line x1="850" y1="810" x2="874" y2="810" stroke="#67E8F9" stroke-width="1.4" stroke-dasharray="4,3" marker-end="url(#arc)"/>
+    <text x="882" y="814" font-size="12px" fill="#374151">scope check</text>
+  </g>
+</svg>
